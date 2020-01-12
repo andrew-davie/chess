@@ -349,7 +349,7 @@ SCREEN_BITMAP_SIZE      = 4 * LINES_PER_CHAR
 
     ;------------------------------------------------------------------------------
 
-    REPEAT CHESSBOARD_ROWS - 1
+    REPEAT (CHESSBOARD_ROWS * 2) - 1
         NEWRAMBANK .DUMMY
         VALIDATE_RAM_SIZE
     REPEND
@@ -423,6 +423,7 @@ Chessboard      ds 64
     ;##############################################################################
     ;------------------------------------------------------------------------------
 
+RND_EOR_VAL = $B4
 
     MAC	NEXT_RANDOM
         lda	rnd

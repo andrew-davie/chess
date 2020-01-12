@@ -795,181 +795,206 @@
       3  0000 ????						; Copyright (c) 2019-2020 Andrew Davie
       4  0000 ????						; andrew@taswegian.com
       5  0000 ????
-      6 U00d9 ????				      SEG.U	variables
+      6 U00dc ????				      SEG.U	variables
       7 U0080					      ORG	$80
       8 U0080
       9 U0080		       00	   rnd	      ds	1	; random
-     10 U0081
-     11 U0081		       00	   Platform   ds	1	; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
-     12 U0082		       00	   BufferedJoystick ds	1	; player joystick input
-     13 U0083		       00	   PreviousJoystick ds	1
-     14 U0084							;BGColour			  ds 1
-     15 U0084		       00 00	   colour_table ds	2
-     16 U0086
-     17 U0086		       00 00	   Board_AddressR ds	2
-     18 U0088		       00 00	   Board_AddressW ds	2
-     19 U008a		       00	   ROM_Bank   ds	1	; last switched ROM bank (not accessible if RAM subsequently switched)
-     20 U008b		       00	   RAM_Bank   ds	1
-     21 U008c
-     22 U008c
-     23 U008c		       00	   ObjIterator ds	1	; count UP iterator over objects
+     10 U0081		       00	   doubleBufferBase ds	1	; switcher for which draw buffer in use points to DRAW one
+     11 U0082		       00	   drawPhase  ds	1	; ticks through the board draw process
+     12 U0083		       00	   drawPieceNumber ds	1	; partial - square being drawn
+     13 U0084
+     14 U0084		       00	   Platform   ds	1	; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
+     15 U0085		       00	   BufferedJoystick ds	1	; player joystick input
+     16 U0086		       00	   PreviousJoystick ds	1
+     17 U0087							;BGColour			  ds 1
+     18 U0087		       00 00	   colour_table ds	2
+     19 U0089
+     20 U0089		       00 00	   Board_AddressR ds	2
+     21 U008b		       00 00	   Board_AddressW ds	2
+     22 U008d		       00	   ROM_Bank   ds	1	; last switched ROM bank (not accessible if RAM subsequently switched)
+     23 U008e		       00	   RAM_Bank   ds	1
+     24 U008f
+     25 U008f
+     26 U008f		       00	   ObjIterator ds	1	; count UP iterator over objects
 ------- FILE ./chess.asm
 ------- FILE overlays.asm LEVEL 2 PASS 2
-      0 U008d					      include	"overlays.asm"
-      1 U008d							; Chess
-      2 U008d							; Atari 2600 Chess display system
-      3 U008d							; Copyright (c) 2019-2020 Andrew Davie
-      4 U008d							; andrew@taswegian.com
-      5 U008d
-      6 U008d							;---------------------------------------------------------------------------------------------------
-      7 U008d							; OVERLAYS!
-      8 U008d							; These variables are overlays, and should be managed with care
-      9 U008d							; They co-exist (each "OVERLAY" starts at the zero-page variable "Overlay"
-     10 U008d							; and thus, overlays cannot be used at the same time (that is, you cannot
-     11 U008d							; use a variable in overlay #1 while at the same time using a variable in
-     12 U008d							; overlay #2
-     13 U008d
-     14 U008d							; for clarity, prefix ALL overlay variables with double-underscore (__)
-     15 U008d
-     16 U008d							; TOTAL SPACE USED BY ANY OVERLAY GROUP SHOULD BE <= SIZE OF 'Overlay'
-     17 U008d							; ensure this by using the VALIDATE_OVERLAY macro
-     18 U008d							;---------------------------------------------------------------------------------------------------
-     19 U008d
-     20 U008d					      MAC	overlay
-     21 U008d				   OVERLAY_NAME SET	{1}
-     22 U008d					      SEG.U	OVERLAY_{1}
-     23 U008d					      org	Overlay
-     24 U008d					      ENDM		; {name}
-     25 U008d
-     26 U008d							;---------------------------------------------------------------------------------------------------
-     27 U008d
-     28 U008d					      MAC	validate_overlay
-     29 U008d					      LIST	OFF
-     30 U008d				   OVERLAY_DELTA SET	* - Overlay
-     31 U008d					      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-     32 U008d				   MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-     33 U008d					      ENDIF
-     34 U008d					      IF	OVERLAY_DELTA > OVERLAY_SIZE
-     35 U008d					      ECHO	"Overlay", OVERLAY_NAME, "is too big!"
-     36 U008d					      ECHO	"REQUIRED SIZE =", OVERLAY_DELTA
-     37 U008d					      ERR
-     38 U008d					      ENDIF
-     39 U008d					      LIST	ON
-     40 U008d					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-     41 U008d					      ENDM
-     42 U008d
-     43 U008d							;---------------------------------------------------------------------------------------------------
-     44 U008d
-     45 U008d				   OVERLAY_SIZE SET	$4C	; maximum size
-     46 U008d				   MAXIMUM_REQUIRED_OVERLAY_SIZE SET	0
-     47 U008d
-     48 U008d
-     49 U008d							; This overlay variable is used for the overlay variables.  That's OK.
-     50 U008d							; However, it is positioned at the END of the variables so, if on the off chance we're overlapping
-     51 U008d							; stack space and variable, it is LIKELY that that won't be a problem, as the temp variables
-     52 U008d							; (especially the latter ones) are only used in rare occasions.
-     53 U008d
-     54 U008d							; FOR SAFETY, DO NOT USE THIS AREA DIRECTLY (ie: NEVER reference 'Overlay' in the code)
-     55 U008d							; ADD AN OVERLAY FOR EACH ROUTINE'S USE, SO CLASHES CAN BE EASILY CHECKED
-     56 U008d
-     57 U008d		       00 00 00 00*Overlay    ds	OVERLAY_SIZE	;--> overlay (share) variables
-     58 U00d9
-     59 U00d9							;---------------------------------------------------------------------------------------------------
-     60 U00d9							; And now... the overlays....
-     61 U00d9
+      0 U0090					      include	"overlays.asm"
+      1 U0090							; Chess
+      2 U0090							; Atari 2600 Chess display system
+      3 U0090							; Copyright (c) 2019-2020 Andrew Davie
+      4 U0090							; andrew@taswegian.com
+      5 U0090
+      6 U0090							;---------------------------------------------------------------------------------------------------
+      7 U0090							; OVERLAYS!
+      8 U0090							; These variables are overlays, and should be managed with care
+      9 U0090							; They co-exist (each "OVERLAY" starts at the zero-page variable "Overlay"
+     10 U0090							; and thus, overlays cannot be used at the same time (that is, you cannot
+     11 U0090							; use a variable in overlay #1 while at the same time using a variable in
+     12 U0090							; overlay #2
+     13 U0090
+     14 U0090							; for clarity, prefix ALL overlay variables with double-underscore (__)
+     15 U0090
+     16 U0090							; TOTAL SPACE USED BY ANY OVERLAY GROUP SHOULD BE <= SIZE OF 'Overlay'
+     17 U0090							; ensure this by using the VALIDATE_OVERLAY macro
+     18 U0090							;---------------------------------------------------------------------------------------------------
+     19 U0090
+     20 U0090					      MAC	overlay
+     21 U0090				   OVERLAY_NAME SET	{1}
+     22 U0090					      SEG.U	OVERLAY_{1}
+     23 U0090					      org	Overlay
+     24 U0090					      ENDM		; {name}
+     25 U0090
+     26 U0090							;---------------------------------------------------------------------------------------------------
+     27 U0090
+     28 U0090					      MAC	validate_overlay
+     29 U0090					      LIST	OFF
+     30 U0090				   OVERLAY_DELTA SET	* - Overlay
+     31 U0090					      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+     32 U0090				   MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+     33 U0090					      ENDIF
+     34 U0090					      IF	OVERLAY_DELTA > OVERLAY_SIZE
+     35 U0090					      ECHO	"Overlay", OVERLAY_NAME, "is too big!"
+     36 U0090					      ECHO	"REQUIRED SIZE =", OVERLAY_DELTA
+     37 U0090					      ERR
+     38 U0090					      ENDIF
+     39 U0090					      LIST	ON
+     40 U0090					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+     41 U0090					      ENDM
+     42 U0090
+     43 U0090							;---------------------------------------------------------------------------------------------------
+     44 U0090
+     45 U0090				   OVERLAY_SIZE SET	$4C	; maximum size
+     46 U0090				   MAXIMUM_REQUIRED_OVERLAY_SIZE SET	0
+     47 U0090
+     48 U0090
+     49 U0090							; This overlay variable is used for the overlay variables.  That's OK.
+     50 U0090							; However, it is positioned at the END of the variables so, if on the off chance we're overlapping
+     51 U0090							; stack space and variable, it is LIKELY that that won't be a problem, as the temp variables
+     52 U0090							; (especially the latter ones) are only used in rare occasions.
+     53 U0090
+     54 U0090							; FOR SAFETY, DO NOT USE THIS AREA DIRECTLY (ie: NEVER reference 'Overlay' in the code)
+     55 U0090							; ADD AN OVERLAY FOR EACH ROUTINE'S USE, SO CLASHES CAN BE EASILY CHECKED
+     56 U0090
+     57 U0090		       00 00 00 00*Overlay    ds	OVERLAY_SIZE	;--> overlay (share) variables
+     58 U00dc
+     59 U00dc							;---------------------------------------------------------------------------------------------------
+     60 U00dc							; And now... the overlays....
+     61 U00dc
  ---- OVERLAYS ( $4c bytes ) ----
-     62 U00d9					      ECHO	"---- OVERLAYS (", OVERLAY_SIZE, "bytes ) ----"
-     63 U00d9
-     64 U00d9							;---------------------------------------------------------------------------------------------------
-     65 U00d9
-      0 U00d9					      OVERLAY	"PieceBufferOverlay"
-      1 U00d9				   OVERLAY_NAME SET	"PieceBufferOverlay"
-      2 U00d9 ????				      SEG.U	OVERLAY_"PieceBufferOverlay"
-      3 U008d					      org	Overlay
-     67 U008d							; used in CopyPieceFromRAMBufferToScreen
-     68 U008d							; used in CopyPieceToRAMBuffer
-     69 U008d							; used in ClearChessBitmap
-     70 U008d							; used in CopyPieceToRowBitmap
-     71 U008d		       00 00 00 00*__pieceShapeBuffer ds	PIECE_SHAPE_SIZE
-     72 U00d5		       00 00	   __ptr      ds	2	; pointer to data
-     73 U00d7		       00 00	   __ptr2     ds	2	; pointer to data
-      0 U00d9					      VALIDATE_OVERLAY
-     11 U00d9					      LIST	ON
+     62 U00dc					      ECHO	"---- OVERLAYS (", OVERLAY_SIZE, "bytes ) ----"
+     63 U00dc
+     64 U00dc							;---------------------------------------------------------------------------------------------------
+     65 U00dc
+      0 U00dc					      OVERLAY	"PieceBufferOverlay"
+      1 U00dc				   OVERLAY_NAME SET	"PieceBufferOverlay"
+      2 U00dc ????				      SEG.U	OVERLAY_"PieceBufferOverlay"
+      3 U0090					      org	Overlay
+     67 U0090							; used in CopyPieceFromRAMBufferToScreen
+     68 U0090							; used in CopyPieceToRAMBuffer
+     69 U0090							; used in ClearChessBitmap
+     70 U0090							; used in CopyPieceToRowBitmap
+     71 U0090		       00 00 00 00*__pieceShapeBuffer ds	PIECE_SHAPE_SIZE
+     72 U00d8		       00 00	   __ptr      ds	2	; pointer to data
+     73 U00da		       00 00	   __ptr2     ds	2	; pointer to data
+      0 U00dc					      VALIDATE_OVERLAY
+     11 U00dc					      LIST	ON
  PieceBufferOverlay - $0 bytes available
-     12 U00d9					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-     75 U00d9
-     76 U00d9							;---------------------------------------------------------------------------------------------------
-     77 U00d9
-      0 U00d9					      OVERLAY	"CopyROMShadowToRAM"
-      1 U00d9				   OVERLAY_NAME SET	"CopyROMShadowToRAM"
-      2 U0090 ????				      SEG.U	OVERLAY_"CopyROMShadowToRAM"
-      3 U008d					      org	Overlay
-     79 U008d		       00	   __CopyCount ds	1
-     80 U008e		       00	   __ROM_SourceBank ds	1
-     81 U008f		       00	   __index    ds	1
-      0 U0090					      VALIDATE_OVERLAY
-     11 U0090					      LIST	ON
+     12 U00dc					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+     75 U00dc
+     76 U00dc							;---------------------------------------------------------------------------------------------------
+     77 U00dc
+      0 U00dc					      OVERLAY	"CopyROMShadowToRAM"
+      1 U00dc				   OVERLAY_NAME SET	"CopyROMShadowToRAM"
+      2 U0093 ????				      SEG.U	OVERLAY_"CopyROMShadowToRAM"
+      3 U0090					      org	Overlay
+     79 U0090		       00	   __CopyCount ds	1
+     80 U0091		       00	   __ROM_SourceBank ds	1
+     81 U0092		       00	   __index    ds	1
+      0 U0093					      VALIDATE_OVERLAY
+     11 U0093					      LIST	ON
  CopyROMShadowToRAM - $49 bytes available
-     12 U0090					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-     83 U0090
-     84 U0090							;---------------------------------------------------------------------------------------------------
-     85 U0090
-      0 U0090					      OVERLAY	"DrawTheChessScreen"
-      1 U0090				   OVERLAY_NAME SET	"DrawTheChessScreen"
-      2 U008e ????				      SEG.U	OVERLAY_"DrawTheChessScreen"
-      3 U008d					      org	Overlay
-     87 U008d		       00	   __rows     ds	1
-      0 U008e					      VALIDATE_OVERLAY
-     11 U008e					      LIST	ON
+     12 U0093					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+     83 U0093
+     84 U0093							;---------------------------------------------------------------------------------------------------
+     85 U0093
+      0 U0093					      OVERLAY	"DrawTheChessScreen"
+      1 U0093				   OVERLAY_NAME SET	"DrawTheChessScreen"
+      2 U0091 ????				      SEG.U	OVERLAY_"DrawTheChessScreen"
+      3 U0090					      org	Overlay
+     87 U0090		       00	   __rows     ds	1
+      0 U0091					      VALIDATE_OVERLAY
+     11 U0091					      LIST	ON
  DrawTheChessScreen - $4b bytes available
-     12 U008e					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-     89 U008e
-     90 U008e							;---------------------------------------------------------------------------------------------------
-     91 U008e
-      0 U008e					      OVERLAY	"SetupShadowRAM"
-      1 U008e				   OVERLAY_NAME SET	"SetupShadowRAM"
-      2 U009b ????				      SEG.U	OVERLAY_"SetupShadowRAM"
-      3 U008d					      org	Overlay
-     93 U008d		       00	   __destinationBank ds	1
-     94 U008e		       00	   __sourceBank ds	1
-      0 U008f					      VALIDATE_OVERLAY
-     11 U008f					      LIST	ON
+     12 U0091					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+     89 U0091
+     90 U0091							;---------------------------------------------------------------------------------------------------
+     91 U0091
+      0 U0091					      OVERLAY	"SetupShadowRAM"
+      1 U0091				   OVERLAY_NAME SET	"SetupShadowRAM"
+      2 U0092 ????				      SEG.U	OVERLAY_"SetupShadowRAM"
+      3 U0090					      org	Overlay
+     93 U0090		       00	   __destinationBank ds	1
+     94 U0091		       00	   __sourceBank ds	1
+      0 U0092					      VALIDATE_OVERLAY
+     11 U0092					      LIST	ON
  SetupShadowRAM - $4a bytes available
-     12 U008f					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-     96 U008f
-     97 U008f							;---------------------------------------------------------------------------------------------------
-     98 U008f
+     12 U0092					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+     96 U0092
+     97 U0092							;---------------------------------------------------------------------------------------------------
+      0 U0092					      OVERLAY	"DrawPiece"
+      1 U0092				   OVERLAY_NAME SET	"DrawPiece"
+      2 U0091 ????				      SEG.U	OVERLAY_"DrawPiece"
+      3 U0090					      org	Overlay
+     99 U0090		       00	   __pieceColour ds	1
+      0 U0091					      VALIDATE_OVERLAY
+     11 U0091					      LIST	ON
+ DrawPiece - $4b bytes available
+     12 U0091					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+    101 U0091
+    102 U0091							;---------------------------------------------------------------------------------------------------
+      0 U0091					      OVERLAY	"RandomPiece"
+      1 U0091				   OVERLAY_NAME SET	"RandomPiece"
+      2 U009d ????				      SEG.U	OVERLAY_"RandomPiece"
+      3 U0090					      org	Overlay
+    104 U0090		       00	   __tempx    ds	1
+      0 U0091					      VALIDATE_OVERLAY
+     11 U0091					      LIST	ON
+ RandomPiece - $4b bytes available
+     12 U0091					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+    106 U0091
+    107 U0091							;---------------------------------------------------------------------------------------------------
+    108 U0091
  ---- END OF OVERLAYS ----
-     99 U008f					      ECHO	"---- END OF OVERLAYS ----"
+    109 U0091					      ECHO	"---- END OF OVERLAYS ----"
  MAXIMUM OVERLAY SIZE NEEDED =  $4c
-    100 U008f					      ECHO	"MAXIMUM OVERLAY SIZE NEEDED = ", MAXIMUM_REQUIRED_OVERLAY_SIZE
-    101 U008f
-    102 U008f							;EOF
+    110 U0091					      ECHO	"MAXIMUM OVERLAY SIZE NEEDED = ", MAXIMUM_REQUIRED_OVERLAY_SIZE
+    111 U0091
+    112 U0091							;EOF
 ------- FILE ./chess.asm
 ------- FILE stack.asm LEVEL 2 PASS 2
-      0 U008f					      include	"stack.asm"
-      1 U008f							; Chess
-      2 U008f							; Atari 2600 Chess display system
-      3 U008f							; Copyright (c) 2019-2020 Andrew Davie
-      4 U008f							; andrew@taswegian.com
-      5 U008f
-      6 U008f		       00 00 00 00*	      ds	RESERVED_FOR_STACK
+      0 U0091					      include	"stack.asm"
+      1 U0091							; Chess
+      2 U0091							; Atari 2600 Chess display system
+      3 U0091							; Copyright (c) 2019-2020 Andrew Davie
+      4 U0091							; andrew@taswegian.com
+      5 U0091
+      6 U0091		       00 00 00 00*	      ds	RESERVED_FOR_STACK
 ------- FILE ./chess.asm
-    303 U009b
- FREE BYTES IN ZERO PAGE =  $64
-    304 U009b					      ECHO	"FREE BYTES IN ZERO PAGE = ", $FF - *
-    305 U009b				  -	      IF	* > $FF
-    306 U009b				  -	      ERR	"Zero Page overflow!"
-    307 U009b					      ENDIF
-    308 U009b
-    309 U009b							;------------------------------------------------------------------------------
-    310 U009b							;##############################################################################
-    311 U009b							;------------------------------------------------------------------------------
-    312 U009b
-    313 U009b							; NOW THE VERY INTERESTING '3E' RAM BANKS
-    314 U009b							; EACH BANK HAS A READ-ADDRESS AND A WRITE-ADDRESS, WITH 2k TOTAL
-    315 U009b
-      0 U009b					      NEWRAMBANK	BANK_SCREENMARKII1
+    303 U009d
+ FREE BYTES IN ZERO PAGE =  $62
+    304 U009d					      ECHO	"FREE BYTES IN ZERO PAGE = ", $FF - *
+    305 U009d				  -	      IF	* > $FF
+    306 U009d				  -	      ERR	"Zero Page overflow!"
+    307 U009d					      ENDIF
+    308 U009d
+    309 U009d							;------------------------------------------------------------------------------
+    310 U009d							;##############################################################################
+    311 U009d							;------------------------------------------------------------------------------
+    312 U009d
+    313 U009d							; NOW THE VERY INTERESTING '3E' RAM BANKS
+    314 U009d							; EACH BANK HAS A READ-ADDRESS AND A WRITE-ADDRESS, WITH 2k TOTAL
+    315 U009d
+      0 U009d					      NEWRAMBANK	BANK_SCREENMARKII1
       1 U0000 ????				      SEG.U	BANK_SCREENMARKII1
       2 U0000					      ORG	ORIGIN_RAM
       3 U0000					      RORG	RAM_3E
@@ -1016,9 +1041,9 @@
     349 U0000
     350 U0000							;------------------------------------------------------------------------------
     351 U0000
-    352 U0000					      REPEAT	CHESSBOARD_ROWS - 1
+    352 U0000					      REPEAT	(CHESSBOARD_ROWS * 2) - 1
       0 U0000					      NEWRAMBANK	.DUMMY
-      1 U1c00 ????				      SEG.U	.DUMMY
+      1 U3c00 ????				      SEG.U	.DUMMY
       2 U0400					      ORG	ORIGIN_RAM
       3 U0400					      RORG	RAM_3E
       4 U0400				   BANK_START SET	*
@@ -1114,155 +1139,268 @@
       3 U1c00				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
       4 U1c00				  -	      ERR
       5 U1c00					      ENDIF
-    355 U1c00					      REPEND
-    356 U1c00
-    357 U1c00							;---------------------------------------------------------------------------------------------------
-    358 U1c00
-      0 U1c00					      NEWRAMBANK	BANK_CHESSBOARD
-      1 U2040 ????				      SEG.U	BANK_CHESSBOARD
+    352 U1c00					      REPEND
+      0 U1c00					      NEWRAMBANK	.DUMMY
+      1 U1c00					      SEG.U	.DUMMY
       2 U2000					      ORG	ORIGIN_RAM
       3 U2000					      RORG	RAM_3E
       4 U2000				   BANK_START SET	*
-      5 U2000				   BANK_CHESSBOARD SET	ORIGIN_RAM / RAM_SIZE
+      5 U2000				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
       6 U2000				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    360 U2000		       00 00 00 00*Chessboard ds	64
-      0 U2040					      VALIDATE_RAM_SIZE
-      1 U2040				   .RAM_BANK_SIZE SET	* - RAM_3E
-      2 U2040				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
-      3 U2040				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
-      4 U2040				  -	      ERR
-      5 U2040					      ENDIF
-    362 U2040
-    363 U2040							;------------------------------------------------------------------------------
-    364 U2040							;##############################################################################
-    365 U2040							;------------------------------------------------------------------------------
-    366 U2040
-      0 U2040					      NEWRAMBANK	BANK_SCREEN
-      1 U2400 ????				      SEG.U	BANK_SCREEN
+      0 U2000					      VALIDATE_RAM_SIZE
+      1 U2000				   .RAM_BANK_SIZE SET	* - RAM_3E
+      2 U2000				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
+      3 U2000				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
+      4 U2000				  -	      ERR
+      5 U2000					      ENDIF
+    352 U2000					      REPEND
+      0 U2000					      NEWRAMBANK	.DUMMY
+      1 U2000					      SEG.U	.DUMMY
       2 U2400					      ORG	ORIGIN_RAM
       3 U2400					      RORG	RAM_3E
       4 U2400				   BANK_START SET	*
-      5 U2400				   BANK_SCREEN SET	ORIGIN_RAM / RAM_SIZE
+      5 U2400				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
       6 U2400				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    368 U2400							; VARS DEFINED IN ROM_SHADOW_OF_SCREEN
       0 U2400					      VALIDATE_RAM_SIZE
       1 U2400				   .RAM_BANK_SIZE SET	* - RAM_3E
       2 U2400				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
       3 U2400				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
       4 U2400				  -	      ERR
       5 U2400					      ENDIF
-    370 U2400
-    371 U2400
-      0 U2400					      NEWRAMBANK	BANK_DRAW_BUFFERS
-      1 U2800 ????				      SEG.U	BANK_DRAW_BUFFERS
+    352 U2400					      REPEND
+      0 U2400					      NEWRAMBANK	.DUMMY
+      1 U2400					      SEG.U	.DUMMY
       2 U2800					      ORG	ORIGIN_RAM
       3 U2800					      RORG	RAM_3E
       4 U2800				   BANK_START SET	*
-      5 U2800				   BANK_DRAW_BUFFERS SET	ORIGIN_RAM / RAM_SIZE
+      5 U2800				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
       6 U2800				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    373 U2800							; VARS DEFINED IN ROM_SHADOW_OF_BANK_DRAW_BUFFERS
-    374 U2800							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
       0 U2800					      VALIDATE_RAM_SIZE
       1 U2800				   .RAM_BANK_SIZE SET	* - RAM_3E
       2 U2800				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
       3 U2800				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
       4 U2800				  -	      ERR
       5 U2800					      ENDIF
-    376 U2800
-    377 U2800							;------------------------------------------------------------------------------
-    378 U2800							;##############################################################################
-    379 U2800							;------------------------------------------------------------------------------
-    380 U2800
-      0 U2800					      NEWRAMBANK	BANK_SCORING
-      1 U2c00 ????				      SEG.U	BANK_SCORING
+    352 U2800					      REPEND
+      0 U2800					      NEWRAMBANK	.DUMMY
+      1 U2800					      SEG.U	.DUMMY
       2 U2c00					      ORG	ORIGIN_RAM
       3 U2c00					      RORG	RAM_3E
       4 U2c00				   BANK_START SET	*
-      5 U2c00				   BANK_SCORING SET	ORIGIN_RAM / RAM_SIZE
+      5 U2c00				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
       6 U2c00				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    382 U2c00							; VARS DEFINED IN ROM_SHADOW_OF_BANK_SCORING
-    383 U2c00							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
       0 U2c00					      VALIDATE_RAM_SIZE
       1 U2c00				   .RAM_BANK_SIZE SET	* - RAM_3E
       2 U2c00				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
       3 U2c00				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
       4 U2c00				  -	      ERR
       5 U2c00					      ENDIF
-    385 U2c00
-    386 U2c00							;------------------------------------------------------------------------------
-    387 U2c00							;##############################################################################
-    388 U2c00							;------------------------------------------------------------------------------
-    389 U2c00
-      0 U2c00					      NEWRAMBANK	BANK_DECODE_LEVEL
-      1 U3000 ????				      SEG.U	BANK_DECODE_LEVEL
+    352 U2c00					      REPEND
+      0 U2c00					      NEWRAMBANK	.DUMMY
+      1 U2c00					      SEG.U	.DUMMY
       2 U3000					      ORG	ORIGIN_RAM
       3 U3000					      RORG	RAM_3E
       4 U3000				   BANK_START SET	*
-      5 U3000				   BANK_DECODE_LEVEL SET	ORIGIN_RAM / RAM_SIZE
+      5 U3000				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
       6 U3000				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    391 U3000							; VARS DEFINED IN BANK_DECODE_LEVEL_SHADOW
-    392 U3000							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
       0 U3000					      VALIDATE_RAM_SIZE
       1 U3000				   .RAM_BANK_SIZE SET	* - RAM_3E
       2 U3000				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
       3 U3000				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
       4 U3000				  -	      ERR
       5 U3000					      ENDIF
-    394 U3000
-    395 U3000							;------------------------------------------------------------------------------
-    396 U3000							;##############################################################################
-    397 U3000							;------------------------------------------------------------------------------
-    398 U3000
-    399 U3000
-    400 U3000							;------------------------------------------------------------------------------
-    401 U3000							;##############################################################################
-    402 U3000							;------------------------------------------------------------------------------
-    403 U3000
-      0 U3000					      NEWRAMBANK	BANK_BOARD
-      1 U3400 ????				      SEG.U	BANK_BOARD
+    352 U3000					      REPEND
+      0 U3000					      NEWRAMBANK	.DUMMY
+      1 U3000					      SEG.U	.DUMMY
       2 U3400					      ORG	ORIGIN_RAM
       3 U3400					      RORG	RAM_3E
       4 U3400				   BANK_START SET	*
-      5 U3400				   BANK_BOARD SET	ORIGIN_RAM / RAM_SIZE
+      5 U3400				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
       6 U3400				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    405 U3400
-    406 U3400							; Now the interesting 'BOARD' -- which in reality is a free-form system of M*N
-    407 U3400							; rows and columns.  We need to reserve enough RAM for the board's entirety, but
-    408 U3400							; don't really care much how it overlaps the 1K bank limit.  The code accessing
-    409 U3400							; the board *MUST* calculate and take account of the correct RAM bank to switch
-    410 U3400							; when accessing.
-    411 U3400
-    412 U3400							; The system is fairly free-form, in that it rearranges the memory and tables
-    413 U3400							; automatically based on the sizes set in these constants. The board may overlay
-    414 U3400							; MULTIPLE banks -- just as long as any particular LINE does not cross a bank
-    415 U3400							; we're doing OK.
-    416 U3400
-    417 U3400							; NOTE: Assumption is that board lines CANNOT CROSS page boundaries.
-    418 U3400
-    419 U3400							; now fits into one single bank (if we don't reserve too much space for code)
-    420 U3400
-    421 U3400
-    422 U3400							;------------------------------------------------------------------------------
-    423 U3400							;##############################################################################
-    424 U3400							;------------------------------------------------------------------------------
-    425 U3400
-    426 U3400
-    427 U3400					      MAC	next_random
-    428 U3400					      lda	rnd
-    429 U3400					      lsr
-    430 U3400					      bcc	.skipEOR
-    431 U3400					      eor	#RND_EOR_VAL
-    432 U3400				   .skipEOR   sta	rnd
-    433 U3400					      ENDM
-    434 U3400
-    435 U3400							;--------------------------------------------------------------------------------
-    436 U3400
-    437 U3400							;ORIGIN      SET 0
-    438 U3400
+      0 U3400					      VALIDATE_RAM_SIZE
+      1 U3400				   .RAM_BANK_SIZE SET	* - RAM_3E
+      2 U3400				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
+      3 U3400				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
+      4 U3400				  -	      ERR
+      5 U3400					      ENDIF
+    352 U3400					      REPEND
+      0 U3400					      NEWRAMBANK	.DUMMY
+      1 U3400					      SEG.U	.DUMMY
+      2 U3800					      ORG	ORIGIN_RAM
+      3 U3800					      RORG	RAM_3E
+      4 U3800				   BANK_START SET	*
+      5 U3800				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
+      6 U3800				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+      0 U3800					      VALIDATE_RAM_SIZE
+      1 U3800				   .RAM_BANK_SIZE SET	* - RAM_3E
+      2 U3800				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
+      3 U3800				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
+      4 U3800				  -	      ERR
+      5 U3800					      ENDIF
+    352 U3800					      REPEND
+      0 U3800					      NEWRAMBANK	.DUMMY
+      1 U3800					      SEG.U	.DUMMY
+      2 U3c00					      ORG	ORIGIN_RAM
+      3 U3c00					      RORG	RAM_3E
+      4 U3c00				   BANK_START SET	*
+      5 U3c00				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
+      6 U3c00				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+      0 U3c00					      VALIDATE_RAM_SIZE
+      1 U3c00				   .RAM_BANK_SIZE SET	* - RAM_3E
+      2 U3c00				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
+      3 U3c00				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
+      4 U3c00				  -	      ERR
+      5 U3c00					      ENDIF
+    355 U3c00					      REPEND
+    356 U3c00
+    357 U3c00							;---------------------------------------------------------------------------------------------------
+    358 U3c00
+      0 U3c00					      NEWRAMBANK	BANK_CHESSBOARD
+      1 U4040 ????				      SEG.U	BANK_CHESSBOARD
+      2 U4000					      ORG	ORIGIN_RAM
+      3 U4000					      RORG	RAM_3E
+      4 U4000				   BANK_START SET	*
+      5 U4000				   BANK_CHESSBOARD SET	ORIGIN_RAM / RAM_SIZE
+      6 U4000				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+    360 U4000		       00 00 00 00*Chessboard ds	64
+      0 U4040					      VALIDATE_RAM_SIZE
+      1 U4040				   .RAM_BANK_SIZE SET	* - RAM_3E
+      2 U4040				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
+      3 U4040				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
+      4 U4040				  -	      ERR
+      5 U4040					      ENDIF
+    362 U4040
+    363 U4040							;------------------------------------------------------------------------------
+    364 U4040							;##############################################################################
+    365 U4040							;------------------------------------------------------------------------------
+    366 U4040
+      0 U4040					      NEWRAMBANK	BANK_SCREEN
+      1 U4400 ????				      SEG.U	BANK_SCREEN
+      2 U4400					      ORG	ORIGIN_RAM
+      3 U4400					      RORG	RAM_3E
+      4 U4400				   BANK_START SET	*
+      5 U4400				   BANK_SCREEN SET	ORIGIN_RAM / RAM_SIZE
+      6 U4400				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+    368 U4400							; VARS DEFINED IN ROM_SHADOW_OF_SCREEN
+      0 U4400					      VALIDATE_RAM_SIZE
+      1 U4400				   .RAM_BANK_SIZE SET	* - RAM_3E
+      2 U4400				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
+      3 U4400				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
+      4 U4400				  -	      ERR
+      5 U4400					      ENDIF
+    370 U4400
+    371 U4400
+      0 U4400					      NEWRAMBANK	BANK_DRAW_BUFFERS
+      1 U4800 ????				      SEG.U	BANK_DRAW_BUFFERS
+      2 U4800					      ORG	ORIGIN_RAM
+      3 U4800					      RORG	RAM_3E
+      4 U4800				   BANK_START SET	*
+      5 U4800				   BANK_DRAW_BUFFERS SET	ORIGIN_RAM / RAM_SIZE
+      6 U4800				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+    373 U4800							; VARS DEFINED IN ROM_SHADOW_OF_BANK_DRAW_BUFFERS
+    374 U4800							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
+      0 U4800					      VALIDATE_RAM_SIZE
+      1 U4800				   .RAM_BANK_SIZE SET	* - RAM_3E
+      2 U4800				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
+      3 U4800				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
+      4 U4800				  -	      ERR
+      5 U4800					      ENDIF
+    376 U4800
+    377 U4800							;------------------------------------------------------------------------------
+    378 U4800							;##############################################################################
+    379 U4800							;------------------------------------------------------------------------------
+    380 U4800
+      0 U4800					      NEWRAMBANK	BANK_SCORING
+      1 U4c00 ????				      SEG.U	BANK_SCORING
+      2 U4c00					      ORG	ORIGIN_RAM
+      3 U4c00					      RORG	RAM_3E
+      4 U4c00				   BANK_START SET	*
+      5 U4c00				   BANK_SCORING SET	ORIGIN_RAM / RAM_SIZE
+      6 U4c00				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+    382 U4c00							; VARS DEFINED IN ROM_SHADOW_OF_BANK_SCORING
+    383 U4c00							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
+      0 U4c00					      VALIDATE_RAM_SIZE
+      1 U4c00				   .RAM_BANK_SIZE SET	* - RAM_3E
+      2 U4c00				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
+      3 U4c00				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
+      4 U4c00				  -	      ERR
+      5 U4c00					      ENDIF
+    385 U4c00
+    386 U4c00							;------------------------------------------------------------------------------
+    387 U4c00							;##############################################################################
+    388 U4c00							;------------------------------------------------------------------------------
+    389 U4c00
+      0 U4c00					      NEWRAMBANK	BANK_DECODE_LEVEL
+      1 U5000 ????				      SEG.U	BANK_DECODE_LEVEL
+      2 U5000					      ORG	ORIGIN_RAM
+      3 U5000					      RORG	RAM_3E
+      4 U5000				   BANK_START SET	*
+      5 U5000				   BANK_DECODE_LEVEL SET	ORIGIN_RAM / RAM_SIZE
+      6 U5000				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+    391 U5000							; VARS DEFINED IN BANK_DECODE_LEVEL_SHADOW
+    392 U5000							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
+      0 U5000					      VALIDATE_RAM_SIZE
+      1 U5000				   .RAM_BANK_SIZE SET	* - RAM_3E
+      2 U5000				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
+      3 U5000				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
+      4 U5000				  -	      ERR
+      5 U5000					      ENDIF
+    394 U5000
+    395 U5000							;------------------------------------------------------------------------------
+    396 U5000							;##############################################################################
+    397 U5000							;------------------------------------------------------------------------------
+    398 U5000
+    399 U5000
+    400 U5000							;------------------------------------------------------------------------------
+    401 U5000							;##############################################################################
+    402 U5000							;------------------------------------------------------------------------------
+    403 U5000
+      0 U5000					      NEWRAMBANK	BANK_BOARD
+      1 U5400 ????				      SEG.U	BANK_BOARD
+      2 U5400					      ORG	ORIGIN_RAM
+      3 U5400					      RORG	RAM_3E
+      4 U5400				   BANK_START SET	*
+      5 U5400				   BANK_BOARD SET	ORIGIN_RAM / RAM_SIZE
+      6 U5400				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+    405 U5400
+    406 U5400							; Now the interesting 'BOARD' -- which in reality is a free-form system of M*N
+    407 U5400							; rows and columns.  We need to reserve enough RAM for the board's entirety, but
+    408 U5400							; don't really care much how it overlaps the 1K bank limit.  The code accessing
+    409 U5400							; the board *MUST* calculate and take account of the correct RAM bank to switch
+    410 U5400							; when accessing.
+    411 U5400
+    412 U5400							; The system is fairly free-form, in that it rearranges the memory and tables
+    413 U5400							; automatically based on the sizes set in these constants. The board may overlay
+    414 U5400							; MULTIPLE banks -- just as long as any particular LINE does not cross a bank
+    415 U5400							; we're doing OK.
+    416 U5400
+    417 U5400							; NOTE: Assumption is that board lines CANNOT CROSS page boundaries.
+    418 U5400
+    419 U5400							; now fits into one single bank (if we don't reserve too much space for code)
+    420 U5400
+    421 U5400
+    422 U5400							;------------------------------------------------------------------------------
+    423 U5400							;##############################################################################
+    424 U5400							;------------------------------------------------------------------------------
+    425 U5400
+    426 U5400		       00 b4	   RND_EOR_VAL =	$B4
+    427 U5400
+    428 U5400					      MAC	next_random
+    429 U5400					      lda	rnd
+    430 U5400					      lsr
+    431 U5400					      bcc	.skipEOR
+    432 U5400					      eor	#RND_EOR_VAL
+    433 U5400				   .skipEOR   sta	rnd
+    434 U5400					      ENDM
+    435 U5400
+    436 U5400							;--------------------------------------------------------------------------------
+    437 U5400
+    438 U5400							;ORIGIN      SET 0
+    439 U5400
 ------- FILE BANK_GENERIC.asm LEVEL 2 PASS 2
-      0 U3400					      include	"BANK_GENERIC.asm"
-      1 U3400
-      0 U3400					      NEWBANK	GENERIC_BANK_1
+      0 U5400					      include	"BANK_GENERIC.asm"
+      1 U5400
+      0 U5400					      NEWBANK	GENERIC_BANK_1
       1  006c ????				      SEG	GENERIC_BANK_1
       2  0000					      ORG	ORIGIN
       3  0000					      RORG	$F000
@@ -1329,7 +1467,7 @@
      44  0016		       85 4a		      sta	CTRLPF
      45  0018
      46  0018		       a9 ff		      lda	#$FF
-     47  001a		       85 82		      sta	BufferedJoystick
+     47  001a		       85 85		      sta	BufferedJoystick
      48  001c
      49  001c							;lda #DIRECTION_BITS		  ;???
      50  001c							;sta ManLastDirection
@@ -1367,7 +1505,7 @@
       5  002a		       d0 f9		      bne	.VSLP1
       8  002c
       9  002c		       a0 88		      ldy	#SCANLINES_NTSC/2 - 2
-     10  002e		       a5 81		      lda	Platform
+     10  002e		       a5 84		      lda	Platform
      11  0030		       49 02		      eor	#PAL_50
      12  0032		       d0 02		      bne	.ntsc
      13  0034		       a0 9a		      ldy	#SCANLINES_PAL/2 - 2
@@ -1420,7 +1558,7 @@
     103  005c							;------------------------------------------------------------------------------
     104  005c							; This is where the PAL system has a bit of extra time on a per-frame basis.
     105  005c
-    106  005c		       a6 81		      ldx	Platform
+    106  005c		       a6 84		      ldx	Platform
     107  005e		       bd 41 f0 	      lda	OverscanTime,x
     108  0061		       8d 96 02 	      sta	TIM64T
     109  0064
@@ -1438,8 +1576,8 @@
     121  0064							; Create a 'standardised' joystick with D4-D7 having bits CLEAR if the appropriate direction is chosen.
     122  0064
     123  0064		       ad 80 02 	      lda	SWCHA
-    124  0067		       25 82		      and	BufferedJoystick
-    125  0069		       85 82		      sta	BufferedJoystick
+    124  0067		       25 85		      and	BufferedJoystick
+    125  0069		       85 85		      sta	BufferedJoystick
     126  006b
     127  006b		       60		      rts
     128  006c
@@ -1459,7 +1597,7 @@
       0  006c					      include	"BANK_ROM_SHADOW_SCREEN.asm"
       1  006c
       0  006c					      NEWBANK	BANK_ROM_SHADOW_OF_CHESS_BITMAP
-      1  0974 ????				      SEG	BANK_ROM_SHADOW_OF_CHESS_BITMAP
+      1  0ab4 ????				      SEG	BANK_ROM_SHADOW_OF_CHESS_BITMAP
       2  0800					      ORG	ORIGIN
       3  0800					      RORG	$F000
       4  0800				   BANK_START SET	*
@@ -1495,234 +1633,601 @@
       2  0890					      SUBROUTINE
       3  0890				   ClearRowBitmap
      27  0890
-     28  0890		       a9 ff		      lda	#255
-     29  0892		       a0 8f		      ldy	#ROW_BITMAP_SIZE-1
-     30  0894		       99 00 f4    .clearBoard sta	ChessBitmap+RAM_WRITE,y
-     31  0897		       88		      dey
-     32  0898		       10 fa		      bpl	.clearBoard
-     33  089a		       60		      rts
-     34  089b
-     35  089b							;---------------------------------------------------------------------------------------------------
-     36  089b
-      0  089b					      DEFINE_SUBROUTINE	CopyPieceToRowBitmap
-      1  089b		       00 01	   BANK_CopyPieceToRowBitmap =	_CURRENT_BANK
-      2  089b					      SUBROUTINE
-      3  089b				   CopyPieceToRowBitmap
-     38  089b
-     39  089b		       b0 0f		      bcs	.rightSide
-     40  089d
-     41  089d		       a0 47		      ldy	#71
-     42  089f		       b9 8d 00    .copyPiece lda	__pieceShapeBuffer,y
-     43  08a2		       19 00 f0 	      ora	ChessBitmap,y
-     44  08a5		       99 00 f4 	      sta	ChessBitmap+RAM_WRITE,y
-     45  08a8		       88		      dey
-     46  08a9		       10 f4		      bpl	.copyPiece
-     47  08ab
-     48  08ab		       60		      rts
-     49  08ac
-     50  08ac				   .rightSide
-     51  08ac
-     52  08ac		       a0 47		      ldy	#71
-     53  08ae		       b9 8d 00    .copyPieceR lda	__pieceShapeBuffer,y
-     54  08b1		       19 48 f0 	      ora	ChessBitmap+72,y
-     55  08b4		       99 48 f4 	      sta	ChessBitmap+72+RAM_WRITE,y
-     56  08b7		       88		      dey
-     57  08b8		       10 f4		      bpl	.copyPieceR
-     58  08ba
-     59  08ba		       60		      rts
-     60  08bb
-     61  08bb							;---------------------------------------------------------------------------------------------------
-     62  08bb
-      0  08bb					      DEFINE_SUBROUTINE	DrawTheChessScreen
-      1  08bb		       00 01	   BANK_DrawTheChessScreen =	_CURRENT_BANK
-      2  08bb					      SUBROUTINE
-      3  08bb				   DrawTheChessScreen
-     64  08bb
-     65  08bb		       a9 00		      lda	#%00000000
-     66  08bd		       85 4a		      sta	CTRLPF
-     67  08bf		       85 49		      sta	COLUBK
-     68  08c1
-      0  08c1					      RESYNC
-      1  08c1
-      2  08c1		       a9 02		      lda	#%10
-      3  08c3		       85 41		      sta	VBLANK
-      4  08c5
-      5  08c5		       a2 08		      ldx	#8
-      6  08c7				   .loopResync
-      0  08c7					      VERTICAL_SYNC
-      1  08c7		       a9 0e		      lda	#%1110
-      2  08c9		       85 42	   .VSLP1     sta	WSYNC
-      3  08cb		       85 40		      sta	VSYNC
-      4  08cd		       4a		      lsr
-      5  08ce		       d0 f9		      bne	.VSLP1
-      8  08d0
-      9  08d0		       a0 88		      ldy	#SCANLINES_NTSC/2 - 2
-     10  08d2		       a5 81		      lda	Platform
-     11  08d4		       49 02		      eor	#PAL_50
-     12  08d6		       d0 02		      bne	.ntsc
-     13  08d8		       a0 9a		      ldy	#SCANLINES_PAL/2 - 2
-     14  08da				   .ntsc
-     15  08da				   .loopWait
-     16  08da		       85 42		      sta	WSYNC
-     17  08dc		       85 42		      sta	WSYNC
-     18  08de		       88		      dey
-     19  08df		       d0 f9		      bne	.loopWait
-     20  08e1		       ca		      dex
-     21  08e2		       d0 e3		      bne	.loopResync
-     70  08e4
-     71  08e4				   .RestartChessFrame
-     72  08e4
-     73  08e4		       a9 0e		      lda	#%1110	; VSYNC ON
-     74  08e6		       85 42	   .loopVSync3 sta	WSYNC
-     75  08e8		       85 40		      sta	VSYNC
-     76  08ea		       4a		      lsr
-     77  08eb		       d0 f9		      bne	.loopVSync3	; branch until VYSNC has been reset
-     78  08ed
-     79  08ed		       a0 30		      ldy	#VBLANK_TIM_NTSC
-     80  08ef		       8c 96 02 	      sty	TIM64T
-     81  08f2
-     82  08f2		       85 42	   .VerticalBlank sta	WSYNC
-     83  08f4		       ad 84 02 	      lda	INTIM
-     84  08f7		       d0 f9		      bne	.VerticalBlank
-     85  08f9		       85 41		      sta	VBLANK
-     86  08fb
-     87  08fb		       a2 00		      ldx	#0	; 1st bank already switched in but need this for later banks
-     88  08fd		       86 3e		      stx	SET_BANK_RAM
-     89  08ff		       20 28 f1 	      jsr	DrawRow	; draws all 8 rows with nifty bankswitching
-     90  0902
-     91  0902		       a9 1a		      lda	#26
-     92  0904		       8d 96 02 	      sta	TIM64T
-     93  0907
-     94  0907		       a9 00		      lda	#0
-     95  0909		       85 4d		      sta	PF0
-     96  090b		       85 4e		      sta	PF1
-     97  090d		       85 4f		      sta	PF2
-     98  090f
-     99  090f
-    100  090f							; D1 VBLANK turns off beam
-    101  090f							; It needs to be turned on 37 scanlines later
-    102  090f
-    103  090f		       ad 84 02    .oscan     lda	INTIM
-    104  0912		       d0 fb		      bne	.oscan
-    105  0914		       85 42		      sta	WSYNC
-    106  0916		       85 42		      sta	WSYNC
-    107  0918		       85 42		      sta	WSYNC
-    108  091a		       85 42		      sta	WSYNC
-    109  091c
-    110  091c
-    111  091c		       a9 42		      lda	#%01000010	; bit6 is not required
-    112  091e		       85 41		      sta	VBLANK	; end of screen - enter blanking
-    113  0920
-    114  0920
-    115  0920
-    116  0920		       a5 4c		      lda	INPT4
-    117  0922		       10 03		      bpl	.ret
-    118  0924
-    119  0924		       4c e4 f0 	      jmp	.RestartChessFrame
-    120  0927
-    121  0927				   .ret
-    122  0927		       60		      rts
-    123  0928
-    124  0928							;---------------------------------------------------------------------------------------------------
-    125  0928
-      0  0928					      DEFINE_SUBROUTINE	DrawRow
-      1  0928		       00 01	   BANK_DrawRow =	_CURRENT_BANK
-      2  0928					      SUBROUTINE
-      3  0928				   DrawRow
-    127  0928
-    128  0928							; x = row # (and bank#)
-    129  0928
-    130  0928		       a0 00	   .startLine ldy	#0	; 2
-    131  092a
-    132  092a		       85 42	   .drawLine  sta	WSYNC	; 3 @0
-    133  092c
-    134  092c		       b9 5c f1 	      lda	.LineColour,y	; 5
-    135  092f		       85 48		      sta	COLUPF	; 3 @8
-    136  0931
-    137  0931		       b9 00 f0 	      lda	ChessBitmap0,y	; 5
-    138  0934		       85 4d		      sta	PF0	; 3
-    139  0936		       b9 18 f0 	      lda	ChessBitmap1,y	; 5
-    140  0939		       85 4e		      sta	PF1	; 3
-    141  093b		       b9 30 f0 	      lda	ChessBitmap2,y	; 5
-    142  093e		       85 4f		      sta	PF2	; 3 @32
-    143  0940
-      0  0940					      SLEEP	6	; 6 @30
-      1  0940				   .CYCLES    SET	6
-      2  0940
-      3  0940				  -	      IF	.CYCLES < 2
-      4  0940				  -	      ECHO	"MACRO ERROR: 'SLEEP': Duration must be > 1"
-      5  0940				  -	      ERR
-      6  0940					      ENDIF
-      7  0940
-      8  0940				  -	      IF	.CYCLES & 1
-      9  0940				  -	      IFNCONST	NO_ILLEGAL_OPCODES
-     10  0940				  -	      nop	0
-     11  0940				  -	      ELSE
-     12  0940				  -	      bit	VSYNC
-     13  0940				  -	      ENDIF
-     14  0940				  -.CYCLES    SET	.CYCLES - 3
-     15  0940					      ENDIF
-     16  0940
-     17  0940					      REPEAT	.CYCLES / 2
-     18  0940		       ea		      nop
-     17  0940					      REPEND
-     18  0941		       ea		      nop
-     17  0941					      REPEND
-     18  0942		       ea		      nop
-     19  0943					      REPEND
-    145  0943
-    146  0943		       b9 48 f0 	      lda	ChessBitmap3,y	; 5
-    147  0946		       85 4d		      sta	PF0	; 3 @38
-    148  0948		       b9 60 f0 	      lda	ChessBitmap4,y	; 5
-    149  094b		       85 4e		      sta	PF1	; 3 @46
-    150  094d		       b9 78 f0 	      lda	ChessBitmap5,y	; 5
-    151  0950		       85 4f		      sta	PF2	; 3 @52
-    152  0952
-    153  0952		       c8		      iny		; 2
-    154  0953		       c0 18		      cpy	#24
-    155  0955		       90 d3		      bcc	.drawLine	; 3(2) @57 (taken)
-    156  0957
-    157  0957							; @56
-    158  0957
-    159  0957							; The following 'inx' is replaced in the LAST row bank with a 'RTS', thus ending the draw loop
-    160  0957							; Note that the other 7 row banks are unmodified (keeping the 'inx')
-    161  0957				   SELFMOD_RTS_ON_LAST_ROW
-    162  0957		       e8		      inx		; 2
-    163  0958
-    164  0958		       86 3e		      stx	SET_BANK_RAM	; 3 @61     BANK switch to next row
-    165  095a		       d0 cc		      bne	.startLine	; 3(2) @64 (taken)
-    166  095c
-    167  095c				   .LineColour
-    168  095c							; The ICC triplet colour definitions for a single row of the chessboard
-    169  095c					      REPEAT	8
-    170  095c		       4a 1a 98 	      .byte.b	$4A, $1A, $98
-    169  095c					      REPEND
-    170  095f		       4a 1a 98 	      .byte.b	$4A, $1A, $98
-    169  095f					      REPEND
-    170  0962		       4a 1a 98 	      .byte.b	$4A, $1A, $98
-    169  0962					      REPEND
-    170  0965		       4a 1a 98 	      .byte.b	$4A, $1A, $98
-    169  0965					      REPEND
-    170  0968		       4a 1a 98 	      .byte.b	$4A, $1A, $98
-    169  0968					      REPEND
-    170  096b		       4a 1a 98 	      .byte.b	$4A, $1A, $98
-    169  096b					      REPEND
-    170  096e		       4a 1a 98 	      .byte.b	$4A, $1A, $98
-    169  096e					      REPEND
-    170  0971		       4a 1a 98 	      .byte.b	$4A, $1A, $98
-    171  0974					      REPEND
-    172  0974
-    173  0974
-    174  0974							;VALIDATE_RAM_SIZE
+     28  0890		       a9 00		      lda	#0
+     29  0890				   .OFFSET    SET	0
+     30  0892					      REPEAT	ROW_BITMAP_SIZE
+     31  0892		       8d 00 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0892				   .OFFSET    SET	.OFFSET + 1
+     30  0892					      REPEND
+     31  0895		       8d 01 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0895				   .OFFSET    SET	.OFFSET + 1
+     30  0895					      REPEND
+     31  0898		       8d 02 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0898				   .OFFSET    SET	.OFFSET + 1
+     30  0898					      REPEND
+     31  089b		       8d 03 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  089b				   .OFFSET    SET	.OFFSET + 1
+     30  089b					      REPEND
+     31  089e		       8d 04 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  089e				   .OFFSET    SET	.OFFSET + 1
+     30  089e					      REPEND
+     31  08a1		       8d 05 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08a1				   .OFFSET    SET	.OFFSET + 1
+     30  08a1					      REPEND
+     31  08a4		       8d 06 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08a4				   .OFFSET    SET	.OFFSET + 1
+     30  08a4					      REPEND
+     31  08a7		       8d 07 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08a7				   .OFFSET    SET	.OFFSET + 1
+     30  08a7					      REPEND
+     31  08aa		       8d 08 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08aa				   .OFFSET    SET	.OFFSET + 1
+     30  08aa					      REPEND
+     31  08ad		       8d 09 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08ad				   .OFFSET    SET	.OFFSET + 1
+     30  08ad					      REPEND
+     31  08b0		       8d 0a f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08b0				   .OFFSET    SET	.OFFSET + 1
+     30  08b0					      REPEND
+     31  08b3		       8d 0b f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08b3				   .OFFSET    SET	.OFFSET + 1
+     30  08b3					      REPEND
+     31  08b6		       8d 0c f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08b6				   .OFFSET    SET	.OFFSET + 1
+     30  08b6					      REPEND
+     31  08b9		       8d 0d f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08b9				   .OFFSET    SET	.OFFSET + 1
+     30  08b9					      REPEND
+     31  08bc		       8d 0e f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08bc				   .OFFSET    SET	.OFFSET + 1
+     30  08bc					      REPEND
+     31  08bf		       8d 0f f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08bf				   .OFFSET    SET	.OFFSET + 1
+     30  08bf					      REPEND
+     31  08c2		       8d 10 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08c2				   .OFFSET    SET	.OFFSET + 1
+     30  08c2					      REPEND
+     31  08c5		       8d 11 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08c5				   .OFFSET    SET	.OFFSET + 1
+     30  08c5					      REPEND
+     31  08c8		       8d 12 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08c8				   .OFFSET    SET	.OFFSET + 1
+     30  08c8					      REPEND
+     31  08cb		       8d 13 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08cb				   .OFFSET    SET	.OFFSET + 1
+     30  08cb					      REPEND
+     31  08ce		       8d 14 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08ce				   .OFFSET    SET	.OFFSET + 1
+     30  08ce					      REPEND
+     31  08d1		       8d 15 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08d1				   .OFFSET    SET	.OFFSET + 1
+     30  08d1					      REPEND
+     31  08d4		       8d 16 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08d4				   .OFFSET    SET	.OFFSET + 1
+     30  08d4					      REPEND
+     31  08d7		       8d 17 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08d7				   .OFFSET    SET	.OFFSET + 1
+     30  08d7					      REPEND
+     31  08da		       8d 18 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08da				   .OFFSET    SET	.OFFSET + 1
+     30  08da					      REPEND
+     31  08dd		       8d 19 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08dd				   .OFFSET    SET	.OFFSET + 1
+     30  08dd					      REPEND
+     31  08e0		       8d 1a f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08e0				   .OFFSET    SET	.OFFSET + 1
+     30  08e0					      REPEND
+     31  08e3		       8d 1b f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08e3				   .OFFSET    SET	.OFFSET + 1
+     30  08e3					      REPEND
+     31  08e6		       8d 1c f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08e6				   .OFFSET    SET	.OFFSET + 1
+     30  08e6					      REPEND
+     31  08e9		       8d 1d f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08e9				   .OFFSET    SET	.OFFSET + 1
+     30  08e9					      REPEND
+     31  08ec		       8d 1e f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08ec				   .OFFSET    SET	.OFFSET + 1
+     30  08ec					      REPEND
+     31  08ef		       8d 1f f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08ef				   .OFFSET    SET	.OFFSET + 1
+     30  08ef					      REPEND
+     31  08f2		       8d 20 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08f2				   .OFFSET    SET	.OFFSET + 1
+     30  08f2					      REPEND
+     31  08f5		       8d 21 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08f5				   .OFFSET    SET	.OFFSET + 1
+     30  08f5					      REPEND
+     31  08f8		       8d 22 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08f8				   .OFFSET    SET	.OFFSET + 1
+     30  08f8					      REPEND
+     31  08fb		       8d 23 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08fb				   .OFFSET    SET	.OFFSET + 1
+     30  08fb					      REPEND
+     31  08fe		       8d 24 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  08fe				   .OFFSET    SET	.OFFSET + 1
+     30  08fe					      REPEND
+     31  0901		       8d 25 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0901				   .OFFSET    SET	.OFFSET + 1
+     30  0901					      REPEND
+     31  0904		       8d 26 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0904				   .OFFSET    SET	.OFFSET + 1
+     30  0904					      REPEND
+     31  0907		       8d 27 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0907				   .OFFSET    SET	.OFFSET + 1
+     30  0907					      REPEND
+     31  090a		       8d 28 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  090a				   .OFFSET    SET	.OFFSET + 1
+     30  090a					      REPEND
+     31  090d		       8d 29 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  090d				   .OFFSET    SET	.OFFSET + 1
+     30  090d					      REPEND
+     31  0910		       8d 2a f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0910				   .OFFSET    SET	.OFFSET + 1
+     30  0910					      REPEND
+     31  0913		       8d 2b f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0913				   .OFFSET    SET	.OFFSET + 1
+     30  0913					      REPEND
+     31  0916		       8d 2c f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0916				   .OFFSET    SET	.OFFSET + 1
+     30  0916					      REPEND
+     31  0919		       8d 2d f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0919				   .OFFSET    SET	.OFFSET + 1
+     30  0919					      REPEND
+     31  091c		       8d 2e f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  091c				   .OFFSET    SET	.OFFSET + 1
+     30  091c					      REPEND
+     31  091f		       8d 2f f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  091f				   .OFFSET    SET	.OFFSET + 1
+     30  091f					      REPEND
+     31  0922		       8d 30 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0922				   .OFFSET    SET	.OFFSET + 1
+     30  0922					      REPEND
+     31  0925		       8d 31 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0925				   .OFFSET    SET	.OFFSET + 1
+     30  0925					      REPEND
+     31  0928		       8d 32 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0928				   .OFFSET    SET	.OFFSET + 1
+     30  0928					      REPEND
+     31  092b		       8d 33 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  092b				   .OFFSET    SET	.OFFSET + 1
+     30  092b					      REPEND
+     31  092e		       8d 34 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  092e				   .OFFSET    SET	.OFFSET + 1
+     30  092e					      REPEND
+     31  0931		       8d 35 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0931				   .OFFSET    SET	.OFFSET + 1
+     30  0931					      REPEND
+     31  0934		       8d 36 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0934				   .OFFSET    SET	.OFFSET + 1
+     30  0934					      REPEND
+     31  0937		       8d 37 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0937				   .OFFSET    SET	.OFFSET + 1
+     30  0937					      REPEND
+     31  093a		       8d 38 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  093a				   .OFFSET    SET	.OFFSET + 1
+     30  093a					      REPEND
+     31  093d		       8d 39 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  093d				   .OFFSET    SET	.OFFSET + 1
+     30  093d					      REPEND
+     31  0940		       8d 3a f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0940				   .OFFSET    SET	.OFFSET + 1
+     30  0940					      REPEND
+     31  0943		       8d 3b f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0943				   .OFFSET    SET	.OFFSET + 1
+     30  0943					      REPEND
+     31  0946		       8d 3c f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0946				   .OFFSET    SET	.OFFSET + 1
+     30  0946					      REPEND
+     31  0949		       8d 3d f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0949				   .OFFSET    SET	.OFFSET + 1
+     30  0949					      REPEND
+     31  094c		       8d 3e f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  094c				   .OFFSET    SET	.OFFSET + 1
+     30  094c					      REPEND
+     31  094f		       8d 3f f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  094f				   .OFFSET    SET	.OFFSET + 1
+     30  094f					      REPEND
+     31  0952		       8d 40 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0952				   .OFFSET    SET	.OFFSET + 1
+     30  0952					      REPEND
+     31  0955		       8d 41 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0955				   .OFFSET    SET	.OFFSET + 1
+     30  0955					      REPEND
+     31  0958		       8d 42 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0958				   .OFFSET    SET	.OFFSET + 1
+     30  0958					      REPEND
+     31  095b		       8d 43 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  095b				   .OFFSET    SET	.OFFSET + 1
+     30  095b					      REPEND
+     31  095e		       8d 44 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  095e				   .OFFSET    SET	.OFFSET + 1
+     30  095e					      REPEND
+     31  0961		       8d 45 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0961				   .OFFSET    SET	.OFFSET + 1
+     30  0961					      REPEND
+     31  0964		       8d 46 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0964				   .OFFSET    SET	.OFFSET + 1
+     30  0964					      REPEND
+     31  0967		       8d 47 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0967				   .OFFSET    SET	.OFFSET + 1
+     30  0967					      REPEND
+     31  096a		       8d 48 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  096a				   .OFFSET    SET	.OFFSET + 1
+     30  096a					      REPEND
+     31  096d		       8d 49 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  096d				   .OFFSET    SET	.OFFSET + 1
+     30  096d					      REPEND
+     31  0970		       8d 4a f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0970				   .OFFSET    SET	.OFFSET + 1
+     30  0970					      REPEND
+     31  0973		       8d 4b f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0973				   .OFFSET    SET	.OFFSET + 1
+     30  0973					      REPEND
+     31  0976		       8d 4c f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0976				   .OFFSET    SET	.OFFSET + 1
+     30  0976					      REPEND
+     31  0979		       8d 4d f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0979				   .OFFSET    SET	.OFFSET + 1
+     30  0979					      REPEND
+     31  097c		       8d 4e f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  097c				   .OFFSET    SET	.OFFSET + 1
+     30  097c					      REPEND
+     31  097f		       8d 4f f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  097f				   .OFFSET    SET	.OFFSET + 1
+     30  097f					      REPEND
+     31  0982		       8d 50 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0982				   .OFFSET    SET	.OFFSET + 1
+     30  0982					      REPEND
+     31  0985		       8d 51 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0985				   .OFFSET    SET	.OFFSET + 1
+     30  0985					      REPEND
+     31  0988		       8d 52 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0988				   .OFFSET    SET	.OFFSET + 1
+     30  0988					      REPEND
+     31  098b		       8d 53 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  098b				   .OFFSET    SET	.OFFSET + 1
+     30  098b					      REPEND
+     31  098e		       8d 54 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  098e				   .OFFSET    SET	.OFFSET + 1
+     30  098e					      REPEND
+     31  0991		       8d 55 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0991				   .OFFSET    SET	.OFFSET + 1
+     30  0991					      REPEND
+     31  0994		       8d 56 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0994				   .OFFSET    SET	.OFFSET + 1
+     30  0994					      REPEND
+     31  0997		       8d 57 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0997				   .OFFSET    SET	.OFFSET + 1
+     30  0997					      REPEND
+     31  099a		       8d 58 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  099a				   .OFFSET    SET	.OFFSET + 1
+     30  099a					      REPEND
+     31  099d		       8d 59 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  099d				   .OFFSET    SET	.OFFSET + 1
+     30  099d					      REPEND
+     31  09a0		       8d 5a f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09a0				   .OFFSET    SET	.OFFSET + 1
+     30  09a0					      REPEND
+     31  09a3		       8d 5b f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09a3				   .OFFSET    SET	.OFFSET + 1
+     30  09a3					      REPEND
+     31  09a6		       8d 5c f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09a6				   .OFFSET    SET	.OFFSET + 1
+     30  09a6					      REPEND
+     31  09a9		       8d 5d f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09a9				   .OFFSET    SET	.OFFSET + 1
+     30  09a9					      REPEND
+     31  09ac		       8d 5e f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09ac				   .OFFSET    SET	.OFFSET + 1
+     30  09ac					      REPEND
+     31  09af		       8d 5f f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09af				   .OFFSET    SET	.OFFSET + 1
+     30  09af					      REPEND
+     31  09b2		       8d 60 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09b2				   .OFFSET    SET	.OFFSET + 1
+     30  09b2					      REPEND
+     31  09b5		       8d 61 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09b5				   .OFFSET    SET	.OFFSET + 1
+     30  09b5					      REPEND
+     31  09b8		       8d 62 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09b8				   .OFFSET    SET	.OFFSET + 1
+     30  09b8					      REPEND
+     31  09bb		       8d 63 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09bb				   .OFFSET    SET	.OFFSET + 1
+     30  09bb					      REPEND
+     31  09be		       8d 64 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09be				   .OFFSET    SET	.OFFSET + 1
+     30  09be					      REPEND
+     31  09c1		       8d 65 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09c1				   .OFFSET    SET	.OFFSET + 1
+     30  09c1					      REPEND
+     31  09c4		       8d 66 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09c4				   .OFFSET    SET	.OFFSET + 1
+     30  09c4					      REPEND
+     31  09c7		       8d 67 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09c7				   .OFFSET    SET	.OFFSET + 1
+     30  09c7					      REPEND
+     31  09ca		       8d 68 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09ca				   .OFFSET    SET	.OFFSET + 1
+     30  09ca					      REPEND
+     31  09cd		       8d 69 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09cd				   .OFFSET    SET	.OFFSET + 1
+     30  09cd					      REPEND
+     31  09d0		       8d 6a f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09d0				   .OFFSET    SET	.OFFSET + 1
+     30  09d0					      REPEND
+     31  09d3		       8d 6b f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09d3				   .OFFSET    SET	.OFFSET + 1
+     30  09d3					      REPEND
+     31  09d6		       8d 6c f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09d6				   .OFFSET    SET	.OFFSET + 1
+     30  09d6					      REPEND
+     31  09d9		       8d 6d f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09d9				   .OFFSET    SET	.OFFSET + 1
+     30  09d9					      REPEND
+     31  09dc		       8d 6e f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09dc				   .OFFSET    SET	.OFFSET + 1
+     30  09dc					      REPEND
+     31  09df		       8d 6f f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09df				   .OFFSET    SET	.OFFSET + 1
+     30  09df					      REPEND
+     31  09e2		       8d 70 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09e2				   .OFFSET    SET	.OFFSET + 1
+     30  09e2					      REPEND
+     31  09e5		       8d 71 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09e5				   .OFFSET    SET	.OFFSET + 1
+     30  09e5					      REPEND
+     31  09e8		       8d 72 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09e8				   .OFFSET    SET	.OFFSET + 1
+     30  09e8					      REPEND
+     31  09eb		       8d 73 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09eb				   .OFFSET    SET	.OFFSET + 1
+     30  09eb					      REPEND
+     31  09ee		       8d 74 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09ee				   .OFFSET    SET	.OFFSET + 1
+     30  09ee					      REPEND
+     31  09f1		       8d 75 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09f1				   .OFFSET    SET	.OFFSET + 1
+     30  09f1					      REPEND
+     31  09f4		       8d 76 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09f4				   .OFFSET    SET	.OFFSET + 1
+     30  09f4					      REPEND
+     31  09f7		       8d 77 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09f7				   .OFFSET    SET	.OFFSET + 1
+     30  09f7					      REPEND
+     31  09fa		       8d 78 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09fa				   .OFFSET    SET	.OFFSET + 1
+     30  09fa					      REPEND
+     31  09fd		       8d 79 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  09fd				   .OFFSET    SET	.OFFSET + 1
+     30  09fd					      REPEND
+     31  0a00		       8d 7a f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a00				   .OFFSET    SET	.OFFSET + 1
+     30  0a00					      REPEND
+     31  0a03		       8d 7b f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a03				   .OFFSET    SET	.OFFSET + 1
+     30  0a03					      REPEND
+     31  0a06		       8d 7c f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a06				   .OFFSET    SET	.OFFSET + 1
+     30  0a06					      REPEND
+     31  0a09		       8d 7d f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a09				   .OFFSET    SET	.OFFSET + 1
+     30  0a09					      REPEND
+     31  0a0c		       8d 7e f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a0c				   .OFFSET    SET	.OFFSET + 1
+     30  0a0c					      REPEND
+     31  0a0f		       8d 7f f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a0f				   .OFFSET    SET	.OFFSET + 1
+     30  0a0f					      REPEND
+     31  0a12		       8d 80 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a12				   .OFFSET    SET	.OFFSET + 1
+     30  0a12					      REPEND
+     31  0a15		       8d 81 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a15				   .OFFSET    SET	.OFFSET + 1
+     30  0a15					      REPEND
+     31  0a18		       8d 82 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a18				   .OFFSET    SET	.OFFSET + 1
+     30  0a18					      REPEND
+     31  0a1b		       8d 83 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a1b				   .OFFSET    SET	.OFFSET + 1
+     30  0a1b					      REPEND
+     31  0a1e		       8d 84 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a1e				   .OFFSET    SET	.OFFSET + 1
+     30  0a1e					      REPEND
+     31  0a21		       8d 85 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a21				   .OFFSET    SET	.OFFSET + 1
+     30  0a21					      REPEND
+     31  0a24		       8d 86 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a24				   .OFFSET    SET	.OFFSET + 1
+     30  0a24					      REPEND
+     31  0a27		       8d 87 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a27				   .OFFSET    SET	.OFFSET + 1
+     30  0a27					      REPEND
+     31  0a2a		       8d 88 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a2a				   .OFFSET    SET	.OFFSET + 1
+     30  0a2a					      REPEND
+     31  0a2d		       8d 89 f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a2d				   .OFFSET    SET	.OFFSET + 1
+     30  0a2d					      REPEND
+     31  0a30		       8d 8a f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a30				   .OFFSET    SET	.OFFSET + 1
+     30  0a30					      REPEND
+     31  0a33		       8d 8b f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a33				   .OFFSET    SET	.OFFSET + 1
+     30  0a33					      REPEND
+     31  0a36		       8d 8c f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a36				   .OFFSET    SET	.OFFSET + 1
+     30  0a36					      REPEND
+     31  0a39		       8d 8d f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a39				   .OFFSET    SET	.OFFSET + 1
+     30  0a39					      REPEND
+     31  0a3c		       8d 8e f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a3c				   .OFFSET    SET	.OFFSET + 1
+     30  0a3c					      REPEND
+     31  0a3f		       8d 8f f4 	      sta	ChessBitmap+RAM_WRITE+.OFFSET
+     32  0a3f				   .OFFSET    SET	.OFFSET + 1
+     33  0a42					      REPEND
+     34  0a42
+     35  0a42		       60		      rts
+     36  0a43
+     37  0a43							;---------------------------------------------------------------------------------------------------
+     38  0a43
+      0  0a43					      DEFINE_SUBROUTINE	CopyPieceToRowBitmap
+      1  0a43		       00 01	   BANK_CopyPieceToRowBitmap =	_CURRENT_BANK
+      2  0a43					      SUBROUTINE
+      3  0a43				   CopyPieceToRowBitmap
+     40  0a43
+     41  0a43		       b0 0f		      bcs	.rightSide
+     42  0a45
+     43  0a45		       a0 47		      ldy	#71
+     44  0a47		       b9 90 00    .copyPiece lda	__pieceShapeBuffer,y
+     45  0a4a		       19 00 f0 	      ora	ChessBitmap,y
+     46  0a4d		       99 00 f4 	      sta	ChessBitmap+RAM_WRITE,y
+     47  0a50		       88		      dey
+     48  0a51		       10 f4		      bpl	.copyPiece
+     49  0a53
+     50  0a53		       60		      rts
+     51  0a54
+     52  0a54				   .rightSide
+     53  0a54
+     54  0a54		       a0 47		      ldy	#71
+     55  0a56		       b9 90 00    .copyPieceR lda	__pieceShapeBuffer,y
+     56  0a59		       59 48 f0 	      eor	ChessBitmap+72,y
+     57  0a5c		       99 48 f4 	      sta	ChessBitmap+72+RAM_WRITE,y
+     58  0a5f		       88		      dey
+     59  0a60		       10 f4		      bpl	.copyPieceR
+     60  0a62
+     61  0a62		       60		      rts
+     62  0a63
+     63  0a63							;---------------------------------------------------------------------------------------------------
+     64  0a63
+      0  0a63					      DEFINE_SUBROUTINE	DrawTheChessScreen
+      1  0a63		       00 01	   BANK_DrawTheChessScreen =	_CURRENT_BANK
+      2  0a63					      SUBROUTINE
+      3  0a63				   DrawTheChessScreen
+     66  0a63
+     67  0a63		       20 67 f2 	      jsr	DrawRow	; draws all 8 rows with nifty bankswitching
+     68  0a66		       60		      rts
+     69  0a67
+     70  0a67							;---------------------------------------------------------------------------------------------------
+     71  0a67
+      0  0a67					      DEFINE_SUBROUTINE	DrawRow
+      1  0a67		       00 01	   BANK_DrawRow =	_CURRENT_BANK
+      2  0a67					      SUBROUTINE
+      3  0a67				   DrawRow
+     73  0a67
+     74  0a67							; x = row # (and bank#)
+     75  0a67
+     76  0a67		       a0 00	   .startLine ldy	#0	; 2
+     77  0a69
+     78  0a69		       85 42	   .drawLine  sta	WSYNC	; 3 @0
+     79  0a6b
+     80  0a6b		       b9 9b f2 	      lda	.LineColour,y	; 5
+     81  0a6e		       85 48		      sta	COLUPF	; 3 @8
+     82  0a70
+     83  0a70		       b9 00 f0 	      lda	ChessBitmap0,y	; 5
+     84  0a73		       85 4d		      sta	PF0	; 3
+     85  0a75		       b9 18 f0 	      lda	ChessBitmap1,y	; 5
+     86  0a78		       85 4e		      sta	PF1	; 3
+     87  0a7a		       b9 30 f0 	      lda	ChessBitmap2,y	; 5
+     88  0a7d		       85 4f		      sta	PF2	; 3 @32
+     89  0a7f
+      0  0a7f					      SLEEP	6	; 6 @30
+      1  0a7f				   .CYCLES    SET	6
+      2  0a7f
+      3  0a7f				  -	      IF	.CYCLES < 2
+      4  0a7f				  -	      ECHO	"MACRO ERROR: 'SLEEP': Duration must be > 1"
+      5  0a7f				  -	      ERR
+      6  0a7f					      ENDIF
+      7  0a7f
+      8  0a7f				  -	      IF	.CYCLES & 1
+      9  0a7f				  -	      IFNCONST	NO_ILLEGAL_OPCODES
+     10  0a7f				  -	      nop	0
+     11  0a7f				  -	      ELSE
+     12  0a7f				  -	      bit	VSYNC
+     13  0a7f				  -	      ENDIF
+     14  0a7f				  -.CYCLES    SET	.CYCLES - 3
+     15  0a7f					      ENDIF
+     16  0a7f
+     17  0a7f					      REPEAT	.CYCLES / 2
+     18  0a7f		       ea		      nop
+     17  0a7f					      REPEND
+     18  0a80		       ea		      nop
+     17  0a80					      REPEND
+     18  0a81		       ea		      nop
+     19  0a82					      REPEND
+     91  0a82
+     92  0a82		       b9 48 f0 	      lda	ChessBitmap3,y	; 5
+     93  0a85		       85 4d		      sta	PF0	; 3 @38
+     94  0a87		       b9 60 f0 	      lda	ChessBitmap4,y	; 5
+     95  0a8a		       85 4e		      sta	PF1	; 3 @46
+     96  0a8c		       b9 78 f0 	      lda	ChessBitmap5,y	; 5
+     97  0a8f		       85 4f		      sta	PF2	; 3 @52
+     98  0a91
+     99  0a91		       c8		      iny		; 2
+    100  0a92		       c0 18		      cpy	#24
+    101  0a94		       90 d3		      bcc	.drawLine	; 3(2) @57 (taken)
+    102  0a96
+    103  0a96							; @56
+    104  0a96
+    105  0a96							; The following 'inx' is replaced in the LAST row bank with a 'RTS', thus ending the draw loop
+    106  0a96							; Note that the other 7 row banks are unmodified (keeping the 'inx')
+    107  0a96				   SELFMOD_RTS_ON_LAST_ROW
+    108  0a96		       e8		      inx		; 2
+    109  0a97
+    110  0a97		       86 3e		      stx	SET_BANK_RAM	; 3 @61     BANK switch to next row
+    111  0a99		       d0 cc		      bne	.startLine	; 3(2) @64 (taken)
+    112  0a9b
+    113  0a9b				   .LineColour
+    114  0a9b							; The ICC triplet colour definitions for a single row of the chessboard
+    115  0a9b					      REPEAT	8
+    116  0a9b		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    115  0a9b					      REPEND
+    116  0a9e		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    115  0a9e					      REPEND
+    116  0aa1		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    115  0aa1					      REPEND
+    116  0aa4		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    115  0aa4					      REPEND
+    116  0aa7		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    115  0aa7					      REPEND
+    116  0aaa		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    115  0aaa					      REPEND
+    116  0aad		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    115  0aad					      REPEND
+    116  0ab0		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    117  0ab3					      REPEND
+    118  0ab3
+    119  0ab3					      MAC	test
+    120  0ab3				   V	      SET	"L"+{1}
+    121  0ab3				   V2	      SET	"LAB" + V
+    122  0ab3				   V2$
+    123  0ab3					      ENDM
+    124  0ab3
+    125  0ab3				   UNQ	      SET	0
+      0  0ab3					      TEST	UNQ
+      1  0ab3				   V	      SET	"L"+UNQ
+      2  0ab3				   V2	      SET	"LAB" + V
+      3  0ab3				   V2$
+    127  0ab3		       01		      .byte.b	1
+    128  0ab3				   UNQ	      SET	UNQ + 1
+      0  0ab4					      TEST	UNQ
+      1  0ab4				   V	      SET	"L"+UNQ
+      2  0ab4				   V2	      SET	"LAB" + V
+      3  0ab4				   V2$
+    130  0ab4
+    131  0ab4
+    132  0ab4							;VALIDATE_RAM_SIZE
 ------- FILE ./chess.asm
 ------- FILE BANK_INITBANK.asm LEVEL 2 PASS 2
-      0  0974					      include	"BANK_INITBANK.asm"	; MUST be after banks that include levels -- otherwise MAX_LEVELBANK is not calculated properly
-      1  0974							; Chess
-      2  0974							; Atari 2600 Chess display system
-      3  0974							; Copyright (c) 2019-2020 Andrew Davie
-      4  0974							; andrew@taswegian.com
-      5  0974
-      0  0974					      NEWBANK	INITBANK
+      0  0ab4					      include	"BANK_INITBANK.asm"	; MUST be after banks that include levels -- otherwise MAX_LEVELBANK is not calculated properly
+      1  0ab4							; Chess
+      2  0ab4							; Atari 2600 Chess display system
+      3  0ab4							; Copyright (c) 2019-2020 Andrew Davie
+      4  0ab4							; andrew@taswegian.com
+      5  0ab4
+      0  0ab4					      NEWBANK	INITBANK
       1  1027 ????				      SEG	INITBANK
       2  1000					      ORG	ORIGIN
       3  1000					      RORG	$F000
@@ -2389,7 +2894,7 @@
       2  2548					      SUBROUTINE
       3  2548				   WHITE_BISHOP_on_BLACK_SQUARE_0
       3  2548		       00 40 40 40*	      .byte.b	$00,$40,$40,$40,$00,$00,$e0,$e0,$e0,$d0,$d0,$d0,$b0,$b0,$b0,$f0,$f0,$f0,$e0,$60,$e0,$f0,$f0,$f0	;PF0
-      4  2560		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$80,$00,$80,$80,$00,$80,$80,$00,$80,$00,$00,$00,$00,$80,$00	;PF1
+      4  2560		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$80,$00,$80,$80,$00,$80,$80,$00,$00,$00,$00,$00,$00,$80,$00	;PF1
       5  2578		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_BISHOP_on_BLACK_SQUARE_1.asm LEVEL 4 PASS 2
@@ -2401,7 +2906,7 @@
       2  2590					      SUBROUTINE
       3  2590				   WHITE_BISHOP_on_BLACK_SQUARE_1
       3  2590		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  25a8		       00 10 10 10*	      .byte.b	$00,$10,$10,$10,$00,$00,$38,$38,$38,$5c,$58,$5c,$6c,$68,$6c,$7c,$78,$7c,$38,$30,$38,$78,$7c,$78	;PF1
+      4  25a8		       00 10 10 10*	      .byte.b	$00,$10,$10,$10,$00,$00,$38,$38,$38,$5c,$58,$5c,$6c,$68,$6c,$7c,$78,$78,$38,$30,$38,$78,$7c,$78	;PF1
       5  25c0		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_BISHOP_on_BLACK_SQUARE_2.asm LEVEL 4 PASS 2
@@ -2418,7 +2923,7 @@
       3  2600				   WHITE_BISHOP_on_BLACK_SQUARE_2
       3  2600		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
       4  2618		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$01,$01,$01,$02,$02,$02,$03,$03,$03,$03,$03,$03,$01,$01,$01,$03,$03,$03	;PF1
-      5  2630		       00 01 01 01*	      .byte.b	$00,$01,$01,$01,$00,$00,$03,$03,$03,$07,$03,$07,$06,$02,$06,$07,$03,$07,$03,$01,$03,$03,$07,$03	;PF2
+      5  2630		       00 01 01 01*	      .byte.b	$00,$01,$01,$01,$00,$00,$03,$03,$03,$07,$03,$07,$06,$02,$06,$07,$03,$03,$03,$01,$03,$03,$07,$03	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_BISHOP_on_BLACK_SQUARE_3.asm LEVEL 4 PASS 2
       0  2648					      include	"gfx/WHITE_BISHOP_on_BLACK_SQUARE_3.asm"
@@ -2430,7 +2935,7 @@
       3  2648				   WHITE_BISHOP_on_BLACK_SQUARE_3
       3  2648		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
       4  2660		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF1
-      5  2678		       00 20 20 20*	      .byte.b	$00,$20,$20,$20,$00,$00,$70,$70,$70,$e8,$68,$e8,$d8,$58,$d8,$f8,$78,$f8,$70,$30,$70,$78,$f8,$78	;PF2
+      5  2678		       00 20 20 20*	      .byte.b	$00,$20,$20,$20,$00,$00,$70,$70,$70,$e8,$68,$e8,$d8,$58,$d8,$f8,$78,$78,$70,$30,$70,$78,$f8,$78	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_ROOK_on_BLACK_SQUARE_0.asm LEVEL 4 PASS 2
       0  2690					      include	"gfx/WHITE_ROOK_on_BLACK_SQUARE_0.asm"
@@ -2772,8 +3277,8 @@
       1  2e90		       00 05	   BANK_BLACK_BISHOP_on_WHITE_SQUARE_0 =	_CURRENT_BANK
       2  2e90					      SUBROUTINE
       3  2e90				   BLACK_BISHOP_on_WHITE_SQUARE_0
-      3  2e90		       00 40 f0 40*	      .byte.b	$00,$40,$f0,$40,$00,$f0,$e0,$e0,$10,$d0,$d0,$00,$b0,$b0,$00,$f0,$f0,$00,$e0,$60,$10,$f0,$f0,$00	;PF0
-      4  2ea8		       00 00 80 00*	      .byte.b	$00,$00,$80,$00,$00,$80,$00,$00,$80,$80,$00,$00,$80,$00,$00,$80,$00,$00,$00,$00,$80,$00,$80,$00	;PF1
+      3  2e90		       00 40 f0 40*	      .byte.b	$00,$40,$f0,$40,$00,$f0,$e0,$e0,$10,$d0,$d0,$00,$b0,$b0,$00,$f0,$f0,$10,$e0,$60,$10,$f0,$f0,$00	;PF0
+      4  2ea8		       00 00 80 00*	      .byte.b	$00,$00,$80,$00,$00,$80,$00,$00,$80,$80,$00,$00,$80,$00,$00,$80,$00,$80,$00,$00,$80,$00,$80,$00	;PF1
       5  2ec0		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/BLACK_BISHOP_on_WHITE_SQUARE_1.asm LEVEL 4 PASS 2
@@ -2789,7 +3294,7 @@
       2  2f00					      SUBROUTINE
       3  2f00				   BLACK_BISHOP_on_WHITE_SQUARE_1
       3  2f00		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  2f18		       00 10 7c 10*	      .byte.b	$00,$10,$7c,$10,$00,$7c,$38,$38,$44,$5c,$58,$00,$6c,$68,$00,$7c,$78,$00,$38,$30,$44,$78,$7c,$00	;PF1
+      4  2f18		       00 10 7c 10*	      .byte.b	$00,$10,$7c,$10,$00,$7c,$38,$38,$44,$5c,$58,$00,$6c,$68,$00,$7c,$78,$44,$38,$30,$44,$78,$7c,$00	;PF1
       5  2f30		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/BLACK_BISHOP_on_WHITE_SQUARE_2.asm LEVEL 4 PASS 2
@@ -2801,8 +3306,8 @@
       2  2f48					      SUBROUTINE
       3  2f48				   BLACK_BISHOP_on_WHITE_SQUARE_2
       3  2f48		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  2f60		       00 00 03 00*	      .byte.b	$00,$00,$03,$00,$00,$03,$01,$01,$02,$02,$02,$00,$03,$03,$00,$03,$03,$00,$01,$01,$02,$03,$03,$00	;PF1
-      5  2f78		       00 01 07 01*	      .byte.b	$00,$01,$07,$01,$00,$07,$03,$03,$04,$07,$03,$00,$06,$02,$00,$07,$03,$00,$03,$01,$04,$03,$07,$00	;PF2
+      4  2f60		       00 00 03 00*	      .byte.b	$00,$00,$03,$00,$00,$03,$01,$01,$02,$02,$02,$00,$03,$03,$00,$03,$03,$02,$01,$01,$02,$03,$03,$00	;PF1
+      5  2f78		       00 01 07 01*	      .byte.b	$00,$01,$07,$01,$00,$07,$03,$03,$04,$07,$03,$00,$06,$02,$00,$07,$03,$04,$03,$01,$04,$03,$07,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/BLACK_BISHOP_on_WHITE_SQUARE_3.asm LEVEL 4 PASS 2
       0  2f90					      include	"gfx/BLACK_BISHOP_on_WHITE_SQUARE_3.asm"
@@ -2814,7 +3319,7 @@
       3  2f90				   BLACK_BISHOP_on_WHITE_SQUARE_3
       3  2f90		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
       4  2fa8		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF1
-      5  2fc0		       00 20 f8 20*	      .byte.b	$00,$20,$f8,$20,$00,$f8,$70,$70,$88,$e8,$68,$00,$d8,$58,$00,$f8,$78,$00,$70,$30,$88,$78,$f8,$00	;PF2
+      5  2fc0		       00 20 f8 20*	      .byte.b	$00,$20,$f8,$20,$00,$f8,$70,$70,$88,$e8,$68,$00,$d8,$58,$00,$f8,$78,$88,$70,$30,$88,$78,$f8,$00	;PF2
 ------- FILE piece_graphics.asm
       0  2fd8					      CHECK_BANK_SIZE	"PIECE_2 (2K)"
       1  2fd8		       07 d8	   .TEMP      =	* - BANK_START
@@ -3869,8 +4374,8 @@
       5  4150				  -	      ERR
       6  4150					      endif
 ------- FILE ./chess.asm
-    443  4150
-    444  4150							; MUST BE LAST...
+    444  4150
+    445  4150							; MUST BE LAST...
 ------- FILE BANK_FIXED.asm LEVEL 2 PASS 2
       0  4150					      include	"BANK_FIXED.asm"
       1  4150							; Chess
@@ -3885,7 +4390,7 @@
      10  4150				   ORIGIN     SET	FIXED_BANK
      11  4150
       0  4150					      NEWBANK	THE_FIXED_BANK
-      1  7918 ????				      SEG	THE_FIXED_BANK
+      1  7a42 ????				      SEG	THE_FIXED_BANK
       2  7800					      ORG	ORIGIN
       3  7800					      RORG	$F000
       4  7800				   BANK_START SET	*
@@ -3898,351 +4403,627 @@
      16  7804
      17  7804							;---------------------------------------------------------------------------------------------------
      18  7804
-      0  7804					      DEFINE_SUBROUTINE	ClearChessBitmap
-      1  7804		       00 0f	   BANK_ClearChessBitmap =	_CURRENT_BANK
+      0  7804					      DEFINE_SUBROUTINE	ClearChessBitmap_PART0
+      1  7804		       00 0f	   BANK_ClearChessBitmap_PART0 =	_CURRENT_BANK
       2  7804					      SUBROUTINE
-      3  7804				   ClearChessBitmap
+      3  7804				   ClearChessBitmap_PART0
      20  7804
-     21  7804		       a2 07		      ldx	#7	; row #
-     22  7806		       86 3e	   .clearRow  stx	SET_BANK_RAM
-     23  7808		       20 90 f0 	      jsr	ClearRowBitmap
-     24  780b		       ca		      dex
-     25  780c		       10 f8		      bpl	.clearRow
-     26  780e		       60		      rts
-     27  780f
-     28  780f							;---------------------------------------------------------------------------------------------------
-     29  780f
-      0  780f					      DEFINE_SUBROUTINE	CopyChessboardPiecesToBoard
-      1  780f		       00 0f	   BANK_CopyChessboardPiecesToBoard =	_CURRENT_BANK
-      2  780f					      SUBROUTINE
-      3  780f				   CopyChessboardPiecesToBoard
-     31  780f
-     32  780f
-     33  780f
-     34  780f		       a9 08		      lda	#BANK_CHESSBOARD
-     35  7811		       85 3e		      sta	SET_BANK_RAM
-     36  7813
-     37  7813		       a0 3f		      ldy	#63
-     38  7815				   .drawPieces
-     39  7815		       98		      tya
-     40  7816		       48		      pha
-     41  7817
-     42  7817		       b9 43 f8 	      lda	BoardPiece,y
-     43  781a		       a8		      tay
-     44  781b		       20 88 f8 	      jsr	CopyPieceToRAMBuffer
-     45  781e
-     46  781e		       68		      pla
-     47  781f		       48		      pha
-     48  7820
-     49  7820		       4a		      lsr
-     50  7821		       4a		      lsr
-     51  7822		       4a		      lsr
-     52  7823		       aa		      tax		; row
-     53  7824
-     54  7824		       68		      pla
-     55  7825		       48		      pha
-     56  7826		       29 04		      and	#4
-     57  7828		       c9 04		      cmp	#4	; cc = left side, cs = right side
-     58  782a		       20 83 f8 	      jsr	CopyPieceFromRAMBufferToScreen
-     59  782d
-     60  782d		       68		      pla
-     61  782e		       a8		      tay
-     62  782f		       88		      dey
-     63  7830		       10 e3		      bpl	.drawPieces
-     64  7832
-     65  7832		       60		      rts
-     66  7833
-     67  7833							;---------------------------------------------------------------------------------------------------
-     68  7833
-      0  7833					      DEFINE_SUBROUTINE	InitialiseChessboard
-      1  7833		       00 0f	   BANK_InitialiseChessboard =	_CURRENT_BANK
-      2  7833					      SUBROUTINE
-      3  7833				   InitialiseChessboard
-     70  7833
-     71  7833		       a9 08		      lda	#BANK_CHESSBOARD
-     72  7835		       85 3e		      sta	SET_BANK_RAM
-     73  7837
-     74  7837		       a2 3f		      ldx	#63
-     75  7839		       bd 43 f8    .setupBoard lda	BoardPiece,x
-     76  783c		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
-     77  783f		       ca		      dex
-     78  7840		       10 f7		      bpl	.setupBoard
-     79  7842
-     80  7842		       60		      rts
-     81  7843
-     82  7843				   BoardPiece
-     83  7843
-     84  7843		       48		      .byte.b	INDEX_BLACK_ROOK_on_WHITE_SQUARE_0	;0
-     85  7844		       5d		      .byte.b	INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_1	;1
-     86  7845		       46		      .byte.b	INDEX_BLACK_BISHOP_on_WHITE_SQUARE_2	;2
-     87  7846		       6b		      .byte.b	INDEX_BLACK_QUEEN_on_BLACK_SQUARE_3	;3
-     88  7847		       50		      .byte.b	INDEX_BLACK_KING_on_WHITE_SQUARE_0	;4
-     89  7848		       61		      .byte.b	INDEX_BLACK_BISHOP_on_BLACK_SQUARE_1	;5
-     90  7849		       42		      .byte.b	INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_2	;6
-     91  784a		       67		      .byte.b	INDEX_BLACK_ROOK_on_BLACK_SQUARE_3	;7
-     92  784b
-     93  784b		       58		      .byte.b	INDEX_BLACK_PAWN_on_BLACK_SQUARE_0
-     94  784c		       3d		      .byte.b	INDEX_BLACK_PAWN_on_WHITE_SQUARE_1
-     95  784d		       5a		      .byte.b	INDEX_BLACK_PAWN_on_BLACK_SQUARE_2
-     96  784e		       3f		      .byte.b	INDEX_BLACK_PAWN_on_WHITE_SQUARE_3
-     97  784f		       58		      .byte.b	INDEX_BLACK_PAWN_on_BLACK_SQUARE_0
-     98  7850		       3d		      .byte.b	INDEX_BLACK_PAWN_on_WHITE_SQUARE_1
-     99  7851		       5a		      .byte.b	INDEX_BLACK_PAWN_on_BLACK_SQUARE_2
-    100  7852		       3f		      .byte.b	INDEX_BLACK_PAWN_on_WHITE_SQUARE_3
-    101  7853
-    102  7853		       00		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_0
-    103  7854		       1d		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_1
-    104  7855		       02		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_2
-    105  7856		       1f		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_3
-    106  7857		       00		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_0
-    107  7858		       1d		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_1
-    108  7859		       02		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_2
-    109  785a		       1f		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_3
-    110  785b
-    111  785b		       1c		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_0
-    112  785c		       01		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_1
-    113  785d		       1e		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_2
-    114  785e		       03		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_3
-    115  785f		       1c		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_0
-    116  7860		       01		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_1
-    117  7861		       1e		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_2
-    118  7862		       03		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_3
-    119  7863
-    120  7863		       00		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_0
-    121  7864		       1d		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_1
-    122  7865		       02		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_2
-    123  7866		       1f		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_3
-    124  7867		       00		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_0
-    125  7868		       1d		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_1
-    126  7869		       02		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_2
-    127  786a		       1f		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_3
-    128  786b
-    129  786b		       1c		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_0
-    130  786c		       01		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_1
-    131  786d		       1e		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_2
-    132  786e		       03		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_3
-    133  786f		       1c		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_0
-    134  7870		       01		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_1
-    135  7871		       1e		      .byte.b	INDEX_WHITE_BLANK_on_BLACK_SQUARE_2
-    136  7872		       03		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_3
-    137  7873
-    138  7873		       04		      .byte.b	INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
-    139  7874		       21		      .byte.b	INDEX_WHITE_PAWN_on_BLACK_SQUARE_1
-    140  7875		       06		      .byte.b	INDEX_WHITE_PAWN_on_WHITE_SQUARE_2
-    141  7876		       23		      .byte.b	INDEX_WHITE_PAWN_on_BLACK_SQUARE_3
-    142  7877		       04		      .byte.b	INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
-    143  7878		       21		      .byte.b	INDEX_WHITE_PAWN_on_BLACK_SQUARE_1
-    144  7879		       06		      .byte.b	INDEX_WHITE_PAWN_on_WHITE_SQUARE_2
-    145  787a		       23		      .byte.b	INDEX_WHITE_PAWN_on_BLACK_SQUARE_3
-    146  787b
-    147  787b		       2c		      .byte.b	INDEX_WHITE_ROOK_on_BLACK_SQUARE_0
-    148  787c		       09		      .byte.b	INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_1
-    149  787d		       2a		      .byte.b	INDEX_WHITE_BISHOP_on_BLACK_SQUARE_2
-    150  787e		       17		      .byte.b	INDEX_WHITE_QUEEN_on_WHITE_SQUARE_3
-    151  787f		       34		      .byte.b	INDEX_WHITE_KING_on_BLACK_SQUARE_0
-    152  7880		       0d		      .byte.b	INDEX_WHITE_BISHOP_on_WHITE_SQUARE_1
-    153  7881		       26		      .byte.b	INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_2
-    154  7882		       13		      .byte.b	INDEX_WHITE_ROOK_on_WHITE_SQUARE_3
-    155  7883
-    156  7883
-    157  7883							;---------------------------------------------------------------------------------------------------
-    158  7883
-    159  7883
-      0  7883					      DEFINE_SUBROUTINE	CopyPieceFromRAMBufferToScreen
-      1  7883		       00 0f	   BANK_CopyPieceFromRAMBufferToScreen =	_CURRENT_BANK
-      2  7883					      SUBROUTINE
-      3  7883				   CopyPieceFromRAMBufferToScreen
-    161  7883
-    162  7883							; we have a ~1K RAM screen
-    163  7883							; x = row
-    164  7883							; y = line*24-1
-    165  7883
-    166  7883		       86 3e		      stx	SET_BANK_RAM
-    167  7885		       4c 9b f0 	      jmp	CopyPieceToRowBitmap
-    168  7888
-    169  7888							;-----------------------------------------------------------------------------------------------
-    170  7888
-      0  7888					      DEFINE_SUBROUTINE	CopyPieceToRAMBuffer
-      1  7888		       00 0f	   BANK_CopyPieceToRAMBuffer =	_CURRENT_BANK
-      2  7888					      SUBROUTINE
-      3  7888				   CopyPieceToRAMBuffer
-    172  7888
-    173  7888							; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
-    174  7888							; y = piece index
-    175  7888
-    176  7888		       a9 08		      lda	#BANK_PIECE_VECTOR_BANK
-    177  788a		       85 3f		      sta	SET_BANK
-    178  788c
-    179  788c		       b9 00 f0 	      lda	PIECE_VECTOR_LO,y
-    180  788f		       85 d5		      sta	__ptr
-    181  7891		       b9 70 f0 	      lda	PIECE_VECTOR_HI,y
-    182  7894		       85 d6		      sta	__ptr+1
-    183  7896		       b9 e0 f0 	      lda	PIECE_VECTOR_BANK,y
-    184  7899		       85 3f		      sta	SET_BANK
-    185  789b
-    186  789b		       a0 47		      ldy	#PIECE_SHAPE_SIZE-1
-    187  789d		       b1 d5	   .copyPieceGfx lda	(__ptr),y
-    188  789f		       99 8d 00 	      sta	__pieceShapeBuffer,y
-    189  78a2		       88		      dey
-    190  78a3		       10 f8		      bpl	.copyPieceGfx
-    191  78a5
-    192  78a5		       60		      rts
-    193  78a6
-    194  78a6							;------------------------------------------------------------------------------
-    195  78a6
-    196  78a6
-      0  78a6					      DEFINE_SUBROUTINE	TimeSlice
-      1  78a6		       00 0f	   BANK_TimeSlice =	_CURRENT_BANK
-      2  78a6					      SUBROUTINE
-      3  78a6				   TimeSlice
-    198  78a6
-    199  78a6							; FIRST check the time is sufficient for the smallest of the timeslices. Not much point
-    200  78a6							; going ahead if there's insufficient time. This allows the previous character drawing to
-    201  78a6							; be much smaller in time, as they don't have to include the timeslice code overhead.
-    202  78a6
-    203  78a6		       ad 84 02 	      lda	INTIM	; 4
-    204  78a9		       c9 03		      cmp	#SEGTIME_MINIMUM_TIMESLICE	; 2
-    205  78ab		       90 00		      bcc	timeExit	; 2(3)
-    206  78ad							; @0✅
-    207  78ad		       60	   timeExit   rts
-    208  78ae
-    209  78ae							;---------------------------------------------------------------------------------------------------
-    210  78ae
-      0  78ae					      DEFINE_SUBROUTINE	CopyShadowROMtoRAM
-      1  78ae		       00 0f	   BANK_CopyShadowROMtoRAM =	_CURRENT_BANK
-      2  78ae					      SUBROUTINE
-      3  78ae				   CopyShadowROMtoRAM
-    212  78ae							; pass x = source bank
-    213  78ae							; pass y = destination bank (preserved)
-    214  78ae
-    215  78ae		       86 8e		      stx	__sourceBank
-    216  78b0
-    217  78b0		       a2 00		      ldx	#0
-    218  78b2		       a5 8e	   .copyPage  lda	__sourceBank
-    219  78b4		       85 3f		      sta	SET_BANK
-    220  78b6
-    221  78b6		       bd 00 f0 	      lda	$F000,x
-    222  78b9		       48		      pha
-    223  78ba		       bd 00 f1 	      lda	$F100,x
-    224  78bd		       48		      pha
-    225  78be		       bd 00 f2 	      lda	$F200,x
-    226  78c1		       48		      pha
-    227  78c2		       bd 00 f3 	      lda	$F300,x
-    228  78c5
-    229  78c5		       84 3e		      sty	SET_BANK_RAM
-    230  78c7
-    231  78c7		       9d 00 f7 	      sta	$F300+RAM_WRITE,x
-    232  78ca		       68		      pla
-    233  78cb		       9d 00 f6 	      sta	$F200+RAM_WRITE,x
-    234  78ce		       68		      pla
-    235  78cf		       9d 00 f5 	      sta	$F100+RAM_WRITE,x
-    236  78d2		       68		      pla
-    237  78d3		       9d 00 f4 	      sta	$F000+RAM_WRITE,x
-    238  78d6
-    239  78d6		       ca		      dex
-    240  78d7		       d0 d9		      bne	.copyPage
-    241  78d9		       60		      rts
-    242  78da
-    243  78da							;---------------------------------------------------------------------------------------------------
-    244  78da
-      0  78da					      DEFINE_SUBROUTINE	Reset
-      1  78da		       00 0f	   BANK_Reset =	_CURRENT_BANK
-      2  78da					      SUBROUTINE
-      3  78da				   Reset
-    246  78da
-      0  78da					      CLEAN_START
-      1  78da		       78		      sei
-      2  78db		       d8		      cld
-      3  78dc
-      4  78dc		       a2 00		      ldx	#0
-      5  78de		       8a		      txa
-      6  78df		       a8		      tay
-      7  78e0		       ca	   .CLEAR_STACK dex
-      8  78e1		       9a		      txs
-      9  78e2		       48		      pha
-     10  78e3		       d0 fb		      bne	.CLEAR_STACK
-     11  78e5
-    248  78e5
-    249  78e5		       a9 12		      lda	#$12
-    250  78e7		       85 80		      sta	rnd
-    251  78e9
-    252  78e9
-    253  78e9							; Move a copy of the row bank template to the first 8 banks of RAM
-    254  78e9							; and then terminate the draw subroutine by substituting in a RTS on the last one
-    255  78e9
-    256  78e9		       a0 07		      ldy	#7
-    257  78eb		       a2 01	   .copyRowBanks ldx	#BANK_ROM_SHADOW_OF_CHESS_BITMAP
-    258  78ed		       20 ae f8 	      jsr	CopyShadowROMtoRAM
-    259  78f0		       88		      dey
-    260  78f1		       10 f8		      bpl	.copyRowBanks
-    261  78f3
-    262  78f3							; Patch the final row's "loop" to a RTS
-    263  78f3
-    264  78f3		       a9 57		      lda	#<SELFMOD_RTS_ON_LAST_ROW
-    265  78f5		       85 d5		      sta	__ptr
-    266  78f7		       a9 f5		      lda	#>(SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE)
-    267  78f9		       85 d6		      sta	__ptr+1
-    268  78fb
-    269  78fb		       a9 07		      lda	#7
-    270  78fd		       85 3e		      sta	SET_BANK_RAM
-    271  78ff
-    272  78ff		       a0 00		      ldy	#0
-    273  7901		       a9 60		      lda	#$60	; rts
-    274  7903		       91 d5		      sta	(__ptr),y	; patch selfmod code to RTS
-    275  7905
-    276  7905
-    277  7905
-    278  7905		       20 33 f8 	      jsr	InitialiseChessboard
-    279  7908
-    280  7908							; Now the board is "living" in RAM (along with support code) we can do stuff with it
-    281  7908
-    282  7908		       20 04 f8 	      jsr	ClearChessBitmap
-    283  790b
-    284  790b
-    285  790b		       20 0f f8 	      jsr	CopyChessboardPiecesToBoard
-    286  790e
-    287  790e		       a9 00		      lda	#0
-    288  7910		       85 3e		      sta	SET_BANK_RAM
-    289  7912		       20 bb f0 	      jsr	DrawTheChessScreen
-    290  7915
-    291  7915							;lda #2
-    292  7915							;sta VSYNC
-    293  7915							;lda #%01000010		  ; bit6 is not required
-    294  7915							;sta VBLANK			  ; end of screen - enter blanking
-    295  7915
-    296  7915				   Restart		; go here on RESET + SELECT
-    297  7915
-    298  7915		       4c da f8 	      jmp	Reset
-    299  7918
-    300  7918
-    301  7918							;---------------------------------------------------------------------------
-    302  7918
- FREE BYTES IN FIXED BANK =  $6d8
-    303  7918					      ECHO	"FREE BYTES IN FIXED BANK = ", $FFF0 - *
-    304  7918
-    305  7918							;---------------------------------------------------------------------------
-    306  7918							; The reset vectors
-    307  7918							; these must live in the fixed bank (last 2K of any ROM image in TigerVision)
-    308  7918
-    309  7ff4 ????				      SEG	PlusCart
-    310  7ff0					      ORG	FIXED_BANK + $7F0
-    311  7ff0					      RORG	$7FF0
-    312  7ff0		       7f f0	   PLUSCART_IO =	*
-    313  7ff0		       00 aa	   PLUS0      =	%10101010
-    314  7ff0		       00 19	   PLUS1      =	%00011001
-    315  7ff0		       00 af	   PLUS2      =	%10101111
-    316  7ff0		       00 36	   PLUS3      =	%00110110
-    317  7ff0		       aa 19 af 36	      .byte.b	PLUS0,PLUS1,PLUS2,PLUS3
-    318  7ff4
-    319  8000 ????				      SEG	InterruptVectors
-    320  7ffc					      ORG	FIXED_BANK + $7FC
-    321  7ffc					      RORG	$7ffC
-    322  7ffc
-    323  7ffc							;		 .word Reset	       ; NMI	    (not used)
-    324  7ffc		       da f8		      .word.w	Reset	; RESET
-    325  7ffe		       da f8		      .word.w	Reset	; IRQ	      (not used)
-    326  8000
-    327  8000							;---------------------------------------------------------------------------
+     21  7804		       a6 81		      ldx	doubleBufferBase
+     22  7806					      REPEAT	4
+     23  7806		       86 3e		      stx	SET_BANK_RAM
+     24  7808		       20 90 f0 	      jsr	ClearRowBitmap
+     25  780b		       e8		      inx
+     22  780b					      REPEND
+     23  780c		       86 3e		      stx	SET_BANK_RAM
+     24  780e		       20 90 f0 	      jsr	ClearRowBitmap
+     25  7811		       e8		      inx
+     22  7811					      REPEND
+     23  7812		       86 3e		      stx	SET_BANK_RAM
+     24  7814		       20 90 f0 	      jsr	ClearRowBitmap
+     25  7817		       e8		      inx
+     22  7817					      REPEND
+     23  7818		       86 3e		      stx	SET_BANK_RAM
+     24  781a		       20 90 f0 	      jsr	ClearRowBitmap
+     25  781d		       e8		      inx
+     26  781e					      REPEND
+     27  781e		       60		      rts
+     28  781f
+      0  781f					      DEFINE_SUBROUTINE	ClearChessBitmap_PART1
+      1  781f		       00 0f	   BANK_ClearChessBitmap_PART1 =	_CURRENT_BANK
+      2  781f					      SUBROUTINE
+      3  781f				   ClearChessBitmap_PART1
+     30  781f
+     31  781f		       a5 81		      lda	doubleBufferBase
+     32  7821		       09 04		      ora	#4
+     33  7823		       aa		      tax
+     34  7824					      REPEAT	4
+     35  7824		       86 3e		      stx	SET_BANK_RAM
+     36  7826		       20 90 f0 	      jsr	ClearRowBitmap
+     37  7829		       e8		      inx
+     34  7829					      REPEND
+     35  782a		       86 3e		      stx	SET_BANK_RAM
+     36  782c		       20 90 f0 	      jsr	ClearRowBitmap
+     37  782f		       e8		      inx
+     34  782f					      REPEND
+     35  7830		       86 3e		      stx	SET_BANK_RAM
+     36  7832		       20 90 f0 	      jsr	ClearRowBitmap
+     37  7835		       e8		      inx
+     34  7835					      REPEND
+     35  7836		       86 3e		      stx	SET_BANK_RAM
+     36  7838		       20 90 f0 	      jsr	ClearRowBitmap
+     37  783b		       e8		      inx
+     38  783c					      REPEND
+     39  783c		       60		      rts
+     40  783d
+     41  783d							;---------------------------------------------------------------------------------------------------
+     42  783d
+      0  783d					      DEFINE_SUBROUTINE	CopyChessboardPiecesToBoardPartial
+      1  783d		       00 0f	   BANK_CopyChessboardPiecesToBoardPartial =	_CURRENT_BANK
+      2  783d					      SUBROUTINE
+      3  783d				   CopyChessboardPiecesToBoardPartial
+     44  783d
+     45  783d		       a9 10		      lda	#BANK_CHESSBOARD
+     46  783f		       85 3e		      sta	SET_BANK_RAM
+     47  7841
+     48  7841		       a5 83		      lda	drawPieceNumber
+     49  7843		       4a		      lsr
+     50  7844		       4a		      lsr
+     51  7845		       4a		      lsr
+     52  7846		       18		      clc
+     53  7847		       65 83		      adc	drawPieceNumber
+     54  7849		       29 01		      and	#1
+     55  784b		       f0 02		      beq	.white
+     56  784d		       a9 1c		      lda	#28
+     57  784f		       85 90	   .white     sta	__pieceColour
+     58  7851
+     59  7851		       a4 83		      ldy	drawPieceNumber
+     60  7853		       98		      tya
+     61  7854		       29 03		      and	#3
+     62  7856		       19 00 10 	      ora	Chessboard,y
+     63  7859		       38		      sec
+     64  785a		       e5 90		      sbc	__pieceColour
+     65  785c		       a8		      tay
+     66  785d		       20 01 f9 	      jsr	CopyPieceToRAMBuffer
+     67  7860
+     68  7860		       a5 83		      lda	drawPieceNumber
+     69  7862		       4a		      lsr
+     70  7863		       4a		      lsr
+     71  7864		       4a		      lsr
+     72  7865		       05 81		      ora	doubleBufferBase
+     73  7867		       aa		      tax		; row
+     74  7868
+     75  7868		       a5 83		      lda	drawPieceNumber
+     76  786a		       29 04		      and	#4
+     77  786c		       c9 04		      cmp	#4	; cc = left side, cs = right side
+     78  786e
+     79  786e		       86 3e		      stx	SET_BANK_RAM
+     80  7870		       4c 43 f2 	      jmp	CopyPieceToRowBitmap
+     81  7873
+     82  7873							;---------------------------------------------------------------------------------------------------
+     83  7873
+      0  7873					      DEFINE_SUBROUTINE	RandomPieceMove
+      1  7873		       00 0f	   BANK_RandomPieceMove =	_CURRENT_BANK
+      2  7873					      SUBROUTINE
+      3  7873				   RandomPieceMove
+     85  7873
+     86  7873		       a9 10		      lda	#BANK_CHESSBOARD
+     87  7875		       85 3e		      sta	SET_BANK_RAM
+     88  7877
+      0  7877					      NEXT_RANDOM
+      1  7877		       a5 80		      lda	rnd
+      2  7879		       4a		      lsr
+      3  787a		       90 02		      bcc	.skipEOR
+      4  787c		       49 b4		      eor	#RND_EOR_VAL
+      5  787e		       85 80	   .skipEOR   sta	rnd
+     90  7880		       aa		      tax
+     91  7881		       e8	   .nextX     inx
+     92  7882		       8a		      txa
+     93  7883		       29 3f		      and	#63
+     94  7885		       aa		      tax
+     95  7886
+     96  7886		       bd 00 10 	      lda	Chessboard,x
+     97  7889		       c9 1c		      cmp	#BLANK
+     98  788b		       f0 f4		      beq	.nextX
+     99  788d
+      0  788d					      NEXT_RANDOM
+      1  788d		       a5 80		      lda	rnd
+      2  788f		       4a		      lsr
+      3  7890		       90 02		      bcc	.skipEOR
+      4  7892		       49 b4		      eor	#RND_EOR_VAL
+      5  7894		       85 80	   .skipEOR   sta	rnd
+    101  7896		       a8		      tay
+    102  7897		       c8	   .nextY     iny
+    103  7898		       98		      tya
+    104  7899		       29 3f		      and	#63
+    105  789b		       a8		      tay
+    106  789c
+    107  789c		       b9 00 10 	      lda	Chessboard,y
+    108  789f		       c9 1c		      cmp	#BLANK
+    109  78a1		       d0 f4		      bne	.nextY
+    110  78a3
+    111  78a3		       bd 00 10 	      lda	Chessboard,x
+    112  78a6		       99 00 14 	      sta	Chessboard+RAM_WRITE,y
+    113  78a9		       a9 1c		      lda	#BLANK
+    114  78ab		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
+    115  78ae
+    116  78ae		       60		      rts
+    117  78af
+    118  78af							;---------------------------------------------------------------------------------------------------
+    119  78af
+      0  78af					      DEFINE_SUBROUTINE	InitialiseChessboard
+      1  78af		       00 0f	   BANK_InitialiseChessboard =	_CURRENT_BANK
+      2  78af					      SUBROUTINE
+      3  78af				   InitialiseChessboard
+    121  78af
+    122  78af		       a9 10		      lda	#BANK_CHESSBOARD
+    123  78b1		       85 3e		      sta	SET_BANK_RAM
+    124  78b3
+    125  78b3		       a2 3f		      ldx	#63
+    126  78b5		       bd c1 f8    .setupBoard lda	BoardPiece,x
+    127  78b8		       29 fc		      and	#~3
+    128  78ba		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
+    129  78bd		       ca		      dex
+    130  78be		       10 f5		      bpl	.setupBoard
+    131  78c0
+    132  78c0		       60		      rts
+    133  78c1
+    134  78c1				   BoardPiece
+    135  78c1
+    136  78c1		       00 1c	   BLANK      =	INDEX_WHITE_BLANK_on_BLACK_SQUARE_0
+    137  78c1		       00 20	   WHITE_PAWN =	INDEX_WHITE_PAWN_on_BLACK_SQUARE_0
+    138  78c1		       00 2c	   WHITE_ROOK =	INDEX_WHITE_ROOK_on_BLACK_SQUARE_0
+    139  78c1		       00 24	   WHITE_KNIGHT =	INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_0
+    140  78c1		       00 28	   WHITE_BISHOP =	INDEX_WHITE_BISHOP_on_BLACK_SQUARE_0
+    141  78c1		       00 30	   WHITE_QUEEN =	INDEX_WHITE_QUEEN_on_BLACK_SQUARE_0
+    142  78c1		       00 34	   WHITE_KING =	INDEX_WHITE_KING_on_BLACK_SQUARE_0
+    143  78c1		       00 58	   BLACK_PAWN =	INDEX_BLACK_PAWN_on_BLACK_SQUARE_0
+    144  78c1		       00 64	   BLACK_ROOK =	INDEX_BLACK_ROOK_on_BLACK_SQUARE_0
+    145  78c1		       00 5c	   BLACK_KNIGHT =	INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_0
+    146  78c1		       00 60	   BLACK_BISHOP =	INDEX_BLACK_BISHOP_on_BLACK_SQUARE_0
+    147  78c1		       00 68	   BLACK_QUEEN =	INDEX_BLACK_QUEEN_on_BLACK_SQUARE_0
+    148  78c1		       00 6c	   BLACK_KING =	INDEX_BLACK_KING_on_BLACK_SQUARE_0
+    149  78c1
+    150  78c1
+    151  78c1		       64		      .byte.b	BLACK_ROOK	;0
+    152  78c2		       5c		      .byte.b	BLACK_KNIGHT	;1
+    153  78c3		       60		      .byte.b	BLACK_BISHOP	;2
+    154  78c4		       68		      .byte.b	BLACK_QUEEN	;3
+    155  78c5		       6c		      .byte.b	BLACK_KING	;4
+    156  78c6		       60		      .byte.b	BLACK_BISHOP	;5
+    157  78c7		       5c		      .byte.b	BLACK_KNIGHT	;6
+    158  78c8		       64		      .byte.b	BLACK_ROOK	;7
+    159  78c9
+    160  78c9		       58		      .byte.b	BLACK_PAWN
+    161  78ca		       58		      .byte.b	BLACK_PAWN
+    162  78cb		       58		      .byte.b	BLACK_PAWN
+    163  78cc		       58		      .byte.b	BLACK_PAWN
+    164  78cd		       58		      .byte.b	BLACK_PAWN
+    165  78ce		       58		      .byte.b	BLACK_PAWN
+    166  78cf		       58		      .byte.b	BLACK_PAWN
+    167  78d0		       58		      .byte.b	BLACK_PAWN
+    168  78d1
+    169  78d1		       1c		      .byte.b	BLANK
+    170  78d2		       1c		      .byte.b	BLANK
+    171  78d3		       1c		      .byte.b	BLANK
+    172  78d4		       1c		      .byte.b	BLANK
+    173  78d5		       1c		      .byte.b	BLANK
+    174  78d6		       1c		      .byte.b	BLANK
+    175  78d7		       1c		      .byte.b	BLANK
+    176  78d8		       1c		      .byte.b	BLANK
+    177  78d9
+    178  78d9		       1c		      .byte.b	BLANK
+    179  78da		       1c		      .byte.b	BLANK
+    180  78db		       1c		      .byte.b	BLANK
+    181  78dc		       1c		      .byte.b	BLANK
+    182  78dd		       1c		      .byte.b	BLANK
+    183  78de		       1c		      .byte.b	BLANK
+    184  78df		       1c		      .byte.b	BLANK
+    185  78e0		       1c		      .byte.b	BLANK
+    186  78e1
+    187  78e1		       1c		      .byte.b	BLANK
+    188  78e2		       1c		      .byte.b	BLANK
+    189  78e3		       1c		      .byte.b	BLANK
+    190  78e4		       1c		      .byte.b	BLANK
+    191  78e5		       1c		      .byte.b	BLANK
+    192  78e6		       1c		      .byte.b	BLANK
+    193  78e7		       1c		      .byte.b	BLANK
+    194  78e8		       1c		      .byte.b	BLANK
+    195  78e9
+    196  78e9		       1c		      .byte.b	BLANK
+    197  78ea		       1c		      .byte.b	BLANK
+    198  78eb		       1c		      .byte.b	BLANK
+    199  78ec		       1c		      .byte.b	BLANK
+    200  78ed		       1c		      .byte.b	BLANK
+    201  78ee		       1c		      .byte.b	BLANK
+    202  78ef		       1c		      .byte.b	BLANK
+    203  78f0		       1c		      .byte.b	BLANK
+    204  78f1
+    205  78f1		       20		      .byte.b	WHITE_PAWN
+    206  78f2		       20		      .byte.b	WHITE_PAWN
+    207  78f3		       20		      .byte.b	WHITE_PAWN
+    208  78f4		       20		      .byte.b	WHITE_PAWN
+    209  78f5		       20		      .byte.b	WHITE_PAWN
+    210  78f6		       20		      .byte.b	WHITE_PAWN
+    211  78f7		       20		      .byte.b	WHITE_PAWN
+    212  78f8		       20		      .byte.b	WHITE_PAWN
+    213  78f9
+    214  78f9		       2c		      .byte.b	WHITE_ROOK
+    215  78fa		       24		      .byte.b	WHITE_KNIGHT
+    216  78fb		       28		      .byte.b	WHITE_BISHOP
+    217  78fc		       30		      .byte.b	WHITE_QUEEN
+    218  78fd		       34		      .byte.b	WHITE_KING
+    219  78fe		       28		      .byte.b	WHITE_BISHOP
+    220  78ff		       24		      .byte.b	WHITE_KNIGHT
+    221  7900		       2c		      .byte.b	WHITE_ROOK
+    222  7901
+    223  7901
+    224  7901							;---------------------------------------------------------------------------------------------------
+    225  7901
+    226  7901
+    227  7901							;-----------------------------------------------------------------------------------------------
+    228  7901
+      0  7901					      DEFINE_SUBROUTINE	CopyPieceToRAMBuffer
+      1  7901		       00 0f	   BANK_CopyPieceToRAMBuffer =	_CURRENT_BANK
+      2  7901					      SUBROUTINE
+      3  7901				   CopyPieceToRAMBuffer
+    230  7901
+    231  7901							; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
+    232  7901							; y = piece index
+    233  7901
+    234  7901		       a9 08		      lda	#BANK_PIECE_VECTOR_BANK
+    235  7903		       85 3f		      sta	SET_BANK
+    236  7905
+    237  7905		       b9 00 f0 	      lda	PIECE_VECTOR_LO,y
+    238  7908		       85 d8		      sta	__ptr
+    239  790a		       b9 70 f0 	      lda	PIECE_VECTOR_HI,y
+    240  790d		       85 d9		      sta	__ptr+1
+    241  790f		       b9 e0 f0 	      lda	PIECE_VECTOR_BANK,y
+    242  7912		       85 3f		      sta	SET_BANK
+    243  7914
+    244  7914		       a0 47		      ldy	#PIECE_SHAPE_SIZE-1
+    245  7916		       b1 d8	   .copyPieceGfx lda	(__ptr),y
+    246  7918		       99 90 00 	      sta	__pieceShapeBuffer,y
+    247  791b		       88		      dey
+    248  791c		       10 f8		      bpl	.copyPieceGfx
+    249  791e
+    250  791e		       60		      rts
+    251  791f
+    252  791f							;------------------------------------------------------------------------------
+    253  791f
+    254  791f
+      0  791f					      DEFINE_SUBROUTINE	TimeSlice
+      1  791f		       00 0f	   BANK_TimeSlice =	_CURRENT_BANK
+      2  791f					      SUBROUTINE
+      3  791f				   TimeSlice
+    256  791f
+    257  791f							; FIRST check the time is sufficient for the smallest of the timeslices. Not much point
+    258  791f							; going ahead if there's insufficient time. This allows the previous character drawing to
+    259  791f							; be much smaller in time, as they don't have to include the timeslice code overhead.
+    260  791f
+    261  791f		       ad 84 02 	      lda	INTIM	; 4
+    262  7922		       c9 03		      cmp	#SEGTIME_MINIMUM_TIMESLICE	; 2
+    263  7924		       90 00		      bcc	timeExit	; 2(3)
+    264  7926							; @0✅
+    265  7926		       60	   timeExit   rts
+    266  7927
+    267  7927							;---------------------------------------------------------------------------------------------------
+    268  7927
+      0  7927					      DEFINE_SUBROUTINE	CopyShadowROMtoRAM
+      1  7927		       00 0f	   BANK_CopyShadowROMtoRAM =	_CURRENT_BANK
+      2  7927					      SUBROUTINE
+      3  7927				   CopyShadowROMtoRAM
+    270  7927							; pass x = source bank
+    271  7927							; pass y = destination bank (preserved)
+    272  7927
+    273  7927		       86 91		      stx	__sourceBank
+    274  7929
+    275  7929		       a2 00		      ldx	#0
+    276  792b		       a5 91	   .copyPage  lda	__sourceBank
+    277  792d		       85 3f		      sta	SET_BANK
+    278  792f
+    279  792f		       bd 00 f0 	      lda	$F000,x
+    280  7932		       48		      pha
+    281  7933		       bd 00 f1 	      lda	$F100,x
+    282  7936		       48		      pha
+    283  7937		       bd 00 f2 	      lda	$F200,x
+    284  793a		       48		      pha
+    285  793b		       bd 00 f3 	      lda	$F300,x
+    286  793e
+    287  793e		       84 3e		      sty	SET_BANK_RAM
+    288  7940
+    289  7940		       9d 00 f7 	      sta	$F300+RAM_WRITE,x
+    290  7943		       68		      pla
+    291  7944		       9d 00 f6 	      sta	$F200+RAM_WRITE,x
+    292  7947		       68		      pla
+    293  7948		       9d 00 f5 	      sta	$F100+RAM_WRITE,x
+    294  794b		       68		      pla
+    295  794c		       9d 00 f4 	      sta	$F000+RAM_WRITE,x
+    296  794f
+    297  794f		       ca		      dex
+    298  7950		       d0 d9		      bne	.copyPage
+    299  7952		       60		      rts
+    300  7953
+    301  7953							;---------------------------------------------------------------------------------------------------
+    302  7953
+      0  7953					      DEFINE_SUBROUTINE	Reset
+      1  7953		       00 0f	   BANK_Reset =	_CURRENT_BANK
+      2  7953					      SUBROUTINE
+      3  7953				   Reset
+    304  7953
+      0  7953					      CLEAN_START
+      1  7953		       78		      sei
+      2  7954		       d8		      cld
+      3  7955
+      4  7955		       a2 00		      ldx	#0
+      5  7957		       8a		      txa
+      6  7958		       a8		      tay
+      7  7959		       ca	   .CLEAR_STACK dex
+      8  795a		       9a		      txs
+      9  795b		       48		      pha
+     10  795c		       d0 fb		      bne	.CLEAR_STACK
+     11  795e
+    306  795e
+    307  795e		       a9 12		      lda	#$12
+    308  7960		       85 80		      sta	rnd
+    309  7962
+    310  7962
+    311  7962							; Move a copy of the row bank template to the first 8 banks of RAM
+    312  7962							; and then terminate the draw subroutine by substituting in a RTS on the last one
+    313  7962
+    314  7962		       a0 0f		      ldy	#15
+    315  7964		       a2 01	   .copyRowBanks ldx	#BANK_ROM_SHADOW_OF_CHESS_BITMAP
+    316  7966		       20 27 f9 	      jsr	CopyShadowROMtoRAM
+    317  7969		       88		      dey
+    318  796a		       10 f8		      bpl	.copyRowBanks
+    319  796c
+    320  796c							; Patch the final row's "loop" to a RTS
+    321  796c
+    322  796c		       a9 96		      lda	#<SELFMOD_RTS_ON_LAST_ROW
+    323  796e		       85 d8		      sta	__ptr
+    324  7970		       a9 f6		      lda	#>(SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE)
+    325  7972		       85 d9		      sta	__ptr+1
+    326  7974
+    327  7974
+    328  7974		       a0 00		      ldy	#0
+    329  7976		       a9 60		      lda	#$60	; rts
+    330  7978
+    331  7978							; the 'screen' is double-buffered - two sets of 8x1K banks
+    332  7978							; we need to put an RTS on the last of both of these
+    333  7978
+    334  7978		       a2 07		      ldx	#7
+    335  797a		       86 3e		      stx	SET_BANK_RAM
+    336  797c		       91 d8		      sta	(__ptr),y	; patch selfmod code to RTS
+    337  797e
+    338  797e		       a2 0f		      ldx	#15
+    339  7980		       86 3e		      stx	SET_BANK_RAM
+    340  7982		       91 d8		      sta	(__ptr),y
+    341  7984
+    342  7984
+    343  7984		       20 af f8 	      jsr	InitialiseChessboard
+    344  7987
+    345  7987							; Now the board is "living" in RAM (along with support code) we can do stuff with it
+    346  7987
+    347  7987		       a9 00		      lda	#0
+    348  7989		       85 81		      sta	doubleBufferBase
+    349  798b		       85 82		      sta	drawPhase
+    350  798d
+    351  798d
+    352  798d		       a9 00		      lda	#%00000000
+    353  798f		       85 4a		      sta	CTRLPF
+    354  7991		       85 49		      sta	COLUBK
+    355  7993
+    356  7993
+      0  7993					      RESYNC
+      1  7993
+      2  7993		       a9 02		      lda	#%10
+      3  7995		       85 41		      sta	VBLANK
+      4  7997
+      5  7997		       a2 08		      ldx	#8
+      6  7999				   .loopResync
+      0  7999					      VERTICAL_SYNC
+      1  7999		       a9 0e		      lda	#%1110
+      2  799b		       85 42	   .VSLP1     sta	WSYNC
+      3  799d		       85 40		      sta	VSYNC
+      4  799f		       4a		      lsr
+      5  79a0		       d0 f9		      bne	.VSLP1
+      8  79a2
+      9  79a2		       a0 88		      ldy	#SCANLINES_NTSC/2 - 2
+     10  79a4		       a5 84		      lda	Platform
+     11  79a6		       49 02		      eor	#PAL_50
+     12  79a8		       d0 02		      bne	.ntsc
+     13  79aa		       a0 9a		      ldy	#SCANLINES_PAL/2 - 2
+     14  79ac				   .ntsc
+     15  79ac				   .loopWait
+     16  79ac		       85 42		      sta	WSYNC
+     17  79ae		       85 42		      sta	WSYNC
+     18  79b0		       88		      dey
+     19  79b1		       d0 f9		      bne	.loopWait
+     20  79b3		       ca		      dex
+     21  79b4		       d0 e3		      bne	.loopResync
+    358  79b6
+    359  79b6
+    360  79b6				   .doubleBufferLoop
+    361  79b6
+    362  79b6		       a9 0e		      lda	#%1110	; VSYNC ON
+    363  79b8		       85 42	   .loopVSync3 sta	WSYNC
+    364  79ba		       85 40		      sta	VSYNC
+    365  79bc		       4a		      lsr
+    366  79bd		       d0 f9		      bne	.loopVSync3	; branch until VYSNC has been reset
+    367  79bf
+    368  79bf		       a0 32		      ldy	#50	;VBLANK_TIM_NTSC
+    369  79c1		       8c 96 02 	      sty	TIM64T
+    370  79c4
+    371  79c4		       20 fa f9 	      jsr	PhasedProcessor
+    372  79c7
+    373  79c7		       85 42	   .VerticalBlank sta	WSYNC
+    374  79c9		       ad 84 02 	      lda	INTIM
+    375  79cc		       d0 f9		      bne	.VerticalBlank
+    376  79ce		       85 41		      sta	VBLANK
+    377  79d0
+    378  79d0		       a5 81		      lda	doubleBufferBase
+    379  79d2		       49 08		      eor	#8
+    380  79d4		       aa		      tax
+    381  79d5		       86 3e		      stx	SET_BANK_RAM
+    382  79d7		       20 67 f2 	      jsr	DrawRow
+    383  79da
+    384  79da		       a9 1a		      lda	#26
+    385  79dc		       8d 96 02 	      sta	TIM64T
+    386  79df
+    387  79df		       a9 00		      lda	#0
+    388  79e1		       85 4d		      sta	PF0
+    389  79e3		       85 4e		      sta	PF1
+    390  79e5		       85 4f		      sta	PF2
+    391  79e7
+    392  79e7							;jsr PhasedProcessor
+    393  79e7
+    394  79e7							; D1 VBLANK turns off beam
+    395  79e7							; It needs to be turned on 37 scanlines later
+    396  79e7
+    397  79e7		       ad 84 02    .oscan     lda	INTIM
+    398  79ea		       d0 fb		      bne	.oscan
+    399  79ec
+    400  79ec		       85 42		      sta	WSYNC
+    401  79ee		       85 42		      sta	WSYNC
+    402  79f0							;		  sta WSYNC
+    403  79f0							;		  sta WSYNC
+    404  79f0
+    405  79f0		       a9 42		      lda	#%01000010	; bit6 is not required
+    406  79f2		       85 41		      sta	VBLANK	; end of screen - enter blanking
+    407  79f4
+    408  79f4
+    409  79f4
+    410  79f4							;		  lda INPT4
+    411  79f4							;		  bpl .ret
+    412  79f4
+    413  79f4							;		  jmp .RestartChessFrame
+    414  79f4
+    415  79f4							;.ret
+    416  79f4
+    417  79f4		       4c b6 f9 	      jmp	.doubleBufferLoop
+    418  79f7
+    419  79f7							;lda #2
+    420  79f7							;sta VSYNC
+    421  79f7							;lda #%01000010		  ; bit6 is not required
+    422  79f7							;sta VBLANK			  ; end of screen - enter blanking
+    423  79f7
+    424  79f7				   Restart		; go here on RESET + SELECT
+    425  79f7
+    426  79f7		       4c 53 f9 	      jmp	Reset
+    427  79fa
+    428  79fa							;---------------------------------------------------------------------------------------------------
+    429  79fa
+      0  79fa					      DEFINE_SUBROUTINE	PhasedProcessor
+      1  79fa		       00 0f	   BANK_PhasedProcessor =	_CURRENT_BANK
+      2  79fa					      SUBROUTINE
+      3  79fa				   PhasedProcessor
+    431  79fa		       a6 82		      ldx	drawPhase
+    432  79fc		       bd 09 fa 	      lda	DrawVectorLO,x
+    433  79ff		       85 d8		      sta	__ptr
+    434  7a01		       bd 0d fa 	      lda	DrawVectorHI,x
+    435  7a04		       85 d9		      sta	__ptr+1
+    436  7a06		       6c d8 00 	      jmp	(__ptr)
+    437  7a09
+    438  7a09				   DrawVectorLO
+    439  7a09		       11		      .byte.b	<Phase0_ClearBoard_0
+    440  7a0a		       17		      .byte.b	<Phase0_ClearBoard_1
+    441  7a0b		       21		      .byte.b	<DrawNextPiece
+    442  7a0c		       2b		      .byte.b	<FlipBuffers
+    443  7a0d
+    444  7a0d				   DrawVectorHI
+    445  7a0d		       fa		      .byte.b	>Phase0_ClearBoard_0
+    446  7a0e		       fa		      .byte.b	>Phase0_ClearBoard_1
+    447  7a0f		       fa		      .byte.b	>DrawNextPiece
+    448  7a10		       fa		      .byte.b	>FlipBuffers
+    449  7a11
+      0  7a11					      DEFINE_SUBROUTINE	Phase0_ClearBoard_0
+      1  7a11		       00 0f	   BANK_Phase0_ClearBoard_0 =	_CURRENT_BANK
+      2  7a11					      SUBROUTINE
+      3  7a11				   Phase0_ClearBoard_0
+    451  7a11
+    452  7a11		       20 04 f8 	      jsr	ClearChessBitmap_PART0
+    453  7a14		       e6 82		      inc	drawPhase
+    454  7a16		       60		      rts
+    455  7a17
+      0  7a17					      DEFINE_SUBROUTINE	Phase0_ClearBoard_1
+      1  7a17		       00 0f	   BANK_Phase0_ClearBoard_1 =	_CURRENT_BANK
+      2  7a17					      SUBROUTINE
+      3  7a17				   Phase0_ClearBoard_1
+    457  7a17
+    458  7a17		       20 1f f8 	      jsr	ClearChessBitmap_PART1
+    459  7a1a
+    460  7a1a		       a9 3f		      lda	#63
+    461  7a1c		       85 83		      sta	drawPieceNumber
+    462  7a1e
+    463  7a1e		       e6 82		      inc	drawPhase
+    464  7a20		       60		      rts
+    465  7a21
+      0  7a21					      DEFINE_SUBROUTINE	DrawNextPiece
+      1  7a21		       00 0f	   BANK_DrawNextPiece =	_CURRENT_BANK
+      2  7a21					      SUBROUTINE
+      3  7a21				   DrawNextPiece
+    467  7a21
+    468  7a21		       20 3d f8 	      jsr	CopyChessboardPiecesToBoardPartial
+    469  7a24		       c6 83		      dec	drawPieceNumber
+    470  7a26		       10 02		      bpl	.incomplete
+    471  7a28
+    472  7a28		       e6 82		      inc	drawPhase
+    473  7a2a		       60	   .incomplete rts
+    474  7a2b
+    475  7a2b
+      0  7a2b					      DEFINE_SUBROUTINE	FlipBuffers
+      1  7a2b		       00 0f	   BANK_FlipBuffers =	_CURRENT_BANK
+      2  7a2b					      SUBROUTINE
+      3  7a2b				   FlipBuffers
+    477  7a2b
+    478  7a2b					      REPEAT	4
+    479  7a2b		       20 73 f8 	      jsr	RandomPieceMove
+    478  7a2b					      REPEND
+    479  7a2e		       20 73 f8 	      jsr	RandomPieceMove
+    478  7a2e					      REPEND
+    479  7a31		       20 73 f8 	      jsr	RandomPieceMove
+    478  7a31					      REPEND
+    479  7a34		       20 73 f8 	      jsr	RandomPieceMove
+    480  7a37					      REPEND
+    481  7a37
+    482  7a37		       a5 81		      lda	doubleBufferBase
+    483  7a39		       49 08		      eor	#8
+    484  7a3b		       85 81		      sta	doubleBufferBase
+    485  7a3d
+    486  7a3d		       a9 00		      lda	#0
+    487  7a3f		       85 82		      sta	drawPhase
+    488  7a41		       60		      rts
+    489  7a42
+    490  7a42
+    491  7a42
+    492  7a42
+    493  7a42							;---------------------------------------------------------------------------
+    494  7a42
+ FREE BYTES IN FIXED BANK =  $5ae
+    495  7a42					      ECHO	"FREE BYTES IN FIXED BANK = ", $FFF0 - *
+    496  7a42
+    497  7a42							;---------------------------------------------------------------------------
+    498  7a42							; The reset vectors
+    499  7a42							; these must live in the fixed bank (last 2K of any ROM image in TigerVision)
+    500  7a42
+    501  7ff4 ????				      SEG	PlusCart
+    502  7ff0					      ORG	FIXED_BANK + $7F0
+    503  7ff0					      RORG	$7FF0
+    504  7ff0		       7f f0	   PLUSCART_IO =	*
+    505  7ff0		       00 aa	   PLUS0      =	%10101010
+    506  7ff0		       00 19	   PLUS1      =	%00011001
+    507  7ff0		       00 af	   PLUS2      =	%10101111
+    508  7ff0		       00 36	   PLUS3      =	%00110110
+    509  7ff0		       aa 19 af 36	      .byte.b	PLUS0,PLUS1,PLUS2,PLUS3
+    510  7ff4
+    511  8000 ????				      SEG	InterruptVectors
+    512  7ffc					      ORG	FIXED_BANK + $7FC
+    513  7ffc					      RORG	$7ffC
+    514  7ffc
+    515  7ffc							;		 .word Reset	       ; NMI	    (not used)
+    516  7ffc		       53 f9		      .word.w	Reset	; RESET
+    517  7ffe		       53 f9		      .word.w	Reset	; IRQ	      (not used)
+    518  8000
+    519  8000							;---------------------------------------------------------------------------
 ------- FILE ./chess.asm
-    446  8000
-    447  8000							;END
+    447  8000
+    448  8000							;END

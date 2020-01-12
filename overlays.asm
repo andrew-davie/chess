@@ -95,6 +95,16 @@ __sourceBank            ds 1
     VALIDATE_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
+    OVERLAY "DrawPiece"
+__pieceColour           ds 1
+    VALIDATE_OVERLAY
+
+;---------------------------------------------------------------------------------------------------
+    OVERLAY "RandomPiece"
+__tempx           ds 1
+    VALIDATE_OVERLAY
+
+;---------------------------------------------------------------------------------------------------
 
     ECHO "---- END OF OVERLAYS ----"
     ECHO "MAXIMUM OVERLAY SIZE NEEDED = ", MAXIMUM_REQUIRED_OVERLAY_SIZE

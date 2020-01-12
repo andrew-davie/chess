@@ -25,11 +25,13 @@ ChessBitmap5    ds 24
 
     DEFINE_SUBROUTINE ClearRowBitmap
 
-                lda #255
-                ldy #ROW_BITMAP_SIZE-1
-.clearBoard     sta ChessBitmap+RAM_WRITE,y
-                dey
-                bpl .clearBoard
+                lda #0
+.OFFSET SET 0
+    REPEAT ROW_BITMAP_SIZE
+                sta ChessBitmap+RAM_WRITE+.OFFSET
+.OFFSET SET .OFFSET + 1
+    REPEND
+
                 rts
 
 ;---------------------------------------------------------------------------------------------------
@@ -50,8 +52,8 @@ ChessBitmap5    ds 24
 .rightSide
 
                 ldy #71
-.copyPieceR      lda __pieceShapeBuffer,y
-                ora ChessBitmap+72,y
+.copyPieceR     lda __pieceShapeBuffer,y
+                eor ChessBitmap+72,y
                 sta ChessBitmap+72+RAM_WRITE,y
                 dey
                 bpl .copyPieceR
@@ -62,64 +64,8 @@ ChessBitmap5    ds 24
 
     DEFINE_SUBROUTINE DrawTheChessScreen
 
-                lda #%00000000
-                sta CTRLPF
-                sta COLUBK
-
-                RESYNC
-
-.RestartChessFrame
-
-                lda #%1110                       ; VSYNC ON
-.loopVSync3     sta WSYNC
-                sta VSYNC
-                lsr
-                bne .loopVSync3                  ; branch until VYSNC has been reset
-
-                ldy #VBLANK_TIM_NTSC
-                sty TIM64T
-
-.VerticalBlank  sta WSYNC
-                lda INTIM
-                bne .VerticalBlank
-                sta VBLANK
-
-                ldx #0                          ; 1st bank already switched in but need this for later banks
-                stx SET_BANK_RAM
                 jsr DrawRow                     ; draws all 8 rows with nifty bankswitching
-
-                lda #26
-                sta TIM64T
-
-                lda #0
-                sta PF0
-                sta PF1
-                sta PF2
-
-
-    ; D1 VBLANK turns off beam
-    ; It needs to be turned on 37 scanlines later
-
-.oscan          lda INTIM
-                bne .oscan
-                sta WSYNC
-                sta WSYNC
-                sta WSYNC
-                sta WSYNC
-
-
-                lda #%01000010                  ; bit6 is not required
-                sta VBLANK                      ; end of screen - enter blanking
-
-
-
-                lda INPT4
-                bpl .ret
-
-                jmp .RestartChessFrame
-
-.ret
-             rts
+                rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -167,8 +113,20 @@ SELFMOD_RTS_ON_LAST_ROW
 .LineColour
 ; The ICC triplet colour definitions for a single row of the chessboard
     REPEAT 8
-        .byte $4A, $1A, $98
+        .byte $44, $2c, $a6 ;$4A, $1A, $98
     REPEND
+
+    MAC TEST
+V SET "L"+{1}
+V2 SET "LAB" + V
+V2$
+    ENDM
+
+UNQ SET 0
+    TEST UNQ
+    .byte 1
+UNQ SET UNQ + 1
+    TEST UNQ
 
 
     ;VALIDATE_RAM_SIZE
