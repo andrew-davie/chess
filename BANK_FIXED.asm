@@ -40,7 +40,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE CopyChessboardPiecesToBoardPartial
+    DEFINE_SUBROUTINE CopySinglePiece
 
                 lda #BANK_CHESSBOARD
                 sta SET_BANK_RAM
@@ -52,9 +52,10 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
                 clc
                 adc drawPieceNumber
                 and #1
+                eor #1
                 beq .white
                 lda #28
-.white          sta __pieceColour
+.white          sta __pieceColour           ; actually SQUARE black/white
 
                 ldy drawPieceNumber
                 tya
@@ -69,7 +70,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
                 lsr
                 lsr
                 lsr
-                ora doubleBufferBase
+                ;ora doubleBufferBase
                 tax             ; row
 
                 lda drawPieceNumber
@@ -97,6 +98,8 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
                 cmp #BLANK
                 beq .nextX
 
+                stx fromSquare
+
                 NEXT_RANDOM
                 tay
 .nextY          iny
@@ -104,14 +107,22 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
                 and #63
                 tay
 
+
+                ;lda #BLANK
+                ;sta fromPiece
+
                 lda Chessboard,y
                 cmp #BLANK
                 bne .nextY
 
+                sty toSquare
+
                 lda Chessboard,x
-                sta Chessboard+RAM_WRITE,y
-                lda #BLANK
-                sta Chessboard+RAM_WRITE,x
+                sta fromPiece
+
+;                sta Chessboard+RAM_WRITE,y
+;                lda #BLANK
+;                sta Chessboard+RAM_WRITE,x
 
                 rts
 
@@ -223,9 +234,6 @@ BLACK_KING = INDEX_BLACK_KING_on_BLACK_SQUARE_0
 
 ;---------------------------------------------------------------------------------------------------
 
-
-    ;-----------------------------------------------------------------------------------------------
-
     DEFINE_SUBROUTINE CopyPieceToRAMBuffer
 
     ; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
@@ -248,21 +256,6 @@ BLACK_KING = INDEX_BLACK_KING_on_BLACK_SQUARE_0
                 bpl .copyPieceGfx
 
                 rts
-
-    ;------------------------------------------------------------------------------
-
-
-    DEFINE_SUBROUTINE TimeSlice
-
-    ; FIRST check the time is sufficient for the smallest of the timeslices. Not much point
-    ; going ahead if there's insufficient time. This allows the previous character drawing to
-    ; be much smaller in time, as they don't have to include the timeslice code overhead.
-
-                lda INTIM                       ; 4
-                cmp #SEGTIME_MINIMUM_TIMESLICE  ; 2
-                bcc timeExit                    ; 2(3)
-                                                ; @0✅
-timeExit        rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -304,7 +297,7 @@ timeExit        rts
 
                 CLEAN_START
 
-                lda #$12
+                lda #$92
                 sta rnd
 
 
@@ -376,7 +369,7 @@ timeExit        rts
                 sta VBLANK
 
                 lda doubleBufferBase
-                eor #8
+                ;eor #8
                 tax
                 stx SET_BANK_RAM
                 jsr DrawRow
@@ -440,12 +433,30 @@ DrawVectorLO
     .byte <Phase0_ClearBoard_1
     .byte <DrawNextPiece
     .byte <FlipBuffers
+    .byte <EraseStartPiece
+    .byte <WriteStartPieceBlank
+    .byte <MarchToTargetA
+    ;.byte <DelayIt
+    .byte <MarchToTargetB
+    .byte <WriteEndPieceBlank
+    .byte <WriteEndPiece
+    .byte <DelayIt
+    .byte <Final
 
 DrawVectorHI
     .byte >Phase0_ClearBoard_0
     .byte >Phase0_ClearBoard_1
     .byte >DrawNextPiece
     .byte >FlipBuffers
+    .byte >EraseStartPiece
+    .byte >WriteStartPieceBlank
+    .byte >MarchToTargetA
+    ;.byte >DelayIt
+    .byte >MarchToTargetB
+    .byte >WriteEndPieceBlank
+    .byte >WriteEndPiece
+    .byte >DelayIt
+    .byte >Final
 
     DEFINE_SUBROUTINE Phase0_ClearBoard_0
 
@@ -465,30 +476,171 @@ DrawVectorHI
 
     DEFINE_SUBROUTINE DrawNextPiece
 
-                jsr CopyChessboardPiecesToBoardPartial
+                jsr CopySinglePiece
                 dec drawPieceNumber
                 bpl .incomplete
 
                 inc drawPhase
 .incomplete     rts
 
+    ; Now we've finished drawing the screen square by square.
 
     DEFINE_SUBROUTINE FlipBuffers
 
-    REPEAT 4
                 jsr RandomPieceMove
-    REPEND
-
-                lda doubleBufferBase
-                eor #8
-                sta doubleBufferBase
-
-                lda #0
-                sta drawPhase
+                inc drawPhase
                 rts
 
+    DEFINE_SUBROUTINE EraseStartPiece
+
+                lda fromSquare
+                sta drawPieceNumber
+                jsr CopySinglePiece      ; erase the existing piece
+
+                inc drawPhase
+                rts
+
+    DEFINE_SUBROUTINE WriteStartPieceBlank
+
+                ldx fromSquare
+                stx drawPieceNumber
+
+                lda #BANK_CHESSBOARD
+                sta SET_BANK_RAM
+                lda #BLANK
+                sta Chessboard+RAM_WRITE,x                            ; put a blank on the board
+
+                jsr CopySinglePiece          ; now draw the 'blank' square
+
+                inc drawPhase
+                rts
+
+    DEFINE_SUBROUTINE MarchToTargetA
+
+                lda fromSquare
+                cmp toSquare
+                beq .halt
+
+                lda fromSquare
+                lsr
+                lsr
+                lsr
+                sta __fromRow
+                lda toSquare
+                lsr
+                lsr
+                lsr
+                cmp __fromRow
+                beq rowOK
+                bcs .downRow
+                lda fromSquare
+                sbc #7
+                sta fromSquare
+                jmp nowcol
+.downRow        lda fromSquare
+                adc #7
+                sta fromSquare
+rowOK
+nowcol
+
+                lda fromSquare
+                and #7
+                sta __fromRow
+                lda toSquare
+                and #7
+                cmp __fromRow
+                beq colok
+                bcc .leftCol
+                inc fromSquare
+                jmp colok
+.leftCol        dec fromSquare
+colok
 
 
+
+                lda fromSquare
+
+;                clc
+;                adc #1
+;                and #63
+;                sta fromSquare
+                tax
+                stx drawPieceNumber
+
+                lda #BANK_CHESSBOARD
+                sta SET_BANK_RAM
+                lda Chessboard,x
+                sta lastPiece
+                lda fromPiece
+                sta Chessboard+RAM_WRITE,x
+                jsr CopySinglePiece
+
+                lda #3
+                sta drawDelay
+                inc drawPhase
+                rts
+
+    DEFINE_SUBROUTINE MarchToTargetB
+
+                lda drawDelay
+                beq gogogo
+                dec drawDelay
+                jmp bypass
+gogogo
+
+                ldx fromSquare
+                stx drawPieceNumber
+                jsr CopySinglePiece
+                lda #BANK_CHESSBOARD
+                sta SET_BANK_RAM
+                ldx fromSquare
+                lda lastPiece
+                sta Chessboard+RAM_WRITE,x
+
+                dec drawPhase
+bypass          rts
+
+.halt           inc drawPhase
+                inc drawPhase
+
+    DEFINE_SUBROUTINE WriteEndPieceBlank
+
+                ldx toSquare
+                stx drawPieceNumber
+                jsr CopySinglePiece          ; now erase the destination square
+
+                inc drawPhase
+                rts
+
+    DEFINE_SUBROUTINE WriteEndPiece
+
+                ldx toSquare
+                stx drawPieceNumber
+
+                lda #BANK_CHESSBOARD
+                sta SET_BANK_RAM
+                lda fromPiece
+                sta Chessboard+RAM_WRITE,x                            ; put a blank on the board
+
+                jsr CopySinglePiece
+
+                lda #10
+                sta drawDelay
+                inc drawPhase
+                rts
+
+    DEFINE_SUBROUTINE DelayIt
+
+                dec drawDelay
+                bne .waiting
+                inc drawPhase
+.waiting        rts
+
+    DEFINE_SUBROUTINE Final
+
+                lda #3
+                sta drawPhase
+                rts
 
     ;---------------------------------------------------------------------------
 

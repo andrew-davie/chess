@@ -795,206 +795,214 @@
       3  0000 ????						; Copyright (c) 2019-2020 Andrew Davie
       4  0000 ????						; andrew@taswegian.com
       5  0000 ????
-      6 U00dc ????				      SEG.U	variables
+      6 U00e3 ????				      SEG.U	variables
       7 U0080					      ORG	$80
-      8 U0080
-      9 U0080		       00	   rnd	      ds	1	; random
-     10 U0081		       00	   doubleBufferBase ds	1	; switcher for which draw buffer in use points to DRAW one
-     11 U0082		       00	   drawPhase  ds	1	; ticks through the board draw process
-     12 U0083		       00	   drawPieceNumber ds	1	; partial - square being drawn
-     13 U0084
-     14 U0084		       00	   Platform   ds	1	; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
-     15 U0085		       00	   BufferedJoystick ds	1	; player joystick input
-     16 U0086		       00	   PreviousJoystick ds	1
-     17 U0087							;BGColour			  ds 1
-     18 U0087		       00 00	   colour_table ds	2
-     19 U0089
-     20 U0089		       00 00	   Board_AddressR ds	2
-     21 U008b		       00 00	   Board_AddressW ds	2
-     22 U008d		       00	   ROM_Bank   ds	1	; last switched ROM bank (not accessible if RAM subsequently switched)
-     23 U008e		       00	   RAM_Bank   ds	1
-     24 U008f
-     25 U008f
-     26 U008f		       00	   ObjIterator ds	1	; count UP iterator over objects
+      8 U0080		       00	   drawPieceNumber ds	1	; partial - square being drawn
+      9 U0081
+     10 U0081		       00	   rnd	      ds	1	; random
+     11 U0082		       00	   doubleBufferBase ds	1	; switcher for which draw buffer in use points to DRAW one
+     12 U0083		       00	   drawPhase  ds	1	; ticks through the board draw process
+     13 U0084		       00	   drawDelay  ds	1
+     14 U0085
+     15 U0085		       00	   fromSquare ds	1
+     16 U0086		       00	   fromPiece  ds	1
+     17 U0087		       00	   toSquare   ds	1
+     18 U0088		       00	   toPiece    ds	1
+     19 U0089		       00	   lastPiece  ds	1
+     20 U008a		       00	   __fromRow  ds	1
+     21 U008b
+     22 U008b		       00	   Platform   ds	1	; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
+     23 U008c		       00	   BufferedJoystick ds	1	; player joystick input
+     24 U008d		       00	   PreviousJoystick ds	1
+     25 U008e							;BGColour			  ds 1
+     26 U008e		       00 00	   colour_table ds	2
+     27 U0090
+     28 U0090		       00 00	   Board_AddressR ds	2
+     29 U0092		       00 00	   Board_AddressW ds	2
+     30 U0094		       00	   ROM_Bank   ds	1	; last switched ROM bank (not accessible if RAM subsequently switched)
+     31 U0095		       00	   RAM_Bank   ds	1
+     32 U0096
+     33 U0096
+     34 U0096		       00	   ObjIterator ds	1	; count UP iterator over objects
 ------- FILE ./chess.asm
 ------- FILE overlays.asm LEVEL 2 PASS 2
-      0 U0090					      include	"overlays.asm"
-      1 U0090							; Chess
-      2 U0090							; Atari 2600 Chess display system
-      3 U0090							; Copyright (c) 2019-2020 Andrew Davie
-      4 U0090							; andrew@taswegian.com
-      5 U0090
-      6 U0090							;---------------------------------------------------------------------------------------------------
-      7 U0090							; OVERLAYS!
-      8 U0090							; These variables are overlays, and should be managed with care
-      9 U0090							; They co-exist (each "OVERLAY" starts at the zero-page variable "Overlay"
-     10 U0090							; and thus, overlays cannot be used at the same time (that is, you cannot
-     11 U0090							; use a variable in overlay #1 while at the same time using a variable in
-     12 U0090							; overlay #2
-     13 U0090
-     14 U0090							; for clarity, prefix ALL overlay variables with double-underscore (__)
-     15 U0090
-     16 U0090							; TOTAL SPACE USED BY ANY OVERLAY GROUP SHOULD BE <= SIZE OF 'Overlay'
-     17 U0090							; ensure this by using the VALIDATE_OVERLAY macro
-     18 U0090							;---------------------------------------------------------------------------------------------------
-     19 U0090
-     20 U0090					      MAC	overlay
-     21 U0090				   OVERLAY_NAME SET	{1}
-     22 U0090					      SEG.U	OVERLAY_{1}
-     23 U0090					      org	Overlay
-     24 U0090					      ENDM		; {name}
-     25 U0090
-     26 U0090							;---------------------------------------------------------------------------------------------------
-     27 U0090
-     28 U0090					      MAC	validate_overlay
-     29 U0090					      LIST	OFF
-     30 U0090				   OVERLAY_DELTA SET	* - Overlay
-     31 U0090					      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-     32 U0090				   MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-     33 U0090					      ENDIF
-     34 U0090					      IF	OVERLAY_DELTA > OVERLAY_SIZE
-     35 U0090					      ECHO	"Overlay", OVERLAY_NAME, "is too big!"
-     36 U0090					      ECHO	"REQUIRED SIZE =", OVERLAY_DELTA
-     37 U0090					      ERR
-     38 U0090					      ENDIF
-     39 U0090					      LIST	ON
-     40 U0090					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-     41 U0090					      ENDM
-     42 U0090
-     43 U0090							;---------------------------------------------------------------------------------------------------
-     44 U0090
-     45 U0090				   OVERLAY_SIZE SET	$4C	; maximum size
-     46 U0090				   MAXIMUM_REQUIRED_OVERLAY_SIZE SET	0
-     47 U0090
-     48 U0090
-     49 U0090							; This overlay variable is used for the overlay variables.  That's OK.
-     50 U0090							; However, it is positioned at the END of the variables so, if on the off chance we're overlapping
-     51 U0090							; stack space and variable, it is LIKELY that that won't be a problem, as the temp variables
-     52 U0090							; (especially the latter ones) are only used in rare occasions.
-     53 U0090
-     54 U0090							; FOR SAFETY, DO NOT USE THIS AREA DIRECTLY (ie: NEVER reference 'Overlay' in the code)
-     55 U0090							; ADD AN OVERLAY FOR EACH ROUTINE'S USE, SO CLASHES CAN BE EASILY CHECKED
-     56 U0090
-     57 U0090		       00 00 00 00*Overlay    ds	OVERLAY_SIZE	;--> overlay (share) variables
-     58 U00dc
-     59 U00dc							;---------------------------------------------------------------------------------------------------
-     60 U00dc							; And now... the overlays....
-     61 U00dc
+      0 U0097					      include	"overlays.asm"
+      1 U0097							; Chess
+      2 U0097							; Atari 2600 Chess display system
+      3 U0097							; Copyright (c) 2019-2020 Andrew Davie
+      4 U0097							; andrew@taswegian.com
+      5 U0097
+      6 U0097							;---------------------------------------------------------------------------------------------------
+      7 U0097							; OVERLAYS!
+      8 U0097							; These variables are overlays, and should be managed with care
+      9 U0097							; They co-exist (each "OVERLAY" starts at the zero-page variable "Overlay"
+     10 U0097							; and thus, overlays cannot be used at the same time (that is, you cannot
+     11 U0097							; use a variable in overlay #1 while at the same time using a variable in
+     12 U0097							; overlay #2
+     13 U0097
+     14 U0097							; for clarity, prefix ALL overlay variables with double-underscore (__)
+     15 U0097
+     16 U0097							; TOTAL SPACE USED BY ANY OVERLAY GROUP SHOULD BE <= SIZE OF 'Overlay'
+     17 U0097							; ensure this by using the VALIDATE_OVERLAY macro
+     18 U0097							;---------------------------------------------------------------------------------------------------
+     19 U0097
+     20 U0097					      MAC	overlay
+     21 U0097				   OVERLAY_NAME SET	{1}
+     22 U0097					      SEG.U	OVERLAY_{1}
+     23 U0097					      org	Overlay
+     24 U0097					      ENDM		; {name}
+     25 U0097
+     26 U0097							;---------------------------------------------------------------------------------------------------
+     27 U0097
+     28 U0097					      MAC	validate_overlay
+     29 U0097					      LIST	OFF
+     30 U0097				   OVERLAY_DELTA SET	* - Overlay
+     31 U0097					      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+     32 U0097				   MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+     33 U0097					      ENDIF
+     34 U0097					      IF	OVERLAY_DELTA > OVERLAY_SIZE
+     35 U0097					      ECHO	"Overlay", OVERLAY_NAME, "is too big!"
+     36 U0097					      ECHO	"REQUIRED SIZE =", OVERLAY_DELTA
+     37 U0097					      ERR
+     38 U0097					      ENDIF
+     39 U0097					      LIST	ON
+     40 U0097					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+     41 U0097					      ENDM
+     42 U0097
+     43 U0097							;---------------------------------------------------------------------------------------------------
+     44 U0097
+     45 U0097				   OVERLAY_SIZE SET	$4C	; maximum size
+     46 U0097				   MAXIMUM_REQUIRED_OVERLAY_SIZE SET	0
+     47 U0097
+     48 U0097
+     49 U0097							; This overlay variable is used for the overlay variables.  That's OK.
+     50 U0097							; However, it is positioned at the END of the variables so, if on the off chance we're overlapping
+     51 U0097							; stack space and variable, it is LIKELY that that won't be a problem, as the temp variables
+     52 U0097							; (especially the latter ones) are only used in rare occasions.
+     53 U0097
+     54 U0097							; FOR SAFETY, DO NOT USE THIS AREA DIRECTLY (ie: NEVER reference 'Overlay' in the code)
+     55 U0097							; ADD AN OVERLAY FOR EACH ROUTINE'S USE, SO CLASHES CAN BE EASILY CHECKED
+     56 U0097
+     57 U0097		       00 00 00 00*Overlay    ds	OVERLAY_SIZE	;--> overlay (share) variables
+     58 U00e3
+     59 U00e3							;---------------------------------------------------------------------------------------------------
+     60 U00e3							; And now... the overlays....
+     61 U00e3
  ---- OVERLAYS ( $4c bytes ) ----
-     62 U00dc					      ECHO	"---- OVERLAYS (", OVERLAY_SIZE, "bytes ) ----"
-     63 U00dc
-     64 U00dc							;---------------------------------------------------------------------------------------------------
-     65 U00dc
-      0 U00dc					      OVERLAY	"PieceBufferOverlay"
-      1 U00dc				   OVERLAY_NAME SET	"PieceBufferOverlay"
-      2 U00dc ????				      SEG.U	OVERLAY_"PieceBufferOverlay"
-      3 U0090					      org	Overlay
-     67 U0090							; used in CopyPieceFromRAMBufferToScreen
-     68 U0090							; used in CopyPieceToRAMBuffer
-     69 U0090							; used in ClearChessBitmap
-     70 U0090							; used in CopyPieceToRowBitmap
-     71 U0090		       00 00 00 00*__pieceShapeBuffer ds	PIECE_SHAPE_SIZE
-     72 U00d8		       00 00	   __ptr      ds	2	; pointer to data
-     73 U00da		       00 00	   __ptr2     ds	2	; pointer to data
-      0 U00dc					      VALIDATE_OVERLAY
-     11 U00dc					      LIST	ON
+     62 U00e3					      ECHO	"---- OVERLAYS (", OVERLAY_SIZE, "bytes ) ----"
+     63 U00e3
+     64 U00e3							;---------------------------------------------------------------------------------------------------
+     65 U00e3
+      0 U00e3					      OVERLAY	"PieceBufferOverlay"
+      1 U00e3				   OVERLAY_NAME SET	"PieceBufferOverlay"
+      2 U00e3 ????				      SEG.U	OVERLAY_"PieceBufferOverlay"
+      3 U0097					      org	Overlay
+     67 U0097							; used in CopyPieceFromRAMBufferToScreen
+     68 U0097							; used in CopyPieceToRAMBuffer
+     69 U0097							; used in ClearChessBitmap
+     70 U0097							; used in CopyPieceToRowBitmap
+     71 U0097		       00 00 00 00*__pieceShapeBuffer ds	PIECE_SHAPE_SIZE
+     72 U00df		       00 00	   __ptr      ds	2	; pointer to data
+     73 U00e1		       00 00	   __ptr2     ds	2	; pointer to data
+      0 U00e3					      VALIDATE_OVERLAY
+     11 U00e3					      LIST	ON
  PieceBufferOverlay - $0 bytes available
-     12 U00dc					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-     75 U00dc
-     76 U00dc							;---------------------------------------------------------------------------------------------------
-     77 U00dc
-      0 U00dc					      OVERLAY	"CopyROMShadowToRAM"
-      1 U00dc				   OVERLAY_NAME SET	"CopyROMShadowToRAM"
-      2 U0093 ????				      SEG.U	OVERLAY_"CopyROMShadowToRAM"
-      3 U0090					      org	Overlay
-     79 U0090		       00	   __CopyCount ds	1
-     80 U0091		       00	   __ROM_SourceBank ds	1
-     81 U0092		       00	   __index    ds	1
-      0 U0093					      VALIDATE_OVERLAY
-     11 U0093					      LIST	ON
+     12 U00e3					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+     75 U00e3
+     76 U00e3							;---------------------------------------------------------------------------------------------------
+     77 U00e3
+      0 U00e3					      OVERLAY	"CopyROMShadowToRAM"
+      1 U00e3				   OVERLAY_NAME SET	"CopyROMShadowToRAM"
+      2 U009a ????				      SEG.U	OVERLAY_"CopyROMShadowToRAM"
+      3 U0097					      org	Overlay
+     79 U0097		       00	   __CopyCount ds	1
+     80 U0098		       00	   __ROM_SourceBank ds	1
+     81 U0099		       00	   __index    ds	1
+      0 U009a					      VALIDATE_OVERLAY
+     11 U009a					      LIST	ON
  CopyROMShadowToRAM - $49 bytes available
-     12 U0093					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-     83 U0093
-     84 U0093							;---------------------------------------------------------------------------------------------------
-     85 U0093
-      0 U0093					      OVERLAY	"DrawTheChessScreen"
-      1 U0093				   OVERLAY_NAME SET	"DrawTheChessScreen"
-      2 U0091 ????				      SEG.U	OVERLAY_"DrawTheChessScreen"
-      3 U0090					      org	Overlay
-     87 U0090		       00	   __rows     ds	1
-      0 U0091					      VALIDATE_OVERLAY
-     11 U0091					      LIST	ON
+     12 U009a					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+     83 U009a
+     84 U009a							;---------------------------------------------------------------------------------------------------
+     85 U009a
+      0 U009a					      OVERLAY	"DrawTheChessScreen"
+      1 U009a				   OVERLAY_NAME SET	"DrawTheChessScreen"
+      2 U0098 ????				      SEG.U	OVERLAY_"DrawTheChessScreen"
+      3 U0097					      org	Overlay
+     87 U0097		       00	   __rows     ds	1
+      0 U0098					      VALIDATE_OVERLAY
+     11 U0098					      LIST	ON
  DrawTheChessScreen - $4b bytes available
-     12 U0091					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-     89 U0091
-     90 U0091							;---------------------------------------------------------------------------------------------------
-     91 U0091
-      0 U0091					      OVERLAY	"SetupShadowRAM"
-      1 U0091				   OVERLAY_NAME SET	"SetupShadowRAM"
-      2 U0092 ????				      SEG.U	OVERLAY_"SetupShadowRAM"
-      3 U0090					      org	Overlay
-     93 U0090		       00	   __destinationBank ds	1
-     94 U0091		       00	   __sourceBank ds	1
-      0 U0092					      VALIDATE_OVERLAY
-     11 U0092					      LIST	ON
+     12 U0098					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+     89 U0098
+     90 U0098							;---------------------------------------------------------------------------------------------------
+     91 U0098
+      0 U0098					      OVERLAY	"SetupShadowRAM"
+      1 U0098				   OVERLAY_NAME SET	"SetupShadowRAM"
+      2 U0099 ????				      SEG.U	OVERLAY_"SetupShadowRAM"
+      3 U0097					      org	Overlay
+     93 U0097		       00	   __destinationBank ds	1
+     94 U0098		       00	   __sourceBank ds	1
+      0 U0099					      VALIDATE_OVERLAY
+     11 U0099					      LIST	ON
  SetupShadowRAM - $4a bytes available
-     12 U0092					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-     96 U0092
-     97 U0092							;---------------------------------------------------------------------------------------------------
-      0 U0092					      OVERLAY	"DrawPiece"
-      1 U0092				   OVERLAY_NAME SET	"DrawPiece"
-      2 U0091 ????				      SEG.U	OVERLAY_"DrawPiece"
-      3 U0090					      org	Overlay
-     99 U0090		       00	   __pieceColour ds	1
-      0 U0091					      VALIDATE_OVERLAY
-     11 U0091					      LIST	ON
+     12 U0099					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+     96 U0099
+     97 U0099							;---------------------------------------------------------------------------------------------------
+      0 U0099					      OVERLAY	"DrawPiece"
+      1 U0099				   OVERLAY_NAME SET	"DrawPiece"
+      2 U0098 ????				      SEG.U	OVERLAY_"DrawPiece"
+      3 U0097					      org	Overlay
+     99 U0097		       00	   __pieceColour ds	1
+      0 U0098					      VALIDATE_OVERLAY
+     11 U0098					      LIST	ON
  DrawPiece - $4b bytes available
-     12 U0091					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-    101 U0091
-    102 U0091							;---------------------------------------------------------------------------------------------------
-      0 U0091					      OVERLAY	"RandomPiece"
-      1 U0091				   OVERLAY_NAME SET	"RandomPiece"
-      2 U009d ????				      SEG.U	OVERLAY_"RandomPiece"
-      3 U0090					      org	Overlay
-    104 U0090		       00	   __tempx    ds	1
-      0 U0091					      VALIDATE_OVERLAY
-     11 U0091					      LIST	ON
+     12 U0098					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+    101 U0098
+    102 U0098							;---------------------------------------------------------------------------------------------------
+      0 U0098					      OVERLAY	"RandomPiece"
+      1 U0098				   OVERLAY_NAME SET	"RandomPiece"
+      2 U00a4 ????				      SEG.U	OVERLAY_"RandomPiece"
+      3 U0097					      org	Overlay
+    104 U0097		       00	   __tempx    ds	1
+      0 U0098					      VALIDATE_OVERLAY
+     11 U0098					      LIST	ON
  RandomPiece - $4b bytes available
-     12 U0091					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-    106 U0091
-    107 U0091							;---------------------------------------------------------------------------------------------------
-    108 U0091
+     12 U0098					      ECHO	OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
+    106 U0098
+    107 U0098							;---------------------------------------------------------------------------------------------------
+    108 U0098
  ---- END OF OVERLAYS ----
-    109 U0091					      ECHO	"---- END OF OVERLAYS ----"
+    109 U0098					      ECHO	"---- END OF OVERLAYS ----"
  MAXIMUM OVERLAY SIZE NEEDED =  $4c
-    110 U0091					      ECHO	"MAXIMUM OVERLAY SIZE NEEDED = ", MAXIMUM_REQUIRED_OVERLAY_SIZE
-    111 U0091
-    112 U0091							;EOF
+    110 U0098					      ECHO	"MAXIMUM OVERLAY SIZE NEEDED = ", MAXIMUM_REQUIRED_OVERLAY_SIZE
+    111 U0098
+    112 U0098							;EOF
 ------- FILE ./chess.asm
 ------- FILE stack.asm LEVEL 2 PASS 2
-      0 U0091					      include	"stack.asm"
-      1 U0091							; Chess
-      2 U0091							; Atari 2600 Chess display system
-      3 U0091							; Copyright (c) 2019-2020 Andrew Davie
-      4 U0091							; andrew@taswegian.com
-      5 U0091
-      6 U0091		       00 00 00 00*	      ds	RESERVED_FOR_STACK
+      0 U0098					      include	"stack.asm"
+      1 U0098							; Chess
+      2 U0098							; Atari 2600 Chess display system
+      3 U0098							; Copyright (c) 2019-2020 Andrew Davie
+      4 U0098							; andrew@taswegian.com
+      5 U0098
+      6 U0098		       00 00 00 00*	      ds	RESERVED_FOR_STACK
 ------- FILE ./chess.asm
-    303 U009d
- FREE BYTES IN ZERO PAGE =  $62
-    304 U009d					      ECHO	"FREE BYTES IN ZERO PAGE = ", $FF - *
-    305 U009d				  -	      IF	* > $FF
-    306 U009d				  -	      ERR	"Zero Page overflow!"
-    307 U009d					      ENDIF
-    308 U009d
-    309 U009d							;------------------------------------------------------------------------------
-    310 U009d							;##############################################################################
-    311 U009d							;------------------------------------------------------------------------------
-    312 U009d
-    313 U009d							; NOW THE VERY INTERESTING '3E' RAM BANKS
-    314 U009d							; EACH BANK HAS A READ-ADDRESS AND A WRITE-ADDRESS, WITH 2k TOTAL
-    315 U009d
-      0 U009d					      NEWRAMBANK	BANK_SCREENMARKII1
+    303 U00a4
+ FREE BYTES IN ZERO PAGE =  $5b
+    304 U00a4					      ECHO	"FREE BYTES IN ZERO PAGE = ", $FF - *
+    305 U00a4				  -	      IF	* > $FF
+    306 U00a4				  -	      ERR	"Zero Page overflow!"
+    307 U00a4					      ENDIF
+    308 U00a4
+    309 U00a4							;------------------------------------------------------------------------------
+    310 U00a4							;##############################################################################
+    311 U00a4							;------------------------------------------------------------------------------
+    312 U00a4
+    313 U00a4							; NOW THE VERY INTERESTING '3E' RAM BANKS
+    314 U00a4							; EACH BANK HAS A READ-ADDRESS AND A WRITE-ADDRESS, WITH 2k TOTAL
+    315 U00a4
+      0 U00a4					      NEWRAMBANK	BANK_SCREENMARKII1
       1 U0000 ????				      SEG.U	BANK_SCREENMARKII1
       2 U0000					      ORG	ORIGIN_RAM
       3 U0000					      RORG	RAM_3E
@@ -1383,7 +1391,7 @@
     423 U5400							;##############################################################################
     424 U5400							;------------------------------------------------------------------------------
     425 U5400
-    426 U5400		       00 b4	   RND_EOR_VAL =	$B4
+    426 U5400		       00 75	   RND_EOR_VAL =	$75	;B4
     427 U5400
     428 U5400					      MAC	next_random
     429 U5400					      lda	rnd
@@ -1467,7 +1475,7 @@
      44  0016		       85 4a		      sta	CTRLPF
      45  0018
      46  0018		       a9 ff		      lda	#$FF
-     47  001a		       85 85		      sta	BufferedJoystick
+     47  001a		       85 8c		      sta	BufferedJoystick
      48  001c
      49  001c							;lda #DIRECTION_BITS		  ;???
      50  001c							;sta ManLastDirection
@@ -1505,7 +1513,7 @@
       5  002a		       d0 f9		      bne	.VSLP1
       8  002c
       9  002c		       a0 88		      ldy	#SCANLINES_NTSC/2 - 2
-     10  002e		       a5 84		      lda	Platform
+     10  002e		       a5 8b		      lda	Platform
      11  0030		       49 02		      eor	#PAL_50
      12  0032		       d0 02		      bne	.ntsc
      13  0034		       a0 9a		      ldy	#SCANLINES_PAL/2 - 2
@@ -1558,7 +1566,7 @@
     103  005c							;------------------------------------------------------------------------------
     104  005c							; This is where the PAL system has a bit of extra time on a per-frame basis.
     105  005c
-    106  005c		       a6 84		      ldx	Platform
+    106  005c		       a6 8b		      ldx	Platform
     107  005e		       bd 41 f0 	      lda	OverscanTime,x
     108  0061		       8d 96 02 	      sta	TIM64T
     109  0064
@@ -1576,8 +1584,8 @@
     121  0064							; Create a 'standardised' joystick with D4-D7 having bits CLEAR if the appropriate direction is chosen.
     122  0064
     123  0064		       ad 80 02 	      lda	SWCHA
-    124  0067		       25 85		      and	BufferedJoystick
-    125  0069		       85 85		      sta	BufferedJoystick
+    124  0067		       25 8c		      and	BufferedJoystick
+    125  0069		       85 8c		      sta	BufferedJoystick
     126  006b
     127  006b		       60		      rts
     128  006c
@@ -2081,8 +2089,8 @@
      41  0a43		       b0 0f		      bcs	.rightSide
      42  0a45
      43  0a45		       a0 47		      ldy	#71
-     44  0a47		       b9 90 00    .copyPiece lda	__pieceShapeBuffer,y
-     45  0a4a		       19 00 f0 	      ora	ChessBitmap,y
+     44  0a47		       b9 97 00    .copyPiece lda	__pieceShapeBuffer,y
+     45  0a4a		       59 00 f0 	      eor	ChessBitmap,y
      46  0a4d		       99 00 f4 	      sta	ChessBitmap+RAM_WRITE,y
      47  0a50		       88		      dey
      48  0a51		       10 f4		      bpl	.copyPiece
@@ -2092,7 +2100,7 @@
      52  0a54				   .rightSide
      53  0a54
      54  0a54		       a0 47		      ldy	#71
-     55  0a56		       b9 90 00    .copyPieceR lda	__pieceShapeBuffer,y
+     55  0a56		       b9 97 00    .copyPieceR lda	__pieceShapeBuffer,y
      56  0a59		       59 48 f0 	      eor	ChessBitmap+72,y
      57  0a5c		       99 48 f4 	      sta	ChessBitmap+72+RAM_WRITE,y
      58  0a5f		       88		      dey
@@ -2182,21 +2190,21 @@
     113  0a9b				   .LineColour
     114  0a9b							; The ICC triplet colour definitions for a single row of the chessboard
     115  0a9b					      REPEAT	8
-    116  0a9b		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    116  0a9b		       48 28 96 	      .byte.b	$48, $28, $96	;$4A, $1A, $98
     115  0a9b					      REPEND
-    116  0a9e		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    116  0a9e		       48 28 96 	      .byte.b	$48, $28, $96	;$4A, $1A, $98
     115  0a9e					      REPEND
-    116  0aa1		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    116  0aa1		       48 28 96 	      .byte.b	$48, $28, $96	;$4A, $1A, $98
     115  0aa1					      REPEND
-    116  0aa4		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    116  0aa4		       48 28 96 	      .byte.b	$48, $28, $96	;$4A, $1A, $98
     115  0aa4					      REPEND
-    116  0aa7		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    116  0aa7		       48 28 96 	      .byte.b	$48, $28, $96	;$4A, $1A, $98
     115  0aa7					      REPEND
-    116  0aaa		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    116  0aaa		       48 28 96 	      .byte.b	$48, $28, $96	;$4A, $1A, $98
     115  0aaa					      REPEND
-    116  0aad		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    116  0aad		       48 28 96 	      .byte.b	$48, $28, $96	;$4A, $1A, $98
     115  0aad					      REPEND
-    116  0ab0		       44 2c a6 	      .byte.b	$44, $2c, $a6	;$4A, $1A, $98
+    116  0ab0		       48 28 96 	      .byte.b	$48, $28, $96	;$4A, $1A, $98
     117  0ab3					      REPEND
     118  0ab3
     119  0ab3					      MAC	test
@@ -2681,8 +2689,8 @@
       1  2000		       00 04	   BANK_WHITE_KING_on_WHITE_SQUARE_0 =	_CURRENT_BANK
       2  2000					      SUBROUTINE
       3  2000				   WHITE_KING_on_WHITE_SQUARE_0
-      3  2000		       00 40 f0 e0*	      .byte.b	$00,$40,$f0,$e0,$e0,$f0,$40,$50,$b0,$f0,$50,$50,$50,$50,$50,$50,$f0,$f0,$f0,$60,$f0,$e0,$e0,$f0	;PF0
-      4  2018		       00 00 80 00*	      .byte.b	$00,$00,$80,$00,$00,$80,$00,$80,$80,$80,$00,$80,$80,$00,$80,$80,$00,$80,$80,$00,$80,$00,$00,$80	;PF1
+      3  2000		       00 40 f0 e0*	      .byte.b	$00,$40,$f0,$e0,$e0,$f0,$40,$e0,$b0,$f0,$50,$50,$50,$50,$50,$50,$f0,$f0,$f0,$60,$f0,$e0,$e0,$f0	;PF0
+      4  2018		       00 00 80 00*	      .byte.b	$00,$00,$80,$00,$00,$80,$00,$00,$80,$80,$00,$80,$80,$00,$80,$80,$00,$80,$80,$00,$80,$00,$00,$80	;PF1
       5  2030		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_KING_on_WHITE_SQUARE_1.asm LEVEL 4 PASS 2
@@ -2694,7 +2702,7 @@
       2  2048					      SUBROUTINE
       3  2048				   WHITE_KING_on_WHITE_SQUARE_1
       3  2048		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  2060		       00 10 7c 38*	      .byte.b	$00,$10,$7c,$38,$38,$7c,$10,$54,$6c,$7c,$50,$54,$54,$50,$54,$54,$78,$7c,$7c,$30,$7c,$38,$38,$7c	;PF1
+      4  2060		       00 10 7c 38*	      .byte.b	$00,$10,$7c,$38,$38,$7c,$10,$38,$6c,$7c,$50,$54,$54,$50,$54,$54,$78,$7c,$7c,$30,$7c,$38,$38,$7c	;PF1
       5  2078		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_KING_on_WHITE_SQUARE_2.asm LEVEL 4 PASS 2
@@ -2706,8 +2714,8 @@
       2  2090					      SUBROUTINE
       3  2090				   WHITE_KING_on_WHITE_SQUARE_2
       3  2090		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  20a8		       00 00 03 01*	      .byte.b	$00,$00,$03,$01,$01,$03,$00,$02,$03,$03,$02,$02,$02,$02,$02,$02,$03,$03,$03,$01,$03,$01,$01,$03	;PF1
-      5  20c0		       00 01 07 03*	      .byte.b	$00,$01,$07,$03,$03,$07,$01,$05,$06,$07,$01,$05,$05,$01,$05,$05,$03,$07,$07,$01,$07,$03,$03,$07	;PF2
+      4  20a8		       00 00 03 01*	      .byte.b	$00,$00,$03,$01,$01,$03,$00,$01,$03,$03,$02,$02,$02,$02,$02,$02,$03,$03,$03,$01,$03,$01,$01,$03	;PF1
+      5  20c0		       00 01 07 03*	      .byte.b	$00,$01,$07,$03,$03,$07,$01,$03,$06,$07,$01,$05,$05,$01,$05,$05,$03,$07,$07,$01,$07,$03,$03,$07	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_KING_on_WHITE_SQUARE_3.asm LEVEL 4 PASS 2
       0  20d8					      include	"gfx/WHITE_KING_on_WHITE_SQUARE_3.asm"
@@ -2723,7 +2731,7 @@
       3  2100				   WHITE_KING_on_WHITE_SQUARE_3
       3  2100		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
       4  2118		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF1
-      5  2130		       00 20 f8 70*	      .byte.b	$00,$20,$f8,$70,$70,$f8,$20,$a8,$d8,$f8,$28,$a8,$a8,$28,$a8,$a8,$78,$f8,$f8,$30,$f8,$70,$70,$f8	;PF2
+      5  2130		       00 20 f8 70*	      .byte.b	$00,$20,$f8,$70,$70,$f8,$20,$70,$d8,$f8,$28,$a8,$a8,$28,$a8,$a8,$78,$f8,$f8,$30,$f8,$70,$70,$f8	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_BLANK_on_BLACK_SQUARE_0.asm LEVEL 4 PASS 2
       0  2148					      include	"gfx/WHITE_BLANK_on_BLACK_SQUARE_0.asm"
@@ -3014,7 +3022,7 @@
       2  2800					      SUBROUTINE
       3  2800				   WHITE_QUEEN_on_BLACK_SQUARE_0
       3  2800		       00 00 00 50*	      .byte.b	$00,$00,$00,$50,$50,$50,$00,$00,$00,$50,$50,$50,$f0,$f0,$f0,$f0,$f0,$f0,$e0,$40,$e0,$e0,$e0,$e0	;PF0
-      4  2818		       00 00 00 80*	      .byte.b	$00,$00,$00,$80,$80,$80,$00,$00,$00,$80,$00,$80,$80,$00,$80,$80,$00,$80,$00,$00,$00,$00,$00,$00	;PF1
+      4  2818		       00 00 00 80*	      .byte.b	$00,$00,$00,$80,$80,$80,$00,$00,$80,$80,$00,$80,$80,$00,$80,$80,$00,$80,$00,$00,$00,$00,$00,$00	;PF1
       5  2830		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_QUEEN_on_BLACK_SQUARE_1.asm LEVEL 4 PASS 2
@@ -3026,7 +3034,7 @@
       2  2848					      SUBROUTINE
       3  2848				   WHITE_QUEEN_on_BLACK_SQUARE_1
       3  2848		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  2860		       00 00 00 54*	      .byte.b	$00,$00,$00,$54,$54,$54,$00,$00,$00,$54,$50,$54,$7c,$78,$7c,$7c,$78,$7c,$38,$10,$38,$38,$38,$38	;PF1
+      4  2860		       00 00 00 54*	      .byte.b	$00,$00,$00,$54,$54,$54,$00,$00,$04,$54,$50,$54,$7c,$78,$7c,$7c,$78,$7c,$38,$10,$38,$38,$38,$38	;PF1
       5  2878		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_QUEEN_on_BLACK_SQUARE_2.asm LEVEL 4 PASS 2
@@ -3039,7 +3047,7 @@
       3  2890				   WHITE_QUEEN_on_BLACK_SQUARE_2
       3  2890		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
       4  28a8		       00 00 00 02*	      .byte.b	$00,$00,$00,$02,$02,$02,$00,$00,$00,$02,$02,$02,$03,$03,$03,$03,$03,$03,$01,$00,$01,$01,$01,$01	;PF1
-      5  28c0		       00 00 00 05*	      .byte.b	$00,$00,$00,$05,$05,$05,$00,$00,$00,$05,$01,$05,$07,$03,$07,$07,$03,$07,$03,$01,$03,$03,$03,$03	;PF2
+      5  28c0		       00 00 00 05*	      .byte.b	$00,$00,$00,$05,$05,$05,$00,$00,$04,$05,$01,$05,$07,$03,$07,$07,$03,$07,$03,$01,$03,$03,$03,$03	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_QUEEN_on_BLACK_SQUARE_3.asm LEVEL 4 PASS 2
       0  28d8					      include	"gfx/WHITE_QUEEN_on_BLACK_SQUARE_3.asm"
@@ -3055,7 +3063,7 @@
       3  2900				   WHITE_QUEEN_on_BLACK_SQUARE_3
       3  2900		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
       4  2918		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF1
-      5  2930		       00 00 00 a8*	      .byte.b	$00,$00,$00,$a8,$a8,$a8,$00,$00,$00,$a8,$28,$a8,$f8,$78,$f8,$f8,$78,$f8,$70,$20,$70,$70,$70,$70	;PF2
+      5  2930		       00 00 00 a8*	      .byte.b	$00,$00,$00,$a8,$a8,$a8,$00,$00,$80,$a8,$28,$a8,$f8,$78,$f8,$f8,$78,$f8,$70,$20,$70,$70,$70,$70	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_KING_on_BLACK_SQUARE_0.asm LEVEL 4 PASS 2
       0  2948					      include	"gfx/WHITE_KING_on_BLACK_SQUARE_0.asm"
@@ -3065,8 +3073,8 @@
       1  2948		       00 05	   BANK_WHITE_KING_on_BLACK_SQUARE_0 =	_CURRENT_BANK
       2  2948					      SUBROUTINE
       3  2948				   WHITE_KING_on_BLACK_SQUARE_0
-      3  2948		       00 40 40 e0*	      .byte.b	$00,$40,$40,$e0,$e0,$e0,$40,$50,$b0,$f0,$50,$50,$50,$50,$50,$50,$f0,$f0,$f0,$60,$e0,$e0,$e0,$e0	;PF0
-      4  2960		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$80,$80,$80,$00,$80,$80,$00,$80,$80,$00,$80,$80,$00,$00,$00,$00,$00	;PF1
+      3  2948		       00 40 40 e0*	      .byte.b	$00,$40,$40,$e0,$e0,$e0,$40,$e0,$b0,$f0,$50,$50,$50,$50,$50,$50,$f0,$f0,$f0,$60,$e0,$e0,$e0,$e0	;PF0
+      4  2960		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$80,$80,$00,$80,$80,$00,$80,$80,$00,$80,$80,$00,$00,$00,$00,$00	;PF1
       5  2978		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_KING_on_BLACK_SQUARE_1.asm LEVEL 4 PASS 2
@@ -3078,7 +3086,7 @@
       2  2990					      SUBROUTINE
       3  2990				   WHITE_KING_on_BLACK_SQUARE_1
       3  2990		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  29a8		       00 10 10 38*	      .byte.b	$00,$10,$10,$38,$38,$38,$10,$54,$6c,$7c,$50,$54,$54,$50,$54,$54,$78,$7c,$7c,$30,$38,$38,$38,$38	;PF1
+      4  29a8		       00 10 10 38*	      .byte.b	$00,$10,$10,$38,$38,$38,$10,$38,$6c,$7c,$50,$54,$54,$50,$54,$54,$78,$7c,$7c,$30,$38,$38,$38,$38	;PF1
       5  29c0		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_KING_on_BLACK_SQUARE_2.asm LEVEL 4 PASS 2
@@ -3094,8 +3102,8 @@
       2  2a00					      SUBROUTINE
       3  2a00				   WHITE_KING_on_BLACK_SQUARE_2
       3  2a00		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  2a18		       00 00 00 01*	      .byte.b	$00,$00,$00,$01,$01,$01,$00,$02,$03,$03,$02,$02,$02,$02,$02,$02,$03,$03,$03,$01,$01,$01,$01,$01	;PF1
-      5  2a30		       00 01 01 03*	      .byte.b	$00,$01,$01,$03,$03,$03,$01,$05,$06,$07,$01,$05,$05,$01,$05,$05,$03,$07,$07,$01,$03,$03,$03,$03	;PF2
+      4  2a18		       00 00 00 01*	      .byte.b	$00,$00,$00,$01,$01,$01,$00,$01,$03,$03,$02,$02,$02,$02,$02,$02,$03,$03,$03,$01,$01,$01,$01,$01	;PF1
+      5  2a30		       00 01 01 03*	      .byte.b	$00,$01,$01,$03,$03,$03,$01,$03,$06,$07,$01,$05,$05,$01,$05,$05,$03,$07,$07,$01,$03,$03,$03,$03	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_KING_on_BLACK_SQUARE_3.asm LEVEL 4 PASS 2
       0  2a48					      include	"gfx/WHITE_KING_on_BLACK_SQUARE_3.asm"
@@ -3107,7 +3115,7 @@
       3  2a48				   WHITE_KING_on_BLACK_SQUARE_3
       3  2a48		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
       4  2a60		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF1
-      5  2a78		       00 20 20 70*	      .byte.b	$00,$20,$20,$70,$70,$70,$20,$a8,$d8,$f8,$28,$a8,$a8,$28,$a8,$a8,$78,$f8,$f8,$30,$70,$70,$70,$70	;PF2
+      5  2a78		       00 20 20 70*	      .byte.b	$00,$20,$20,$70,$70,$70,$20,$70,$d8,$f8,$28,$a8,$a8,$28,$a8,$a8,$78,$f8,$f8,$30,$70,$70,$70,$70	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/BLACK_BLANK_on_WHITE_SQUARE_0.asm LEVEL 4 PASS 2
       0  2a90					      include	"gfx/BLACK_BLANK_on_WHITE_SQUARE_0.asm"
@@ -3449,8 +3457,8 @@
       1  3290		       00 06	   BANK_BLACK_KING_on_WHITE_SQUARE_0 =	_CURRENT_BANK
       2  3290					      SUBROUTINE
       3  3290				   BLACK_KING_on_WHITE_SQUARE_0
-      3  3290		       40 40 b0 e0*	      .byte.b	$40,$40,$b0,$e0,$e0,$10,$40,$50,$a0,$f0,$50,$00,$50,$50,$00,$50,$f0,$00,$f0,$60,$10,$e0,$e0,$10	;PF0
-      4  32a8		       00 00 80 00*	      .byte.b	$00,$00,$80,$00,$00,$80,$00,$80,$00,$80,$00,$00,$80,$00,$00,$80,$00,$00,$80,$00,$80,$00,$00,$80	;PF1
+      3  3290		       40 40 b0 e0*	      .byte.b	$40,$40,$b0,$e0,$e0,$10,$40,$e0,$b0,$f0,$50,$00,$50,$50,$00,$50,$f0,$00,$f0,$60,$10,$e0,$e0,$10	;PF0
+      4  32a8		       00 00 80 00*	      .byte.b	$00,$00,$80,$00,$00,$80,$00,$00,$80,$80,$00,$00,$80,$00,$00,$80,$00,$00,$80,$00,$80,$00,$00,$80	;PF1
       5  32c0		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/BLACK_KING_on_WHITE_SQUARE_1.asm LEVEL 4 PASS 2
@@ -3466,7 +3474,7 @@
       2  3300					      SUBROUTINE
       3  3300				   BLACK_KING_on_WHITE_SQUARE_1
       3  3300		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  3318		       10 10 6c 38*	      .byte.b	$10,$10,$6c,$38,$38,$44,$10,$54,$28,$7c,$50,$00,$54,$50,$00,$54,$78,$00,$7c,$30,$44,$38,$38,$44	;PF1
+      4  3318		       10 10 6c 38*	      .byte.b	$10,$10,$6c,$38,$38,$44,$10,$38,$6c,$7c,$50,$00,$54,$50,$00,$54,$78,$00,$7c,$30,$44,$38,$38,$44	;PF1
       5  3330		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/BLACK_KING_on_WHITE_SQUARE_2.asm LEVEL 4 PASS 2
@@ -3478,8 +3486,8 @@
       2  3348					      SUBROUTINE
       3  3348				   BLACK_KING_on_WHITE_SQUARE_2
       3  3348		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  3360		       00 00 03 01*	      .byte.b	$00,$00,$03,$01,$01,$02,$00,$02,$01,$03,$02,$00,$02,$02,$00,$02,$03,$00,$03,$01,$02,$01,$01,$02	;PF1
-      5  3378		       01 01 06 03*	      .byte.b	$01,$01,$06,$03,$03,$04,$01,$05,$02,$07,$01,$00,$05,$01,$00,$05,$03,$00,$07,$01,$04,$03,$03,$04	;PF2
+      4  3360		       00 00 03 01*	      .byte.b	$00,$00,$03,$01,$01,$02,$00,$01,$03,$03,$02,$00,$02,$02,$00,$02,$03,$00,$03,$01,$02,$01,$01,$02	;PF1
+      5  3378		       01 01 06 03*	      .byte.b	$01,$01,$06,$03,$03,$04,$01,$03,$06,$07,$01,$00,$05,$01,$00,$05,$03,$00,$07,$01,$04,$03,$03,$04	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/BLACK_KING_on_WHITE_SQUARE_3.asm LEVEL 4 PASS 2
       0  3390					      include	"gfx/BLACK_KING_on_WHITE_SQUARE_3.asm"
@@ -3491,7 +3499,7 @@
       3  3390				   BLACK_KING_on_WHITE_SQUARE_3
       3  3390		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
       4  33a8		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF1
-      5  33c0		       20 20 d8 70*	      .byte.b	$20,$20,$d8,$70,$70,$88,$20,$a8,$50,$f8,$28,$00,$a8,$28,$00,$a8,$78,$00,$f8,$30,$88,$70,$70,$88	;PF2
+      5  33c0		       20 20 d8 70*	      .byte.b	$20,$20,$d8,$70,$70,$88,$20,$70,$d8,$f8,$28,$00,$a8,$28,$00,$a8,$78,$00,$f8,$30,$88,$70,$70,$88	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/BLACK_BLANK_on_BLACK_SQUARE_0.asm LEVEL 4 PASS 2
       0  33d8					      include	"gfx/BLACK_BLANK_on_BLACK_SQUARE_0.asm"
@@ -3837,8 +3845,8 @@
       1  3c00		       00 07	   BANK_BLACK_KING_on_BLACK_SQUARE_0 =	_CURRENT_BANK
       2  3c00					      SUBROUTINE
       3  3c00				   BLACK_KING_on_BLACK_SQUARE_0
-      3  3c00		       40 40 00 e0*	      .byte.b	$40,$40,$00,$e0,$e0,$00,$40,$50,$a0,$f0,$50,$00,$50,$50,$00,$50,$f0,$00,$f0,$60,$00,$e0,$e0,$00	;PF0
-      4  3c18		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$80,$00,$80,$00,$00,$80,$00,$00,$80,$00,$00,$80,$00,$00,$00,$00,$00	;PF1
+      3  3c00		       40 40 00 e0*	      .byte.b	$40,$40,$00,$e0,$e0,$00,$40,$e0,$a0,$f0,$50,$00,$50,$50,$00,$50,$f0,$00,$f0,$60,$00,$e0,$e0,$00	;PF0
+      4  3c18		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$80,$00,$00,$80,$00,$00,$80,$00,$00,$80,$00,$00,$00,$00,$00	;PF1
       5  3c30		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/BLACK_KING_on_BLACK_SQUARE_1.asm LEVEL 4 PASS 2
@@ -3850,7 +3858,7 @@
       2  3c48					      SUBROUTINE
       3  3c48				   BLACK_KING_on_BLACK_SQUARE_1
       3  3c48		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  3c60		       10 10 00 38*	      .byte.b	$10,$10,$00,$38,$38,$00,$10,$54,$28,$7c,$50,$00,$54,$50,$00,$54,$78,$00,$7c,$30,$00,$38,$38,$00	;PF1
+      4  3c60		       10 10 00 38*	      .byte.b	$10,$10,$00,$38,$38,$00,$10,$38,$28,$7c,$50,$00,$54,$50,$00,$54,$78,$00,$7c,$30,$00,$38,$38,$00	;PF1
       5  3c78		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/BLACK_KING_on_BLACK_SQUARE_2.asm LEVEL 4 PASS 2
@@ -3862,8 +3870,8 @@
       2  3c90					      SUBROUTINE
       3  3c90				   BLACK_KING_on_BLACK_SQUARE_2
       3  3c90		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  3ca8		       00 00 00 01*	      .byte.b	$00,$00,$00,$01,$01,$00,$00,$02,$01,$03,$02,$00,$02,$02,$00,$02,$03,$00,$03,$01,$00,$01,$01,$00	;PF1
-      5  3cc0		       01 01 00 03*	      .byte.b	$01,$01,$00,$03,$03,$00,$01,$05,$02,$07,$01,$00,$05,$01,$00,$05,$03,$00,$07,$01,$00,$03,$03,$00	;PF2
+      4  3ca8		       00 00 00 01*	      .byte.b	$00,$00,$00,$01,$01,$00,$00,$01,$01,$03,$02,$00,$02,$02,$00,$02,$03,$00,$03,$01,$00,$01,$01,$00	;PF1
+      5  3cc0		       01 01 00 03*	      .byte.b	$01,$01,$00,$03,$03,$00,$01,$03,$02,$07,$01,$00,$05,$01,$00,$05,$03,$00,$07,$01,$00,$03,$03,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/BLACK_KING_on_BLACK_SQUARE_3.asm LEVEL 4 PASS 2
       0  3cd8					      include	"gfx/BLACK_KING_on_BLACK_SQUARE_3.asm"
@@ -3879,7 +3887,7 @@
       3  3d00				   BLACK_KING_on_BLACK_SQUARE_3
       3  3d00		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
       4  3d18		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF1
-      5  3d30		       20 20 00 70*	      .byte.b	$20,$20,$00,$70,$70,$00,$20,$a8,$50,$f8,$28,$00,$a8,$28,$00,$a8,$78,$00,$f8,$30,$00,$70,$70,$00	;PF2
+      5  3d30		       20 20 00 70*	      .byte.b	$20,$20,$00,$70,$70,$00,$20,$70,$50,$f8,$28,$00,$a8,$28,$00,$a8,$78,$00,$f8,$30,$00,$70,$70,$00	;PF2
 ------- FILE piece_graphics.asm
       0  3d48					      CHECK_BANK_SIZE	"PIECES_4 (2K)"
       1  3d48		       05 48	   .TEMP      =	* - BANK_START
@@ -4390,7 +4398,7 @@
      10  4150				   ORIGIN     SET	FIXED_BANK
      11  4150
       0  4150					      NEWBANK	THE_FIXED_BANK
-      1  7a42 ????				      SEG	THE_FIXED_BANK
+      1  7afc ????				      SEG	THE_FIXED_BANK
       2  7800					      ORG	ORIGIN
       3  7800					      RORG	$F000
       4  7800				   BANK_START SET	*
@@ -4408,7 +4416,7 @@
       2  7804					      SUBROUTINE
       3  7804				   ClearChessBitmap_PART0
      20  7804
-     21  7804		       a6 81		      ldx	doubleBufferBase
+     21  7804		       a6 82		      ldx	doubleBufferBase
      22  7806					      REPEAT	4
      23  7806		       86 3e		      stx	SET_BANK_RAM
      24  7808		       20 90 f0 	      jsr	ClearRowBitmap
@@ -4433,7 +4441,7 @@
       2  781f					      SUBROUTINE
       3  781f				   ClearChessBitmap_PART1
      30  781f
-     31  781f		       a5 81		      lda	doubleBufferBase
+     31  781f		       a5 82		      lda	doubleBufferBase
      32  7821		       09 04		      ora	#4
      33  7823		       aa		      tax
      34  7824					      REPEAT	4
@@ -4457,573 +4465,740 @@
      40  783d
      41  783d							;---------------------------------------------------------------------------------------------------
      42  783d
-      0  783d					      DEFINE_SUBROUTINE	CopyChessboardPiecesToBoardPartial
-      1  783d		       00 0f	   BANK_CopyChessboardPiecesToBoardPartial =	_CURRENT_BANK
+      0  783d					      DEFINE_SUBROUTINE	CopySinglePiece
+      1  783d		       00 0f	   BANK_CopySinglePiece =	_CURRENT_BANK
       2  783d					      SUBROUTINE
-      3  783d				   CopyChessboardPiecesToBoardPartial
+      3  783d				   CopySinglePiece
      44  783d
      45  783d		       a9 10		      lda	#BANK_CHESSBOARD
      46  783f		       85 3e		      sta	SET_BANK_RAM
      47  7841
-     48  7841		       a5 83		      lda	drawPieceNumber
+     48  7841		       a5 80		      lda	drawPieceNumber
      49  7843		       4a		      lsr
      50  7844		       4a		      lsr
      51  7845		       4a		      lsr
      52  7846		       18		      clc
-     53  7847		       65 83		      adc	drawPieceNumber
+     53  7847		       65 80		      adc	drawPieceNumber
      54  7849		       29 01		      and	#1
-     55  784b		       f0 02		      beq	.white
-     56  784d		       a9 1c		      lda	#28
-     57  784f		       85 90	   .white     sta	__pieceColour
-     58  7851
-     59  7851		       a4 83		      ldy	drawPieceNumber
-     60  7853		       98		      tya
-     61  7854		       29 03		      and	#3
-     62  7856		       19 00 10 	      ora	Chessboard,y
-     63  7859		       38		      sec
-     64  785a		       e5 90		      sbc	__pieceColour
-     65  785c		       a8		      tay
-     66  785d		       20 01 f9 	      jsr	CopyPieceToRAMBuffer
-     67  7860
-     68  7860		       a5 83		      lda	drawPieceNumber
-     69  7862		       4a		      lsr
-     70  7863		       4a		      lsr
-     71  7864		       4a		      lsr
-     72  7865		       05 81		      ora	doubleBufferBase
-     73  7867		       aa		      tax		; row
-     74  7868
-     75  7868		       a5 83		      lda	drawPieceNumber
-     76  786a		       29 04		      and	#4
-     77  786c		       c9 04		      cmp	#4	; cc = left side, cs = right side
-     78  786e
-     79  786e		       86 3e		      stx	SET_BANK_RAM
-     80  7870		       4c 43 f2 	      jmp	CopyPieceToRowBitmap
-     81  7873
-     82  7873							;---------------------------------------------------------------------------------------------------
-     83  7873
+     55  784b		       49 01		      eor	#1
+     56  784d		       f0 02		      beq	.white
+     57  784f		       a9 1c		      lda	#28
+     58  7851		       85 97	   .white     sta	__pieceColour	; actually SQUARE black/white
+     59  7853
+     60  7853		       a4 80		      ldy	drawPieceNumber
+     61  7855		       98		      tya
+     62  7856		       29 03		      and	#3
+     63  7858		       19 00 10 	      ora	Chessboard,y
+     64  785b		       38		      sec
+     65  785c		       e5 97		      sbc	__pieceColour
+     66  785e		       a8		      tay
+     67  785f		       20 ff f8 	      jsr	CopyPieceToRAMBuffer
+     68  7862
+     69  7862		       a5 80		      lda	drawPieceNumber
+     70  7864		       4a		      lsr
+     71  7865		       4a		      lsr
+     72  7866		       4a		      lsr
+     73  7867							;ora doubleBufferBase
+     74  7867		       aa		      tax		; row
+     75  7868
+     76  7868		       a5 80		      lda	drawPieceNumber
+     77  786a		       29 04		      and	#4
+     78  786c		       c9 04		      cmp	#4	; cc = left side, cs = right side
+     79  786e
+     80  786e		       86 3e		      stx	SET_BANK_RAM
+     81  7870		       4c 43 f2 	      jmp	CopyPieceToRowBitmap
+     82  7873
+     83  7873							;---------------------------------------------------------------------------------------------------
+     84  7873
       0  7873					      DEFINE_SUBROUTINE	RandomPieceMove
       1  7873		       00 0f	   BANK_RandomPieceMove =	_CURRENT_BANK
       2  7873					      SUBROUTINE
       3  7873				   RandomPieceMove
-     85  7873
-     86  7873		       a9 10		      lda	#BANK_CHESSBOARD
-     87  7875		       85 3e		      sta	SET_BANK_RAM
-     88  7877
+     86  7873
+     87  7873		       a9 10		      lda	#BANK_CHESSBOARD
+     88  7875		       85 3e		      sta	SET_BANK_RAM
+     89  7877
       0  7877					      NEXT_RANDOM
-      1  7877		       a5 80		      lda	rnd
+      1  7877		       a5 81		      lda	rnd
       2  7879		       4a		      lsr
       3  787a		       90 02		      bcc	.skipEOR
-      4  787c		       49 b4		      eor	#RND_EOR_VAL
-      5  787e		       85 80	   .skipEOR   sta	rnd
-     90  7880		       aa		      tax
-     91  7881		       e8	   .nextX     inx
-     92  7882		       8a		      txa
-     93  7883		       29 3f		      and	#63
-     94  7885		       aa		      tax
-     95  7886
-     96  7886		       bd 00 10 	      lda	Chessboard,x
-     97  7889		       c9 1c		      cmp	#BLANK
-     98  788b		       f0 f4		      beq	.nextX
-     99  788d
-      0  788d					      NEXT_RANDOM
-      1  788d		       a5 80		      lda	rnd
-      2  788f		       4a		      lsr
-      3  7890		       90 02		      bcc	.skipEOR
-      4  7892		       49 b4		      eor	#RND_EOR_VAL
-      5  7894		       85 80	   .skipEOR   sta	rnd
-    101  7896		       a8		      tay
-    102  7897		       c8	   .nextY     iny
-    103  7898		       98		      tya
-    104  7899		       29 3f		      and	#63
-    105  789b		       a8		      tay
-    106  789c
-    107  789c		       b9 00 10 	      lda	Chessboard,y
-    108  789f		       c9 1c		      cmp	#BLANK
-    109  78a1		       d0 f4		      bne	.nextY
-    110  78a3
-    111  78a3		       bd 00 10 	      lda	Chessboard,x
-    112  78a6		       99 00 14 	      sta	Chessboard+RAM_WRITE,y
-    113  78a9		       a9 1c		      lda	#BLANK
-    114  78ab		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
-    115  78ae
-    116  78ae		       60		      rts
-    117  78af
-    118  78af							;---------------------------------------------------------------------------------------------------
-    119  78af
-      0  78af					      DEFINE_SUBROUTINE	InitialiseChessboard
-      1  78af		       00 0f	   BANK_InitialiseChessboard =	_CURRENT_BANK
-      2  78af					      SUBROUTINE
-      3  78af				   InitialiseChessboard
-    121  78af
-    122  78af		       a9 10		      lda	#BANK_CHESSBOARD
-    123  78b1		       85 3e		      sta	SET_BANK_RAM
-    124  78b3
-    125  78b3		       a2 3f		      ldx	#63
-    126  78b5		       bd c1 f8    .setupBoard lda	BoardPiece,x
-    127  78b8		       29 fc		      and	#~3
-    128  78ba		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
-    129  78bd		       ca		      dex
-    130  78be		       10 f5		      bpl	.setupBoard
-    131  78c0
-    132  78c0		       60		      rts
-    133  78c1
-    134  78c1				   BoardPiece
-    135  78c1
-    136  78c1		       00 1c	   BLANK      =	INDEX_WHITE_BLANK_on_BLACK_SQUARE_0
-    137  78c1		       00 20	   WHITE_PAWN =	INDEX_WHITE_PAWN_on_BLACK_SQUARE_0
-    138  78c1		       00 2c	   WHITE_ROOK =	INDEX_WHITE_ROOK_on_BLACK_SQUARE_0
-    139  78c1		       00 24	   WHITE_KNIGHT =	INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_0
-    140  78c1		       00 28	   WHITE_BISHOP =	INDEX_WHITE_BISHOP_on_BLACK_SQUARE_0
-    141  78c1		       00 30	   WHITE_QUEEN =	INDEX_WHITE_QUEEN_on_BLACK_SQUARE_0
-    142  78c1		       00 34	   WHITE_KING =	INDEX_WHITE_KING_on_BLACK_SQUARE_0
-    143  78c1		       00 58	   BLACK_PAWN =	INDEX_BLACK_PAWN_on_BLACK_SQUARE_0
-    144  78c1		       00 64	   BLACK_ROOK =	INDEX_BLACK_ROOK_on_BLACK_SQUARE_0
-    145  78c1		       00 5c	   BLACK_KNIGHT =	INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_0
-    146  78c1		       00 60	   BLACK_BISHOP =	INDEX_BLACK_BISHOP_on_BLACK_SQUARE_0
-    147  78c1		       00 68	   BLACK_QUEEN =	INDEX_BLACK_QUEEN_on_BLACK_SQUARE_0
-    148  78c1		       00 6c	   BLACK_KING =	INDEX_BLACK_KING_on_BLACK_SQUARE_0
-    149  78c1
-    150  78c1
-    151  78c1		       64		      .byte.b	BLACK_ROOK	;0
-    152  78c2		       5c		      .byte.b	BLACK_KNIGHT	;1
-    153  78c3		       60		      .byte.b	BLACK_BISHOP	;2
-    154  78c4		       68		      .byte.b	BLACK_QUEEN	;3
-    155  78c5		       6c		      .byte.b	BLACK_KING	;4
-    156  78c6		       60		      .byte.b	BLACK_BISHOP	;5
-    157  78c7		       5c		      .byte.b	BLACK_KNIGHT	;6
-    158  78c8		       64		      .byte.b	BLACK_ROOK	;7
-    159  78c9
-    160  78c9		       58		      .byte.b	BLACK_PAWN
-    161  78ca		       58		      .byte.b	BLACK_PAWN
-    162  78cb		       58		      .byte.b	BLACK_PAWN
-    163  78cc		       58		      .byte.b	BLACK_PAWN
-    164  78cd		       58		      .byte.b	BLACK_PAWN
-    165  78ce		       58		      .byte.b	BLACK_PAWN
-    166  78cf		       58		      .byte.b	BLACK_PAWN
-    167  78d0		       58		      .byte.b	BLACK_PAWN
-    168  78d1
-    169  78d1		       1c		      .byte.b	BLANK
-    170  78d2		       1c		      .byte.b	BLANK
-    171  78d3		       1c		      .byte.b	BLANK
-    172  78d4		       1c		      .byte.b	BLANK
-    173  78d5		       1c		      .byte.b	BLANK
-    174  78d6		       1c		      .byte.b	BLANK
-    175  78d7		       1c		      .byte.b	BLANK
-    176  78d8		       1c		      .byte.b	BLANK
-    177  78d9
-    178  78d9		       1c		      .byte.b	BLANK
-    179  78da		       1c		      .byte.b	BLANK
-    180  78db		       1c		      .byte.b	BLANK
-    181  78dc		       1c		      .byte.b	BLANK
-    182  78dd		       1c		      .byte.b	BLANK
-    183  78de		       1c		      .byte.b	BLANK
-    184  78df		       1c		      .byte.b	BLANK
-    185  78e0		       1c		      .byte.b	BLANK
-    186  78e1
-    187  78e1		       1c		      .byte.b	BLANK
-    188  78e2		       1c		      .byte.b	BLANK
-    189  78e3		       1c		      .byte.b	BLANK
-    190  78e4		       1c		      .byte.b	BLANK
-    191  78e5		       1c		      .byte.b	BLANK
-    192  78e6		       1c		      .byte.b	BLANK
-    193  78e7		       1c		      .byte.b	BLANK
-    194  78e8		       1c		      .byte.b	BLANK
-    195  78e9
-    196  78e9		       1c		      .byte.b	BLANK
-    197  78ea		       1c		      .byte.b	BLANK
-    198  78eb		       1c		      .byte.b	BLANK
-    199  78ec		       1c		      .byte.b	BLANK
-    200  78ed		       1c		      .byte.b	BLANK
-    201  78ee		       1c		      .byte.b	BLANK
-    202  78ef		       1c		      .byte.b	BLANK
-    203  78f0		       1c		      .byte.b	BLANK
-    204  78f1
-    205  78f1		       20		      .byte.b	WHITE_PAWN
-    206  78f2		       20		      .byte.b	WHITE_PAWN
-    207  78f3		       20		      .byte.b	WHITE_PAWN
-    208  78f4		       20		      .byte.b	WHITE_PAWN
-    209  78f5		       20		      .byte.b	WHITE_PAWN
-    210  78f6		       20		      .byte.b	WHITE_PAWN
-    211  78f7		       20		      .byte.b	WHITE_PAWN
-    212  78f8		       20		      .byte.b	WHITE_PAWN
-    213  78f9
-    214  78f9		       2c		      .byte.b	WHITE_ROOK
-    215  78fa		       24		      .byte.b	WHITE_KNIGHT
-    216  78fb		       28		      .byte.b	WHITE_BISHOP
-    217  78fc		       30		      .byte.b	WHITE_QUEEN
-    218  78fd		       34		      .byte.b	WHITE_KING
-    219  78fe		       28		      .byte.b	WHITE_BISHOP
-    220  78ff		       24		      .byte.b	WHITE_KNIGHT
-    221  7900		       2c		      .byte.b	WHITE_ROOK
-    222  7901
-    223  7901
-    224  7901							;---------------------------------------------------------------------------------------------------
-    225  7901
-    226  7901
-    227  7901							;-----------------------------------------------------------------------------------------------
-    228  7901
-      0  7901					      DEFINE_SUBROUTINE	CopyPieceToRAMBuffer
-      1  7901		       00 0f	   BANK_CopyPieceToRAMBuffer =	_CURRENT_BANK
-      2  7901					      SUBROUTINE
-      3  7901				   CopyPieceToRAMBuffer
-    230  7901
-    231  7901							; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
-    232  7901							; y = piece index
-    233  7901
-    234  7901		       a9 08		      lda	#BANK_PIECE_VECTOR_BANK
-    235  7903		       85 3f		      sta	SET_BANK
-    236  7905
-    237  7905		       b9 00 f0 	      lda	PIECE_VECTOR_LO,y
-    238  7908		       85 d8		      sta	__ptr
-    239  790a		       b9 70 f0 	      lda	PIECE_VECTOR_HI,y
-    240  790d		       85 d9		      sta	__ptr+1
-    241  790f		       b9 e0 f0 	      lda	PIECE_VECTOR_BANK,y
-    242  7912		       85 3f		      sta	SET_BANK
-    243  7914
-    244  7914		       a0 47		      ldy	#PIECE_SHAPE_SIZE-1
-    245  7916		       b1 d8	   .copyPieceGfx lda	(__ptr),y
-    246  7918		       99 90 00 	      sta	__pieceShapeBuffer,y
-    247  791b		       88		      dey
-    248  791c		       10 f8		      bpl	.copyPieceGfx
-    249  791e
-    250  791e		       60		      rts
-    251  791f
-    252  791f							;------------------------------------------------------------------------------
-    253  791f
-    254  791f
-      0  791f					      DEFINE_SUBROUTINE	TimeSlice
-      1  791f		       00 0f	   BANK_TimeSlice =	_CURRENT_BANK
-      2  791f					      SUBROUTINE
-      3  791f				   TimeSlice
-    256  791f
-    257  791f							; FIRST check the time is sufficient for the smallest of the timeslices. Not much point
-    258  791f							; going ahead if there's insufficient time. This allows the previous character drawing to
-    259  791f							; be much smaller in time, as they don't have to include the timeslice code overhead.
-    260  791f
-    261  791f		       ad 84 02 	      lda	INTIM	; 4
-    262  7922		       c9 03		      cmp	#SEGTIME_MINIMUM_TIMESLICE	; 2
-    263  7924		       90 00		      bcc	timeExit	; 2(3)
-    264  7926							; @0✅
-    265  7926		       60	   timeExit   rts
-    266  7927
-    267  7927							;---------------------------------------------------------------------------------------------------
-    268  7927
-      0  7927					      DEFINE_SUBROUTINE	CopyShadowROMtoRAM
-      1  7927		       00 0f	   BANK_CopyShadowROMtoRAM =	_CURRENT_BANK
-      2  7927					      SUBROUTINE
-      3  7927				   CopyShadowROMtoRAM
-    270  7927							; pass x = source bank
-    271  7927							; pass y = destination bank (preserved)
-    272  7927
-    273  7927		       86 91		      stx	__sourceBank
-    274  7929
-    275  7929		       a2 00		      ldx	#0
-    276  792b		       a5 91	   .copyPage  lda	__sourceBank
-    277  792d		       85 3f		      sta	SET_BANK
-    278  792f
-    279  792f		       bd 00 f0 	      lda	$F000,x
-    280  7932		       48		      pha
-    281  7933		       bd 00 f1 	      lda	$F100,x
-    282  7936		       48		      pha
-    283  7937		       bd 00 f2 	      lda	$F200,x
-    284  793a		       48		      pha
-    285  793b		       bd 00 f3 	      lda	$F300,x
-    286  793e
-    287  793e		       84 3e		      sty	SET_BANK_RAM
-    288  7940
-    289  7940		       9d 00 f7 	      sta	$F300+RAM_WRITE,x
-    290  7943		       68		      pla
-    291  7944		       9d 00 f6 	      sta	$F200+RAM_WRITE,x
-    292  7947		       68		      pla
-    293  7948		       9d 00 f5 	      sta	$F100+RAM_WRITE,x
-    294  794b		       68		      pla
-    295  794c		       9d 00 f4 	      sta	$F000+RAM_WRITE,x
-    296  794f
-    297  794f		       ca		      dex
-    298  7950		       d0 d9		      bne	.copyPage
-    299  7952		       60		      rts
-    300  7953
-    301  7953							;---------------------------------------------------------------------------------------------------
-    302  7953
-      0  7953					      DEFINE_SUBROUTINE	Reset
-      1  7953		       00 0f	   BANK_Reset =	_CURRENT_BANK
-      2  7953					      SUBROUTINE
-      3  7953				   Reset
-    304  7953
-      0  7953					      CLEAN_START
-      1  7953		       78		      sei
-      2  7954		       d8		      cld
-      3  7955
-      4  7955		       a2 00		      ldx	#0
-      5  7957		       8a		      txa
-      6  7958		       a8		      tay
-      7  7959		       ca	   .CLEAR_STACK dex
-      8  795a		       9a		      txs
-      9  795b		       48		      pha
-     10  795c		       d0 fb		      bne	.CLEAR_STACK
-     11  795e
-    306  795e
-    307  795e		       a9 12		      lda	#$12
-    308  7960		       85 80		      sta	rnd
-    309  7962
-    310  7962
-    311  7962							; Move a copy of the row bank template to the first 8 banks of RAM
-    312  7962							; and then terminate the draw subroutine by substituting in a RTS on the last one
-    313  7962
-    314  7962		       a0 0f		      ldy	#15
-    315  7964		       a2 01	   .copyRowBanks ldx	#BANK_ROM_SHADOW_OF_CHESS_BITMAP
-    316  7966		       20 27 f9 	      jsr	CopyShadowROMtoRAM
-    317  7969		       88		      dey
-    318  796a		       10 f8		      bpl	.copyRowBanks
-    319  796c
-    320  796c							; Patch the final row's "loop" to a RTS
-    321  796c
-    322  796c		       a9 96		      lda	#<SELFMOD_RTS_ON_LAST_ROW
-    323  796e		       85 d8		      sta	__ptr
-    324  7970		       a9 f6		      lda	#>(SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE)
-    325  7972		       85 d9		      sta	__ptr+1
-    326  7974
-    327  7974
-    328  7974		       a0 00		      ldy	#0
-    329  7976		       a9 60		      lda	#$60	; rts
-    330  7978
-    331  7978							; the 'screen' is double-buffered - two sets of 8x1K banks
-    332  7978							; we need to put an RTS on the last of both of these
-    333  7978
-    334  7978		       a2 07		      ldx	#7
-    335  797a		       86 3e		      stx	SET_BANK_RAM
-    336  797c		       91 d8		      sta	(__ptr),y	; patch selfmod code to RTS
-    337  797e
-    338  797e		       a2 0f		      ldx	#15
-    339  7980		       86 3e		      stx	SET_BANK_RAM
-    340  7982		       91 d8		      sta	(__ptr),y
-    341  7984
-    342  7984
-    343  7984		       20 af f8 	      jsr	InitialiseChessboard
-    344  7987
-    345  7987							; Now the board is "living" in RAM (along with support code) we can do stuff with it
-    346  7987
-    347  7987		       a9 00		      lda	#0
-    348  7989		       85 81		      sta	doubleBufferBase
-    349  798b		       85 82		      sta	drawPhase
-    350  798d
-    351  798d
-    352  798d		       a9 00		      lda	#%00000000
-    353  798f		       85 4a		      sta	CTRLPF
-    354  7991		       85 49		      sta	COLUBK
-    355  7993
-    356  7993
-      0  7993					      RESYNC
-      1  7993
-      2  7993		       a9 02		      lda	#%10
-      3  7995		       85 41		      sta	VBLANK
-      4  7997
-      5  7997		       a2 08		      ldx	#8
-      6  7999				   .loopResync
-      0  7999					      VERTICAL_SYNC
-      1  7999		       a9 0e		      lda	#%1110
-      2  799b		       85 42	   .VSLP1     sta	WSYNC
-      3  799d		       85 40		      sta	VSYNC
-      4  799f		       4a		      lsr
-      5  79a0		       d0 f9		      bne	.VSLP1
-      8  79a2
-      9  79a2		       a0 88		      ldy	#SCANLINES_NTSC/2 - 2
-     10  79a4		       a5 84		      lda	Platform
-     11  79a6		       49 02		      eor	#PAL_50
-     12  79a8		       d0 02		      bne	.ntsc
-     13  79aa		       a0 9a		      ldy	#SCANLINES_PAL/2 - 2
-     14  79ac				   .ntsc
-     15  79ac				   .loopWait
-     16  79ac		       85 42		      sta	WSYNC
-     17  79ae		       85 42		      sta	WSYNC
-     18  79b0		       88		      dey
-     19  79b1		       d0 f9		      bne	.loopWait
-     20  79b3		       ca		      dex
-     21  79b4		       d0 e3		      bne	.loopResync
-    358  79b6
-    359  79b6
-    360  79b6				   .doubleBufferLoop
-    361  79b6
-    362  79b6		       a9 0e		      lda	#%1110	; VSYNC ON
-    363  79b8		       85 42	   .loopVSync3 sta	WSYNC
-    364  79ba		       85 40		      sta	VSYNC
-    365  79bc		       4a		      lsr
-    366  79bd		       d0 f9		      bne	.loopVSync3	; branch until VYSNC has been reset
-    367  79bf
-    368  79bf		       a0 32		      ldy	#50	;VBLANK_TIM_NTSC
-    369  79c1		       8c 96 02 	      sty	TIM64T
-    370  79c4
-    371  79c4		       20 fa f9 	      jsr	PhasedProcessor
-    372  79c7
-    373  79c7		       85 42	   .VerticalBlank sta	WSYNC
-    374  79c9		       ad 84 02 	      lda	INTIM
-    375  79cc		       d0 f9		      bne	.VerticalBlank
-    376  79ce		       85 41		      sta	VBLANK
-    377  79d0
-    378  79d0		       a5 81		      lda	doubleBufferBase
-    379  79d2		       49 08		      eor	#8
-    380  79d4		       aa		      tax
-    381  79d5		       86 3e		      stx	SET_BANK_RAM
-    382  79d7		       20 67 f2 	      jsr	DrawRow
-    383  79da
-    384  79da		       a9 1a		      lda	#26
-    385  79dc		       8d 96 02 	      sta	TIM64T
-    386  79df
-    387  79df		       a9 00		      lda	#0
-    388  79e1		       85 4d		      sta	PF0
-    389  79e3		       85 4e		      sta	PF1
-    390  79e5		       85 4f		      sta	PF2
-    391  79e7
-    392  79e7							;jsr PhasedProcessor
-    393  79e7
-    394  79e7							; D1 VBLANK turns off beam
-    395  79e7							; It needs to be turned on 37 scanlines later
-    396  79e7
-    397  79e7		       ad 84 02    .oscan     lda	INTIM
-    398  79ea		       d0 fb		      bne	.oscan
-    399  79ec
-    400  79ec		       85 42		      sta	WSYNC
-    401  79ee		       85 42		      sta	WSYNC
-    402  79f0							;		  sta WSYNC
-    403  79f0							;		  sta WSYNC
-    404  79f0
-    405  79f0		       a9 42		      lda	#%01000010	; bit6 is not required
-    406  79f2		       85 41		      sta	VBLANK	; end of screen - enter blanking
-    407  79f4
-    408  79f4
-    409  79f4
-    410  79f4							;		  lda INPT4
-    411  79f4							;		  bpl .ret
-    412  79f4
-    413  79f4							;		  jmp .RestartChessFrame
-    414  79f4
-    415  79f4							;.ret
-    416  79f4
-    417  79f4		       4c b6 f9 	      jmp	.doubleBufferLoop
-    418  79f7
-    419  79f7							;lda #2
-    420  79f7							;sta VSYNC
-    421  79f7							;lda #%01000010		  ; bit6 is not required
-    422  79f7							;sta VBLANK			  ; end of screen - enter blanking
-    423  79f7
-    424  79f7				   Restart		; go here on RESET + SELECT
-    425  79f7
-    426  79f7		       4c 53 f9 	      jmp	Reset
-    427  79fa
-    428  79fa							;---------------------------------------------------------------------------------------------------
-    429  79fa
-      0  79fa					      DEFINE_SUBROUTINE	PhasedProcessor
-      1  79fa		       00 0f	   BANK_PhasedProcessor =	_CURRENT_BANK
-      2  79fa					      SUBROUTINE
-      3  79fa				   PhasedProcessor
-    431  79fa		       a6 82		      ldx	drawPhase
-    432  79fc		       bd 09 fa 	      lda	DrawVectorLO,x
-    433  79ff		       85 d8		      sta	__ptr
-    434  7a01		       bd 0d fa 	      lda	DrawVectorHI,x
-    435  7a04		       85 d9		      sta	__ptr+1
-    436  7a06		       6c d8 00 	      jmp	(__ptr)
-    437  7a09
-    438  7a09				   DrawVectorLO
-    439  7a09		       11		      .byte.b	<Phase0_ClearBoard_0
-    440  7a0a		       17		      .byte.b	<Phase0_ClearBoard_1
-    441  7a0b		       21		      .byte.b	<DrawNextPiece
-    442  7a0c		       2b		      .byte.b	<FlipBuffers
-    443  7a0d
-    444  7a0d				   DrawVectorHI
-    445  7a0d		       fa		      .byte.b	>Phase0_ClearBoard_0
-    446  7a0e		       fa		      .byte.b	>Phase0_ClearBoard_1
-    447  7a0f		       fa		      .byte.b	>DrawNextPiece
-    448  7a10		       fa		      .byte.b	>FlipBuffers
-    449  7a11
-      0  7a11					      DEFINE_SUBROUTINE	Phase0_ClearBoard_0
-      1  7a11		       00 0f	   BANK_Phase0_ClearBoard_0 =	_CURRENT_BANK
-      2  7a11					      SUBROUTINE
-      3  7a11				   Phase0_ClearBoard_0
-    451  7a11
-    452  7a11		       20 04 f8 	      jsr	ClearChessBitmap_PART0
-    453  7a14		       e6 82		      inc	drawPhase
-    454  7a16		       60		      rts
-    455  7a17
-      0  7a17					      DEFINE_SUBROUTINE	Phase0_ClearBoard_1
-      1  7a17		       00 0f	   BANK_Phase0_ClearBoard_1 =	_CURRENT_BANK
-      2  7a17					      SUBROUTINE
-      3  7a17				   Phase0_ClearBoard_1
-    457  7a17
-    458  7a17		       20 1f f8 	      jsr	ClearChessBitmap_PART1
-    459  7a1a
-    460  7a1a		       a9 3f		      lda	#63
-    461  7a1c		       85 83		      sta	drawPieceNumber
-    462  7a1e
-    463  7a1e		       e6 82		      inc	drawPhase
-    464  7a20		       60		      rts
-    465  7a21
-      0  7a21					      DEFINE_SUBROUTINE	DrawNextPiece
-      1  7a21		       00 0f	   BANK_DrawNextPiece =	_CURRENT_BANK
-      2  7a21					      SUBROUTINE
-      3  7a21				   DrawNextPiece
-    467  7a21
-    468  7a21		       20 3d f8 	      jsr	CopyChessboardPiecesToBoardPartial
-    469  7a24		       c6 83		      dec	drawPieceNumber
-    470  7a26		       10 02		      bpl	.incomplete
-    471  7a28
-    472  7a28		       e6 82		      inc	drawPhase
-    473  7a2a		       60	   .incomplete rts
-    474  7a2b
-    475  7a2b
-      0  7a2b					      DEFINE_SUBROUTINE	FlipBuffers
-      1  7a2b		       00 0f	   BANK_FlipBuffers =	_CURRENT_BANK
-      2  7a2b					      SUBROUTINE
-      3  7a2b				   FlipBuffers
-    477  7a2b
-    478  7a2b					      REPEAT	4
-    479  7a2b		       20 73 f8 	      jsr	RandomPieceMove
-    478  7a2b					      REPEND
-    479  7a2e		       20 73 f8 	      jsr	RandomPieceMove
-    478  7a2e					      REPEND
-    479  7a31		       20 73 f8 	      jsr	RandomPieceMove
-    478  7a31					      REPEND
-    479  7a34		       20 73 f8 	      jsr	RandomPieceMove
-    480  7a37					      REPEND
-    481  7a37
-    482  7a37		       a5 81		      lda	doubleBufferBase
-    483  7a39		       49 08		      eor	#8
-    484  7a3b		       85 81		      sta	doubleBufferBase
-    485  7a3d
-    486  7a3d		       a9 00		      lda	#0
-    487  7a3f		       85 82		      sta	drawPhase
-    488  7a41		       60		      rts
-    489  7a42
-    490  7a42
-    491  7a42
-    492  7a42
-    493  7a42							;---------------------------------------------------------------------------
-    494  7a42
- FREE BYTES IN FIXED BANK =  $5ae
-    495  7a42					      ECHO	"FREE BYTES IN FIXED BANK = ", $FFF0 - *
-    496  7a42
-    497  7a42							;---------------------------------------------------------------------------
-    498  7a42							; The reset vectors
-    499  7a42							; these must live in the fixed bank (last 2K of any ROM image in TigerVision)
-    500  7a42
-    501  7ff4 ????				      SEG	PlusCart
-    502  7ff0					      ORG	FIXED_BANK + $7F0
-    503  7ff0					      RORG	$7FF0
-    504  7ff0		       7f f0	   PLUSCART_IO =	*
-    505  7ff0		       00 aa	   PLUS0      =	%10101010
-    506  7ff0		       00 19	   PLUS1      =	%00011001
-    507  7ff0		       00 af	   PLUS2      =	%10101111
-    508  7ff0		       00 36	   PLUS3      =	%00110110
-    509  7ff0		       aa 19 af 36	      .byte.b	PLUS0,PLUS1,PLUS2,PLUS3
-    510  7ff4
-    511  8000 ????				      SEG	InterruptVectors
-    512  7ffc					      ORG	FIXED_BANK + $7FC
-    513  7ffc					      RORG	$7ffC
-    514  7ffc
-    515  7ffc							;		 .word Reset	       ; NMI	    (not used)
-    516  7ffc		       53 f9		      .word.w	Reset	; RESET
-    517  7ffe		       53 f9		      .word.w	Reset	; IRQ	      (not used)
-    518  8000
-    519  8000							;---------------------------------------------------------------------------
+      4  787c		       49 75		      eor	#RND_EOR_VAL
+      5  787e		       85 81	   .skipEOR   sta	rnd
+     91  7880		       aa		      tax
+     92  7881		       e8	   .nextX     inx
+     93  7882		       8a		      txa
+     94  7883		       29 3f		      and	#63
+     95  7885		       aa		      tax
+     96  7886
+     97  7886		       bd 00 10 	      lda	Chessboard,x
+     98  7889		       c9 1c		      cmp	#BLANK
+     99  788b		       f0 f4		      beq	.nextX
+    100  788d
+    101  788d		       86 85		      stx	fromSquare
+    102  788f
+      0  788f					      NEXT_RANDOM
+      1  788f		       a5 81		      lda	rnd
+      2  7891		       4a		      lsr
+      3  7892		       90 02		      bcc	.skipEOR
+      4  7894		       49 75		      eor	#RND_EOR_VAL
+      5  7896		       85 81	   .skipEOR   sta	rnd
+    104  7898		       a8		      tay
+    105  7899		       c8	   .nextY     iny
+    106  789a		       98		      tya
+    107  789b		       29 3f		      and	#63
+    108  789d		       a8		      tay
+    109  789e
+    110  789e
+    111  789e							;lda #BLANK
+    112  789e							;sta fromPiece
+    113  789e
+    114  789e		       b9 00 10 	      lda	Chessboard,y
+    115  78a1		       c9 1c		      cmp	#BLANK
+    116  78a3		       d0 f4		      bne	.nextY
+    117  78a5
+    118  78a5		       84 87		      sty	toSquare
+    119  78a7
+    120  78a7		       bd 00 10 	      lda	Chessboard,x
+    121  78aa		       85 86		      sta	fromPiece
+    122  78ac
+    123  78ac							;		  sta Chessboard+RAM_WRITE,y
+    124  78ac							;		  lda #BLANK
+    125  78ac							;		  sta Chessboard+RAM_WRITE,x
+    126  78ac
+    127  78ac		       60		      rts
+    128  78ad
+    129  78ad							;---------------------------------------------------------------------------------------------------
+    130  78ad
+      0  78ad					      DEFINE_SUBROUTINE	InitialiseChessboard
+      1  78ad		       00 0f	   BANK_InitialiseChessboard =	_CURRENT_BANK
+      2  78ad					      SUBROUTINE
+      3  78ad				   InitialiseChessboard
+    132  78ad
+    133  78ad		       a9 10		      lda	#BANK_CHESSBOARD
+    134  78af		       85 3e		      sta	SET_BANK_RAM
+    135  78b1
+    136  78b1		       a2 3f		      ldx	#63
+    137  78b3		       bd bf f8    .setupBoard lda	BoardPiece,x
+    138  78b6		       29 fc		      and	#~3
+    139  78b8		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
+    140  78bb		       ca		      dex
+    141  78bc		       10 f5		      bpl	.setupBoard
+    142  78be
+    143  78be		       60		      rts
+    144  78bf
+    145  78bf				   BoardPiece
+    146  78bf
+    147  78bf		       00 1c	   BLANK      =	INDEX_WHITE_BLANK_on_BLACK_SQUARE_0
+    148  78bf		       00 20	   WHITE_PAWN =	INDEX_WHITE_PAWN_on_BLACK_SQUARE_0
+    149  78bf		       00 2c	   WHITE_ROOK =	INDEX_WHITE_ROOK_on_BLACK_SQUARE_0
+    150  78bf		       00 24	   WHITE_KNIGHT =	INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_0
+    151  78bf		       00 28	   WHITE_BISHOP =	INDEX_WHITE_BISHOP_on_BLACK_SQUARE_0
+    152  78bf		       00 30	   WHITE_QUEEN =	INDEX_WHITE_QUEEN_on_BLACK_SQUARE_0
+    153  78bf		       00 34	   WHITE_KING =	INDEX_WHITE_KING_on_BLACK_SQUARE_0
+    154  78bf		       00 58	   BLACK_PAWN =	INDEX_BLACK_PAWN_on_BLACK_SQUARE_0
+    155  78bf		       00 64	   BLACK_ROOK =	INDEX_BLACK_ROOK_on_BLACK_SQUARE_0
+    156  78bf		       00 5c	   BLACK_KNIGHT =	INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_0
+    157  78bf		       00 60	   BLACK_BISHOP =	INDEX_BLACK_BISHOP_on_BLACK_SQUARE_0
+    158  78bf		       00 68	   BLACK_QUEEN =	INDEX_BLACK_QUEEN_on_BLACK_SQUARE_0
+    159  78bf		       00 6c	   BLACK_KING =	INDEX_BLACK_KING_on_BLACK_SQUARE_0
+    160  78bf
+    161  78bf
+    162  78bf		       64		      .byte.b	BLACK_ROOK	;0
+    163  78c0		       5c		      .byte.b	BLACK_KNIGHT	;1
+    164  78c1		       60		      .byte.b	BLACK_BISHOP	;2
+    165  78c2		       68		      .byte.b	BLACK_QUEEN	;3
+    166  78c3		       6c		      .byte.b	BLACK_KING	;4
+    167  78c4		       60		      .byte.b	BLACK_BISHOP	;5
+    168  78c5		       5c		      .byte.b	BLACK_KNIGHT	;6
+    169  78c6		       64		      .byte.b	BLACK_ROOK	;7
+    170  78c7
+    171  78c7		       58		      .byte.b	BLACK_PAWN
+    172  78c8		       58		      .byte.b	BLACK_PAWN
+    173  78c9		       58		      .byte.b	BLACK_PAWN
+    174  78ca		       58		      .byte.b	BLACK_PAWN
+    175  78cb		       58		      .byte.b	BLACK_PAWN
+    176  78cc		       58		      .byte.b	BLACK_PAWN
+    177  78cd		       58		      .byte.b	BLACK_PAWN
+    178  78ce		       58		      .byte.b	BLACK_PAWN
+    179  78cf
+    180  78cf		       1c		      .byte.b	BLANK
+    181  78d0		       1c		      .byte.b	BLANK
+    182  78d1		       1c		      .byte.b	BLANK
+    183  78d2		       1c		      .byte.b	BLANK
+    184  78d3		       1c		      .byte.b	BLANK
+    185  78d4		       1c		      .byte.b	BLANK
+    186  78d5		       1c		      .byte.b	BLANK
+    187  78d6		       1c		      .byte.b	BLANK
+    188  78d7
+    189  78d7		       1c		      .byte.b	BLANK
+    190  78d8		       1c		      .byte.b	BLANK
+    191  78d9		       1c		      .byte.b	BLANK
+    192  78da		       1c		      .byte.b	BLANK
+    193  78db		       1c		      .byte.b	BLANK
+    194  78dc		       1c		      .byte.b	BLANK
+    195  78dd		       1c		      .byte.b	BLANK
+    196  78de		       1c		      .byte.b	BLANK
+    197  78df
+    198  78df		       1c		      .byte.b	BLANK
+    199  78e0		       1c		      .byte.b	BLANK
+    200  78e1		       1c		      .byte.b	BLANK
+    201  78e2		       1c		      .byte.b	BLANK
+    202  78e3		       1c		      .byte.b	BLANK
+    203  78e4		       1c		      .byte.b	BLANK
+    204  78e5		       1c		      .byte.b	BLANK
+    205  78e6		       1c		      .byte.b	BLANK
+    206  78e7
+    207  78e7		       1c		      .byte.b	BLANK
+    208  78e8		       1c		      .byte.b	BLANK
+    209  78e9		       1c		      .byte.b	BLANK
+    210  78ea		       1c		      .byte.b	BLANK
+    211  78eb		       1c		      .byte.b	BLANK
+    212  78ec		       1c		      .byte.b	BLANK
+    213  78ed		       1c		      .byte.b	BLANK
+    214  78ee		       1c		      .byte.b	BLANK
+    215  78ef
+    216  78ef		       20		      .byte.b	WHITE_PAWN
+    217  78f0		       20		      .byte.b	WHITE_PAWN
+    218  78f1		       20		      .byte.b	WHITE_PAWN
+    219  78f2		       20		      .byte.b	WHITE_PAWN
+    220  78f3		       20		      .byte.b	WHITE_PAWN
+    221  78f4		       20		      .byte.b	WHITE_PAWN
+    222  78f5		       20		      .byte.b	WHITE_PAWN
+    223  78f6		       20		      .byte.b	WHITE_PAWN
+    224  78f7
+    225  78f7		       2c		      .byte.b	WHITE_ROOK
+    226  78f8		       24		      .byte.b	WHITE_KNIGHT
+    227  78f9		       28		      .byte.b	WHITE_BISHOP
+    228  78fa		       30		      .byte.b	WHITE_QUEEN
+    229  78fb		       34		      .byte.b	WHITE_KING
+    230  78fc		       28		      .byte.b	WHITE_BISHOP
+    231  78fd		       24		      .byte.b	WHITE_KNIGHT
+    232  78fe		       2c		      .byte.b	WHITE_ROOK
+    233  78ff
+    234  78ff
+    235  78ff							;---------------------------------------------------------------------------------------------------
+    236  78ff
+      0  78ff					      DEFINE_SUBROUTINE	CopyPieceToRAMBuffer
+      1  78ff		       00 0f	   BANK_CopyPieceToRAMBuffer =	_CURRENT_BANK
+      2  78ff					      SUBROUTINE
+      3  78ff				   CopyPieceToRAMBuffer
+    238  78ff
+    239  78ff							; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
+    240  78ff							; y = piece index
+    241  78ff
+    242  78ff		       a9 08		      lda	#BANK_PIECE_VECTOR_BANK
+    243  7901		       85 3f		      sta	SET_BANK
+    244  7903
+    245  7903		       b9 00 f0 	      lda	PIECE_VECTOR_LO,y
+    246  7906		       85 df		      sta	__ptr
+    247  7908		       b9 70 f0 	      lda	PIECE_VECTOR_HI,y
+    248  790b		       85 e0		      sta	__ptr+1
+    249  790d		       b9 e0 f0 	      lda	PIECE_VECTOR_BANK,y
+    250  7910		       85 3f		      sta	SET_BANK
+    251  7912
+    252  7912		       a0 47		      ldy	#PIECE_SHAPE_SIZE-1
+    253  7914		       b1 df	   .copyPieceGfx lda	(__ptr),y
+    254  7916		       99 97 00 	      sta	__pieceShapeBuffer,y
+    255  7919		       88		      dey
+    256  791a		       10 f8		      bpl	.copyPieceGfx
+    257  791c
+    258  791c		       60		      rts
+    259  791d
+    260  791d							;---------------------------------------------------------------------------------------------------
+    261  791d
+      0  791d					      DEFINE_SUBROUTINE	CopyShadowROMtoRAM
+      1  791d		       00 0f	   BANK_CopyShadowROMtoRAM =	_CURRENT_BANK
+      2  791d					      SUBROUTINE
+      3  791d				   CopyShadowROMtoRAM
+    263  791d							; pass x = source bank
+    264  791d							; pass y = destination bank (preserved)
+    265  791d
+    266  791d		       86 98		      stx	__sourceBank
+    267  791f
+    268  791f		       a2 00		      ldx	#0
+    269  7921		       a5 98	   .copyPage  lda	__sourceBank
+    270  7923		       85 3f		      sta	SET_BANK
+    271  7925
+    272  7925		       bd 00 f0 	      lda	$F000,x
+    273  7928		       48		      pha
+    274  7929		       bd 00 f1 	      lda	$F100,x
+    275  792c		       48		      pha
+    276  792d		       bd 00 f2 	      lda	$F200,x
+    277  7930		       48		      pha
+    278  7931		       bd 00 f3 	      lda	$F300,x
+    279  7934
+    280  7934		       84 3e		      sty	SET_BANK_RAM
+    281  7936
+    282  7936		       9d 00 f7 	      sta	$F300+RAM_WRITE,x
+    283  7939		       68		      pla
+    284  793a		       9d 00 f6 	      sta	$F200+RAM_WRITE,x
+    285  793d		       68		      pla
+    286  793e		       9d 00 f5 	      sta	$F100+RAM_WRITE,x
+    287  7941		       68		      pla
+    288  7942		       9d 00 f4 	      sta	$F000+RAM_WRITE,x
+    289  7945
+    290  7945		       ca		      dex
+    291  7946		       d0 d9		      bne	.copyPage
+    292  7948		       60		      rts
+    293  7949
+    294  7949							;---------------------------------------------------------------------------------------------------
+    295  7949
+      0  7949					      DEFINE_SUBROUTINE	Reset
+      1  7949		       00 0f	   BANK_Reset =	_CURRENT_BANK
+      2  7949					      SUBROUTINE
+      3  7949				   Reset
+    297  7949
+      0  7949					      CLEAN_START
+      1  7949		       78		      sei
+      2  794a		       d8		      cld
+      3  794b
+      4  794b		       a2 00		      ldx	#0
+      5  794d		       8a		      txa
+      6  794e		       a8		      tay
+      7  794f		       ca	   .CLEAR_STACK dex
+      8  7950		       9a		      txs
+      9  7951		       48		      pha
+     10  7952		       d0 fb		      bne	.CLEAR_STACK
+     11  7954
+    299  7954
+    300  7954		       a9 92		      lda	#$92
+    301  7956		       85 81		      sta	rnd
+    302  7958
+    303  7958
+    304  7958							; Move a copy of the row bank template to the first 8 banks of RAM
+    305  7958							; and then terminate the draw subroutine by substituting in a RTS on the last one
+    306  7958
+    307  7958		       a0 0f		      ldy	#15
+    308  795a		       a2 01	   .copyRowBanks ldx	#BANK_ROM_SHADOW_OF_CHESS_BITMAP
+    309  795c		       20 1d f9 	      jsr	CopyShadowROMtoRAM
+    310  795f		       88		      dey
+    311  7960		       10 f8		      bpl	.copyRowBanks
+    312  7962
+    313  7962							; Patch the final row's "loop" to a RTS
+    314  7962
+    315  7962		       a9 96		      lda	#<SELFMOD_RTS_ON_LAST_ROW
+    316  7964		       85 df		      sta	__ptr
+    317  7966		       a9 f6		      lda	#>(SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE)
+    318  7968		       85 e0		      sta	__ptr+1
+    319  796a
+    320  796a
+    321  796a		       a0 00		      ldy	#0
+    322  796c		       a9 60		      lda	#$60	; rts
+    323  796e
+    324  796e							; the 'screen' is double-buffered - two sets of 8x1K banks
+    325  796e							; we need to put an RTS on the last of both of these
+    326  796e
+    327  796e		       a2 07		      ldx	#7
+    328  7970		       86 3e		      stx	SET_BANK_RAM
+    329  7972		       91 df		      sta	(__ptr),y	; patch selfmod code to RTS
+    330  7974
+    331  7974		       a2 0f		      ldx	#15
+    332  7976		       86 3e		      stx	SET_BANK_RAM
+    333  7978		       91 df		      sta	(__ptr),y
+    334  797a
+    335  797a
+    336  797a		       20 ad f8 	      jsr	InitialiseChessboard
+    337  797d
+    338  797d							; Now the board is "living" in RAM (along with support code) we can do stuff with it
+    339  797d
+    340  797d		       a9 00		      lda	#0
+    341  797f		       85 82		      sta	doubleBufferBase
+    342  7981		       85 83		      sta	drawPhase
+    343  7983
+    344  7983
+    345  7983		       a9 00		      lda	#%00000000
+    346  7985		       85 4a		      sta	CTRLPF
+    347  7987		       85 49		      sta	COLUBK
+    348  7989
+    349  7989
+      0  7989					      RESYNC
+      1  7989
+      2  7989		       a9 02		      lda	#%10
+      3  798b		       85 41		      sta	VBLANK
+      4  798d
+      5  798d		       a2 08		      ldx	#8
+      6  798f				   .loopResync
+      0  798f					      VERTICAL_SYNC
+      1  798f		       a9 0e		      lda	#%1110
+      2  7991		       85 42	   .VSLP1     sta	WSYNC
+      3  7993		       85 40		      sta	VSYNC
+      4  7995		       4a		      lsr
+      5  7996		       d0 f9		      bne	.VSLP1
+      8  7998
+      9  7998		       a0 88		      ldy	#SCANLINES_NTSC/2 - 2
+     10  799a		       a5 8b		      lda	Platform
+     11  799c		       49 02		      eor	#PAL_50
+     12  799e		       d0 02		      bne	.ntsc
+     13  79a0		       a0 9a		      ldy	#SCANLINES_PAL/2 - 2
+     14  79a2				   .ntsc
+     15  79a2				   .loopWait
+     16  79a2		       85 42		      sta	WSYNC
+     17  79a4		       85 42		      sta	WSYNC
+     18  79a6		       88		      dey
+     19  79a7		       d0 f9		      bne	.loopWait
+     20  79a9		       ca		      dex
+     21  79aa		       d0 e3		      bne	.loopResync
+    351  79ac
+    352  79ac
+    353  79ac				   .doubleBufferLoop
+    354  79ac
+    355  79ac		       a9 0e		      lda	#%1110	; VSYNC ON
+    356  79ae		       85 42	   .loopVSync3 sta	WSYNC
+    357  79b0		       85 40		      sta	VSYNC
+    358  79b2		       4a		      lsr
+    359  79b3		       d0 f9		      bne	.loopVSync3	; branch until VYSNC has been reset
+    360  79b5
+    361  79b5		       a0 32		      ldy	#50	;VBLANK_TIM_NTSC
+    362  79b7		       8c 96 02 	      sty	TIM64T
+    363  79ba
+    364  79ba		       20 ee f9 	      jsr	PhasedProcessor
+    365  79bd
+    366  79bd		       85 42	   .VerticalBlank sta	WSYNC
+    367  79bf		       ad 84 02 	      lda	INTIM
+    368  79c2		       d0 f9		      bne	.VerticalBlank
+    369  79c4		       85 41		      sta	VBLANK
+    370  79c6
+    371  79c6		       a5 82		      lda	doubleBufferBase
+    372  79c8							;eor #8
+    373  79c8		       aa		      tax
+    374  79c9		       86 3e		      stx	SET_BANK_RAM
+    375  79cb		       20 67 f2 	      jsr	DrawRow
+    376  79ce
+    377  79ce		       a9 1a		      lda	#26
+    378  79d0		       8d 96 02 	      sta	TIM64T
+    379  79d3
+    380  79d3		       a9 00		      lda	#0
+    381  79d5		       85 4d		      sta	PF0
+    382  79d7		       85 4e		      sta	PF1
+    383  79d9		       85 4f		      sta	PF2
+    384  79db
+    385  79db							;jsr PhasedProcessor
+    386  79db
+    387  79db							; D1 VBLANK turns off beam
+    388  79db							; It needs to be turned on 37 scanlines later
+    389  79db
+    390  79db		       ad 84 02    .oscan     lda	INTIM
+    391  79de		       d0 fb		      bne	.oscan
+    392  79e0
+    393  79e0		       85 42		      sta	WSYNC
+    394  79e2		       85 42		      sta	WSYNC
+    395  79e4							;		  sta WSYNC
+    396  79e4							;		  sta WSYNC
+    397  79e4
+    398  79e4		       a9 42		      lda	#%01000010	; bit6 is not required
+    399  79e6		       85 41		      sta	VBLANK	; end of screen - enter blanking
+    400  79e8
+    401  79e8
+    402  79e8
+    403  79e8							;		  lda INPT4
+    404  79e8							;		  bpl .ret
+    405  79e8
+    406  79e8							;		  jmp .RestartChessFrame
+    407  79e8
+    408  79e8							;.ret
+    409  79e8
+    410  79e8		       4c ac f9 	      jmp	.doubleBufferLoop
+    411  79eb
+    412  79eb							;lda #2
+    413  79eb							;sta VSYNC
+    414  79eb							;lda #%01000010		  ; bit6 is not required
+    415  79eb							;sta VBLANK			  ; end of screen - enter blanking
+    416  79eb
+    417  79eb				   Restart		; go here on RESET + SELECT
+    418  79eb
+    419  79eb		       4c 49 f9 	      jmp	Reset
+    420  79ee
+    421  79ee							;---------------------------------------------------------------------------------------------------
+    422  79ee
+      0  79ee					      DEFINE_SUBROUTINE	PhasedProcessor
+      1  79ee		       00 0f	   BANK_PhasedProcessor =	_CURRENT_BANK
+      2  79ee					      SUBROUTINE
+      3  79ee				   PhasedProcessor
+    424  79ee		       a6 83		      ldx	drawPhase
+    425  79f0		       bd fd f9 	      lda	DrawVectorLO,x
+    426  79f3		       85 df		      sta	__ptr
+    427  79f5		       bd 09 fa 	      lda	DrawVectorHI,x
+    428  79f8		       85 e0		      sta	__ptr+1
+    429  79fa		       6c df 00 	      jmp	(__ptr)
+    430  79fd
+    431  79fd				   DrawVectorLO
+    432  79fd		       15		      .byte.b	<Phase0_ClearBoard_0
+    433  79fe		       1b		      .byte.b	<Phase0_ClearBoard_1
+    434  79ff		       25		      .byte.b	<DrawNextPiece
+    435  7a00		       2f		      .byte.b	<FlipBuffers
+    436  7a01		       35		      .byte.b	<EraseStartPiece
+    437  7a02		       3f		      .byte.b	<WriteStartPieceBlank
+    438  7a03		       52		      .byte.b	<MarchToTargetA
+    439  7a04							;.byte <DelayIt
+    440  7a04		       ad		      .byte.b	<MarchToTargetB
+    441  7a05		       cf		      .byte.b	<WriteEndPieceBlank
+    442  7a06		       d9		      .byte.b	<WriteEndPiece
+    443  7a07		       f0		      .byte.b	<DelayIt
+    444  7a08		       f7		      .byte.b	<Final
+    445  7a09
+    446  7a09				   DrawVectorHI
+    447  7a09		       fa		      .byte.b	>Phase0_ClearBoard_0
+    448  7a0a		       fa		      .byte.b	>Phase0_ClearBoard_1
+    449  7a0b		       fa		      .byte.b	>DrawNextPiece
+    450  7a0c		       fa		      .byte.b	>FlipBuffers
+    451  7a0d		       fa		      .byte.b	>EraseStartPiece
+    452  7a0e		       fa		      .byte.b	>WriteStartPieceBlank
+    453  7a0f		       fa		      .byte.b	>MarchToTargetA
+    454  7a10							;.byte >DelayIt
+    455  7a10		       fa		      .byte.b	>MarchToTargetB
+    456  7a11		       fa		      .byte.b	>WriteEndPieceBlank
+    457  7a12		       fa		      .byte.b	>WriteEndPiece
+    458  7a13		       fa		      .byte.b	>DelayIt
+    459  7a14		       fa		      .byte.b	>Final
+    460  7a15
+      0  7a15					      DEFINE_SUBROUTINE	Phase0_ClearBoard_0
+      1  7a15		       00 0f	   BANK_Phase0_ClearBoard_0 =	_CURRENT_BANK
+      2  7a15					      SUBROUTINE
+      3  7a15				   Phase0_ClearBoard_0
+    462  7a15
+    463  7a15		       20 04 f8 	      jsr	ClearChessBitmap_PART0
+    464  7a18		       e6 83		      inc	drawPhase
+    465  7a1a		       60		      rts
+    466  7a1b
+      0  7a1b					      DEFINE_SUBROUTINE	Phase0_ClearBoard_1
+      1  7a1b		       00 0f	   BANK_Phase0_ClearBoard_1 =	_CURRENT_BANK
+      2  7a1b					      SUBROUTINE
+      3  7a1b				   Phase0_ClearBoard_1
+    468  7a1b
+    469  7a1b		       20 1f f8 	      jsr	ClearChessBitmap_PART1
+    470  7a1e
+    471  7a1e		       a9 3f		      lda	#63
+    472  7a20		       85 80		      sta	drawPieceNumber
+    473  7a22
+    474  7a22		       e6 83		      inc	drawPhase
+    475  7a24		       60		      rts
+    476  7a25
+      0  7a25					      DEFINE_SUBROUTINE	DrawNextPiece
+      1  7a25		       00 0f	   BANK_DrawNextPiece =	_CURRENT_BANK
+      2  7a25					      SUBROUTINE
+      3  7a25				   DrawNextPiece
+    478  7a25
+    479  7a25		       20 3d f8 	      jsr	CopySinglePiece
+    480  7a28		       c6 80		      dec	drawPieceNumber
+    481  7a2a		       10 02		      bpl	.incomplete
+    482  7a2c
+    483  7a2c		       e6 83		      inc	drawPhase
+    484  7a2e		       60	   .incomplete rts
+    485  7a2f
+    486  7a2f							; Now we've finished drawing the screen square by square.
+    487  7a2f
+      0  7a2f					      DEFINE_SUBROUTINE	FlipBuffers
+      1  7a2f		       00 0f	   BANK_FlipBuffers =	_CURRENT_BANK
+      2  7a2f					      SUBROUTINE
+      3  7a2f				   FlipBuffers
+    489  7a2f
+    490  7a2f		       20 73 f8 	      jsr	RandomPieceMove
+    491  7a32		       e6 83		      inc	drawPhase
+    492  7a34		       60		      rts
+    493  7a35
+      0  7a35					      DEFINE_SUBROUTINE	EraseStartPiece
+      1  7a35		       00 0f	   BANK_EraseStartPiece =	_CURRENT_BANK
+      2  7a35					      SUBROUTINE
+      3  7a35				   EraseStartPiece
+    495  7a35
+    496  7a35		       a5 85		      lda	fromSquare
+    497  7a37		       85 80		      sta	drawPieceNumber
+    498  7a39		       20 3d f8 	      jsr	CopySinglePiece	; erase the existing piece
+    499  7a3c
+    500  7a3c		       e6 83		      inc	drawPhase
+    501  7a3e		       60		      rts
+    502  7a3f
+      0  7a3f					      DEFINE_SUBROUTINE	WriteStartPieceBlank
+      1  7a3f		       00 0f	   BANK_WriteStartPieceBlank =	_CURRENT_BANK
+      2  7a3f					      SUBROUTINE
+      3  7a3f				   WriteStartPieceBlank
+    504  7a3f
+    505  7a3f		       a6 85		      ldx	fromSquare
+    506  7a41		       86 80		      stx	drawPieceNumber
+    507  7a43
+    508  7a43		       a9 10		      lda	#BANK_CHESSBOARD
+    509  7a45		       85 3e		      sta	SET_BANK_RAM
+    510  7a47		       a9 1c		      lda	#BLANK
+    511  7a49		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x	; put a blank on the board
+    512  7a4c
+    513  7a4c		       20 3d f8 	      jsr	CopySinglePiece	; now draw the 'blank' square
+    514  7a4f
+    515  7a4f		       e6 83		      inc	drawPhase
+    516  7a51		       60		      rts
+    517  7a52
+      0  7a52					      DEFINE_SUBROUTINE	MarchToTargetA
+      1  7a52		       00 0f	   BANK_MarchToTargetA =	_CURRENT_BANK
+      2  7a52					      SUBROUTINE
+      3  7a52				   MarchToTargetA
+    519  7a52
+    520  7a52		       a5 85		      lda	fromSquare
+    521  7a54		       c5 87		      cmp	toSquare
+    522  7a56		       f0 73		      beq	.halt
+    523  7a58
+    524  7a58		       a5 85		      lda	fromSquare
+    525  7a5a		       4a		      lsr
+    526  7a5b		       4a		      lsr
+    527  7a5c		       4a		      lsr
+    528  7a5d		       85 8a		      sta	__fromRow
+    529  7a5f		       a5 87		      lda	toSquare
+    530  7a61		       4a		      lsr
+    531  7a62		       4a		      lsr
+    532  7a63		       4a		      lsr
+    533  7a64		       c5 8a		      cmp	__fromRow
+    534  7a66		       f0 11		      beq	rowOK
+    535  7a68		       b0 09		      bcs	.downRow
+    536  7a6a		       a5 85		      lda	fromSquare
+    537  7a6c		       e9 07		      sbc	#7
+    538  7a6e		       85 85		      sta	fromSquare
+    539  7a70		       4c 79 fa 	      jmp	nowcol
+    540  7a73		       a5 85	   .downRow   lda	fromSquare
+    541  7a75		       69 07		      adc	#7
+    542  7a77		       85 85		      sta	fromSquare
+    543  7a79				   rowOK
+    544  7a79				   nowcol
+    545  7a79
+    546  7a79		       a5 85		      lda	fromSquare
+    547  7a7b		       29 07		      and	#7
+    548  7a7d		       85 8a		      sta	__fromRow
+    549  7a7f		       a5 87		      lda	toSquare
+    550  7a81		       29 07		      and	#7
+    551  7a83		       c5 8a		      cmp	__fromRow
+    552  7a85		       f0 09		      beq	colok
+    553  7a87		       90 05		      bcc	.leftCol
+    554  7a89		       e6 85		      inc	fromSquare
+    555  7a8b		       4c 90 fa 	      jmp	colok
+    556  7a8e		       c6 85	   .leftCol   dec	fromSquare
+    557  7a90				   colok
+    558  7a90
+    559  7a90
+    560  7a90
+    561  7a90		       a5 85		      lda	fromSquare
+    562  7a92
+    563  7a92							;		  clc
+    564  7a92							;		  adc #1
+    565  7a92							;		  and #63
+    566  7a92							;		  sta fromSquare
+    567  7a92		       aa		      tax
+    568  7a93		       86 80		      stx	drawPieceNumber
+    569  7a95
+    570  7a95		       a9 10		      lda	#BANK_CHESSBOARD
+    571  7a97		       85 3e		      sta	SET_BANK_RAM
+    572  7a99		       bd 00 10 	      lda	Chessboard,x
+    573  7a9c		       85 89		      sta	lastPiece
+    574  7a9e		       a5 86		      lda	fromPiece
+    575  7aa0		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
+    576  7aa3		       20 3d f8 	      jsr	CopySinglePiece
+    577  7aa6
+    578  7aa6		       a9 03		      lda	#3
+    579  7aa8		       85 84		      sta	drawDelay
+    580  7aaa		       e6 83		      inc	drawPhase
+    581  7aac		       60		      rts
+    582  7aad
+      0  7aad					      DEFINE_SUBROUTINE	MarchToTargetB
+      1  7aad		       00 0f	   BANK_MarchToTargetB =	_CURRENT_BANK
+      2  7aad					      SUBROUTINE
+      3  7aad				   MarchToTargetB
+    584  7aad
+    585  7aad		       a5 84		      lda	drawDelay
+    586  7aaf		       f0 05		      beq	gogogo
+    587  7ab1		       c6 84		      dec	drawDelay
+    588  7ab3		       4c ca fa 	      jmp	bypass
+    589  7ab6				   gogogo
+    590  7ab6
+    591  7ab6		       a6 85		      ldx	fromSquare
+    592  7ab8		       86 80		      stx	drawPieceNumber
+    593  7aba		       20 3d f8 	      jsr	CopySinglePiece
+    594  7abd		       a9 10		      lda	#BANK_CHESSBOARD
+    595  7abf		       85 3e		      sta	SET_BANK_RAM
+    596  7ac1		       a6 85		      ldx	fromSquare
+    597  7ac3		       a5 89		      lda	lastPiece
+    598  7ac5		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
+    599  7ac8
+    600  7ac8		       c6 83		      dec	drawPhase
+    601  7aca		       60	   bypass     rts
+    602  7acb
+    603  7acb		       e6 83	   .halt      inc	drawPhase
+    604  7acd		       e6 83		      inc	drawPhase
+    605  7acf
+      0  7acf					      DEFINE_SUBROUTINE	WriteEndPieceBlank
+      1  7acf		       00 0f	   BANK_WriteEndPieceBlank =	_CURRENT_BANK
+      2  7acf					      SUBROUTINE
+      3  7acf				   WriteEndPieceBlank
+    607  7acf
+    608  7acf		       a6 87		      ldx	toSquare
+    609  7ad1		       86 80		      stx	drawPieceNumber
+    610  7ad3		       20 3d f8 	      jsr	CopySinglePiece	; now erase the destination square
+    611  7ad6
+    612  7ad6		       e6 83		      inc	drawPhase
+    613  7ad8		       60		      rts
+    614  7ad9
+      0  7ad9					      DEFINE_SUBROUTINE	WriteEndPiece
+      1  7ad9		       00 0f	   BANK_WriteEndPiece =	_CURRENT_BANK
+      2  7ad9					      SUBROUTINE
+      3  7ad9				   WriteEndPiece
+    616  7ad9
+    617  7ad9		       a6 87		      ldx	toSquare
+    618  7adb		       86 80		      stx	drawPieceNumber
+    619  7add
+    620  7add		       a9 10		      lda	#BANK_CHESSBOARD
+    621  7adf		       85 3e		      sta	SET_BANK_RAM
+    622  7ae1		       a5 86		      lda	fromPiece
+    623  7ae3		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x	; put a blank on the board
+    624  7ae6
+    625  7ae6		       20 3d f8 	      jsr	CopySinglePiece
+    626  7ae9
+    627  7ae9		       a9 0a		      lda	#10
+    628  7aeb		       85 84		      sta	drawDelay
+    629  7aed		       e6 83		      inc	drawPhase
+    630  7aef		       60		      rts
+    631  7af0
+      0  7af0					      DEFINE_SUBROUTINE	DelayIt
+      1  7af0		       00 0f	   BANK_DelayIt =	_CURRENT_BANK
+      2  7af0					      SUBROUTINE
+      3  7af0				   DelayIt
+    633  7af0
+    634  7af0		       c6 84		      dec	drawDelay
+    635  7af2		       d0 02		      bne	.waiting
+    636  7af4		       e6 83		      inc	drawPhase
+    637  7af6		       60	   .waiting   rts
+    638  7af7
+      0  7af7					      DEFINE_SUBROUTINE	Final
+      1  7af7		       00 0f	   BANK_Final =	_CURRENT_BANK
+      2  7af7					      SUBROUTINE
+      3  7af7				   Final
+    640  7af7
+    641  7af7		       a9 03		      lda	#3
+    642  7af9		       85 83		      sta	drawPhase
+    643  7afb		       60		      rts
+    644  7afc
+    645  7afc							;---------------------------------------------------------------------------
+    646  7afc
+ FREE BYTES IN FIXED BANK =  $4f4
+    647  7afc					      ECHO	"FREE BYTES IN FIXED BANK = ", $FFF0 - *
+    648  7afc
+    649  7afc							;---------------------------------------------------------------------------
+    650  7afc							; The reset vectors
+    651  7afc							; these must live in the fixed bank (last 2K of any ROM image in TigerVision)
+    652  7afc
+    653  7ff4 ????				      SEG	PlusCart
+    654  7ff0					      ORG	FIXED_BANK + $7F0
+    655  7ff0					      RORG	$7FF0
+    656  7ff0		       7f f0	   PLUSCART_IO =	*
+    657  7ff0		       00 aa	   PLUS0      =	%10101010
+    658  7ff0		       00 19	   PLUS1      =	%00011001
+    659  7ff0		       00 af	   PLUS2      =	%10101111
+    660  7ff0		       00 36	   PLUS3      =	%00110110
+    661  7ff0		       aa 19 af 36	      .byte.b	PLUS0,PLUS1,PLUS2,PLUS3
+    662  7ff4
+    663  8000 ????				      SEG	InterruptVectors
+    664  7ffc					      ORG	FIXED_BANK + $7FC
+    665  7ffc					      RORG	$7ffC
+    666  7ffc
+    667  7ffc							;		 .word Reset	       ; NMI	    (not used)
+    668  7ffc		       49 f9		      .word.w	Reset	; RESET
+    669  7ffe		       49 f9		      .word.w	Reset	; IRQ	      (not used)
+    670  8000
+    671  8000							;---------------------------------------------------------------------------
 ------- FILE ./chess.asm
     447  8000
     448  8000							;END

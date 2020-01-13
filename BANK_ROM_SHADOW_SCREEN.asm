@@ -42,7 +42,7 @@ ChessBitmap5    ds 24
 
                 ldy #71
 .copyPiece      lda __pieceShapeBuffer,y
-                ora ChessBitmap,y
+                eor ChessBitmap,y
                 sta ChessBitmap+RAM_WRITE,y
                 dey
                 bpl .copyPiece
@@ -113,7 +113,7 @@ SELFMOD_RTS_ON_LAST_ROW
 .LineColour
 ; The ICC triplet colour definitions for a single row of the chessboard
     REPEAT 8
-        .byte $44, $2c, $a6 ;$4A, $1A, $98
+        .byte $48, $28, $96 ;$4A, $1A, $98
     REPEND
 
     MAC TEST
