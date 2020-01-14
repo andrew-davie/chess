@@ -57,12 +57,22 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
                 lda #28
 .white          sta __pieceColour           ; actually SQUARE black/white
 
+    ; PieceColour = 0 for white square, 28 for black square
+
                 ldy drawPieceNumber
+
+
                 tya
-                and #3
-                ora Chessboard,y
-                sec
-                sbc __pieceColour
+                and #3          ; shift position in PF
+
+        ldx #BANK_CHESSBOARD
+        stx SET_BANK_RAM
+
+                ldx Chessboard,y
+                clc
+                adc PieceToShape,x
+                clc
+                adc __pieceColour
                 tay
                 jsr CopyPieceToRAMBuffer
 
@@ -95,7 +105,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
                 tax
 
                 lda Chessboard,x
-                cmp #BLANK
+                ;cmp #BLANK
                 beq .nextX
 
                 stx fromSquare
@@ -112,7 +122,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
                 ;sta fromPiece
 
                 lda Chessboard,y
-                cmp #BLANK
+                ;cmp #BLANK
                 bne .nextY
 
                 sty toSquare
@@ -135,47 +145,79 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
 
                 ldx #63
 .setupBoard     lda BoardPiece,x
-                and #~3
                 sta Chessboard+RAM_WRITE,x
                 dex
                 bpl .setupBoard
 
                 rts
 
+
+BLANK = 0 ;INDEX_WHITE_BLANK_on_BLACK_SQUARE_0
+PAWN = 1
+KNIGHT = 2
+BISHOP = 3
+ROOK = 4
+QUEEN = 5
+KING = 6
+
+BLACK = 8
+WHITE = 0
+
+
+PieceToShape
+
+    .byte INDEX_WHITE_BLANK_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_ROOK_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_KING_on_WHITE_SQUARE_0
+    .byte 0
+
+    .byte INDEX_BLACK_BLANK_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_BISHOP_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_ROOK_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_KING_on_WHITE_SQUARE_0
+    .byte 0
+
+
+
 BoardPiece
 
-BLANK = INDEX_WHITE_BLANK_on_BLACK_SQUARE_0
-WHITE_PAWN = INDEX_WHITE_PAWN_on_BLACK_SQUARE_0
-WHITE_ROOK = INDEX_WHITE_ROOK_on_BLACK_SQUARE_0
-WHITE_KNIGHT = INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_0
-WHITE_BISHOP = INDEX_WHITE_BISHOP_on_BLACK_SQUARE_0
-WHITE_QUEEN = INDEX_WHITE_QUEEN_on_BLACK_SQUARE_0
-WHITE_KING = INDEX_WHITE_KING_on_BLACK_SQUARE_0
-BLACK_PAWN = INDEX_BLACK_PAWN_on_BLACK_SQUARE_0
-BLACK_ROOK = INDEX_BLACK_ROOK_on_BLACK_SQUARE_0
-BLACK_KNIGHT = INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_0
-BLACK_BISHOP = INDEX_BLACK_BISHOP_on_BLACK_SQUARE_0
-BLACK_QUEEN = INDEX_BLACK_QUEEN_on_BLACK_SQUARE_0
-BLACK_KING = INDEX_BLACK_KING_on_BLACK_SQUARE_0
+;WHITE_PAWN = INDEX_WHITE_PAWN_on_BLACK_SQUARE_0
+;WHITE_ROOK = INDEX_WHITE_ROOK_on_BLACK_SQUARE_0
+;WHITE_KNIGHT = INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_0
+;WHITE_BISHOP = INDEX_WHITE_BISHOP_on_BLACK_SQUARE_0
+;WHITE_QUEEN = INDEX_WHITE_QUEEN_on_BLACK_SQUARE_0
+;WHITE_KING = INDEX_WHITE_KING_on_BLACK_SQUARE_0
+;BLACK_PAWN = INDEX_BLACK_PAWN_on_BLACK_SQUARE_0
+;BLACK_ROOK = INDEX_BLACK_ROOK_on_BLACK_SQUARE_0
+;BLACK_KNIGHT = INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_0
+;BLACK_BISHOP = INDEX_BLACK_BISHOP_on_BLACK_SQUARE_0
+;BLACK_QUEEN = INDEX_BLACK_QUEEN_on_BLACK_SQUARE_0
+;BLACK_KING = INDEX_BLACK_KING_on_BLACK_SQUARE_0
 
+    .byte BLACK|ROOK ;0
+    .byte BLACK|KNIGHT ;1
+    .byte BLACK|BISHOP ;2
+    .byte BLACK|QUEEN ;3
+    .byte BLACK|KING ;4
+    .byte BLACK|BISHOP ;5
+    .byte BLACK|KNIGHT ;6
+    .byte BLACK|ROOK ;7
 
-    .byte BLACK_ROOK ;0
-    .byte BLACK_KNIGHT ;1
-    .byte BLACK_BISHOP ;2
-    .byte BLACK_QUEEN ;3
-    .byte BLACK_KING ;4
-    .byte BLACK_BISHOP ;5
-    .byte BLACK_KNIGHT ;6
-    .byte BLACK_ROOK ;7
-
-    .byte BLACK_PAWN
-    .byte BLACK_PAWN
-    .byte BLACK_PAWN
-    .byte BLACK_PAWN
-    .byte BLACK_PAWN
-    .byte BLACK_PAWN
-    .byte BLACK_PAWN
-    .byte BLACK_PAWN
+    .byte BLACK|PAWN
+    .byte BLACK|PAWN
+    .byte BLACK|PAWN
+    .byte BLACK|PAWN
+    .byte BLACK|PAWN
+    .byte BLACK|PAWN
+    .byte BLACK|PAWN
+    .byte BLACK|PAWN
 
     .byte BLANK
     .byte BLANK
@@ -213,23 +255,23 @@ BLACK_KING = INDEX_BLACK_KING_on_BLACK_SQUARE_0
     .byte BLANK
     .byte BLANK
 
-    .byte WHITE_PAWN
-    .byte WHITE_PAWN
-    .byte WHITE_PAWN
-    .byte WHITE_PAWN
-    .byte WHITE_PAWN
-    .byte WHITE_PAWN
-    .byte WHITE_PAWN
-    .byte WHITE_PAWN
+    .byte WHITE|PAWN
+    .byte WHITE|PAWN
+    .byte WHITE|PAWN
+    .byte WHITE|PAWN
+    .byte WHITE|PAWN
+    .byte WHITE|PAWN
+    .byte WHITE|PAWN
+    .byte WHITE|PAWN
 
-    .byte WHITE_ROOK
-    .byte WHITE_KNIGHT
-    .byte WHITE_BISHOP
-    .byte WHITE_QUEEN
-    .byte WHITE_KING
-    .byte WHITE_BISHOP
-    .byte WHITE_KNIGHT
-    .byte WHITE_ROOK
+    .byte WHITE|ROOK
+    .byte WHITE|KNIGHT
+    .byte WHITE|BISHOP
+    .byte WHITE|QUEEN
+    .byte WHITE|KING
+    .byte WHITE|BISHOP
+    .byte WHITE|KNIGHT
+    .byte WHITE|ROOK
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -250,10 +292,16 @@ BLACK_KING = INDEX_BLACK_KING_on_BLACK_SQUARE_0
                 sta SET_BANK
 
                 ldy #PIECE_SHAPE_SIZE-1
-.copyPieceGfx   lda (__ptr),y
+        REPEAT PIECE_SHAPE_SIZE
+                lda (__ptr),y
                 sta __pieceShapeBuffer,y
                 dey
-                bpl .copyPieceGfx
+        REPEND
+
+;.copyPieceGfx   lda (__ptr),y
+;                sta __pieceShapeBuffer,y
+;                dey
+;                bpl .copyPieceGfx
 
                 rts
 
@@ -304,7 +352,7 @@ BLACK_KING = INDEX_BLACK_KING_on_BLACK_SQUARE_0
     ; Move a copy of the row bank template to the first 8 banks of RAM
     ; and then terminate the draw subroutine by substituting in a RTS on the last one
 
-                ldy #15
+                ldy #7
 .copyRowBanks   ldx #BANK_ROM_SHADOW_OF_CHESS_BITMAP
                 jsr CopyShadowROMtoRAM
                 dey
@@ -428,6 +476,9 @@ Restart     ; go here on RESET + SELECT
                 sta __ptr+1
                 jmp (__ptr)
 
+MARCH = 6
+MARCH_END = 10
+
 DrawVectorLO
     .byte <Phase0_ClearBoard_0
     .byte <Phase0_ClearBoard_1
@@ -436,8 +487,9 @@ DrawVectorLO
     .byte <EraseStartPiece
     .byte <WriteStartPieceBlank
     .byte <MarchToTargetA
-    ;.byte <DelayIt
+    .byte <MarchB
     .byte <MarchToTargetB
+    .byte <MarchB2
     .byte <WriteEndPieceBlank
     .byte <WriteEndPiece
     .byte <DelayIt
@@ -451,8 +503,9 @@ DrawVectorHI
     .byte >EraseStartPiece
     .byte >WriteStartPieceBlank
     .byte >MarchToTargetA
-    ;.byte >DelayIt
+    .byte >MarchB
     .byte >MarchToTargetB
+    .byte >MarchB2
     .byte >WriteEndPieceBlank
     .byte >WriteEndPiece
     .byte >DelayIt
@@ -508,12 +561,17 @@ DrawVectorHI
                 lda #BANK_CHESSBOARD
                 sta SET_BANK_RAM
                 lda #BLANK
-                sta Chessboard+RAM_WRITE,x                            ; put a blank on the board
+                sta Chessboard+RAM_WRITE,x                            ; put a "blank" on the board
 
                 jsr CopySinglePiece          ; now draw the 'blank' square
 
                 inc drawPhase
                 rts
+
+.halt           lda #MARCH_END
+                sta drawPhase
+                jmp WriteEndPieceBlank
+
 
     DEFINE_SUBROUTINE MarchToTargetA
 
@@ -558,14 +616,26 @@ colok
 
 
 
-                lda fromSquare
-
-;                clc
-;                adc #1
-;                and #63
-;                sta fromSquare
-                tax
+                ldx fromSquare
                 stx drawPieceNumber
+                jsr CopySinglePiece             ; erase whatever WAS there - now completely blank
+
+
+                ;lda #1
+                ;sta drawDelay
+
+                inc drawPhase
+                rts
+
+MarchB
+
+;                lda drawDelay
+;                beq go2
+;                dec drawDelay
+;                jmp bypass
+;go2
+
+                ldx drawPieceNumber
 
                 lda #BANK_CHESSBOARD
                 sta SET_BANK_RAM
@@ -590,18 +660,28 @@ gogogo
 
                 ldx fromSquare
                 stx drawPieceNumber
-                jsr CopySinglePiece
+                jsr CopySinglePiece         ; undraw - now blank
+
                 lda #BANK_CHESSBOARD
                 sta SET_BANK_RAM
                 ldx fromSquare
                 lda lastPiece
                 sta Chessboard+RAM_WRITE,x
 
-                dec drawPhase
+                inc drawPhase
 bypass          rts
 
-.halt           inc drawPhase
-                inc drawPhase
+
+    DEFINE_SUBROUTINE MarchB2
+
+                lda fromSquare
+                sta drawPieceNumber
+                jsr CopySinglePiece     ; restore original
+
+                lda #MARCH
+                sta drawPhase
+                rts
+
 
     DEFINE_SUBROUTINE WriteEndPieceBlank
 
@@ -624,7 +704,7 @@ bypass          rts
 
                 jsr CopySinglePiece
 
-                lda #10
+                lda #1
                 sta drawDelay
                 inc drawPhase
                 rts

@@ -1049,9 +1049,9 @@
     349 U0000
     350 U0000							;------------------------------------------------------------------------------
     351 U0000
-    352 U0000					      REPEAT	(CHESSBOARD_ROWS * 2) - 1
+    352 U0000					      REPEAT	(CHESSBOARD_ROWS) - 1
       0 U0000					      NEWRAMBANK	.DUMMY
-      1 U3c00 ????				      SEG.U	.DUMMY
+      1 U1c00 ????				      SEG.U	.DUMMY
       2 U0400					      ORG	ORIGIN_RAM
       3 U0400					      RORG	RAM_3E
       4 U0400				   BANK_START SET	*
@@ -1147,268 +1147,156 @@
       3 U1c00				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
       4 U1c00				  -	      ERR
       5 U1c00					      ENDIF
-    352 U1c00					      REPEND
-      0 U1c00					      NEWRAMBANK	.DUMMY
-      1 U1c00					      SEG.U	.DUMMY
+    355 U1c00					      REPEND
+    356 U1c00
+    357 U1c00							;---------------------------------------------------------------------------------------------------
+    358 U1c00
+      0 U1c00					      NEWRAMBANK	BANK_CHESSBOARD
+      1 U2040 ????				      SEG.U	BANK_CHESSBOARD
       2 U2000					      ORG	ORIGIN_RAM
       3 U2000					      RORG	RAM_3E
       4 U2000				   BANK_START SET	*
-      5 U2000				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
+      5 U2000				   BANK_CHESSBOARD SET	ORIGIN_RAM / RAM_SIZE
       6 U2000				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-      0 U2000					      VALIDATE_RAM_SIZE
-      1 U2000				   .RAM_BANK_SIZE SET	* - RAM_3E
-      2 U2000				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
-      3 U2000				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
-      4 U2000				  -	      ERR
-      5 U2000					      ENDIF
-    352 U2000					      REPEND
-      0 U2000					      NEWRAMBANK	.DUMMY
-      1 U2000					      SEG.U	.DUMMY
+    360 U2000		       00 00 00 00*Chessboard ds	64
+      0 U2040					      VALIDATE_RAM_SIZE
+      1 U2040				   .RAM_BANK_SIZE SET	* - RAM_3E
+      2 U2040				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
+      3 U2040				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
+      4 U2040				  -	      ERR
+      5 U2040					      ENDIF
+    362 U2040
+    363 U2040							;------------------------------------------------------------------------------
+    364 U2040							;##############################################################################
+    365 U2040							;------------------------------------------------------------------------------
+    366 U2040
+      0 U2040					      NEWRAMBANK	BANK_SCREEN
+      1 U2400 ????				      SEG.U	BANK_SCREEN
       2 U2400					      ORG	ORIGIN_RAM
       3 U2400					      RORG	RAM_3E
       4 U2400				   BANK_START SET	*
-      5 U2400				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
+      5 U2400				   BANK_SCREEN SET	ORIGIN_RAM / RAM_SIZE
       6 U2400				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+    368 U2400							; VARS DEFINED IN ROM_SHADOW_OF_SCREEN
       0 U2400					      VALIDATE_RAM_SIZE
       1 U2400				   .RAM_BANK_SIZE SET	* - RAM_3E
       2 U2400				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
       3 U2400				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
       4 U2400				  -	      ERR
       5 U2400					      ENDIF
-    352 U2400					      REPEND
-      0 U2400					      NEWRAMBANK	.DUMMY
-      1 U2400					      SEG.U	.DUMMY
+    370 U2400
+    371 U2400
+      0 U2400					      NEWRAMBANK	BANK_DRAW_BUFFERS
+      1 U2800 ????				      SEG.U	BANK_DRAW_BUFFERS
       2 U2800					      ORG	ORIGIN_RAM
       3 U2800					      RORG	RAM_3E
       4 U2800				   BANK_START SET	*
-      5 U2800				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
+      5 U2800				   BANK_DRAW_BUFFERS SET	ORIGIN_RAM / RAM_SIZE
       6 U2800				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+    373 U2800							; VARS DEFINED IN ROM_SHADOW_OF_BANK_DRAW_BUFFERS
+    374 U2800							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
       0 U2800					      VALIDATE_RAM_SIZE
       1 U2800				   .RAM_BANK_SIZE SET	* - RAM_3E
       2 U2800				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
       3 U2800				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
       4 U2800				  -	      ERR
       5 U2800					      ENDIF
-    352 U2800					      REPEND
-      0 U2800					      NEWRAMBANK	.DUMMY
-      1 U2800					      SEG.U	.DUMMY
+    376 U2800
+    377 U2800							;------------------------------------------------------------------------------
+    378 U2800							;##############################################################################
+    379 U2800							;------------------------------------------------------------------------------
+    380 U2800
+      0 U2800					      NEWRAMBANK	BANK_SCORING
+      1 U2c00 ????				      SEG.U	BANK_SCORING
       2 U2c00					      ORG	ORIGIN_RAM
       3 U2c00					      RORG	RAM_3E
       4 U2c00				   BANK_START SET	*
-      5 U2c00				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
+      5 U2c00				   BANK_SCORING SET	ORIGIN_RAM / RAM_SIZE
       6 U2c00				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+    382 U2c00							; VARS DEFINED IN ROM_SHADOW_OF_BANK_SCORING
+    383 U2c00							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
       0 U2c00					      VALIDATE_RAM_SIZE
       1 U2c00				   .RAM_BANK_SIZE SET	* - RAM_3E
       2 U2c00				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
       3 U2c00				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
       4 U2c00				  -	      ERR
       5 U2c00					      ENDIF
-    352 U2c00					      REPEND
-      0 U2c00					      NEWRAMBANK	.DUMMY
-      1 U2c00					      SEG.U	.DUMMY
+    385 U2c00
+    386 U2c00							;------------------------------------------------------------------------------
+    387 U2c00							;##############################################################################
+    388 U2c00							;------------------------------------------------------------------------------
+    389 U2c00
+      0 U2c00					      NEWRAMBANK	BANK_DECODE_LEVEL
+      1 U3000 ????				      SEG.U	BANK_DECODE_LEVEL
       2 U3000					      ORG	ORIGIN_RAM
       3 U3000					      RORG	RAM_3E
       4 U3000				   BANK_START SET	*
-      5 U3000				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
+      5 U3000				   BANK_DECODE_LEVEL SET	ORIGIN_RAM / RAM_SIZE
       6 U3000				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
+    391 U3000							; VARS DEFINED IN BANK_DECODE_LEVEL_SHADOW
+    392 U3000							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
       0 U3000					      VALIDATE_RAM_SIZE
       1 U3000				   .RAM_BANK_SIZE SET	* - RAM_3E
       2 U3000				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
       3 U3000				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
       4 U3000				  -	      ERR
       5 U3000					      ENDIF
-    352 U3000					      REPEND
-      0 U3000					      NEWRAMBANK	.DUMMY
-      1 U3000					      SEG.U	.DUMMY
+    394 U3000
+    395 U3000							;------------------------------------------------------------------------------
+    396 U3000							;##############################################################################
+    397 U3000							;------------------------------------------------------------------------------
+    398 U3000
+    399 U3000
+    400 U3000							;------------------------------------------------------------------------------
+    401 U3000							;##############################################################################
+    402 U3000							;------------------------------------------------------------------------------
+    403 U3000
+      0 U3000					      NEWRAMBANK	BANK_BOARD
+      1 U3400 ????				      SEG.U	BANK_BOARD
       2 U3400					      ORG	ORIGIN_RAM
       3 U3400					      RORG	RAM_3E
       4 U3400				   BANK_START SET	*
-      5 U3400				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
+      5 U3400				   BANK_BOARD SET	ORIGIN_RAM / RAM_SIZE
       6 U3400				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-      0 U3400					      VALIDATE_RAM_SIZE
-      1 U3400				   .RAM_BANK_SIZE SET	* - RAM_3E
-      2 U3400				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
-      3 U3400				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
-      4 U3400				  -	      ERR
-      5 U3400					      ENDIF
-    352 U3400					      REPEND
-      0 U3400					      NEWRAMBANK	.DUMMY
-      1 U3400					      SEG.U	.DUMMY
-      2 U3800					      ORG	ORIGIN_RAM
-      3 U3800					      RORG	RAM_3E
-      4 U3800				   BANK_START SET	*
-      5 U3800				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
-      6 U3800				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-      0 U3800					      VALIDATE_RAM_SIZE
-      1 U3800				   .RAM_BANK_SIZE SET	* - RAM_3E
-      2 U3800				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
-      3 U3800				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
-      4 U3800				  -	      ERR
-      5 U3800					      ENDIF
-    352 U3800					      REPEND
-      0 U3800					      NEWRAMBANK	.DUMMY
-      1 U3800					      SEG.U	.DUMMY
-      2 U3c00					      ORG	ORIGIN_RAM
-      3 U3c00					      RORG	RAM_3E
-      4 U3c00				   BANK_START SET	*
-      5 U3c00				   .DUMMY     SET	ORIGIN_RAM / RAM_SIZE
-      6 U3c00				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-      0 U3c00					      VALIDATE_RAM_SIZE
-      1 U3c00				   .RAM_BANK_SIZE SET	* - RAM_3E
-      2 U3c00				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
-      3 U3c00				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
-      4 U3c00				  -	      ERR
-      5 U3c00					      ENDIF
-    355 U3c00					      REPEND
-    356 U3c00
-    357 U3c00							;---------------------------------------------------------------------------------------------------
-    358 U3c00
-      0 U3c00					      NEWRAMBANK	BANK_CHESSBOARD
-      1 U4040 ????				      SEG.U	BANK_CHESSBOARD
-      2 U4000					      ORG	ORIGIN_RAM
-      3 U4000					      RORG	RAM_3E
-      4 U4000				   BANK_START SET	*
-      5 U4000				   BANK_CHESSBOARD SET	ORIGIN_RAM / RAM_SIZE
-      6 U4000				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    360 U4000		       00 00 00 00*Chessboard ds	64
-      0 U4040					      VALIDATE_RAM_SIZE
-      1 U4040				   .RAM_BANK_SIZE SET	* - RAM_3E
-      2 U4040				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
-      3 U4040				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
-      4 U4040				  -	      ERR
-      5 U4040					      ENDIF
-    362 U4040
-    363 U4040							;------------------------------------------------------------------------------
-    364 U4040							;##############################################################################
-    365 U4040							;------------------------------------------------------------------------------
-    366 U4040
-      0 U4040					      NEWRAMBANK	BANK_SCREEN
-      1 U4400 ????				      SEG.U	BANK_SCREEN
-      2 U4400					      ORG	ORIGIN_RAM
-      3 U4400					      RORG	RAM_3E
-      4 U4400				   BANK_START SET	*
-      5 U4400				   BANK_SCREEN SET	ORIGIN_RAM / RAM_SIZE
-      6 U4400				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    368 U4400							; VARS DEFINED IN ROM_SHADOW_OF_SCREEN
-      0 U4400					      VALIDATE_RAM_SIZE
-      1 U4400				   .RAM_BANK_SIZE SET	* - RAM_3E
-      2 U4400				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
-      3 U4400				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
-      4 U4400				  -	      ERR
-      5 U4400					      ENDIF
-    370 U4400
-    371 U4400
-      0 U4400					      NEWRAMBANK	BANK_DRAW_BUFFERS
-      1 U4800 ????				      SEG.U	BANK_DRAW_BUFFERS
-      2 U4800					      ORG	ORIGIN_RAM
-      3 U4800					      RORG	RAM_3E
-      4 U4800				   BANK_START SET	*
-      5 U4800				   BANK_DRAW_BUFFERS SET	ORIGIN_RAM / RAM_SIZE
-      6 U4800				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    373 U4800							; VARS DEFINED IN ROM_SHADOW_OF_BANK_DRAW_BUFFERS
-    374 U4800							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
-      0 U4800					      VALIDATE_RAM_SIZE
-      1 U4800				   .RAM_BANK_SIZE SET	* - RAM_3E
-      2 U4800				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
-      3 U4800				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
-      4 U4800				  -	      ERR
-      5 U4800					      ENDIF
-    376 U4800
-    377 U4800							;------------------------------------------------------------------------------
-    378 U4800							;##############################################################################
-    379 U4800							;------------------------------------------------------------------------------
-    380 U4800
-      0 U4800					      NEWRAMBANK	BANK_SCORING
-      1 U4c00 ????				      SEG.U	BANK_SCORING
-      2 U4c00					      ORG	ORIGIN_RAM
-      3 U4c00					      RORG	RAM_3E
-      4 U4c00				   BANK_START SET	*
-      5 U4c00				   BANK_SCORING SET	ORIGIN_RAM / RAM_SIZE
-      6 U4c00				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    382 U4c00							; VARS DEFINED IN ROM_SHADOW_OF_BANK_SCORING
-    383 U4c00							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
-      0 U4c00					      VALIDATE_RAM_SIZE
-      1 U4c00				   .RAM_BANK_SIZE SET	* - RAM_3E
-      2 U4c00				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
-      3 U4c00				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
-      4 U4c00				  -	      ERR
-      5 U4c00					      ENDIF
-    385 U4c00
-    386 U4c00							;------------------------------------------------------------------------------
-    387 U4c00							;##############################################################################
-    388 U4c00							;------------------------------------------------------------------------------
-    389 U4c00
-      0 U4c00					      NEWRAMBANK	BANK_DECODE_LEVEL
-      1 U5000 ????				      SEG.U	BANK_DECODE_LEVEL
-      2 U5000					      ORG	ORIGIN_RAM
-      3 U5000					      RORG	RAM_3E
-      4 U5000				   BANK_START SET	*
-      5 U5000				   BANK_DECODE_LEVEL SET	ORIGIN_RAM / RAM_SIZE
-      6 U5000				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    391 U5000							; VARS DEFINED IN BANK_DECODE_LEVEL_SHADOW
-    392 U5000							; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
-      0 U5000					      VALIDATE_RAM_SIZE
-      1 U5000				   .RAM_BANK_SIZE SET	* - RAM_3E
-      2 U5000				  -	      IF	.RAM_BANK_SIZE > RAM_SIZE
-      3 U5000				  -	      ECHO	"RAM BANK OVERFLOW @ ", (* - RAM_3E)
-      4 U5000				  -	      ERR
-      5 U5000					      ENDIF
-    394 U5000
-    395 U5000							;------------------------------------------------------------------------------
-    396 U5000							;##############################################################################
-    397 U5000							;------------------------------------------------------------------------------
-    398 U5000
-    399 U5000
-    400 U5000							;------------------------------------------------------------------------------
-    401 U5000							;##############################################################################
-    402 U5000							;------------------------------------------------------------------------------
-    403 U5000
-      0 U5000					      NEWRAMBANK	BANK_BOARD
-      1 U5400 ????				      SEG.U	BANK_BOARD
-      2 U5400					      ORG	ORIGIN_RAM
-      3 U5400					      RORG	RAM_3E
-      4 U5400				   BANK_START SET	*
-      5 U5400				   BANK_BOARD SET	ORIGIN_RAM / RAM_SIZE
-      6 U5400				   ORIGIN_RAM SET	ORIGIN_RAM + RAM_SIZE
-    405 U5400
-    406 U5400							; Now the interesting 'BOARD' -- which in reality is a free-form system of M*N
-    407 U5400							; rows and columns.  We need to reserve enough RAM for the board's entirety, but
-    408 U5400							; don't really care much how it overlaps the 1K bank limit.  The code accessing
-    409 U5400							; the board *MUST* calculate and take account of the correct RAM bank to switch
-    410 U5400							; when accessing.
-    411 U5400
-    412 U5400							; The system is fairly free-form, in that it rearranges the memory and tables
-    413 U5400							; automatically based on the sizes set in these constants. The board may overlay
-    414 U5400							; MULTIPLE banks -- just as long as any particular LINE does not cross a bank
-    415 U5400							; we're doing OK.
-    416 U5400
-    417 U5400							; NOTE: Assumption is that board lines CANNOT CROSS page boundaries.
-    418 U5400
-    419 U5400							; now fits into one single bank (if we don't reserve too much space for code)
-    420 U5400
-    421 U5400
-    422 U5400							;------------------------------------------------------------------------------
-    423 U5400							;##############################################################################
-    424 U5400							;------------------------------------------------------------------------------
-    425 U5400
-    426 U5400		       00 75	   RND_EOR_VAL =	$75	;B4
-    427 U5400
-    428 U5400					      MAC	next_random
-    429 U5400					      lda	rnd
-    430 U5400					      lsr
-    431 U5400					      bcc	.skipEOR
-    432 U5400					      eor	#RND_EOR_VAL
-    433 U5400				   .skipEOR   sta	rnd
-    434 U5400					      ENDM
-    435 U5400
-    436 U5400							;--------------------------------------------------------------------------------
-    437 U5400
-    438 U5400							;ORIGIN      SET 0
-    439 U5400
+    405 U3400
+    406 U3400							; Now the interesting 'BOARD' -- which in reality is a free-form system of M*N
+    407 U3400							; rows and columns.  We need to reserve enough RAM for the board's entirety, but
+    408 U3400							; don't really care much how it overlaps the 1K bank limit.  The code accessing
+    409 U3400							; the board *MUST* calculate and take account of the correct RAM bank to switch
+    410 U3400							; when accessing.
+    411 U3400
+    412 U3400							; The system is fairly free-form, in that it rearranges the memory and tables
+    413 U3400							; automatically based on the sizes set in these constants. The board may overlay
+    414 U3400							; MULTIPLE banks -- just as long as any particular LINE does not cross a bank
+    415 U3400							; we're doing OK.
+    416 U3400
+    417 U3400							; NOTE: Assumption is that board lines CANNOT CROSS page boundaries.
+    418 U3400
+    419 U3400							; now fits into one single bank (if we don't reserve too much space for code)
+    420 U3400
+    421 U3400
+    422 U3400							;------------------------------------------------------------------------------
+    423 U3400							;##############################################################################
+    424 U3400							;------------------------------------------------------------------------------
+    425 U3400
+    426 U3400		       00 75	   RND_EOR_VAL =	$75	;B4
+    427 U3400
+    428 U3400					      MAC	next_random
+    429 U3400					      lda	rnd
+    430 U3400					      lsr
+    431 U3400					      bcc	.skipEOR
+    432 U3400					      eor	#RND_EOR_VAL
+    433 U3400				   .skipEOR   sta	rnd
+    434 U3400					      ENDM
+    435 U3400
+    436 U3400							;--------------------------------------------------------------------------------
+    437 U3400
+    438 U3400							;ORIGIN      SET 0
+    439 U3400
 ------- FILE BANK_GENERIC.asm LEVEL 2 PASS 2
-      0 U5400					      include	"BANK_GENERIC.asm"
-      1 U5400
-      0 U5400					      NEWBANK	GENERIC_BANK_1
+      0 U3400					      include	"BANK_GENERIC.asm"
+      1 U3400
+      0 U3400					      NEWBANK	GENERIC_BANK_1
       1  006c ????				      SEG	GENERIC_BANK_1
       2  0000					      ORG	ORIGIN
       3  0000					      RORG	$F000
@@ -4398,7 +4286,7 @@
      10  4150				   ORIGIN     SET	FIXED_BANK
      11  4150
       0  4150					      NEWBANK	THE_FIXED_BANK
-      1  7afc ????				      SEG	THE_FIXED_BANK
+      1  7cd0 ????				      SEG	THE_FIXED_BANK
       2  7800					      ORG	ORIGIN
       3  7800					      RORG	$F000
       4  7800				   BANK_START SET	*
@@ -4470,7 +4358,7 @@
       2  783d					      SUBROUTINE
       3  783d				   CopySinglePiece
      44  783d
-     45  783d		       a9 10		      lda	#BANK_CHESSBOARD
+     45  783d		       a9 08		      lda	#BANK_CHESSBOARD
      46  783f		       85 3e		      sta	SET_BANK_RAM
      47  7841
      48  7841		       a5 80		      lda	drawPieceNumber
@@ -4485,720 +4373,1087 @@
      57  784f		       a9 1c		      lda	#28
      58  7851		       85 97	   .white     sta	__pieceColour	; actually SQUARE black/white
      59  7853
-     60  7853		       a4 80		      ldy	drawPieceNumber
-     61  7855		       98		      tya
-     62  7856		       29 03		      and	#3
-     63  7858		       19 00 10 	      ora	Chessboard,y
-     64  785b		       38		      sec
-     65  785c		       e5 97		      sbc	__pieceColour
-     66  785e		       a8		      tay
-     67  785f		       20 ff f8 	      jsr	CopyPieceToRAMBuffer
-     68  7862
-     69  7862		       a5 80		      lda	drawPieceNumber
-     70  7864		       4a		      lsr
-     71  7865		       4a		      lsr
-     72  7866		       4a		      lsr
-     73  7867							;ora doubleBufferBase
-     74  7867		       aa		      tax		; row
-     75  7868
-     76  7868		       a5 80		      lda	drawPieceNumber
-     77  786a		       29 04		      and	#4
-     78  786c		       c9 04		      cmp	#4	; cc = left side, cs = right side
-     79  786e
-     80  786e		       86 3e		      stx	SET_BANK_RAM
-     81  7870		       4c 43 f2 	      jmp	CopyPieceToRowBitmap
-     82  7873
-     83  7873							;---------------------------------------------------------------------------------------------------
-     84  7873
-      0  7873					      DEFINE_SUBROUTINE	RandomPieceMove
-      1  7873		       00 0f	   BANK_RandomPieceMove =	_CURRENT_BANK
-      2  7873					      SUBROUTINE
-      3  7873				   RandomPieceMove
-     86  7873
-     87  7873		       a9 10		      lda	#BANK_CHESSBOARD
-     88  7875		       85 3e		      sta	SET_BANK_RAM
-     89  7877
-      0  7877					      NEXT_RANDOM
-      1  7877		       a5 81		      lda	rnd
-      2  7879		       4a		      lsr
-      3  787a		       90 02		      bcc	.skipEOR
-      4  787c		       49 75		      eor	#RND_EOR_VAL
-      5  787e		       85 81	   .skipEOR   sta	rnd
-     91  7880		       aa		      tax
-     92  7881		       e8	   .nextX     inx
-     93  7882		       8a		      txa
-     94  7883		       29 3f		      and	#63
-     95  7885		       aa		      tax
-     96  7886
-     97  7886		       bd 00 10 	      lda	Chessboard,x
-     98  7889		       c9 1c		      cmp	#BLANK
-     99  788b		       f0 f4		      beq	.nextX
-    100  788d
-    101  788d		       86 85		      stx	fromSquare
-    102  788f
-      0  788f					      NEXT_RANDOM
-      1  788f		       a5 81		      lda	rnd
-      2  7891		       4a		      lsr
-      3  7892		       90 02		      bcc	.skipEOR
-      4  7894		       49 75		      eor	#RND_EOR_VAL
-      5  7896		       85 81	   .skipEOR   sta	rnd
-    104  7898		       a8		      tay
-    105  7899		       c8	   .nextY     iny
-    106  789a		       98		      tya
-    107  789b		       29 3f		      and	#63
-    108  789d		       a8		      tay
-    109  789e
-    110  789e
-    111  789e							;lda #BLANK
-    112  789e							;sta fromPiece
-    113  789e
-    114  789e		       b9 00 10 	      lda	Chessboard,y
-    115  78a1		       c9 1c		      cmp	#BLANK
-    116  78a3		       d0 f4		      bne	.nextY
-    117  78a5
-    118  78a5		       84 87		      sty	toSquare
-    119  78a7
-    120  78a7		       bd 00 10 	      lda	Chessboard,x
-    121  78aa		       85 86		      sta	fromPiece
-    122  78ac
-    123  78ac							;		  sta Chessboard+RAM_WRITE,y
-    124  78ac							;		  lda #BLANK
-    125  78ac							;		  sta Chessboard+RAM_WRITE,x
-    126  78ac
-    127  78ac		       60		      rts
-    128  78ad
-    129  78ad							;---------------------------------------------------------------------------------------------------
-    130  78ad
-      0  78ad					      DEFINE_SUBROUTINE	InitialiseChessboard
-      1  78ad		       00 0f	   BANK_InitialiseChessboard =	_CURRENT_BANK
-      2  78ad					      SUBROUTINE
-      3  78ad				   InitialiseChessboard
-    132  78ad
-    133  78ad		       a9 10		      lda	#BANK_CHESSBOARD
-    134  78af		       85 3e		      sta	SET_BANK_RAM
-    135  78b1
-    136  78b1		       a2 3f		      ldx	#63
-    137  78b3		       bd bf f8    .setupBoard lda	BoardPiece,x
-    138  78b6		       29 fc		      and	#~3
-    139  78b8		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
-    140  78bb		       ca		      dex
-    141  78bc		       10 f5		      bpl	.setupBoard
-    142  78be
-    143  78be		       60		      rts
-    144  78bf
-    145  78bf				   BoardPiece
-    146  78bf
-    147  78bf		       00 1c	   BLANK      =	INDEX_WHITE_BLANK_on_BLACK_SQUARE_0
-    148  78bf		       00 20	   WHITE_PAWN =	INDEX_WHITE_PAWN_on_BLACK_SQUARE_0
-    149  78bf		       00 2c	   WHITE_ROOK =	INDEX_WHITE_ROOK_on_BLACK_SQUARE_0
-    150  78bf		       00 24	   WHITE_KNIGHT =	INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_0
-    151  78bf		       00 28	   WHITE_BISHOP =	INDEX_WHITE_BISHOP_on_BLACK_SQUARE_0
-    152  78bf		       00 30	   WHITE_QUEEN =	INDEX_WHITE_QUEEN_on_BLACK_SQUARE_0
-    153  78bf		       00 34	   WHITE_KING =	INDEX_WHITE_KING_on_BLACK_SQUARE_0
-    154  78bf		       00 58	   BLACK_PAWN =	INDEX_BLACK_PAWN_on_BLACK_SQUARE_0
-    155  78bf		       00 64	   BLACK_ROOK =	INDEX_BLACK_ROOK_on_BLACK_SQUARE_0
-    156  78bf		       00 5c	   BLACK_KNIGHT =	INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_0
-    157  78bf		       00 60	   BLACK_BISHOP =	INDEX_BLACK_BISHOP_on_BLACK_SQUARE_0
-    158  78bf		       00 68	   BLACK_QUEEN =	INDEX_BLACK_QUEEN_on_BLACK_SQUARE_0
-    159  78bf		       00 6c	   BLACK_KING =	INDEX_BLACK_KING_on_BLACK_SQUARE_0
-    160  78bf
-    161  78bf
-    162  78bf		       64		      .byte.b	BLACK_ROOK	;0
-    163  78c0		       5c		      .byte.b	BLACK_KNIGHT	;1
-    164  78c1		       60		      .byte.b	BLACK_BISHOP	;2
-    165  78c2		       68		      .byte.b	BLACK_QUEEN	;3
-    166  78c3		       6c		      .byte.b	BLACK_KING	;4
-    167  78c4		       60		      .byte.b	BLACK_BISHOP	;5
-    168  78c5		       5c		      .byte.b	BLACK_KNIGHT	;6
-    169  78c6		       64		      .byte.b	BLACK_ROOK	;7
-    170  78c7
-    171  78c7		       58		      .byte.b	BLACK_PAWN
-    172  78c8		       58		      .byte.b	BLACK_PAWN
-    173  78c9		       58		      .byte.b	BLACK_PAWN
-    174  78ca		       58		      .byte.b	BLACK_PAWN
-    175  78cb		       58		      .byte.b	BLACK_PAWN
-    176  78cc		       58		      .byte.b	BLACK_PAWN
-    177  78cd		       58		      .byte.b	BLACK_PAWN
-    178  78ce		       58		      .byte.b	BLACK_PAWN
-    179  78cf
-    180  78cf		       1c		      .byte.b	BLANK
-    181  78d0		       1c		      .byte.b	BLANK
-    182  78d1		       1c		      .byte.b	BLANK
-    183  78d2		       1c		      .byte.b	BLANK
-    184  78d3		       1c		      .byte.b	BLANK
-    185  78d4		       1c		      .byte.b	BLANK
-    186  78d5		       1c		      .byte.b	BLANK
-    187  78d6		       1c		      .byte.b	BLANK
-    188  78d7
-    189  78d7		       1c		      .byte.b	BLANK
-    190  78d8		       1c		      .byte.b	BLANK
-    191  78d9		       1c		      .byte.b	BLANK
-    192  78da		       1c		      .byte.b	BLANK
-    193  78db		       1c		      .byte.b	BLANK
-    194  78dc		       1c		      .byte.b	BLANK
-    195  78dd		       1c		      .byte.b	BLANK
-    196  78de		       1c		      .byte.b	BLANK
-    197  78df
-    198  78df		       1c		      .byte.b	BLANK
-    199  78e0		       1c		      .byte.b	BLANK
-    200  78e1		       1c		      .byte.b	BLANK
-    201  78e2		       1c		      .byte.b	BLANK
-    202  78e3		       1c		      .byte.b	BLANK
-    203  78e4		       1c		      .byte.b	BLANK
-    204  78e5		       1c		      .byte.b	BLANK
-    205  78e6		       1c		      .byte.b	BLANK
-    206  78e7
-    207  78e7		       1c		      .byte.b	BLANK
-    208  78e8		       1c		      .byte.b	BLANK
-    209  78e9		       1c		      .byte.b	BLANK
-    210  78ea		       1c		      .byte.b	BLANK
-    211  78eb		       1c		      .byte.b	BLANK
-    212  78ec		       1c		      .byte.b	BLANK
-    213  78ed		       1c		      .byte.b	BLANK
-    214  78ee		       1c		      .byte.b	BLANK
-    215  78ef
-    216  78ef		       20		      .byte.b	WHITE_PAWN
-    217  78f0		       20		      .byte.b	WHITE_PAWN
-    218  78f1		       20		      .byte.b	WHITE_PAWN
-    219  78f2		       20		      .byte.b	WHITE_PAWN
-    220  78f3		       20		      .byte.b	WHITE_PAWN
-    221  78f4		       20		      .byte.b	WHITE_PAWN
-    222  78f5		       20		      .byte.b	WHITE_PAWN
-    223  78f6		       20		      .byte.b	WHITE_PAWN
-    224  78f7
-    225  78f7		       2c		      .byte.b	WHITE_ROOK
-    226  78f8		       24		      .byte.b	WHITE_KNIGHT
-    227  78f9		       28		      .byte.b	WHITE_BISHOP
-    228  78fa		       30		      .byte.b	WHITE_QUEEN
-    229  78fb		       34		      .byte.b	WHITE_KING
-    230  78fc		       28		      .byte.b	WHITE_BISHOP
-    231  78fd		       24		      .byte.b	WHITE_KNIGHT
-    232  78fe		       2c		      .byte.b	WHITE_ROOK
-    233  78ff
-    234  78ff
-    235  78ff							;---------------------------------------------------------------------------------------------------
-    236  78ff
-      0  78ff					      DEFINE_SUBROUTINE	CopyPieceToRAMBuffer
-      1  78ff		       00 0f	   BANK_CopyPieceToRAMBuffer =	_CURRENT_BANK
-      2  78ff					      SUBROUTINE
-      3  78ff				   CopyPieceToRAMBuffer
-    238  78ff
-    239  78ff							; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
-    240  78ff							; y = piece index
-    241  78ff
-    242  78ff		       a9 08		      lda	#BANK_PIECE_VECTOR_BANK
-    243  7901		       85 3f		      sta	SET_BANK
-    244  7903
-    245  7903		       b9 00 f0 	      lda	PIECE_VECTOR_LO,y
-    246  7906		       85 df		      sta	__ptr
-    247  7908		       b9 70 f0 	      lda	PIECE_VECTOR_HI,y
-    248  790b		       85 e0		      sta	__ptr+1
-    249  790d		       b9 e0 f0 	      lda	PIECE_VECTOR_BANK,y
-    250  7910		       85 3f		      sta	SET_BANK
-    251  7912
-    252  7912		       a0 47		      ldy	#PIECE_SHAPE_SIZE-1
-    253  7914		       b1 df	   .copyPieceGfx lda	(__ptr),y
-    254  7916		       99 97 00 	      sta	__pieceShapeBuffer,y
-    255  7919		       88		      dey
-    256  791a		       10 f8		      bpl	.copyPieceGfx
-    257  791c
-    258  791c		       60		      rts
-    259  791d
-    260  791d							;---------------------------------------------------------------------------------------------------
-    261  791d
-      0  791d					      DEFINE_SUBROUTINE	CopyShadowROMtoRAM
-      1  791d		       00 0f	   BANK_CopyShadowROMtoRAM =	_CURRENT_BANK
-      2  791d					      SUBROUTINE
-      3  791d				   CopyShadowROMtoRAM
-    263  791d							; pass x = source bank
-    264  791d							; pass y = destination bank (preserved)
-    265  791d
-    266  791d		       86 98		      stx	__sourceBank
-    267  791f
-    268  791f		       a2 00		      ldx	#0
-    269  7921		       a5 98	   .copyPage  lda	__sourceBank
-    270  7923		       85 3f		      sta	SET_BANK
-    271  7925
-    272  7925		       bd 00 f0 	      lda	$F000,x
-    273  7928		       48		      pha
-    274  7929		       bd 00 f1 	      lda	$F100,x
-    275  792c		       48		      pha
-    276  792d		       bd 00 f2 	      lda	$F200,x
-    277  7930		       48		      pha
-    278  7931		       bd 00 f3 	      lda	$F300,x
-    279  7934
-    280  7934		       84 3e		      sty	SET_BANK_RAM
-    281  7936
-    282  7936		       9d 00 f7 	      sta	$F300+RAM_WRITE,x
-    283  7939		       68		      pla
-    284  793a		       9d 00 f6 	      sta	$F200+RAM_WRITE,x
-    285  793d		       68		      pla
-    286  793e		       9d 00 f5 	      sta	$F100+RAM_WRITE,x
-    287  7941		       68		      pla
-    288  7942		       9d 00 f4 	      sta	$F000+RAM_WRITE,x
-    289  7945
-    290  7945		       ca		      dex
-    291  7946		       d0 d9		      bne	.copyPage
-    292  7948		       60		      rts
-    293  7949
-    294  7949							;---------------------------------------------------------------------------------------------------
-    295  7949
-      0  7949					      DEFINE_SUBROUTINE	Reset
-      1  7949		       00 0f	   BANK_Reset =	_CURRENT_BANK
-      2  7949					      SUBROUTINE
-      3  7949				   Reset
-    297  7949
-      0  7949					      CLEAN_START
-      1  7949		       78		      sei
-      2  794a		       d8		      cld
-      3  794b
-      4  794b		       a2 00		      ldx	#0
-      5  794d		       8a		      txa
-      6  794e		       a8		      tay
-      7  794f		       ca	   .CLEAR_STACK dex
-      8  7950		       9a		      txs
-      9  7951		       48		      pha
-     10  7952		       d0 fb		      bne	.CLEAR_STACK
-     11  7954
-    299  7954
-    300  7954		       a9 92		      lda	#$92
-    301  7956		       85 81		      sta	rnd
-    302  7958
-    303  7958
-    304  7958							; Move a copy of the row bank template to the first 8 banks of RAM
-    305  7958							; and then terminate the draw subroutine by substituting in a RTS on the last one
-    306  7958
-    307  7958		       a0 0f		      ldy	#15
-    308  795a		       a2 01	   .copyRowBanks ldx	#BANK_ROM_SHADOW_OF_CHESS_BITMAP
-    309  795c		       20 1d f9 	      jsr	CopyShadowROMtoRAM
-    310  795f		       88		      dey
-    311  7960		       10 f8		      bpl	.copyRowBanks
-    312  7962
-    313  7962							; Patch the final row's "loop" to a RTS
-    314  7962
-    315  7962		       a9 96		      lda	#<SELFMOD_RTS_ON_LAST_ROW
-    316  7964		       85 df		      sta	__ptr
-    317  7966		       a9 f6		      lda	#>(SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE)
-    318  7968		       85 e0		      sta	__ptr+1
-    319  796a
-    320  796a
-    321  796a		       a0 00		      ldy	#0
-    322  796c		       a9 60		      lda	#$60	; rts
-    323  796e
-    324  796e							; the 'screen' is double-buffered - two sets of 8x1K banks
-    325  796e							; we need to put an RTS on the last of both of these
-    326  796e
-    327  796e		       a2 07		      ldx	#7
-    328  7970		       86 3e		      stx	SET_BANK_RAM
-    329  7972		       91 df		      sta	(__ptr),y	; patch selfmod code to RTS
-    330  7974
-    331  7974		       a2 0f		      ldx	#15
-    332  7976		       86 3e		      stx	SET_BANK_RAM
-    333  7978		       91 df		      sta	(__ptr),y
-    334  797a
-    335  797a
-    336  797a		       20 ad f8 	      jsr	InitialiseChessboard
-    337  797d
-    338  797d							; Now the board is "living" in RAM (along with support code) we can do stuff with it
-    339  797d
-    340  797d		       a9 00		      lda	#0
-    341  797f		       85 82		      sta	doubleBufferBase
-    342  7981		       85 83		      sta	drawPhase
-    343  7983
-    344  7983
-    345  7983		       a9 00		      lda	#%00000000
-    346  7985		       85 4a		      sta	CTRLPF
-    347  7987		       85 49		      sta	COLUBK
-    348  7989
-    349  7989
-      0  7989					      RESYNC
-      1  7989
-      2  7989		       a9 02		      lda	#%10
-      3  798b		       85 41		      sta	VBLANK
-      4  798d
-      5  798d		       a2 08		      ldx	#8
-      6  798f				   .loopResync
-      0  798f					      VERTICAL_SYNC
-      1  798f		       a9 0e		      lda	#%1110
-      2  7991		       85 42	   .VSLP1     sta	WSYNC
-      3  7993		       85 40		      sta	VSYNC
-      4  7995		       4a		      lsr
-      5  7996		       d0 f9		      bne	.VSLP1
-      8  7998
-      9  7998		       a0 88		      ldy	#SCANLINES_NTSC/2 - 2
-     10  799a		       a5 8b		      lda	Platform
-     11  799c		       49 02		      eor	#PAL_50
-     12  799e		       d0 02		      bne	.ntsc
-     13  79a0		       a0 9a		      ldy	#SCANLINES_PAL/2 - 2
-     14  79a2				   .ntsc
-     15  79a2				   .loopWait
-     16  79a2		       85 42		      sta	WSYNC
-     17  79a4		       85 42		      sta	WSYNC
-     18  79a6		       88		      dey
-     19  79a7		       d0 f9		      bne	.loopWait
-     20  79a9		       ca		      dex
-     21  79aa		       d0 e3		      bne	.loopResync
-    351  79ac
-    352  79ac
-    353  79ac				   .doubleBufferLoop
-    354  79ac
-    355  79ac		       a9 0e		      lda	#%1110	; VSYNC ON
-    356  79ae		       85 42	   .loopVSync3 sta	WSYNC
-    357  79b0		       85 40		      sta	VSYNC
-    358  79b2		       4a		      lsr
-    359  79b3		       d0 f9		      bne	.loopVSync3	; branch until VYSNC has been reset
-    360  79b5
-    361  79b5		       a0 32		      ldy	#50	;VBLANK_TIM_NTSC
-    362  79b7		       8c 96 02 	      sty	TIM64T
-    363  79ba
-    364  79ba		       20 ee f9 	      jsr	PhasedProcessor
-    365  79bd
-    366  79bd		       85 42	   .VerticalBlank sta	WSYNC
-    367  79bf		       ad 84 02 	      lda	INTIM
-    368  79c2		       d0 f9		      bne	.VerticalBlank
-    369  79c4		       85 41		      sta	VBLANK
-    370  79c6
-    371  79c6		       a5 82		      lda	doubleBufferBase
-    372  79c8							;eor #8
-    373  79c8		       aa		      tax
-    374  79c9		       86 3e		      stx	SET_BANK_RAM
-    375  79cb		       20 67 f2 	      jsr	DrawRow
-    376  79ce
-    377  79ce		       a9 1a		      lda	#26
-    378  79d0		       8d 96 02 	      sta	TIM64T
-    379  79d3
-    380  79d3		       a9 00		      lda	#0
-    381  79d5		       85 4d		      sta	PF0
-    382  79d7		       85 4e		      sta	PF1
-    383  79d9		       85 4f		      sta	PF2
-    384  79db
-    385  79db							;jsr PhasedProcessor
-    386  79db
-    387  79db							; D1 VBLANK turns off beam
-    388  79db							; It needs to be turned on 37 scanlines later
-    389  79db
-    390  79db		       ad 84 02    .oscan     lda	INTIM
-    391  79de		       d0 fb		      bne	.oscan
-    392  79e0
-    393  79e0		       85 42		      sta	WSYNC
-    394  79e2		       85 42		      sta	WSYNC
-    395  79e4							;		  sta WSYNC
-    396  79e4							;		  sta WSYNC
-    397  79e4
-    398  79e4		       a9 42		      lda	#%01000010	; bit6 is not required
-    399  79e6		       85 41		      sta	VBLANK	; end of screen - enter blanking
-    400  79e8
-    401  79e8
-    402  79e8
-    403  79e8							;		  lda INPT4
-    404  79e8							;		  bpl .ret
-    405  79e8
-    406  79e8							;		  jmp .RestartChessFrame
-    407  79e8
-    408  79e8							;.ret
-    409  79e8
-    410  79e8		       4c ac f9 	      jmp	.doubleBufferLoop
-    411  79eb
-    412  79eb							;lda #2
-    413  79eb							;sta VSYNC
-    414  79eb							;lda #%01000010		  ; bit6 is not required
-    415  79eb							;sta VBLANK			  ; end of screen - enter blanking
-    416  79eb
-    417  79eb				   Restart		; go here on RESET + SELECT
-    418  79eb
-    419  79eb		       4c 49 f9 	      jmp	Reset
-    420  79ee
-    421  79ee							;---------------------------------------------------------------------------------------------------
-    422  79ee
-      0  79ee					      DEFINE_SUBROUTINE	PhasedProcessor
-      1  79ee		       00 0f	   BANK_PhasedProcessor =	_CURRENT_BANK
-      2  79ee					      SUBROUTINE
-      3  79ee				   PhasedProcessor
-    424  79ee		       a6 83		      ldx	drawPhase
-    425  79f0		       bd fd f9 	      lda	DrawVectorLO,x
-    426  79f3		       85 df		      sta	__ptr
-    427  79f5		       bd 09 fa 	      lda	DrawVectorHI,x
-    428  79f8		       85 e0		      sta	__ptr+1
-    429  79fa		       6c df 00 	      jmp	(__ptr)
-    430  79fd
-    431  79fd				   DrawVectorLO
-    432  79fd		       15		      .byte.b	<Phase0_ClearBoard_0
-    433  79fe		       1b		      .byte.b	<Phase0_ClearBoard_1
-    434  79ff		       25		      .byte.b	<DrawNextPiece
-    435  7a00		       2f		      .byte.b	<FlipBuffers
-    436  7a01		       35		      .byte.b	<EraseStartPiece
-    437  7a02		       3f		      .byte.b	<WriteStartPieceBlank
-    438  7a03		       52		      .byte.b	<MarchToTargetA
-    439  7a04							;.byte <DelayIt
-    440  7a04		       ad		      .byte.b	<MarchToTargetB
-    441  7a05		       cf		      .byte.b	<WriteEndPieceBlank
-    442  7a06		       d9		      .byte.b	<WriteEndPiece
-    443  7a07		       f0		      .byte.b	<DelayIt
-    444  7a08		       f7		      .byte.b	<Final
-    445  7a09
-    446  7a09				   DrawVectorHI
-    447  7a09		       fa		      .byte.b	>Phase0_ClearBoard_0
-    448  7a0a		       fa		      .byte.b	>Phase0_ClearBoard_1
-    449  7a0b		       fa		      .byte.b	>DrawNextPiece
-    450  7a0c		       fa		      .byte.b	>FlipBuffers
-    451  7a0d		       fa		      .byte.b	>EraseStartPiece
-    452  7a0e		       fa		      .byte.b	>WriteStartPieceBlank
-    453  7a0f		       fa		      .byte.b	>MarchToTargetA
-    454  7a10							;.byte >DelayIt
-    455  7a10		       fa		      .byte.b	>MarchToTargetB
-    456  7a11		       fa		      .byte.b	>WriteEndPieceBlank
-    457  7a12		       fa		      .byte.b	>WriteEndPiece
-    458  7a13		       fa		      .byte.b	>DelayIt
-    459  7a14		       fa		      .byte.b	>Final
-    460  7a15
-      0  7a15					      DEFINE_SUBROUTINE	Phase0_ClearBoard_0
-      1  7a15		       00 0f	   BANK_Phase0_ClearBoard_0 =	_CURRENT_BANK
-      2  7a15					      SUBROUTINE
-      3  7a15				   Phase0_ClearBoard_0
-    462  7a15
-    463  7a15		       20 04 f8 	      jsr	ClearChessBitmap_PART0
-    464  7a18		       e6 83		      inc	drawPhase
-    465  7a1a		       60		      rts
-    466  7a1b
-      0  7a1b					      DEFINE_SUBROUTINE	Phase0_ClearBoard_1
-      1  7a1b		       00 0f	   BANK_Phase0_ClearBoard_1 =	_CURRENT_BANK
-      2  7a1b					      SUBROUTINE
-      3  7a1b				   Phase0_ClearBoard_1
-    468  7a1b
-    469  7a1b		       20 1f f8 	      jsr	ClearChessBitmap_PART1
-    470  7a1e
-    471  7a1e		       a9 3f		      lda	#63
-    472  7a20		       85 80		      sta	drawPieceNumber
-    473  7a22
-    474  7a22		       e6 83		      inc	drawPhase
-    475  7a24		       60		      rts
-    476  7a25
-      0  7a25					      DEFINE_SUBROUTINE	DrawNextPiece
-      1  7a25		       00 0f	   BANK_DrawNextPiece =	_CURRENT_BANK
-      2  7a25					      SUBROUTINE
-      3  7a25				   DrawNextPiece
-    478  7a25
-    479  7a25		       20 3d f8 	      jsr	CopySinglePiece
-    480  7a28		       c6 80		      dec	drawPieceNumber
-    481  7a2a		       10 02		      bpl	.incomplete
-    482  7a2c
-    483  7a2c		       e6 83		      inc	drawPhase
-    484  7a2e		       60	   .incomplete rts
-    485  7a2f
-    486  7a2f							; Now we've finished drawing the screen square by square.
-    487  7a2f
-      0  7a2f					      DEFINE_SUBROUTINE	FlipBuffers
-      1  7a2f		       00 0f	   BANK_FlipBuffers =	_CURRENT_BANK
-      2  7a2f					      SUBROUTINE
-      3  7a2f				   FlipBuffers
-    489  7a2f
-    490  7a2f		       20 73 f8 	      jsr	RandomPieceMove
-    491  7a32		       e6 83		      inc	drawPhase
-    492  7a34		       60		      rts
-    493  7a35
-      0  7a35					      DEFINE_SUBROUTINE	EraseStartPiece
-      1  7a35		       00 0f	   BANK_EraseStartPiece =	_CURRENT_BANK
-      2  7a35					      SUBROUTINE
-      3  7a35				   EraseStartPiece
-    495  7a35
-    496  7a35		       a5 85		      lda	fromSquare
-    497  7a37		       85 80		      sta	drawPieceNumber
-    498  7a39		       20 3d f8 	      jsr	CopySinglePiece	; erase the existing piece
-    499  7a3c
-    500  7a3c		       e6 83		      inc	drawPhase
-    501  7a3e		       60		      rts
-    502  7a3f
-      0  7a3f					      DEFINE_SUBROUTINE	WriteStartPieceBlank
-      1  7a3f		       00 0f	   BANK_WriteStartPieceBlank =	_CURRENT_BANK
-      2  7a3f					      SUBROUTINE
-      3  7a3f				   WriteStartPieceBlank
-    504  7a3f
-    505  7a3f		       a6 85		      ldx	fromSquare
-    506  7a41		       86 80		      stx	drawPieceNumber
-    507  7a43
-    508  7a43		       a9 10		      lda	#BANK_CHESSBOARD
-    509  7a45		       85 3e		      sta	SET_BANK_RAM
-    510  7a47		       a9 1c		      lda	#BLANK
-    511  7a49		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x	; put a blank on the board
-    512  7a4c
-    513  7a4c		       20 3d f8 	      jsr	CopySinglePiece	; now draw the 'blank' square
-    514  7a4f
-    515  7a4f		       e6 83		      inc	drawPhase
-    516  7a51		       60		      rts
-    517  7a52
-      0  7a52					      DEFINE_SUBROUTINE	MarchToTargetA
-      1  7a52		       00 0f	   BANK_MarchToTargetA =	_CURRENT_BANK
-      2  7a52					      SUBROUTINE
-      3  7a52				   MarchToTargetA
-    519  7a52
-    520  7a52		       a5 85		      lda	fromSquare
-    521  7a54		       c5 87		      cmp	toSquare
-    522  7a56		       f0 73		      beq	.halt
-    523  7a58
-    524  7a58		       a5 85		      lda	fromSquare
-    525  7a5a		       4a		      lsr
-    526  7a5b		       4a		      lsr
-    527  7a5c		       4a		      lsr
-    528  7a5d		       85 8a		      sta	__fromRow
-    529  7a5f		       a5 87		      lda	toSquare
-    530  7a61		       4a		      lsr
-    531  7a62		       4a		      lsr
-    532  7a63		       4a		      lsr
-    533  7a64		       c5 8a		      cmp	__fromRow
-    534  7a66		       f0 11		      beq	rowOK
-    535  7a68		       b0 09		      bcs	.downRow
-    536  7a6a		       a5 85		      lda	fromSquare
-    537  7a6c		       e9 07		      sbc	#7
-    538  7a6e		       85 85		      sta	fromSquare
-    539  7a70		       4c 79 fa 	      jmp	nowcol
-    540  7a73		       a5 85	   .downRow   lda	fromSquare
-    541  7a75		       69 07		      adc	#7
-    542  7a77		       85 85		      sta	fromSquare
-    543  7a79				   rowOK
-    544  7a79				   nowcol
-    545  7a79
-    546  7a79		       a5 85		      lda	fromSquare
-    547  7a7b		       29 07		      and	#7
-    548  7a7d		       85 8a		      sta	__fromRow
-    549  7a7f		       a5 87		      lda	toSquare
-    550  7a81		       29 07		      and	#7
-    551  7a83		       c5 8a		      cmp	__fromRow
-    552  7a85		       f0 09		      beq	colok
-    553  7a87		       90 05		      bcc	.leftCol
-    554  7a89		       e6 85		      inc	fromSquare
-    555  7a8b		       4c 90 fa 	      jmp	colok
-    556  7a8e		       c6 85	   .leftCol   dec	fromSquare
-    557  7a90				   colok
-    558  7a90
-    559  7a90
-    560  7a90
-    561  7a90		       a5 85		      lda	fromSquare
-    562  7a92
-    563  7a92							;		  clc
-    564  7a92							;		  adc #1
-    565  7a92							;		  and #63
-    566  7a92							;		  sta fromSquare
-    567  7a92		       aa		      tax
-    568  7a93		       86 80		      stx	drawPieceNumber
-    569  7a95
-    570  7a95		       a9 10		      lda	#BANK_CHESSBOARD
-    571  7a97		       85 3e		      sta	SET_BANK_RAM
-    572  7a99		       bd 00 10 	      lda	Chessboard,x
-    573  7a9c		       85 89		      sta	lastPiece
-    574  7a9e		       a5 86		      lda	fromPiece
-    575  7aa0		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
-    576  7aa3		       20 3d f8 	      jsr	CopySinglePiece
-    577  7aa6
-    578  7aa6		       a9 03		      lda	#3
-    579  7aa8		       85 84		      sta	drawDelay
-    580  7aaa		       e6 83		      inc	drawPhase
-    581  7aac		       60		      rts
-    582  7aad
-      0  7aad					      DEFINE_SUBROUTINE	MarchToTargetB
-      1  7aad		       00 0f	   BANK_MarchToTargetB =	_CURRENT_BANK
-      2  7aad					      SUBROUTINE
-      3  7aad				   MarchToTargetB
-    584  7aad
-    585  7aad		       a5 84		      lda	drawDelay
-    586  7aaf		       f0 05		      beq	gogogo
-    587  7ab1		       c6 84		      dec	drawDelay
-    588  7ab3		       4c ca fa 	      jmp	bypass
-    589  7ab6				   gogogo
-    590  7ab6
-    591  7ab6		       a6 85		      ldx	fromSquare
-    592  7ab8		       86 80		      stx	drawPieceNumber
-    593  7aba		       20 3d f8 	      jsr	CopySinglePiece
-    594  7abd		       a9 10		      lda	#BANK_CHESSBOARD
-    595  7abf		       85 3e		      sta	SET_BANK_RAM
-    596  7ac1		       a6 85		      ldx	fromSquare
-    597  7ac3		       a5 89		      lda	lastPiece
-    598  7ac5		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
-    599  7ac8
-    600  7ac8		       c6 83		      dec	drawPhase
-    601  7aca		       60	   bypass     rts
-    602  7acb
-    603  7acb		       e6 83	   .halt      inc	drawPhase
-    604  7acd		       e6 83		      inc	drawPhase
-    605  7acf
-      0  7acf					      DEFINE_SUBROUTINE	WriteEndPieceBlank
-      1  7acf		       00 0f	   BANK_WriteEndPieceBlank =	_CURRENT_BANK
-      2  7acf					      SUBROUTINE
-      3  7acf				   WriteEndPieceBlank
-    607  7acf
-    608  7acf		       a6 87		      ldx	toSquare
-    609  7ad1		       86 80		      stx	drawPieceNumber
-    610  7ad3		       20 3d f8 	      jsr	CopySinglePiece	; now erase the destination square
-    611  7ad6
-    612  7ad6		       e6 83		      inc	drawPhase
-    613  7ad8		       60		      rts
-    614  7ad9
-      0  7ad9					      DEFINE_SUBROUTINE	WriteEndPiece
-      1  7ad9		       00 0f	   BANK_WriteEndPiece =	_CURRENT_BANK
-      2  7ad9					      SUBROUTINE
-      3  7ad9				   WriteEndPiece
-    616  7ad9
-    617  7ad9		       a6 87		      ldx	toSquare
-    618  7adb		       86 80		      stx	drawPieceNumber
-    619  7add
-    620  7add		       a9 10		      lda	#BANK_CHESSBOARD
-    621  7adf		       85 3e		      sta	SET_BANK_RAM
-    622  7ae1		       a5 86		      lda	fromPiece
-    623  7ae3		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x	; put a blank on the board
-    624  7ae6
-    625  7ae6		       20 3d f8 	      jsr	CopySinglePiece
-    626  7ae9
-    627  7ae9		       a9 0a		      lda	#10
-    628  7aeb		       85 84		      sta	drawDelay
-    629  7aed		       e6 83		      inc	drawPhase
-    630  7aef		       60		      rts
-    631  7af0
-      0  7af0					      DEFINE_SUBROUTINE	DelayIt
-      1  7af0		       00 0f	   BANK_DelayIt =	_CURRENT_BANK
-      2  7af0					      SUBROUTINE
-      3  7af0				   DelayIt
-    633  7af0
-    634  7af0		       c6 84		      dec	drawDelay
-    635  7af2		       d0 02		      bne	.waiting
-    636  7af4		       e6 83		      inc	drawPhase
-    637  7af6		       60	   .waiting   rts
-    638  7af7
-      0  7af7					      DEFINE_SUBROUTINE	Final
-      1  7af7		       00 0f	   BANK_Final =	_CURRENT_BANK
-      2  7af7					      SUBROUTINE
-      3  7af7				   Final
-    640  7af7
-    641  7af7		       a9 03		      lda	#3
-    642  7af9		       85 83		      sta	drawPhase
-    643  7afb		       60		      rts
-    644  7afc
-    645  7afc							;---------------------------------------------------------------------------
-    646  7afc
- FREE BYTES IN FIXED BANK =  $4f4
-    647  7afc					      ECHO	"FREE BYTES IN FIXED BANK = ", $FFF0 - *
-    648  7afc
-    649  7afc							;---------------------------------------------------------------------------
-    650  7afc							; The reset vectors
-    651  7afc							; these must live in the fixed bank (last 2K of any ROM image in TigerVision)
-    652  7afc
-    653  7ff4 ????				      SEG	PlusCart
-    654  7ff0					      ORG	FIXED_BANK + $7F0
-    655  7ff0					      RORG	$7FF0
-    656  7ff0		       7f f0	   PLUSCART_IO =	*
-    657  7ff0		       00 aa	   PLUS0      =	%10101010
-    658  7ff0		       00 19	   PLUS1      =	%00011001
-    659  7ff0		       00 af	   PLUS2      =	%10101111
-    660  7ff0		       00 36	   PLUS3      =	%00110110
-    661  7ff0		       aa 19 af 36	      .byte.b	PLUS0,PLUS1,PLUS2,PLUS3
-    662  7ff4
-    663  8000 ????				      SEG	InterruptVectors
-    664  7ffc					      ORG	FIXED_BANK + $7FC
-    665  7ffc					      RORG	$7ffC
-    666  7ffc
-    667  7ffc							;		 .word Reset	       ; NMI	    (not used)
-    668  7ffc		       49 f9		      .word.w	Reset	; RESET
-    669  7ffe		       49 f9		      .word.w	Reset	; IRQ	      (not used)
-    670  8000
-    671  8000							;---------------------------------------------------------------------------
+     60  7853							; PieceColour = 0 for white square, 28 for black square
+     61  7853
+     62  7853		       a4 80		      ldy	drawPieceNumber
+     63  7855
+     64  7855
+     65  7855		       98		      tya
+     66  7856		       29 03		      and	#3	; shift position in PF
+     67  7858
+     68  7858		       a2 08		      ldx	#BANK_CHESSBOARD
+     69  785a		       86 3e		      stx	SET_BANK_RAM
+     70  785c
+     71  785c		       be 00 10 	      ldx	Chessboard,y
+     72  785f		       18		      clc
+     73  7860		       7d c1 f8 	      adc	PieceToShape,x
+     74  7863		       18		      clc
+     75  7864		       65 97		      adc	__pieceColour
+     76  7866		       a8		      tay
+     77  7867		       20 11 f9 	      jsr	CopyPieceToRAMBuffer
+     78  786a
+     79  786a		       a5 80		      lda	drawPieceNumber
+     80  786c		       4a		      lsr
+     81  786d		       4a		      lsr
+     82  786e		       4a		      lsr
+     83  786f							;ora doubleBufferBase
+     84  786f		       aa		      tax		; row
+     85  7870
+     86  7870		       a5 80		      lda	drawPieceNumber
+     87  7872		       29 04		      and	#4
+     88  7874		       c9 04		      cmp	#4	; cc = left side, cs = right side
+     89  7876
+     90  7876		       86 3e		      stx	SET_BANK_RAM
+     91  7878		       4c 43 f2 	      jmp	CopyPieceToRowBitmap
+     92  787b
+     93  787b							;---------------------------------------------------------------------------------------------------
+     94  787b
+      0  787b					      DEFINE_SUBROUTINE	RandomPieceMove
+      1  787b		       00 0f	   BANK_RandomPieceMove =	_CURRENT_BANK
+      2  787b					      SUBROUTINE
+      3  787b				   RandomPieceMove
+     96  787b
+     97  787b		       a9 08		      lda	#BANK_CHESSBOARD
+     98  787d		       85 3e		      sta	SET_BANK_RAM
+     99  787f
+      0  787f					      NEXT_RANDOM
+      1  787f		       a5 81		      lda	rnd
+      2  7881		       4a		      lsr
+      3  7882		       90 02		      bcc	.skipEOR
+      4  7884		       49 75		      eor	#RND_EOR_VAL
+      5  7886		       85 81	   .skipEOR   sta	rnd
+    101  7888		       aa		      tax
+    102  7889		       e8	   .nextX     inx
+    103  788a		       8a		      txa
+    104  788b		       29 3f		      and	#63
+    105  788d		       aa		      tax
+    106  788e
+    107  788e		       bd 00 10 	      lda	Chessboard,x
+    108  7891							;cmp #BLANK
+    109  7891		       f0 f6		      beq	.nextX
+    110  7893
+    111  7893		       86 85		      stx	fromSquare
+    112  7895
+      0  7895					      NEXT_RANDOM
+      1  7895		       a5 81		      lda	rnd
+      2  7897		       4a		      lsr
+      3  7898		       90 02		      bcc	.skipEOR
+      4  789a		       49 75		      eor	#RND_EOR_VAL
+      5  789c		       85 81	   .skipEOR   sta	rnd
+    114  789e		       a8		      tay
+    115  789f		       c8	   .nextY     iny
+    116  78a0		       98		      tya
+    117  78a1		       29 3f		      and	#63
+    118  78a3		       a8		      tay
+    119  78a4
+    120  78a4
+    121  78a4							;lda #BLANK
+    122  78a4							;sta fromPiece
+    123  78a4
+    124  78a4		       b9 00 10 	      lda	Chessboard,y
+    125  78a7							;cmp #BLANK
+    126  78a7		       d0 f6		      bne	.nextY
+    127  78a9
+    128  78a9		       84 87		      sty	toSquare
+    129  78ab
+    130  78ab		       bd 00 10 	      lda	Chessboard,x
+    131  78ae		       85 86		      sta	fromPiece
+    132  78b0
+    133  78b0							;		  sta Chessboard+RAM_WRITE,y
+    134  78b0							;		  lda #BLANK
+    135  78b0							;		  sta Chessboard+RAM_WRITE,x
+    136  78b0
+    137  78b0		       60		      rts
+    138  78b1
+    139  78b1							;---------------------------------------------------------------------------------------------------
+    140  78b1
+      0  78b1					      DEFINE_SUBROUTINE	InitialiseChessboard
+      1  78b1		       00 0f	   BANK_InitialiseChessboard =	_CURRENT_BANK
+      2  78b1					      SUBROUTINE
+      3  78b1				   InitialiseChessboard
+    142  78b1
+    143  78b1		       a9 08		      lda	#BANK_CHESSBOARD
+    144  78b3		       85 3e		      sta	SET_BANK_RAM
+    145  78b5
+    146  78b5		       a2 3f		      ldx	#63
+    147  78b7		       bd d1 f8    .setupBoard lda	BoardPiece,x
+    148  78ba		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
+    149  78bd		       ca		      dex
+    150  78be		       10 f7		      bpl	.setupBoard
+    151  78c0
+    152  78c0		       60		      rts
+    153  78c1
+    154  78c1
+    155  78c1		       00 00	   BLANK      =	0	;INDEX_WHITE_BLANK_on_BLACK_SQUARE_0
+    156  78c1		       00 01	   PAWN       =	1
+    157  78c1		       00 02	   KNIGHT     =	2
+    158  78c1		       00 03	   BISHOP     =	3
+    159  78c1		       00 04	   ROOK       =	4
+    160  78c1		       00 05	   QUEEN      =	5
+    161  78c1		       00 06	   KING       =	6
+    162  78c1
+    163  78c1		       00 08	   BLACK      =	8
+    164  78c1		       00 00	   WHITE      =	0
+    165  78c1
+    166  78c1
+    167  78c1				   PieceToShape
+    168  78c1
+    169  78c1		       00		      .byte.b	INDEX_WHITE_BLANK_on_WHITE_SQUARE_0
+    170  78c2		       04		      .byte.b	INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
+    171  78c3		       08		      .byte.b	INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0
+    172  78c4		       0c		      .byte.b	INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0
+    173  78c5		       10		      .byte.b	INDEX_WHITE_ROOK_on_WHITE_SQUARE_0
+    174  78c6		       14		      .byte.b	INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
+    175  78c7		       18		      .byte.b	INDEX_WHITE_KING_on_WHITE_SQUARE_0
+    176  78c8		       00		      .byte.b	0
+    177  78c9
+    178  78c9		       38		      .byte.b	INDEX_BLACK_BLANK_on_WHITE_SQUARE_0
+    179  78ca		       3c		      .byte.b	INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
+    180  78cb		       40		      .byte.b	INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_0
+    181  78cc		       44		      .byte.b	INDEX_BLACK_BISHOP_on_WHITE_SQUARE_0
+    182  78cd		       48		      .byte.b	INDEX_BLACK_ROOK_on_WHITE_SQUARE_0
+    183  78ce		       4c		      .byte.b	INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
+    184  78cf		       50		      .byte.b	INDEX_BLACK_KING_on_WHITE_SQUARE_0
+    185  78d0		       00		      .byte.b	0
+    186  78d1
+    187  78d1
+    188  78d1
+    189  78d1				   BoardPiece
+    190  78d1
+    191  78d1							;WHITE_PAWN = INDEX_WHITE_PAWN_on_BLACK_SQUARE_0
+    192  78d1							;WHITE_ROOK = INDEX_WHITE_ROOK_on_BLACK_SQUARE_0
+    193  78d1							;WHITE_KNIGHT = INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_0
+    194  78d1							;WHITE_BISHOP = INDEX_WHITE_BISHOP_on_BLACK_SQUARE_0
+    195  78d1							;WHITE_QUEEN = INDEX_WHITE_QUEEN_on_BLACK_SQUARE_0
+    196  78d1							;WHITE_KING = INDEX_WHITE_KING_on_BLACK_SQUARE_0
+    197  78d1							;BLACK_PAWN = INDEX_BLACK_PAWN_on_BLACK_SQUARE_0
+    198  78d1							;BLACK_ROOK = INDEX_BLACK_ROOK_on_BLACK_SQUARE_0
+    199  78d1							;BLACK_KNIGHT = INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_0
+    200  78d1							;BLACK_BISHOP = INDEX_BLACK_BISHOP_on_BLACK_SQUARE_0
+    201  78d1							;BLACK_QUEEN = INDEX_BLACK_QUEEN_on_BLACK_SQUARE_0
+    202  78d1							;BLACK_KING = INDEX_BLACK_KING_on_BLACK_SQUARE_0
+    203  78d1
+    204  78d1		       0c		      .byte.b	BLACK|ROOK	;0
+    205  78d2		       0a		      .byte.b	BLACK|KNIGHT	;1
+    206  78d3		       0b		      .byte.b	BLACK|BISHOP	;2
+    207  78d4		       0d		      .byte.b	BLACK|QUEEN	;3
+    208  78d5		       0e		      .byte.b	BLACK|KING	;4
+    209  78d6		       0b		      .byte.b	BLACK|BISHOP	;5
+    210  78d7		       0a		      .byte.b	BLACK|KNIGHT	;6
+    211  78d8		       0c		      .byte.b	BLACK|ROOK	;7
+    212  78d9
+    213  78d9		       09		      .byte.b	BLACK|PAWN
+    214  78da		       09		      .byte.b	BLACK|PAWN
+    215  78db		       09		      .byte.b	BLACK|PAWN
+    216  78dc		       09		      .byte.b	BLACK|PAWN
+    217  78dd		       09		      .byte.b	BLACK|PAWN
+    218  78de		       09		      .byte.b	BLACK|PAWN
+    219  78df		       09		      .byte.b	BLACK|PAWN
+    220  78e0		       09		      .byte.b	BLACK|PAWN
+    221  78e1
+    222  78e1		       00		      .byte.b	BLANK
+    223  78e2		       00		      .byte.b	BLANK
+    224  78e3		       00		      .byte.b	BLANK
+    225  78e4		       00		      .byte.b	BLANK
+    226  78e5		       00		      .byte.b	BLANK
+    227  78e6		       00		      .byte.b	BLANK
+    228  78e7		       00		      .byte.b	BLANK
+    229  78e8		       00		      .byte.b	BLANK
+    230  78e9
+    231  78e9		       00		      .byte.b	BLANK
+    232  78ea		       00		      .byte.b	BLANK
+    233  78eb		       00		      .byte.b	BLANK
+    234  78ec		       00		      .byte.b	BLANK
+    235  78ed		       00		      .byte.b	BLANK
+    236  78ee		       00		      .byte.b	BLANK
+    237  78ef		       00		      .byte.b	BLANK
+    238  78f0		       00		      .byte.b	BLANK
+    239  78f1
+    240  78f1		       00		      .byte.b	BLANK
+    241  78f2		       00		      .byte.b	BLANK
+    242  78f3		       00		      .byte.b	BLANK
+    243  78f4		       00		      .byte.b	BLANK
+    244  78f5		       00		      .byte.b	BLANK
+    245  78f6		       00		      .byte.b	BLANK
+    246  78f7		       00		      .byte.b	BLANK
+    247  78f8		       00		      .byte.b	BLANK
+    248  78f9
+    249  78f9		       00		      .byte.b	BLANK
+    250  78fa		       00		      .byte.b	BLANK
+    251  78fb		       00		      .byte.b	BLANK
+    252  78fc		       00		      .byte.b	BLANK
+    253  78fd		       00		      .byte.b	BLANK
+    254  78fe		       00		      .byte.b	BLANK
+    255  78ff		       00		      .byte.b	BLANK
+    256  7900		       00		      .byte.b	BLANK
+    257  7901
+    258  7901		       01		      .byte.b	WHITE|PAWN
+    259  7902		       01		      .byte.b	WHITE|PAWN
+    260  7903		       01		      .byte.b	WHITE|PAWN
+    261  7904		       01		      .byte.b	WHITE|PAWN
+    262  7905		       01		      .byte.b	WHITE|PAWN
+    263  7906		       01		      .byte.b	WHITE|PAWN
+    264  7907		       01		      .byte.b	WHITE|PAWN
+    265  7908		       01		      .byte.b	WHITE|PAWN
+    266  7909
+    267  7909		       04		      .byte.b	WHITE|ROOK
+    268  790a		       02		      .byte.b	WHITE|KNIGHT
+    269  790b		       03		      .byte.b	WHITE|BISHOP
+    270  790c		       05		      .byte.b	WHITE|QUEEN
+    271  790d		       06		      .byte.b	WHITE|KING
+    272  790e		       03		      .byte.b	WHITE|BISHOP
+    273  790f		       02		      .byte.b	WHITE|KNIGHT
+    274  7910		       04		      .byte.b	WHITE|ROOK
+    275  7911
+    276  7911
+    277  7911							;---------------------------------------------------------------------------------------------------
+    278  7911
+      0  7911					      DEFINE_SUBROUTINE	CopyPieceToRAMBuffer
+      1  7911		       00 0f	   BANK_CopyPieceToRAMBuffer =	_CURRENT_BANK
+      2  7911					      SUBROUTINE
+      3  7911				   CopyPieceToRAMBuffer
+    280  7911
+    281  7911							; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
+    282  7911							; y = piece index
+    283  7911
+    284  7911		       a9 08		      lda	#BANK_PIECE_VECTOR_BANK
+    285  7913		       85 3f		      sta	SET_BANK
+    286  7915
+    287  7915		       b9 00 f0 	      lda	PIECE_VECTOR_LO,y
+    288  7918		       85 df		      sta	__ptr
+    289  791a		       b9 70 f0 	      lda	PIECE_VECTOR_HI,y
+    290  791d		       85 e0		      sta	__ptr+1
+    291  791f		       b9 e0 f0 	      lda	PIECE_VECTOR_BANK,y
+    292  7922		       85 3f		      sta	SET_BANK
+    293  7924
+    294  7924		       a0 47		      ldy	#PIECE_SHAPE_SIZE-1
+    295  7926					      REPEAT	PIECE_SHAPE_SIZE
+    296  7926		       b1 df		      lda	(__ptr),y
+    297  7928		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  792b		       88		      dey
+    295  792b					      REPEND
+    296  792c		       b1 df		      lda	(__ptr),y
+    297  792e		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7931		       88		      dey
+    295  7931					      REPEND
+    296  7932		       b1 df		      lda	(__ptr),y
+    297  7934		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7937		       88		      dey
+    295  7937					      REPEND
+    296  7938		       b1 df		      lda	(__ptr),y
+    297  793a		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  793d		       88		      dey
+    295  793d					      REPEND
+    296  793e		       b1 df		      lda	(__ptr),y
+    297  7940		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7943		       88		      dey
+    295  7943					      REPEND
+    296  7944		       b1 df		      lda	(__ptr),y
+    297  7946		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7949		       88		      dey
+    295  7949					      REPEND
+    296  794a		       b1 df		      lda	(__ptr),y
+    297  794c		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  794f		       88		      dey
+    295  794f					      REPEND
+    296  7950		       b1 df		      lda	(__ptr),y
+    297  7952		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7955		       88		      dey
+    295  7955					      REPEND
+    296  7956		       b1 df		      lda	(__ptr),y
+    297  7958		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  795b		       88		      dey
+    295  795b					      REPEND
+    296  795c		       b1 df		      lda	(__ptr),y
+    297  795e		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7961		       88		      dey
+    295  7961					      REPEND
+    296  7962		       b1 df		      lda	(__ptr),y
+    297  7964		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7967		       88		      dey
+    295  7967					      REPEND
+    296  7968		       b1 df		      lda	(__ptr),y
+    297  796a		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  796d		       88		      dey
+    295  796d					      REPEND
+    296  796e		       b1 df		      lda	(__ptr),y
+    297  7970		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7973		       88		      dey
+    295  7973					      REPEND
+    296  7974		       b1 df		      lda	(__ptr),y
+    297  7976		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7979		       88		      dey
+    295  7979					      REPEND
+    296  797a		       b1 df		      lda	(__ptr),y
+    297  797c		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  797f		       88		      dey
+    295  797f					      REPEND
+    296  7980		       b1 df		      lda	(__ptr),y
+    297  7982		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7985		       88		      dey
+    295  7985					      REPEND
+    296  7986		       b1 df		      lda	(__ptr),y
+    297  7988		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  798b		       88		      dey
+    295  798b					      REPEND
+    296  798c		       b1 df		      lda	(__ptr),y
+    297  798e		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7991		       88		      dey
+    295  7991					      REPEND
+    296  7992		       b1 df		      lda	(__ptr),y
+    297  7994		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7997		       88		      dey
+    295  7997					      REPEND
+    296  7998		       b1 df		      lda	(__ptr),y
+    297  799a		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  799d		       88		      dey
+    295  799d					      REPEND
+    296  799e		       b1 df		      lda	(__ptr),y
+    297  79a0		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79a3		       88		      dey
+    295  79a3					      REPEND
+    296  79a4		       b1 df		      lda	(__ptr),y
+    297  79a6		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79a9		       88		      dey
+    295  79a9					      REPEND
+    296  79aa		       b1 df		      lda	(__ptr),y
+    297  79ac		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79af		       88		      dey
+    295  79af					      REPEND
+    296  79b0		       b1 df		      lda	(__ptr),y
+    297  79b2		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79b5		       88		      dey
+    295  79b5					      REPEND
+    296  79b6		       b1 df		      lda	(__ptr),y
+    297  79b8		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79bb		       88		      dey
+    295  79bb					      REPEND
+    296  79bc		       b1 df		      lda	(__ptr),y
+    297  79be		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79c1		       88		      dey
+    295  79c1					      REPEND
+    296  79c2		       b1 df		      lda	(__ptr),y
+    297  79c4		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79c7		       88		      dey
+    295  79c7					      REPEND
+    296  79c8		       b1 df		      lda	(__ptr),y
+    297  79ca		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79cd		       88		      dey
+    295  79cd					      REPEND
+    296  79ce		       b1 df		      lda	(__ptr),y
+    297  79d0		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79d3		       88		      dey
+    295  79d3					      REPEND
+    296  79d4		       b1 df		      lda	(__ptr),y
+    297  79d6		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79d9		       88		      dey
+    295  79d9					      REPEND
+    296  79da		       b1 df		      lda	(__ptr),y
+    297  79dc		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79df		       88		      dey
+    295  79df					      REPEND
+    296  79e0		       b1 df		      lda	(__ptr),y
+    297  79e2		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79e5		       88		      dey
+    295  79e5					      REPEND
+    296  79e6		       b1 df		      lda	(__ptr),y
+    297  79e8		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79eb		       88		      dey
+    295  79eb					      REPEND
+    296  79ec		       b1 df		      lda	(__ptr),y
+    297  79ee		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79f1		       88		      dey
+    295  79f1					      REPEND
+    296  79f2		       b1 df		      lda	(__ptr),y
+    297  79f4		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79f7		       88		      dey
+    295  79f7					      REPEND
+    296  79f8		       b1 df		      lda	(__ptr),y
+    297  79fa		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  79fd		       88		      dey
+    295  79fd					      REPEND
+    296  79fe		       b1 df		      lda	(__ptr),y
+    297  7a00		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a03		       88		      dey
+    295  7a03					      REPEND
+    296  7a04		       b1 df		      lda	(__ptr),y
+    297  7a06		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a09		       88		      dey
+    295  7a09					      REPEND
+    296  7a0a		       b1 df		      lda	(__ptr),y
+    297  7a0c		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a0f		       88		      dey
+    295  7a0f					      REPEND
+    296  7a10		       b1 df		      lda	(__ptr),y
+    297  7a12		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a15		       88		      dey
+    295  7a15					      REPEND
+    296  7a16		       b1 df		      lda	(__ptr),y
+    297  7a18		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a1b		       88		      dey
+    295  7a1b					      REPEND
+    296  7a1c		       b1 df		      lda	(__ptr),y
+    297  7a1e		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a21		       88		      dey
+    295  7a21					      REPEND
+    296  7a22		       b1 df		      lda	(__ptr),y
+    297  7a24		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a27		       88		      dey
+    295  7a27					      REPEND
+    296  7a28		       b1 df		      lda	(__ptr),y
+    297  7a2a		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a2d		       88		      dey
+    295  7a2d					      REPEND
+    296  7a2e		       b1 df		      lda	(__ptr),y
+    297  7a30		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a33		       88		      dey
+    295  7a33					      REPEND
+    296  7a34		       b1 df		      lda	(__ptr),y
+    297  7a36		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a39		       88		      dey
+    295  7a39					      REPEND
+    296  7a3a		       b1 df		      lda	(__ptr),y
+    297  7a3c		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a3f		       88		      dey
+    295  7a3f					      REPEND
+    296  7a40		       b1 df		      lda	(__ptr),y
+    297  7a42		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a45		       88		      dey
+    295  7a45					      REPEND
+    296  7a46		       b1 df		      lda	(__ptr),y
+    297  7a48		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a4b		       88		      dey
+    295  7a4b					      REPEND
+    296  7a4c		       b1 df		      lda	(__ptr),y
+    297  7a4e		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a51		       88		      dey
+    295  7a51					      REPEND
+    296  7a52		       b1 df		      lda	(__ptr),y
+    297  7a54		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a57		       88		      dey
+    295  7a57					      REPEND
+    296  7a58		       b1 df		      lda	(__ptr),y
+    297  7a5a		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a5d		       88		      dey
+    295  7a5d					      REPEND
+    296  7a5e		       b1 df		      lda	(__ptr),y
+    297  7a60		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a63		       88		      dey
+    295  7a63					      REPEND
+    296  7a64		       b1 df		      lda	(__ptr),y
+    297  7a66		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a69		       88		      dey
+    295  7a69					      REPEND
+    296  7a6a		       b1 df		      lda	(__ptr),y
+    297  7a6c		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a6f		       88		      dey
+    295  7a6f					      REPEND
+    296  7a70		       b1 df		      lda	(__ptr),y
+    297  7a72		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a75		       88		      dey
+    295  7a75					      REPEND
+    296  7a76		       b1 df		      lda	(__ptr),y
+    297  7a78		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a7b		       88		      dey
+    295  7a7b					      REPEND
+    296  7a7c		       b1 df		      lda	(__ptr),y
+    297  7a7e		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a81		       88		      dey
+    295  7a81					      REPEND
+    296  7a82		       b1 df		      lda	(__ptr),y
+    297  7a84		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a87		       88		      dey
+    295  7a87					      REPEND
+    296  7a88		       b1 df		      lda	(__ptr),y
+    297  7a8a		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a8d		       88		      dey
+    295  7a8d					      REPEND
+    296  7a8e		       b1 df		      lda	(__ptr),y
+    297  7a90		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a93		       88		      dey
+    295  7a93					      REPEND
+    296  7a94		       b1 df		      lda	(__ptr),y
+    297  7a96		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a99		       88		      dey
+    295  7a99					      REPEND
+    296  7a9a		       b1 df		      lda	(__ptr),y
+    297  7a9c		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7a9f		       88		      dey
+    295  7a9f					      REPEND
+    296  7aa0		       b1 df		      lda	(__ptr),y
+    297  7aa2		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7aa5		       88		      dey
+    295  7aa5					      REPEND
+    296  7aa6		       b1 df		      lda	(__ptr),y
+    297  7aa8		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7aab		       88		      dey
+    295  7aab					      REPEND
+    296  7aac		       b1 df		      lda	(__ptr),y
+    297  7aae		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7ab1		       88		      dey
+    295  7ab1					      REPEND
+    296  7ab2		       b1 df		      lda	(__ptr),y
+    297  7ab4		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7ab7		       88		      dey
+    295  7ab7					      REPEND
+    296  7ab8		       b1 df		      lda	(__ptr),y
+    297  7aba		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7abd		       88		      dey
+    295  7abd					      REPEND
+    296  7abe		       b1 df		      lda	(__ptr),y
+    297  7ac0		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7ac3		       88		      dey
+    295  7ac3					      REPEND
+    296  7ac4		       b1 df		      lda	(__ptr),y
+    297  7ac6		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7ac9		       88		      dey
+    295  7ac9					      REPEND
+    296  7aca		       b1 df		      lda	(__ptr),y
+    297  7acc		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7acf		       88		      dey
+    295  7acf					      REPEND
+    296  7ad0		       b1 df		      lda	(__ptr),y
+    297  7ad2		       99 97 00 	      sta	__pieceShapeBuffer,y
+    298  7ad5		       88		      dey
+    299  7ad6					      REPEND
+    300  7ad6
+    301  7ad6							;.copyPieceGfx   lda (__ptr),y
+    302  7ad6							;		  sta __pieceShapeBuffer,y
+    303  7ad6							;		  dey
+    304  7ad6							;		  bpl .copyPieceGfx
+    305  7ad6
+    306  7ad6		       60		      rts
+    307  7ad7
+    308  7ad7							;---------------------------------------------------------------------------------------------------
+    309  7ad7
+      0  7ad7					      DEFINE_SUBROUTINE	CopyShadowROMtoRAM
+      1  7ad7		       00 0f	   BANK_CopyShadowROMtoRAM =	_CURRENT_BANK
+      2  7ad7					      SUBROUTINE
+      3  7ad7				   CopyShadowROMtoRAM
+    311  7ad7							; pass x = source bank
+    312  7ad7							; pass y = destination bank (preserved)
+    313  7ad7
+    314  7ad7		       86 98		      stx	__sourceBank
+    315  7ad9
+    316  7ad9		       a2 00		      ldx	#0
+    317  7adb		       a5 98	   .copyPage  lda	__sourceBank
+    318  7add		       85 3f		      sta	SET_BANK
+    319  7adf
+    320  7adf		       bd 00 f0 	      lda	$F000,x
+    321  7ae2		       48		      pha
+    322  7ae3		       bd 00 f1 	      lda	$F100,x
+    323  7ae6		       48		      pha
+    324  7ae7		       bd 00 f2 	      lda	$F200,x
+    325  7aea		       48		      pha
+    326  7aeb		       bd 00 f3 	      lda	$F300,x
+    327  7aee
+    328  7aee		       84 3e		      sty	SET_BANK_RAM
+    329  7af0
+    330  7af0		       9d 00 f7 	      sta	$F300+RAM_WRITE,x
+    331  7af3		       68		      pla
+    332  7af4		       9d 00 f6 	      sta	$F200+RAM_WRITE,x
+    333  7af7		       68		      pla
+    334  7af8		       9d 00 f5 	      sta	$F100+RAM_WRITE,x
+    335  7afb		       68		      pla
+    336  7afc		       9d 00 f4 	      sta	$F000+RAM_WRITE,x
+    337  7aff
+    338  7aff		       ca		      dex
+    339  7b00		       d0 d9		      bne	.copyPage
+    340  7b02		       60		      rts
+    341  7b03
+    342  7b03							;---------------------------------------------------------------------------------------------------
+    343  7b03
+      0  7b03					      DEFINE_SUBROUTINE	Reset
+      1  7b03		       00 0f	   BANK_Reset =	_CURRENT_BANK
+      2  7b03					      SUBROUTINE
+      3  7b03				   Reset
+    345  7b03
+      0  7b03					      CLEAN_START
+      1  7b03		       78		      sei
+      2  7b04		       d8		      cld
+      3  7b05
+      4  7b05		       a2 00		      ldx	#0
+      5  7b07		       8a		      txa
+      6  7b08		       a8		      tay
+      7  7b09		       ca	   .CLEAR_STACK dex
+      8  7b0a		       9a		      txs
+      9  7b0b		       48		      pha
+     10  7b0c		       d0 fb		      bne	.CLEAR_STACK
+     11  7b0e
+    347  7b0e
+    348  7b0e		       a9 92		      lda	#$92
+    349  7b10		       85 81		      sta	rnd
+    350  7b12
+    351  7b12
+    352  7b12							; Move a copy of the row bank template to the first 8 banks of RAM
+    353  7b12							; and then terminate the draw subroutine by substituting in a RTS on the last one
+    354  7b12
+    355  7b12		       a0 07		      ldy	#7
+    356  7b14		       a2 01	   .copyRowBanks ldx	#BANK_ROM_SHADOW_OF_CHESS_BITMAP
+    357  7b16		       20 d7 fa 	      jsr	CopyShadowROMtoRAM
+    358  7b19		       88		      dey
+    359  7b1a		       10 f8		      bpl	.copyRowBanks
+    360  7b1c
+    361  7b1c							; Patch the final row's "loop" to a RTS
+    362  7b1c
+    363  7b1c		       a9 96		      lda	#<SELFMOD_RTS_ON_LAST_ROW
+    364  7b1e		       85 df		      sta	__ptr
+    365  7b20		       a9 f6		      lda	#>(SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE)
+    366  7b22		       85 e0		      sta	__ptr+1
+    367  7b24
+    368  7b24
+    369  7b24		       a0 00		      ldy	#0
+    370  7b26		       a9 60		      lda	#$60	; rts
+    371  7b28
+    372  7b28							; the 'screen' is double-buffered - two sets of 8x1K banks
+    373  7b28							; we need to put an RTS on the last of both of these
+    374  7b28
+    375  7b28		       a2 07		      ldx	#7
+    376  7b2a		       86 3e		      stx	SET_BANK_RAM
+    377  7b2c		       91 df		      sta	(__ptr),y	; patch selfmod code to RTS
+    378  7b2e
+    379  7b2e		       a2 0f		      ldx	#15
+    380  7b30		       86 3e		      stx	SET_BANK_RAM
+    381  7b32		       91 df		      sta	(__ptr),y
+    382  7b34
+    383  7b34
+    384  7b34		       20 b1 f8 	      jsr	InitialiseChessboard
+    385  7b37
+    386  7b37							; Now the board is "living" in RAM (along with support code) we can do stuff with it
+    387  7b37
+    388  7b37		       a9 00		      lda	#0
+    389  7b39		       85 82		      sta	doubleBufferBase
+    390  7b3b		       85 83		      sta	drawPhase
+    391  7b3d
+    392  7b3d
+    393  7b3d		       a9 00		      lda	#%00000000
+    394  7b3f		       85 4a		      sta	CTRLPF
+    395  7b41		       85 49		      sta	COLUBK
+    396  7b43
+    397  7b43
+      0  7b43					      RESYNC
+      1  7b43
+      2  7b43		       a9 02		      lda	#%10
+      3  7b45		       85 41		      sta	VBLANK
+      4  7b47
+      5  7b47		       a2 08		      ldx	#8
+      6  7b49				   .loopResync
+      0  7b49					      VERTICAL_SYNC
+      1  7b49		       a9 0e		      lda	#%1110
+      2  7b4b		       85 42	   .VSLP1     sta	WSYNC
+      3  7b4d		       85 40		      sta	VSYNC
+      4  7b4f		       4a		      lsr
+      5  7b50		       d0 f9		      bne	.VSLP1
+      8  7b52
+      9  7b52		       a0 88		      ldy	#SCANLINES_NTSC/2 - 2
+     10  7b54		       a5 8b		      lda	Platform
+     11  7b56		       49 02		      eor	#PAL_50
+     12  7b58		       d0 02		      bne	.ntsc
+     13  7b5a		       a0 9a		      ldy	#SCANLINES_PAL/2 - 2
+     14  7b5c				   .ntsc
+     15  7b5c				   .loopWait
+     16  7b5c		       85 42		      sta	WSYNC
+     17  7b5e		       85 42		      sta	WSYNC
+     18  7b60		       88		      dey
+     19  7b61		       d0 f9		      bne	.loopWait
+     20  7b63		       ca		      dex
+     21  7b64		       d0 e3		      bne	.loopResync
+    399  7b66
+    400  7b66
+    401  7b66				   .doubleBufferLoop
+    402  7b66
+    403  7b66		       a9 0e		      lda	#%1110	; VSYNC ON
+    404  7b68		       85 42	   .loopVSync3 sta	WSYNC
+    405  7b6a		       85 40		      sta	VSYNC
+    406  7b6c		       4a		      lsr
+    407  7b6d		       d0 f9		      bne	.loopVSync3	; branch until VYSNC has been reset
+    408  7b6f
+    409  7b6f		       a0 32		      ldy	#50	;VBLANK_TIM_NTSC
+    410  7b71		       8c 96 02 	      sty	TIM64T
+    411  7b74
+    412  7b74		       20 a8 fb 	      jsr	PhasedProcessor
+    413  7b77
+    414  7b77		       85 42	   .VerticalBlank sta	WSYNC
+    415  7b79		       ad 84 02 	      lda	INTIM
+    416  7b7c		       d0 f9		      bne	.VerticalBlank
+    417  7b7e		       85 41		      sta	VBLANK
+    418  7b80
+    419  7b80		       a5 82		      lda	doubleBufferBase
+    420  7b82							;eor #8
+    421  7b82		       aa		      tax
+    422  7b83		       86 3e		      stx	SET_BANK_RAM
+    423  7b85		       20 67 f2 	      jsr	DrawRow
+    424  7b88
+    425  7b88		       a9 1a		      lda	#26
+    426  7b8a		       8d 96 02 	      sta	TIM64T
+    427  7b8d
+    428  7b8d		       a9 00		      lda	#0
+    429  7b8f		       85 4d		      sta	PF0
+    430  7b91		       85 4e		      sta	PF1
+    431  7b93		       85 4f		      sta	PF2
+    432  7b95
+    433  7b95							;jsr PhasedProcessor
+    434  7b95
+    435  7b95							; D1 VBLANK turns off beam
+    436  7b95							; It needs to be turned on 37 scanlines later
+    437  7b95
+    438  7b95		       ad 84 02    .oscan     lda	INTIM
+    439  7b98		       d0 fb		      bne	.oscan
+    440  7b9a
+    441  7b9a		       85 42		      sta	WSYNC
+    442  7b9c		       85 42		      sta	WSYNC
+    443  7b9e							;		  sta WSYNC
+    444  7b9e							;		  sta WSYNC
+    445  7b9e
+    446  7b9e		       a9 42		      lda	#%01000010	; bit6 is not required
+    447  7ba0		       85 41		      sta	VBLANK	; end of screen - enter blanking
+    448  7ba2
+    449  7ba2
+    450  7ba2
+    451  7ba2							;		  lda INPT4
+    452  7ba2							;		  bpl .ret
+    453  7ba2
+    454  7ba2							;		  jmp .RestartChessFrame
+    455  7ba2
+    456  7ba2							;.ret
+    457  7ba2
+    458  7ba2		       4c 66 fb 	      jmp	.doubleBufferLoop
+    459  7ba5
+    460  7ba5							;lda #2
+    461  7ba5							;sta VSYNC
+    462  7ba5							;lda #%01000010		  ; bit6 is not required
+    463  7ba5							;sta VBLANK			  ; end of screen - enter blanking
+    464  7ba5
+    465  7ba5				   Restart		; go here on RESET + SELECT
+    466  7ba5
+    467  7ba5		       4c 03 fb 	      jmp	Reset
+    468  7ba8
+    469  7ba8							;---------------------------------------------------------------------------------------------------
+    470  7ba8
+      0  7ba8					      DEFINE_SUBROUTINE	PhasedProcessor
+      1  7ba8		       00 0f	   BANK_PhasedProcessor =	_CURRENT_BANK
+      2  7ba8					      SUBROUTINE
+      3  7ba8				   PhasedProcessor
+    472  7ba8		       a6 83		      ldx	drawPhase
+    473  7baa		       bd b7 fb 	      lda	DrawVectorLO,x
+    474  7bad		       85 df		      sta	__ptr
+    475  7baf		       bd c5 fb 	      lda	DrawVectorHI,x
+    476  7bb2		       85 e0		      sta	__ptr+1
+    477  7bb4		       6c df 00 	      jmp	(__ptr)
+    478  7bb7
+    479  7bb7		       00 06	   MARCH      =	6
+    480  7bb7		       00 0a	   MARCH_END  =	10
+    481  7bb7
+    482  7bb7				   DrawVectorLO
+    483  7bb7		       d3		      .byte.b	<Phase0_ClearBoard_0
+    484  7bb8		       d9		      .byte.b	<Phase0_ClearBoard_1
+    485  7bb9		       e3		      .byte.b	<DrawNextPiece
+    486  7bba		       ed		      .byte.b	<FlipBuffers
+    487  7bbb		       f3		      .byte.b	<EraseStartPiece
+    488  7bbc		       fd		      .byte.b	<WriteStartPieceBlank
+    489  7bbd		       17		      .byte.b	<MarchToTargetA
+    490  7bbe		       5f		      .byte.b	<MarchB
+    491  7bbf		       79		      .byte.b	<MarchToTargetB
+    492  7bc0		       97		      .byte.b	<MarchB2
+    493  7bc1		       a3		      .byte.b	<WriteEndPieceBlank
+    494  7bc2		       ad		      .byte.b	<WriteEndPiece
+    495  7bc3		       c4		      .byte.b	<DelayIt
+    496  7bc4		       cb		      .byte.b	<Final
+    497  7bc5
+    498  7bc5				   DrawVectorHI
+    499  7bc5		       fb		      .byte.b	>Phase0_ClearBoard_0
+    500  7bc6		       fb		      .byte.b	>Phase0_ClearBoard_1
+    501  7bc7		       fb		      .byte.b	>DrawNextPiece
+    502  7bc8		       fb		      .byte.b	>FlipBuffers
+    503  7bc9		       fb		      .byte.b	>EraseStartPiece
+    504  7bca		       fb		      .byte.b	>WriteStartPieceBlank
+    505  7bcb		       fc		      .byte.b	>MarchToTargetA
+    506  7bcc		       fc		      .byte.b	>MarchB
+    507  7bcd		       fc		      .byte.b	>MarchToTargetB
+    508  7bce		       fc		      .byte.b	>MarchB2
+    509  7bcf		       fc		      .byte.b	>WriteEndPieceBlank
+    510  7bd0		       fc		      .byte.b	>WriteEndPiece
+    511  7bd1		       fc		      .byte.b	>DelayIt
+    512  7bd2		       fc		      .byte.b	>Final
+    513  7bd3
+      0  7bd3					      DEFINE_SUBROUTINE	Phase0_ClearBoard_0
+      1  7bd3		       00 0f	   BANK_Phase0_ClearBoard_0 =	_CURRENT_BANK
+      2  7bd3					      SUBROUTINE
+      3  7bd3				   Phase0_ClearBoard_0
+    515  7bd3
+    516  7bd3		       20 04 f8 	      jsr	ClearChessBitmap_PART0
+    517  7bd6		       e6 83		      inc	drawPhase
+    518  7bd8		       60		      rts
+    519  7bd9
+      0  7bd9					      DEFINE_SUBROUTINE	Phase0_ClearBoard_1
+      1  7bd9		       00 0f	   BANK_Phase0_ClearBoard_1 =	_CURRENT_BANK
+      2  7bd9					      SUBROUTINE
+      3  7bd9				   Phase0_ClearBoard_1
+    521  7bd9
+    522  7bd9		       20 1f f8 	      jsr	ClearChessBitmap_PART1
+    523  7bdc
+    524  7bdc		       a9 3f		      lda	#63
+    525  7bde		       85 80		      sta	drawPieceNumber
+    526  7be0
+    527  7be0		       e6 83		      inc	drawPhase
+    528  7be2		       60		      rts
+    529  7be3
+      0  7be3					      DEFINE_SUBROUTINE	DrawNextPiece
+      1  7be3		       00 0f	   BANK_DrawNextPiece =	_CURRENT_BANK
+      2  7be3					      SUBROUTINE
+      3  7be3				   DrawNextPiece
+    531  7be3
+    532  7be3		       20 3d f8 	      jsr	CopySinglePiece
+    533  7be6		       c6 80		      dec	drawPieceNumber
+    534  7be8		       10 02		      bpl	.incomplete
+    535  7bea
+    536  7bea		       e6 83		      inc	drawPhase
+    537  7bec		       60	   .incomplete rts
+    538  7bed
+    539  7bed							; Now we've finished drawing the screen square by square.
+    540  7bed
+      0  7bed					      DEFINE_SUBROUTINE	FlipBuffers
+      1  7bed		       00 0f	   BANK_FlipBuffers =	_CURRENT_BANK
+      2  7bed					      SUBROUTINE
+      3  7bed				   FlipBuffers
+    542  7bed
+    543  7bed		       20 7b f8 	      jsr	RandomPieceMove
+    544  7bf0		       e6 83		      inc	drawPhase
+    545  7bf2		       60		      rts
+    546  7bf3
+      0  7bf3					      DEFINE_SUBROUTINE	EraseStartPiece
+      1  7bf3		       00 0f	   BANK_EraseStartPiece =	_CURRENT_BANK
+      2  7bf3					      SUBROUTINE
+      3  7bf3				   EraseStartPiece
+    548  7bf3
+    549  7bf3		       a5 85		      lda	fromSquare
+    550  7bf5		       85 80		      sta	drawPieceNumber
+    551  7bf7		       20 3d f8 	      jsr	CopySinglePiece	; erase the existing piece
+    552  7bfa
+    553  7bfa		       e6 83		      inc	drawPhase
+    554  7bfc		       60		      rts
+    555  7bfd
+      0  7bfd					      DEFINE_SUBROUTINE	WriteStartPieceBlank
+      1  7bfd		       00 0f	   BANK_WriteStartPieceBlank =	_CURRENT_BANK
+      2  7bfd					      SUBROUTINE
+      3  7bfd				   WriteStartPieceBlank
+    557  7bfd
+    558  7bfd		       a6 85		      ldx	fromSquare
+    559  7bff		       86 80		      stx	drawPieceNumber
+    560  7c01
+    561  7c01		       a9 08		      lda	#BANK_CHESSBOARD
+    562  7c03		       85 3e		      sta	SET_BANK_RAM
+    563  7c05		       a9 00		      lda	#BLANK
+    564  7c07		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x	; put a "blank" on the board
+    565  7c0a
+    566  7c0a		       20 3d f8 	      jsr	CopySinglePiece	; now draw the 'blank' square
+    567  7c0d
+    568  7c0d		       e6 83		      inc	drawPhase
+    569  7c0f		       60		      rts
+    570  7c10
+    571  7c10		       a9 0a	   .halt      lda	#MARCH_END
+    572  7c12		       85 83		      sta	drawPhase
+    573  7c14		       4c a3 fc 	      jmp	WriteEndPieceBlank
+    574  7c17
+    575  7c17
+      0  7c17					      DEFINE_SUBROUTINE	MarchToTargetA
+      1  7c17		       00 0f	   BANK_MarchToTargetA =	_CURRENT_BANK
+      2  7c17					      SUBROUTINE
+      3  7c17				   MarchToTargetA
+    577  7c17
+    578  7c17		       a5 85		      lda	fromSquare
+    579  7c19		       c5 87		      cmp	toSquare
+    580  7c1b		       f0 f3		      beq	.halt
+    581  7c1d
+    582  7c1d		       a5 85		      lda	fromSquare
+    583  7c1f		       4a		      lsr
+    584  7c20		       4a		      lsr
+    585  7c21		       4a		      lsr
+    586  7c22		       85 8a		      sta	__fromRow
+    587  7c24		       a5 87		      lda	toSquare
+    588  7c26		       4a		      lsr
+    589  7c27		       4a		      lsr
+    590  7c28		       4a		      lsr
+    591  7c29		       c5 8a		      cmp	__fromRow
+    592  7c2b		       f0 11		      beq	rowOK
+    593  7c2d		       b0 09		      bcs	.downRow
+    594  7c2f		       a5 85		      lda	fromSquare
+    595  7c31		       e9 07		      sbc	#7
+    596  7c33		       85 85		      sta	fromSquare
+    597  7c35		       4c 3e fc 	      jmp	nowcol
+    598  7c38		       a5 85	   .downRow   lda	fromSquare
+    599  7c3a		       69 07		      adc	#7
+    600  7c3c		       85 85		      sta	fromSquare
+    601  7c3e				   rowOK
+    602  7c3e				   nowcol
+    603  7c3e
+    604  7c3e		       a5 85		      lda	fromSquare
+    605  7c40		       29 07		      and	#7
+    606  7c42		       85 8a		      sta	__fromRow
+    607  7c44		       a5 87		      lda	toSquare
+    608  7c46		       29 07		      and	#7
+    609  7c48		       c5 8a		      cmp	__fromRow
+    610  7c4a		       f0 09		      beq	colok
+    611  7c4c		       90 05		      bcc	.leftCol
+    612  7c4e		       e6 85		      inc	fromSquare
+    613  7c50		       4c 55 fc 	      jmp	colok
+    614  7c53		       c6 85	   .leftCol   dec	fromSquare
+    615  7c55				   colok
+    616  7c55
+    617  7c55
+    618  7c55
+    619  7c55		       a6 85		      ldx	fromSquare
+    620  7c57		       86 80		      stx	drawPieceNumber
+    621  7c59		       20 3d f8 	      jsr	CopySinglePiece	; erase whatever WAS there - now completely blank
+    622  7c5c
+    623  7c5c
+    624  7c5c							;lda #1
+    625  7c5c							;sta drawDelay
+    626  7c5c
+    627  7c5c		       e6 83		      inc	drawPhase
+    628  7c5e		       60		      rts
+    629  7c5f
+    630  7c5f				   MarchB
+    631  7c5f
+    632  7c5f							;		  lda drawDelay
+    633  7c5f							;		  beq go2
+    634  7c5f							;		  dec drawDelay
+    635  7c5f							;		  jmp bypass
+    636  7c5f							;go2
+    637  7c5f
+    638  7c5f		       a6 80		      ldx	drawPieceNumber
+    639  7c61
+    640  7c61		       a9 08		      lda	#BANK_CHESSBOARD
+    641  7c63		       85 3e		      sta	SET_BANK_RAM
+    642  7c65		       bd 00 10 	      lda	Chessboard,x
+    643  7c68		       85 89		      sta	lastPiece
+    644  7c6a		       a5 86		      lda	fromPiece
+    645  7c6c		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
+    646  7c6f		       20 3d f8 	      jsr	CopySinglePiece
+    647  7c72
+    648  7c72		       a9 03		      lda	#3
+    649  7c74		       85 84		      sta	drawDelay
+    650  7c76		       e6 83		      inc	drawPhase
+    651  7c78		       60		      rts
+    652  7c79
+      0  7c79					      DEFINE_SUBROUTINE	MarchToTargetB
+      1  7c79		       00 0f	   BANK_MarchToTargetB =	_CURRENT_BANK
+      2  7c79					      SUBROUTINE
+      3  7c79				   MarchToTargetB
+    654  7c79
+    655  7c79		       a5 84		      lda	drawDelay
+    656  7c7b		       f0 05		      beq	gogogo
+    657  7c7d		       c6 84		      dec	drawDelay
+    658  7c7f		       4c 96 fc 	      jmp	bypass
+    659  7c82				   gogogo
+    660  7c82
+    661  7c82		       a6 85		      ldx	fromSquare
+    662  7c84		       86 80		      stx	drawPieceNumber
+    663  7c86		       20 3d f8 	      jsr	CopySinglePiece	; undraw - now blank
+    664  7c89
+    665  7c89		       a9 08		      lda	#BANK_CHESSBOARD
+    666  7c8b		       85 3e		      sta	SET_BANK_RAM
+    667  7c8d		       a6 85		      ldx	fromSquare
+    668  7c8f		       a5 89		      lda	lastPiece
+    669  7c91		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
+    670  7c94
+    671  7c94		       e6 83		      inc	drawPhase
+    672  7c96		       60	   bypass     rts
+    673  7c97
+    674  7c97
+      0  7c97					      DEFINE_SUBROUTINE	MarchB2
+      1  7c97		       00 0f	   BANK_MarchB2 =	_CURRENT_BANK
+      2  7c97					      SUBROUTINE
+      3  7c97				   MarchB2
+    676  7c97
+    677  7c97		       a5 85		      lda	fromSquare
+    678  7c99		       85 80		      sta	drawPieceNumber
+    679  7c9b		       20 3d f8 	      jsr	CopySinglePiece	; restore original
+    680  7c9e
+    681  7c9e		       a9 06		      lda	#MARCH
+    682  7ca0		       85 83		      sta	drawPhase
+    683  7ca2		       60		      rts
+    684  7ca3
+    685  7ca3
+      0  7ca3					      DEFINE_SUBROUTINE	WriteEndPieceBlank
+      1  7ca3		       00 0f	   BANK_WriteEndPieceBlank =	_CURRENT_BANK
+      2  7ca3					      SUBROUTINE
+      3  7ca3				   WriteEndPieceBlank
+    687  7ca3
+    688  7ca3		       a6 87		      ldx	toSquare
+    689  7ca5		       86 80		      stx	drawPieceNumber
+    690  7ca7		       20 3d f8 	      jsr	CopySinglePiece	; now erase the destination square
+    691  7caa
+    692  7caa		       e6 83		      inc	drawPhase
+    693  7cac		       60		      rts
+    694  7cad
+      0  7cad					      DEFINE_SUBROUTINE	WriteEndPiece
+      1  7cad		       00 0f	   BANK_WriteEndPiece =	_CURRENT_BANK
+      2  7cad					      SUBROUTINE
+      3  7cad				   WriteEndPiece
+    696  7cad
+    697  7cad		       a6 87		      ldx	toSquare
+    698  7caf		       86 80		      stx	drawPieceNumber
+    699  7cb1
+    700  7cb1		       a9 08		      lda	#BANK_CHESSBOARD
+    701  7cb3		       85 3e		      sta	SET_BANK_RAM
+    702  7cb5		       a5 86		      lda	fromPiece
+    703  7cb7		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x	; put a blank on the board
+    704  7cba
+    705  7cba		       20 3d f8 	      jsr	CopySinglePiece
+    706  7cbd
+    707  7cbd		       a9 01		      lda	#1
+    708  7cbf		       85 84		      sta	drawDelay
+    709  7cc1		       e6 83		      inc	drawPhase
+    710  7cc3		       60		      rts
+    711  7cc4
+      0  7cc4					      DEFINE_SUBROUTINE	DelayIt
+      1  7cc4		       00 0f	   BANK_DelayIt =	_CURRENT_BANK
+      2  7cc4					      SUBROUTINE
+      3  7cc4				   DelayIt
+    713  7cc4
+    714  7cc4		       c6 84		      dec	drawDelay
+    715  7cc6		       d0 02		      bne	.waiting
+    716  7cc8		       e6 83		      inc	drawPhase
+    717  7cca		       60	   .waiting   rts
+    718  7ccb
+      0  7ccb					      DEFINE_SUBROUTINE	Final
+      1  7ccb		       00 0f	   BANK_Final =	_CURRENT_BANK
+      2  7ccb					      SUBROUTINE
+      3  7ccb				   Final
+    720  7ccb
+    721  7ccb		       a9 03		      lda	#3
+    722  7ccd		       85 83		      sta	drawPhase
+    723  7ccf		       60		      rts
+    724  7cd0
+    725  7cd0							;---------------------------------------------------------------------------
+    726  7cd0
+ FREE BYTES IN FIXED BANK =  $320
+    727  7cd0					      ECHO	"FREE BYTES IN FIXED BANK = ", $FFF0 - *
+    728  7cd0
+    729  7cd0							;---------------------------------------------------------------------------
+    730  7cd0							; The reset vectors
+    731  7cd0							; these must live in the fixed bank (last 2K of any ROM image in TigerVision)
+    732  7cd0
+    733  7ff4 ????				      SEG	PlusCart
+    734  7ff0					      ORG	FIXED_BANK + $7F0
+    735  7ff0					      RORG	$7FF0
+    736  7ff0		       7f f0	   PLUSCART_IO =	*
+    737  7ff0		       00 aa	   PLUS0      =	%10101010
+    738  7ff0		       00 19	   PLUS1      =	%00011001
+    739  7ff0		       00 af	   PLUS2      =	%10101111
+    740  7ff0		       00 36	   PLUS3      =	%00110110
+    741  7ff0		       aa 19 af 36	      .byte.b	PLUS0,PLUS1,PLUS2,PLUS3
+    742  7ff4
+    743  8000 ????				      SEG	InterruptVectors
+    744  7ffc					      ORG	FIXED_BANK + $7FC
+    745  7ffc					      RORG	$7ffC
+    746  7ffc
+    747  7ffc							;		 .word Reset	       ; NMI	    (not used)
+    748  7ffc		       03 fb		      .word.w	Reset	; RESET
+    749  7ffe		       03 fb		      .word.w	Reset	; IRQ	      (not used)
+    750  8000
+    751  8000							;---------------------------------------------------------------------------
 ------- FILE ./chess.asm
     447  8000
     448  8000							;END
