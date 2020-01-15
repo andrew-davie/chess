@@ -1279,7 +1279,7 @@
     423 U3400							;##############################################################################
     424 U3400							;------------------------------------------------------------------------------
     425 U3400
-    426 U3400		       00 75	   RND_EOR_VAL =	$75	;B4
+    426 U3400		       00 fe	   RND_EOR_VAL =	$FE	;B4
     427 U3400
     428 U3400					      MAC	next_random
     429 U3400					      lda	rnd
@@ -2910,7 +2910,7 @@
       2  2800					      SUBROUTINE
       3  2800				   WHITE_QUEEN_on_BLACK_SQUARE_0
       3  2800		       00 00 00 50*	      .byte.b	$00,$00,$00,$50,$50,$50,$00,$00,$00,$50,$50,$50,$f0,$f0,$f0,$f0,$f0,$f0,$e0,$40,$e0,$e0,$e0,$e0	;PF0
-      4  2818		       00 00 00 80*	      .byte.b	$00,$00,$00,$80,$80,$80,$00,$00,$80,$80,$00,$80,$80,$00,$80,$80,$00,$80,$00,$00,$00,$00,$00,$00	;PF1
+      4  2818		       00 00 00 80*	      .byte.b	$00,$00,$00,$80,$80,$80,$00,$00,$80,$80,$00,$80,$80,$00,$80,$80,$00,$00,$00,$00,$00,$00,$00,$00	;PF1
       5  2830		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_QUEEN_on_BLACK_SQUARE_1.asm LEVEL 4 PASS 2
@@ -2922,7 +2922,7 @@
       2  2848					      SUBROUTINE
       3  2848				   WHITE_QUEEN_on_BLACK_SQUARE_1
       3  2848		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
-      4  2860		       00 00 00 54*	      .byte.b	$00,$00,$00,$54,$54,$54,$00,$00,$04,$54,$50,$54,$7c,$78,$7c,$7c,$78,$7c,$38,$10,$38,$38,$38,$38	;PF1
+      4  2860		       00 00 00 54*	      .byte.b	$00,$00,$00,$54,$54,$54,$00,$00,$04,$54,$50,$54,$7c,$78,$7c,$7c,$78,$78,$38,$10,$38,$38,$38,$38	;PF1
       5  2878		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_QUEEN_on_BLACK_SQUARE_2.asm LEVEL 4 PASS 2
@@ -2935,7 +2935,7 @@
       3  2890				   WHITE_QUEEN_on_BLACK_SQUARE_2
       3  2890		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
       4  28a8		       00 00 00 02*	      .byte.b	$00,$00,$00,$02,$02,$02,$00,$00,$00,$02,$02,$02,$03,$03,$03,$03,$03,$03,$01,$00,$01,$01,$01,$01	;PF1
-      5  28c0		       00 00 00 05*	      .byte.b	$00,$00,$00,$05,$05,$05,$00,$00,$04,$05,$01,$05,$07,$03,$07,$07,$03,$07,$03,$01,$03,$03,$03,$03	;PF2
+      5  28c0		       00 00 00 05*	      .byte.b	$00,$00,$00,$05,$05,$05,$00,$00,$04,$05,$01,$05,$07,$03,$07,$07,$03,$03,$03,$01,$03,$03,$03,$03	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_QUEEN_on_BLACK_SQUARE_3.asm LEVEL 4 PASS 2
       0  28d8					      include	"gfx/WHITE_QUEEN_on_BLACK_SQUARE_3.asm"
@@ -2951,7 +2951,7 @@
       3  2900				   WHITE_QUEEN_on_BLACK_SQUARE_3
       3  2900		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF0
       4  2918		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF1
-      5  2930		       00 00 00 a8*	      .byte.b	$00,$00,$00,$a8,$a8,$a8,$00,$00,$80,$a8,$28,$a8,$f8,$78,$f8,$f8,$78,$f8,$70,$20,$70,$70,$70,$70	;PF2
+      5  2930		       00 00 00 a8*	      .byte.b	$00,$00,$00,$a8,$a8,$a8,$00,$00,$80,$a8,$28,$a8,$f8,$78,$f8,$f8,$78,$78,$70,$20,$70,$70,$70,$70	;PF2
 ------- FILE piece_graphics.asm
 ------- FILE gfx/WHITE_KING_on_BLACK_SQUARE_0.asm LEVEL 4 PASS 2
       0  2948					      include	"gfx/WHITE_KING_on_BLACK_SQUARE_0.asm"
@@ -4286,7 +4286,7 @@
      10  4150				   ORIGIN     SET	FIXED_BANK
      11  4150
       0  4150					      NEWBANK	THE_FIXED_BANK
-      1  7cd0 ????				      SEG	THE_FIXED_BANK
+      1  7cae ????				      SEG	THE_FIXED_BANK
       2  7800					      ORG	ORIGIN
       3  7800					      RORG	$F000
       4  7800				   BANK_START SET	*
@@ -4420,7 +4420,7 @@
       1  787f		       a5 81		      lda	rnd
       2  7881		       4a		      lsr
       3  7882		       90 02		      bcc	.skipEOR
-      4  7884		       49 75		      eor	#RND_EOR_VAL
+      4  7884		       49 fe		      eor	#RND_EOR_VAL
       5  7886		       85 81	   .skipEOR   sta	rnd
     101  7888		       aa		      tax
     102  7889		       e8	   .nextX     inx
@@ -4438,7 +4438,7 @@
       1  7895		       a5 81		      lda	rnd
       2  7897		       4a		      lsr
       3  7898		       90 02		      bcc	.skipEOR
-      4  789a		       49 75		      eor	#RND_EOR_VAL
+      4  789a		       49 fe		      eor	#RND_EOR_VAL
       5  789c		       85 81	   .skipEOR   sta	rnd
     114  789e		       a8		      tay
     115  789f		       c8	   .nextY     iny
@@ -4981,7 +4981,7 @@
      10  7b0c		       d0 fb		      bne	.CLEAR_STACK
      11  7b0e
     347  7b0e
-    348  7b0e		       a9 92		      lda	#$92
+    348  7b0e		       a9 97		      lda	#$97
     349  7b10		       85 81		      sta	rnd
     350  7b12
     351  7b12
@@ -4996,464 +4996,444 @@
     360  7b1c
     361  7b1c							; Patch the final row's "loop" to a RTS
     362  7b1c
-    363  7b1c		       a9 96		      lda	#<SELFMOD_RTS_ON_LAST_ROW
-    364  7b1e		       85 df		      sta	__ptr
-    365  7b20		       a9 f6		      lda	#>(SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE)
-    366  7b22		       85 e0		      sta	__ptr+1
-    367  7b24
-    368  7b24
-    369  7b24		       a0 00		      ldy	#0
-    370  7b26		       a9 60		      lda	#$60	; rts
+    363  7b1c		       a2 07		      ldx	#7
+    364  7b1e		       86 3e		      stx	SET_BANK_RAM
+    365  7b20		       a9 60		      lda	#$60	; rts
+    366  7b22		       8d 96 f6 	      sta	SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE
+    367  7b25
+    368  7b25		       20 b1 f8 	      jsr	InitialiseChessboard
+    369  7b28
+    370  7b28							; Now the board is "living" in RAM (along with support code) we can do stuff with it
     371  7b28
-    372  7b28							; the 'screen' is double-buffered - two sets of 8x1K banks
-    373  7b28							; we need to put an RTS on the last of both of these
-    374  7b28
-    375  7b28		       a2 07		      ldx	#7
-    376  7b2a		       86 3e		      stx	SET_BANK_RAM
-    377  7b2c		       91 df		      sta	(__ptr),y	; patch selfmod code to RTS
-    378  7b2e
-    379  7b2e		       a2 0f		      ldx	#15
-    380  7b30		       86 3e		      stx	SET_BANK_RAM
-    381  7b32		       91 df		      sta	(__ptr),y
-    382  7b34
-    383  7b34
-    384  7b34		       20 b1 f8 	      jsr	InitialiseChessboard
-    385  7b37
-    386  7b37							; Now the board is "living" in RAM (along with support code) we can do stuff with it
-    387  7b37
-    388  7b37		       a9 00		      lda	#0
-    389  7b39		       85 82		      sta	doubleBufferBase
-    390  7b3b		       85 83		      sta	drawPhase
-    391  7b3d
-    392  7b3d
-    393  7b3d		       a9 00		      lda	#%00000000
-    394  7b3f		       85 4a		      sta	CTRLPF
-    395  7b41		       85 49		      sta	COLUBK
-    396  7b43
-    397  7b43
-      0  7b43					      RESYNC
-      1  7b43
-      2  7b43		       a9 02		      lda	#%10
-      3  7b45		       85 41		      sta	VBLANK
-      4  7b47
-      5  7b47		       a2 08		      ldx	#8
-      6  7b49				   .loopResync
-      0  7b49					      VERTICAL_SYNC
-      1  7b49		       a9 0e		      lda	#%1110
-      2  7b4b		       85 42	   .VSLP1     sta	WSYNC
-      3  7b4d		       85 40		      sta	VSYNC
-      4  7b4f		       4a		      lsr
-      5  7b50		       d0 f9		      bne	.VSLP1
-      8  7b52
-      9  7b52		       a0 88		      ldy	#SCANLINES_NTSC/2 - 2
-     10  7b54		       a5 8b		      lda	Platform
-     11  7b56		       49 02		      eor	#PAL_50
-     12  7b58		       d0 02		      bne	.ntsc
-     13  7b5a		       a0 9a		      ldy	#SCANLINES_PAL/2 - 2
-     14  7b5c				   .ntsc
-     15  7b5c				   .loopWait
-     16  7b5c		       85 42		      sta	WSYNC
-     17  7b5e		       85 42		      sta	WSYNC
-     18  7b60		       88		      dey
-     19  7b61		       d0 f9		      bne	.loopWait
-     20  7b63		       ca		      dex
-     21  7b64		       d0 e3		      bne	.loopResync
-    399  7b66
-    400  7b66
-    401  7b66				   .doubleBufferLoop
-    402  7b66
-    403  7b66		       a9 0e		      lda	#%1110	; VSYNC ON
-    404  7b68		       85 42	   .loopVSync3 sta	WSYNC
-    405  7b6a		       85 40		      sta	VSYNC
-    406  7b6c		       4a		      lsr
-    407  7b6d		       d0 f9		      bne	.loopVSync3	; branch until VYSNC has been reset
-    408  7b6f
-    409  7b6f		       a0 32		      ldy	#50	;VBLANK_TIM_NTSC
-    410  7b71		       8c 96 02 	      sty	TIM64T
-    411  7b74
-    412  7b74		       20 a8 fb 	      jsr	PhasedProcessor
-    413  7b77
-    414  7b77		       85 42	   .VerticalBlank sta	WSYNC
-    415  7b79		       ad 84 02 	      lda	INTIM
-    416  7b7c		       d0 f9		      bne	.VerticalBlank
-    417  7b7e		       85 41		      sta	VBLANK
-    418  7b80
-    419  7b80		       a5 82		      lda	doubleBufferBase
-    420  7b82							;eor #8
-    421  7b82		       aa		      tax
-    422  7b83		       86 3e		      stx	SET_BANK_RAM
-    423  7b85		       20 67 f2 	      jsr	DrawRow
-    424  7b88
-    425  7b88		       a9 1a		      lda	#26
-    426  7b8a		       8d 96 02 	      sta	TIM64T
-    427  7b8d
-    428  7b8d		       a9 00		      lda	#0
-    429  7b8f		       85 4d		      sta	PF0
-    430  7b91		       85 4e		      sta	PF1
-    431  7b93		       85 4f		      sta	PF2
-    432  7b95
-    433  7b95							;jsr PhasedProcessor
-    434  7b95
-    435  7b95							; D1 VBLANK turns off beam
-    436  7b95							; It needs to be turned on 37 scanlines later
-    437  7b95
-    438  7b95		       ad 84 02    .oscan     lda	INTIM
-    439  7b98		       d0 fb		      bne	.oscan
-    440  7b9a
-    441  7b9a		       85 42		      sta	WSYNC
-    442  7b9c		       85 42		      sta	WSYNC
-    443  7b9e							;		  sta WSYNC
-    444  7b9e							;		  sta WSYNC
-    445  7b9e
-    446  7b9e		       a9 42		      lda	#%01000010	; bit6 is not required
-    447  7ba0		       85 41		      sta	VBLANK	; end of screen - enter blanking
-    448  7ba2
-    449  7ba2
-    450  7ba2
-    451  7ba2							;		  lda INPT4
-    452  7ba2							;		  bpl .ret
-    453  7ba2
-    454  7ba2							;		  jmp .RestartChessFrame
-    455  7ba2
-    456  7ba2							;.ret
-    457  7ba2
-    458  7ba2		       4c 66 fb 	      jmp	.doubleBufferLoop
-    459  7ba5
-    460  7ba5							;lda #2
-    461  7ba5							;sta VSYNC
-    462  7ba5							;lda #%01000010		  ; bit6 is not required
-    463  7ba5							;sta VBLANK			  ; end of screen - enter blanking
-    464  7ba5
-    465  7ba5				   Restart		; go here on RESET + SELECT
-    466  7ba5
-    467  7ba5		       4c 03 fb 	      jmp	Reset
-    468  7ba8
-    469  7ba8							;---------------------------------------------------------------------------------------------------
-    470  7ba8
-      0  7ba8					      DEFINE_SUBROUTINE	PhasedProcessor
-      1  7ba8		       00 0f	   BANK_PhasedProcessor =	_CURRENT_BANK
-      2  7ba8					      SUBROUTINE
-      3  7ba8				   PhasedProcessor
-    472  7ba8		       a6 83		      ldx	drawPhase
-    473  7baa		       bd b7 fb 	      lda	DrawVectorLO,x
-    474  7bad		       85 df		      sta	__ptr
-    475  7baf		       bd c5 fb 	      lda	DrawVectorHI,x
-    476  7bb2		       85 e0		      sta	__ptr+1
-    477  7bb4		       6c df 00 	      jmp	(__ptr)
-    478  7bb7
-    479  7bb7		       00 06	   MARCH      =	6
-    480  7bb7		       00 0a	   MARCH_END  =	10
-    481  7bb7
-    482  7bb7				   DrawVectorLO
-    483  7bb7		       d3		      .byte.b	<Phase0_ClearBoard_0
-    484  7bb8		       d9		      .byte.b	<Phase0_ClearBoard_1
-    485  7bb9		       e3		      .byte.b	<DrawNextPiece
-    486  7bba		       ed		      .byte.b	<FlipBuffers
-    487  7bbb		       f3		      .byte.b	<EraseStartPiece
-    488  7bbc		       fd		      .byte.b	<WriteStartPieceBlank
-    489  7bbd		       17		      .byte.b	<MarchToTargetA
-    490  7bbe		       5f		      .byte.b	<MarchB
-    491  7bbf		       79		      .byte.b	<MarchToTargetB
-    492  7bc0		       97		      .byte.b	<MarchB2
-    493  7bc1		       a3		      .byte.b	<WriteEndPieceBlank
-    494  7bc2		       ad		      .byte.b	<WriteEndPiece
-    495  7bc3		       c4		      .byte.b	<DelayIt
-    496  7bc4		       cb		      .byte.b	<Final
-    497  7bc5
-    498  7bc5				   DrawVectorHI
-    499  7bc5		       fb		      .byte.b	>Phase0_ClearBoard_0
-    500  7bc6		       fb		      .byte.b	>Phase0_ClearBoard_1
-    501  7bc7		       fb		      .byte.b	>DrawNextPiece
-    502  7bc8		       fb		      .byte.b	>FlipBuffers
-    503  7bc9		       fb		      .byte.b	>EraseStartPiece
-    504  7bca		       fb		      .byte.b	>WriteStartPieceBlank
-    505  7bcb		       fc		      .byte.b	>MarchToTargetA
-    506  7bcc		       fc		      .byte.b	>MarchB
-    507  7bcd		       fc		      .byte.b	>MarchToTargetB
-    508  7bce		       fc		      .byte.b	>MarchB2
-    509  7bcf		       fc		      .byte.b	>WriteEndPieceBlank
-    510  7bd0		       fc		      .byte.b	>WriteEndPiece
-    511  7bd1		       fc		      .byte.b	>DelayIt
-    512  7bd2		       fc		      .byte.b	>Final
-    513  7bd3
-      0  7bd3					      DEFINE_SUBROUTINE	Phase0_ClearBoard_0
-      1  7bd3		       00 0f	   BANK_Phase0_ClearBoard_0 =	_CURRENT_BANK
-      2  7bd3					      SUBROUTINE
-      3  7bd3				   Phase0_ClearBoard_0
-    515  7bd3
-    516  7bd3		       20 04 f8 	      jsr	ClearChessBitmap_PART0
-    517  7bd6		       e6 83		      inc	drawPhase
-    518  7bd8		       60		      rts
-    519  7bd9
-      0  7bd9					      DEFINE_SUBROUTINE	Phase0_ClearBoard_1
-      1  7bd9		       00 0f	   BANK_Phase0_ClearBoard_1 =	_CURRENT_BANK
-      2  7bd9					      SUBROUTINE
-      3  7bd9				   Phase0_ClearBoard_1
-    521  7bd9
-    522  7bd9		       20 1f f8 	      jsr	ClearChessBitmap_PART1
-    523  7bdc
-    524  7bdc		       a9 3f		      lda	#63
-    525  7bde		       85 80		      sta	drawPieceNumber
-    526  7be0
-    527  7be0		       e6 83		      inc	drawPhase
-    528  7be2		       60		      rts
-    529  7be3
-      0  7be3					      DEFINE_SUBROUTINE	DrawNextPiece
-      1  7be3		       00 0f	   BANK_DrawNextPiece =	_CURRENT_BANK
-      2  7be3					      SUBROUTINE
-      3  7be3				   DrawNextPiece
-    531  7be3
-    532  7be3		       20 3d f8 	      jsr	CopySinglePiece
-    533  7be6		       c6 80		      dec	drawPieceNumber
-    534  7be8		       10 02		      bpl	.incomplete
-    535  7bea
-    536  7bea		       e6 83		      inc	drawPhase
-    537  7bec		       60	   .incomplete rts
-    538  7bed
-    539  7bed							; Now we've finished drawing the screen square by square.
-    540  7bed
-      0  7bed					      DEFINE_SUBROUTINE	FlipBuffers
-      1  7bed		       00 0f	   BANK_FlipBuffers =	_CURRENT_BANK
-      2  7bed					      SUBROUTINE
-      3  7bed				   FlipBuffers
-    542  7bed
-    543  7bed		       20 7b f8 	      jsr	RandomPieceMove
-    544  7bf0		       e6 83		      inc	drawPhase
-    545  7bf2		       60		      rts
-    546  7bf3
-      0  7bf3					      DEFINE_SUBROUTINE	EraseStartPiece
-      1  7bf3		       00 0f	   BANK_EraseStartPiece =	_CURRENT_BANK
-      2  7bf3					      SUBROUTINE
-      3  7bf3				   EraseStartPiece
-    548  7bf3
-    549  7bf3		       a5 85		      lda	fromSquare
-    550  7bf5		       85 80		      sta	drawPieceNumber
-    551  7bf7		       20 3d f8 	      jsr	CopySinglePiece	; erase the existing piece
-    552  7bfa
-    553  7bfa		       e6 83		      inc	drawPhase
-    554  7bfc		       60		      rts
-    555  7bfd
-      0  7bfd					      DEFINE_SUBROUTINE	WriteStartPieceBlank
-      1  7bfd		       00 0f	   BANK_WriteStartPieceBlank =	_CURRENT_BANK
-      2  7bfd					      SUBROUTINE
-      3  7bfd				   WriteStartPieceBlank
-    557  7bfd
-    558  7bfd		       a6 85		      ldx	fromSquare
-    559  7bff		       86 80		      stx	drawPieceNumber
-    560  7c01
-    561  7c01		       a9 08		      lda	#BANK_CHESSBOARD
-    562  7c03		       85 3e		      sta	SET_BANK_RAM
-    563  7c05		       a9 00		      lda	#BLANK
-    564  7c07		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x	; put a "blank" on the board
-    565  7c0a
-    566  7c0a		       20 3d f8 	      jsr	CopySinglePiece	; now draw the 'blank' square
-    567  7c0d
-    568  7c0d		       e6 83		      inc	drawPhase
-    569  7c0f		       60		      rts
-    570  7c10
-    571  7c10		       a9 0a	   .halt      lda	#MARCH_END
-    572  7c12		       85 83		      sta	drawPhase
-    573  7c14		       4c a3 fc 	      jmp	WriteEndPieceBlank
-    574  7c17
-    575  7c17
-      0  7c17					      DEFINE_SUBROUTINE	MarchToTargetA
-      1  7c17		       00 0f	   BANK_MarchToTargetA =	_CURRENT_BANK
-      2  7c17					      SUBROUTINE
-      3  7c17				   MarchToTargetA
-    577  7c17
-    578  7c17		       a5 85		      lda	fromSquare
-    579  7c19		       c5 87		      cmp	toSquare
-    580  7c1b		       f0 f3		      beq	.halt
-    581  7c1d
-    582  7c1d		       a5 85		      lda	fromSquare
-    583  7c1f		       4a		      lsr
-    584  7c20		       4a		      lsr
-    585  7c21		       4a		      lsr
-    586  7c22		       85 8a		      sta	__fromRow
-    587  7c24		       a5 87		      lda	toSquare
-    588  7c26		       4a		      lsr
-    589  7c27		       4a		      lsr
-    590  7c28		       4a		      lsr
-    591  7c29		       c5 8a		      cmp	__fromRow
-    592  7c2b		       f0 11		      beq	rowOK
-    593  7c2d		       b0 09		      bcs	.downRow
-    594  7c2f		       a5 85		      lda	fromSquare
-    595  7c31		       e9 07		      sbc	#7
-    596  7c33		       85 85		      sta	fromSquare
-    597  7c35		       4c 3e fc 	      jmp	nowcol
-    598  7c38		       a5 85	   .downRow   lda	fromSquare
-    599  7c3a		       69 07		      adc	#7
-    600  7c3c		       85 85		      sta	fromSquare
-    601  7c3e				   rowOK
-    602  7c3e				   nowcol
-    603  7c3e
-    604  7c3e		       a5 85		      lda	fromSquare
-    605  7c40		       29 07		      and	#7
-    606  7c42		       85 8a		      sta	__fromRow
-    607  7c44		       a5 87		      lda	toSquare
-    608  7c46		       29 07		      and	#7
-    609  7c48		       c5 8a		      cmp	__fromRow
-    610  7c4a		       f0 09		      beq	colok
-    611  7c4c		       90 05		      bcc	.leftCol
-    612  7c4e		       e6 85		      inc	fromSquare
-    613  7c50		       4c 55 fc 	      jmp	colok
-    614  7c53		       c6 85	   .leftCol   dec	fromSquare
-    615  7c55				   colok
-    616  7c55
-    617  7c55
-    618  7c55
-    619  7c55		       a6 85		      ldx	fromSquare
-    620  7c57		       86 80		      stx	drawPieceNumber
-    621  7c59		       20 3d f8 	      jsr	CopySinglePiece	; erase whatever WAS there - now completely blank
-    622  7c5c
-    623  7c5c
-    624  7c5c							;lda #1
-    625  7c5c							;sta drawDelay
-    626  7c5c
-    627  7c5c		       e6 83		      inc	drawPhase
-    628  7c5e		       60		      rts
-    629  7c5f
-    630  7c5f				   MarchB
-    631  7c5f
-    632  7c5f							;		  lda drawDelay
-    633  7c5f							;		  beq go2
-    634  7c5f							;		  dec drawDelay
-    635  7c5f							;		  jmp bypass
-    636  7c5f							;go2
-    637  7c5f
-    638  7c5f		       a6 80		      ldx	drawPieceNumber
-    639  7c61
-    640  7c61		       a9 08		      lda	#BANK_CHESSBOARD
-    641  7c63		       85 3e		      sta	SET_BANK_RAM
-    642  7c65		       bd 00 10 	      lda	Chessboard,x
-    643  7c68		       85 89		      sta	lastPiece
-    644  7c6a		       a5 86		      lda	fromPiece
-    645  7c6c		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
-    646  7c6f		       20 3d f8 	      jsr	CopySinglePiece
-    647  7c72
-    648  7c72		       a9 03		      lda	#3
-    649  7c74		       85 84		      sta	drawDelay
-    650  7c76		       e6 83		      inc	drawPhase
-    651  7c78		       60		      rts
-    652  7c79
-      0  7c79					      DEFINE_SUBROUTINE	MarchToTargetB
-      1  7c79		       00 0f	   BANK_MarchToTargetB =	_CURRENT_BANK
-      2  7c79					      SUBROUTINE
-      3  7c79				   MarchToTargetB
-    654  7c79
-    655  7c79		       a5 84		      lda	drawDelay
-    656  7c7b		       f0 05		      beq	gogogo
-    657  7c7d		       c6 84		      dec	drawDelay
-    658  7c7f		       4c 96 fc 	      jmp	bypass
-    659  7c82				   gogogo
-    660  7c82
-    661  7c82		       a6 85		      ldx	fromSquare
-    662  7c84		       86 80		      stx	drawPieceNumber
-    663  7c86		       20 3d f8 	      jsr	CopySinglePiece	; undraw - now blank
-    664  7c89
-    665  7c89		       a9 08		      lda	#BANK_CHESSBOARD
-    666  7c8b		       85 3e		      sta	SET_BANK_RAM
-    667  7c8d		       a6 85		      ldx	fromSquare
-    668  7c8f		       a5 89		      lda	lastPiece
-    669  7c91		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x
-    670  7c94
-    671  7c94		       e6 83		      inc	drawPhase
-    672  7c96		       60	   bypass     rts
-    673  7c97
-    674  7c97
-      0  7c97					      DEFINE_SUBROUTINE	MarchB2
-      1  7c97		       00 0f	   BANK_MarchB2 =	_CURRENT_BANK
-      2  7c97					      SUBROUTINE
-      3  7c97				   MarchB2
-    676  7c97
-    677  7c97		       a5 85		      lda	fromSquare
-    678  7c99		       85 80		      sta	drawPieceNumber
-    679  7c9b		       20 3d f8 	      jsr	CopySinglePiece	; restore original
-    680  7c9e
-    681  7c9e		       a9 06		      lda	#MARCH
-    682  7ca0		       85 83		      sta	drawPhase
-    683  7ca2		       60		      rts
-    684  7ca3
-    685  7ca3
-      0  7ca3					      DEFINE_SUBROUTINE	WriteEndPieceBlank
-      1  7ca3		       00 0f	   BANK_WriteEndPieceBlank =	_CURRENT_BANK
-      2  7ca3					      SUBROUTINE
-      3  7ca3				   WriteEndPieceBlank
-    687  7ca3
-    688  7ca3		       a6 87		      ldx	toSquare
-    689  7ca5		       86 80		      stx	drawPieceNumber
-    690  7ca7		       20 3d f8 	      jsr	CopySinglePiece	; now erase the destination square
-    691  7caa
-    692  7caa		       e6 83		      inc	drawPhase
-    693  7cac		       60		      rts
-    694  7cad
-      0  7cad					      DEFINE_SUBROUTINE	WriteEndPiece
-      1  7cad		       00 0f	   BANK_WriteEndPiece =	_CURRENT_BANK
-      2  7cad					      SUBROUTINE
-      3  7cad				   WriteEndPiece
-    696  7cad
-    697  7cad		       a6 87		      ldx	toSquare
-    698  7caf		       86 80		      stx	drawPieceNumber
-    699  7cb1
-    700  7cb1		       a9 08		      lda	#BANK_CHESSBOARD
-    701  7cb3		       85 3e		      sta	SET_BANK_RAM
-    702  7cb5		       a5 86		      lda	fromPiece
-    703  7cb7		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x	; put a blank on the board
-    704  7cba
-    705  7cba		       20 3d f8 	      jsr	CopySinglePiece
-    706  7cbd
-    707  7cbd		       a9 01		      lda	#1
-    708  7cbf		       85 84		      sta	drawDelay
-    709  7cc1		       e6 83		      inc	drawPhase
-    710  7cc3		       60		      rts
-    711  7cc4
-      0  7cc4					      DEFINE_SUBROUTINE	DelayIt
-      1  7cc4		       00 0f	   BANK_DelayIt =	_CURRENT_BANK
-      2  7cc4					      SUBROUTINE
-      3  7cc4				   DelayIt
-    713  7cc4
-    714  7cc4		       c6 84		      dec	drawDelay
-    715  7cc6		       d0 02		      bne	.waiting
-    716  7cc8		       e6 83		      inc	drawPhase
-    717  7cca		       60	   .waiting   rts
-    718  7ccb
-      0  7ccb					      DEFINE_SUBROUTINE	Final
-      1  7ccb		       00 0f	   BANK_Final =	_CURRENT_BANK
-      2  7ccb					      SUBROUTINE
-      3  7ccb				   Final
-    720  7ccb
-    721  7ccb		       a9 03		      lda	#3
-    722  7ccd		       85 83		      sta	drawPhase
-    723  7ccf		       60		      rts
-    724  7cd0
-    725  7cd0							;---------------------------------------------------------------------------
-    726  7cd0
- FREE BYTES IN FIXED BANK =  $320
-    727  7cd0					      ECHO	"FREE BYTES IN FIXED BANK = ", $FFF0 - *
-    728  7cd0
-    729  7cd0							;---------------------------------------------------------------------------
-    730  7cd0							; The reset vectors
-    731  7cd0							; these must live in the fixed bank (last 2K of any ROM image in TigerVision)
-    732  7cd0
-    733  7ff4 ????				      SEG	PlusCart
-    734  7ff0					      ORG	FIXED_BANK + $7F0
-    735  7ff0					      RORG	$7FF0
-    736  7ff0		       7f f0	   PLUSCART_IO =	*
-    737  7ff0		       00 aa	   PLUS0      =	%10101010
-    738  7ff0		       00 19	   PLUS1      =	%00011001
-    739  7ff0		       00 af	   PLUS2      =	%10101111
-    740  7ff0		       00 36	   PLUS3      =	%00110110
-    741  7ff0		       aa 19 af 36	      .byte.b	PLUS0,PLUS1,PLUS2,PLUS3
-    742  7ff4
-    743  8000 ????				      SEG	InterruptVectors
-    744  7ffc					      ORG	FIXED_BANK + $7FC
-    745  7ffc					      RORG	$7ffC
-    746  7ffc
-    747  7ffc							;		 .word Reset	       ; NMI	    (not used)
-    748  7ffc		       03 fb		      .word.w	Reset	; RESET
-    749  7ffe		       03 fb		      .word.w	Reset	; IRQ	      (not used)
-    750  8000
-    751  8000							;---------------------------------------------------------------------------
+    372  7b28		       a9 00		      lda	#0
+    373  7b2a		       85 82		      sta	doubleBufferBase
+    374  7b2c		       85 83		      sta	drawPhase
+    375  7b2e
+    376  7b2e
+    377  7b2e		       a9 00		      lda	#%00000000
+    378  7b30		       85 4a		      sta	CTRLPF
+    379  7b32		       85 49		      sta	COLUBK
+    380  7b34
+    381  7b34
+      0  7b34					      RESYNC
+      1  7b34
+      2  7b34		       a9 02		      lda	#%10
+      3  7b36		       85 41		      sta	VBLANK
+      4  7b38
+      5  7b38		       a2 08		      ldx	#8
+      6  7b3a				   .loopResync
+      0  7b3a					      VERTICAL_SYNC
+      1  7b3a		       a9 0e		      lda	#%1110
+      2  7b3c		       85 42	   .VSLP1     sta	WSYNC
+      3  7b3e		       85 40		      sta	VSYNC
+      4  7b40		       4a		      lsr
+      5  7b41		       d0 f9		      bne	.VSLP1
+      8  7b43
+      9  7b43		       a0 88		      ldy	#SCANLINES_NTSC/2 - 2
+     10  7b45		       a5 8b		      lda	Platform
+     11  7b47		       49 02		      eor	#PAL_50
+     12  7b49		       d0 02		      bne	.ntsc
+     13  7b4b		       a0 9a		      ldy	#SCANLINES_PAL/2 - 2
+     14  7b4d				   .ntsc
+     15  7b4d				   .loopWait
+     16  7b4d		       85 42		      sta	WSYNC
+     17  7b4f		       85 42		      sta	WSYNC
+     18  7b51		       88		      dey
+     19  7b52		       d0 f9		      bne	.loopWait
+     20  7b54		       ca		      dex
+     21  7b55		       d0 e3		      bne	.loopResync
+    383  7b57
+    384  7b57
+    385  7b57				   .doubleBufferLoop
+    386  7b57
+    387  7b57		       a9 0e		      lda	#%1110	; VSYNC ON
+    388  7b59		       85 42	   .loopVSync3 sta	WSYNC
+    389  7b5b		       85 40		      sta	VSYNC
+    390  7b5d		       4a		      lsr
+    391  7b5e		       d0 f9		      bne	.loopVSync3	; branch until VYSNC has been reset
+    392  7b60
+    393  7b60		       a0 32		      ldy	#50	;VBLANK_TIM_NTSC
+    394  7b62		       8c 96 02 	      sty	TIM64T
+    395  7b65
+    396  7b65		       20 99 fb 	      jsr	PhasedProcessor
+    397  7b68
+    398  7b68		       85 42	   .VerticalBlank sta	WSYNC
+    399  7b6a		       ad 84 02 	      lda	INTIM
+    400  7b6d		       d0 f9		      bne	.VerticalBlank
+    401  7b6f		       85 41		      sta	VBLANK
+    402  7b71
+    403  7b71		       a5 82		      lda	doubleBufferBase
+    404  7b73							;eor #8
+    405  7b73		       aa		      tax
+    406  7b74		       86 3e		      stx	SET_BANK_RAM
+    407  7b76		       20 67 f2 	      jsr	DrawRow
+    408  7b79
+    409  7b79		       a9 1a		      lda	#26
+    410  7b7b		       8d 96 02 	      sta	TIM64T
+    411  7b7e
+    412  7b7e		       a9 00		      lda	#0
+    413  7b80		       85 4d		      sta	PF0
+    414  7b82		       85 4e		      sta	PF1
+    415  7b84		       85 4f		      sta	PF2
+    416  7b86
+    417  7b86							;jsr PhasedProcessor
+    418  7b86
+    419  7b86							; D1 VBLANK turns off beam
+    420  7b86							; It needs to be turned on 37 scanlines later
+    421  7b86
+    422  7b86		       ad 84 02    .oscan     lda	INTIM
+    423  7b89		       d0 fb		      bne	.oscan
+    424  7b8b
+    425  7b8b		       85 42		      sta	WSYNC
+    426  7b8d		       85 42		      sta	WSYNC
+    427  7b8f							;		  sta WSYNC
+    428  7b8f							;		  sta WSYNC
+    429  7b8f
+    430  7b8f		       a9 42		      lda	#%01000010	; bit6 is not required
+    431  7b91		       85 41		      sta	VBLANK	; end of screen - enter blanking
+    432  7b93
+    433  7b93
+    434  7b93
+    435  7b93							;		  lda INPT4
+    436  7b93							;		  bpl .ret
+    437  7b93
+    438  7b93							;		  jmp .RestartChessFrame
+    439  7b93
+    440  7b93							;.ret
+    441  7b93
+    442  7b93		       4c 57 fb 	      jmp	.doubleBufferLoop
+    443  7b96
+    444  7b96							;lda #2
+    445  7b96							;sta VSYNC
+    446  7b96							;lda #%01000010		  ; bit6 is not required
+    447  7b96							;sta VBLANK			  ; end of screen - enter blanking
+    448  7b96
+    449  7b96				   Restart		; go here on RESET + SELECT
+    450  7b96
+    451  7b96		       4c 03 fb 	      jmp	Reset
+    452  7b99
+    453  7b99							;---------------------------------------------------------------------------------------------------
+    454  7b99
+      0  7b99					      DEFINE_SUBROUTINE	PhasedProcessor
+      1  7b99		       00 0f	   BANK_PhasedProcessor =	_CURRENT_BANK
+      2  7b99					      SUBROUTINE
+      3  7b99				   PhasedProcessor
+    456  7b99		       a6 83		      ldx	drawPhase
+    457  7b9b		       bd a8 fb 	      lda	DrawVectorLO,x
+    458  7b9e		       85 df		      sta	__ptr
+    459  7ba0		       bd b6 fb 	      lda	DrawVectorHI,x
+    460  7ba3		       85 e0		      sta	__ptr+1
+    461  7ba5		       6c df 00 	      jmp	(__ptr)
+    462  7ba8
+    463  7ba8		       00 06	   MARCH      =	6
+    464  7ba8		       00 0a	   MARCH_END  =	10
+    465  7ba8
+    466  7ba8				   DrawVectorLO
+    467  7ba8		       c4		      .byte.b	<Phase0_ClearBoard_0
+    468  7ba9		       ca		      .byte.b	<Phase0_ClearBoard_1
+    469  7baa		       d4		      .byte.b	<DrawNextPiece
+    470  7bab		       de		      .byte.b	<FlipBuffers
+    471  7bac		       e4		      .byte.b	<EraseStartPiece
+    472  7bad		       eb		      .byte.b	<WriteStartPieceBlank
+    473  7bae		       f5		      .byte.b	<MarchToTargetA
+    474  7baf		       15		      .byte.b	<MarchB
+    475  7bb0		       53		      .byte.b	<MarchToTargetB
+    476  7bb1		       71		      .byte.b	<MarchB2
+    477  7bb2		       81		      .byte.b	<WriteEndPieceBlank
+    478  7bb3		       8b		      .byte.b	<WriteEndPiece
+    479  7bb4		       a2		      .byte.b	<DelayIt
+    480  7bb5		       a9		      .byte.b	<Final
+    481  7bb6
+    482  7bb6				   DrawVectorHI
+    483  7bb6		       fb		      .byte.b	>Phase0_ClearBoard_0
+    484  7bb7		       fb		      .byte.b	>Phase0_ClearBoard_1
+    485  7bb8		       fb		      .byte.b	>DrawNextPiece
+    486  7bb9		       fb		      .byte.b	>FlipBuffers
+    487  7bba		       fb		      .byte.b	>EraseStartPiece
+    488  7bbb		       fb		      .byte.b	>WriteStartPieceBlank
+    489  7bbc		       fb		      .byte.b	>MarchToTargetA
+    490  7bbd		       fc		      .byte.b	>MarchB
+    491  7bbe		       fc		      .byte.b	>MarchToTargetB
+    492  7bbf		       fc		      .byte.b	>MarchB2
+    493  7bc0		       fc		      .byte.b	>WriteEndPieceBlank
+    494  7bc1		       fc		      .byte.b	>WriteEndPiece
+    495  7bc2		       fc		      .byte.b	>DelayIt
+    496  7bc3		       fc		      .byte.b	>Final
+    497  7bc4
+      0  7bc4					      DEFINE_SUBROUTINE	Phase0_ClearBoard_0
+      1  7bc4		       00 0f	   BANK_Phase0_ClearBoard_0 =	_CURRENT_BANK
+      2  7bc4					      SUBROUTINE
+      3  7bc4				   Phase0_ClearBoard_0
+    499  7bc4
+    500  7bc4		       20 04 f8 	      jsr	ClearChessBitmap_PART0
+    501  7bc7		       e6 83		      inc	drawPhase
+    502  7bc9		       60		      rts
+    503  7bca
+      0  7bca					      DEFINE_SUBROUTINE	Phase0_ClearBoard_1
+      1  7bca		       00 0f	   BANK_Phase0_ClearBoard_1 =	_CURRENT_BANK
+      2  7bca					      SUBROUTINE
+      3  7bca				   Phase0_ClearBoard_1
+    505  7bca
+    506  7bca		       20 1f f8 	      jsr	ClearChessBitmap_PART1
+    507  7bcd
+    508  7bcd		       a9 3f		      lda	#63
+    509  7bcf		       85 80		      sta	drawPieceNumber
+    510  7bd1
+    511  7bd1		       e6 83		      inc	drawPhase
+    512  7bd3		       60		      rts
+    513  7bd4
+      0  7bd4					      DEFINE_SUBROUTINE	DrawNextPiece
+      1  7bd4		       00 0f	   BANK_DrawNextPiece =	_CURRENT_BANK
+      2  7bd4					      SUBROUTINE
+      3  7bd4				   DrawNextPiece
+    515  7bd4
+    516  7bd4		       20 3d f8 	      jsr	CopySinglePiece
+    517  7bd7		       c6 80		      dec	drawPieceNumber
+    518  7bd9		       10 02		      bpl	.incomplete
+    519  7bdb
+    520  7bdb		       e6 83		      inc	drawPhase
+    521  7bdd		       60	   .incomplete rts
+    522  7bde
+    523  7bde							; Now we've finished drawing the screen square by square.
+    524  7bde
+      0  7bde					      DEFINE_SUBROUTINE	FlipBuffers
+      1  7bde		       00 0f	   BANK_FlipBuffers =	_CURRENT_BANK
+      2  7bde					      SUBROUTINE
+      3  7bde				   FlipBuffers
+    526  7bde
+    527  7bde		       20 7b f8 	      jsr	RandomPieceMove
+    528  7be1		       e6 83		      inc	drawPhase
+    529  7be3		       60		      rts
+    530  7be4
+      0  7be4					      DEFINE_SUBROUTINE	EraseStartPiece
+      1  7be4		       00 0f	   BANK_EraseStartPiece =	_CURRENT_BANK
+      2  7be4					      SUBROUTINE
+      3  7be4				   EraseStartPiece
+    532  7be4
+    533  7be4							;lda fromSquare
+    534  7be4							;sta drawPieceNumber
+    535  7be4							;jsr CopySinglePiece	   ; erase the existing piece (now completely blank)
+    536  7be4
+    537  7be4		       a9 00		      lda	#BLANK
+    538  7be6		       85 89		      sta	lastPiece
+    539  7be8		       e6 83		      inc	drawPhase
+    540  7bea		       60		      rts
+    541  7beb
+      0  7beb					      DEFINE_SUBROUTINE	WriteStartPieceBlank
+      1  7beb		       00 0f	   BANK_WriteStartPieceBlank =	_CURRENT_BANK
+      2  7beb					      SUBROUTINE
+      3  7beb				   WriteStartPieceBlank
+    543  7beb
+    544  7beb							;ldx fromSquare
+    545  7beb							;stx drawPieceNumber
+    546  7beb
+    547  7beb							;lda #BANK_CHESSBOARD
+    548  7beb							;sta SET_BANK_RAM
+    549  7beb							;lda #BLANK
+    550  7beb							;sta lastPiece
+    551  7beb							;sta Chessboard+RAM_WRITE,x				; put a "blank" on the board
+    552  7beb
+    553  7beb							;jsr CopySinglePiece	       ; now draw the 'blank' square
+    554  7beb
+    555  7beb		       e6 83		      inc	drawPhase
+    556  7bed		       60		      rts
+    557  7bee
+    558  7bee		       a9 0a	   .halt      lda	#MARCH_END
+    559  7bf0		       85 83		      sta	drawPhase
+    560  7bf2		       4c 81 fc 	      jmp	WriteEndPieceBlank
+    561  7bf5
+    562  7bf5
+      0  7bf5					      DEFINE_SUBROUTINE	MarchToTargetA
+      1  7bf5		       00 0f	   BANK_MarchToTargetA =	_CURRENT_BANK
+      2  7bf5					      SUBROUTINE
+      3  7bf5				   MarchToTargetA
+    564  7bf5
+    565  7bf5		       a5 84		      lda	drawDelay
+    566  7bf7		       f0 03		      beq	noDelay
+    567  7bf9		       c6 84		      dec	drawDelay
+    568  7bfb		       60		      rts
+    569  7bfc				   noDelay
+    570  7bfc
+    571  7bfc
+    572  7bfc		       a6 85		      ldx	fromSquare
+    573  7bfe		       e4 87		      cpx	toSquare
+    574  7c00		       f0 ec		      beq	.halt
+    575  7c02
+    576  7c02		       86 80		      stx	drawPieceNumber
+    577  7c04		       20 3d f8 	      jsr	CopySinglePiece	; erase piece currently on this square
+    578  7c07
+    579  7c07		       a9 08		      lda	#BANK_CHESSBOARD
+    580  7c09		       85 3e		      sta	SET_BANK_RAM
+    581  7c0b		       a6 80		      ldx	drawPieceNumber
+    582  7c0d		       a5 89		      lda	lastPiece
+    583  7c0f		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x	; replace original piece (or blank for starting)
+    584  7c12
+    585  7c12		       e6 83		      inc	drawPhase
+    586  7c14		       60		      rts
+    587  7c15
+    588  7c15				   MarchB
+    589  7c15
+    590  7c15		       20 3d f8 	      jsr	CopySinglePiece	; restore/draw in original piece
+    591  7c18
+    592  7c18							; Now we calculate move to new square
+    593  7c18
+    594  7c18		       a5 85		      lda	fromSquare
+    595  7c1a		       4a		      lsr
+    596  7c1b		       4a		      lsr
+    597  7c1c		       4a		      lsr
+    598  7c1d		       85 8a		      sta	__fromRow
+    599  7c1f		       a5 87		      lda	toSquare
+    600  7c21		       4a		      lsr
+    601  7c22		       4a		      lsr
+    602  7c23		       4a		      lsr
+    603  7c24		       c5 8a		      cmp	__fromRow
+    604  7c26		       f0 11		      beq	rowOK
+    605  7c28		       b0 09		      bcs	.downRow
+    606  7c2a		       a5 85		      lda	fromSquare
+    607  7c2c		       e9 07		      sbc	#7
+    608  7c2e		       85 85		      sta	fromSquare
+    609  7c30		       4c 39 fc 	      jmp	nowcol
+    610  7c33		       a5 85	   .downRow   lda	fromSquare
+    611  7c35		       69 07		      adc	#7
+    612  7c37		       85 85		      sta	fromSquare
+    613  7c39				   rowOK
+    614  7c39				   nowcol
+    615  7c39
+    616  7c39		       a5 85		      lda	fromSquare
+    617  7c3b		       29 07		      and	#7
+    618  7c3d		       85 8a		      sta	__fromRow
+    619  7c3f		       a5 87		      lda	toSquare
+    620  7c41		       29 07		      and	#7
+    621  7c43		       c5 8a		      cmp	__fromRow
+    622  7c45		       f0 09		      beq	colok
+    623  7c47		       90 05		      bcc	.leftCol
+    624  7c49		       e6 85		      inc	fromSquare
+    625  7c4b		       4c 50 fc 	      jmp	colok
+    626  7c4e		       c6 85	   .leftCol   dec	fromSquare
+    627  7c50				   colok
+    628  7c50
+    629  7c50		       e6 83		      inc	drawPhase
+    630  7c52		       60		      rts
+    631  7c53
+      0  7c53					      DEFINE_SUBROUTINE	MarchToTargetB
+      1  7c53		       00 0f	   BANK_MarchToTargetB =	_CURRENT_BANK
+      2  7c53					      SUBROUTINE
+      3  7c53				   MarchToTargetB
+    633  7c53
+    634  7c53		       a6 85		      ldx	fromSquare
+    635  7c55		       86 80		      stx	drawPieceNumber
+    636  7c57		       a9 08		      lda	#BANK_CHESSBOARD
+    637  7c59		       85 3e		      sta	SET_BANK_RAM
+    638  7c5b		       bd 00 10 	      lda	Chessboard,x
+    639  7c5e		       85 89		      sta	lastPiece
+    640  7c60		       20 3d f8 	      jsr	CopySinglePiece	; erase whatever WAS there - now completely blank
+    641  7c63
+    642  7c63		       a9 08		      lda	#BANK_CHESSBOARD
+    643  7c65		       85 3e		      sta	SET_BANK_RAM
+    644  7c67		       a6 85		      ldx	fromSquare
+    645  7c69		       a5 86		      lda	fromPiece
+    646  7c6b		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x	; put moving piece on board
+    647  7c6e
+    648  7c6e		       e6 83		      inc	drawPhase
+    649  7c70		       60		      rts
+    650  7c71
+      0  7c71					      DEFINE_SUBROUTINE	MarchB2
+      1  7c71		       00 0f	   BANK_MarchB2 =	_CURRENT_BANK
+      2  7c71					      SUBROUTINE
+      3  7c71				   MarchB2
+    652  7c71
+    653  7c71		       a5 85		      lda	fromSquare
+    654  7c73		       85 80		      sta	drawPieceNumber
+    655  7c75		       20 3d f8 	      jsr	CopySinglePiece	; draw new piece in new position
+    656  7c78
+    657  7c78							; here we could delay
+    658  7c78		       a9 0a		      lda	#10
+    659  7c7a		       85 84		      sta	drawDelay
+    660  7c7c
+    661  7c7c		       a9 06		      lda	#MARCH
+    662  7c7e		       85 83		      sta	drawPhase
+    663  7c80		       60		      rts
+    664  7c81
+    665  7c81
+      0  7c81					      DEFINE_SUBROUTINE	WriteEndPieceBlank
+      1  7c81		       00 0f	   BANK_WriteEndPieceBlank =	_CURRENT_BANK
+      2  7c81					      SUBROUTINE
+      3  7c81				   WriteEndPieceBlank
+    667  7c81
+    668  7c81		       a6 87		      ldx	toSquare
+    669  7c83		       86 80		      stx	drawPieceNumber
+    670  7c85		       20 3d f8 	      jsr	CopySinglePiece	; now erase the destination square
+    671  7c88
+    672  7c88		       e6 83		      inc	drawPhase
+    673  7c8a		       60		      rts
+    674  7c8b
+      0  7c8b					      DEFINE_SUBROUTINE	WriteEndPiece
+      1  7c8b		       00 0f	   BANK_WriteEndPiece =	_CURRENT_BANK
+      2  7c8b					      SUBROUTINE
+      3  7c8b				   WriteEndPiece
+    676  7c8b
+    677  7c8b		       a6 87		      ldx	toSquare
+    678  7c8d		       86 80		      stx	drawPieceNumber
+    679  7c8f
+    680  7c8f		       a9 08		      lda	#BANK_CHESSBOARD
+    681  7c91		       85 3e		      sta	SET_BANK_RAM
+    682  7c93		       a5 86		      lda	fromPiece
+    683  7c95		       9d 00 14 	      sta	Chessboard+RAM_WRITE,x	; put a blank on the board
+    684  7c98
+    685  7c98		       20 3d f8 	      jsr	CopySinglePiece
+    686  7c9b
+    687  7c9b		       a9 01		      lda	#1
+    688  7c9d		       85 84		      sta	drawDelay
+    689  7c9f		       e6 83		      inc	drawPhase
+    690  7ca1		       60		      rts
+    691  7ca2
+      0  7ca2					      DEFINE_SUBROUTINE	DelayIt
+      1  7ca2		       00 0f	   BANK_DelayIt =	_CURRENT_BANK
+      2  7ca2					      SUBROUTINE
+      3  7ca2				   DelayIt
+    693  7ca2
+    694  7ca2		       c6 84		      dec	drawDelay
+    695  7ca4		       d0 02		      bne	.waiting
+    696  7ca6		       e6 83		      inc	drawPhase
+    697  7ca8		       60	   .waiting   rts
+    698  7ca9
+      0  7ca9					      DEFINE_SUBROUTINE	Final
+      1  7ca9		       00 0f	   BANK_Final =	_CURRENT_BANK
+      2  7ca9					      SUBROUTINE
+      3  7ca9				   Final
+    700  7ca9
+    701  7ca9		       a9 03		      lda	#3
+    702  7cab		       85 83		      sta	drawPhase
+    703  7cad		       60		      rts
+    704  7cae
+    705  7cae							;---------------------------------------------------------------------------
+    706  7cae
+ FREE BYTES IN FIXED BANK =  $342
+    707  7cae					      ECHO	"FREE BYTES IN FIXED BANK = ", $FFF0 - *
+    708  7cae
+    709  7cae							;---------------------------------------------------------------------------
+    710  7cae							; The reset vectors
+    711  7cae							; these must live in the fixed bank (last 2K of any ROM image in TigerVision)
+    712  7cae
+    713  7ff4 ????				      SEG	PlusCart
+    714  7ff0					      ORG	FIXED_BANK + $7F0
+    715  7ff0					      RORG	$7FF0
+    716  7ff0		       7f f0	   PLUSCART_IO =	*
+    717  7ff0		       00 aa	   PLUS0      =	%10101010
+    718  7ff0		       00 19	   PLUS1      =	%00011001
+    719  7ff0		       00 af	   PLUS2      =	%10101111
+    720  7ff0		       00 36	   PLUS3      =	%00110110
+    721  7ff0		       aa 19 af 36	      .byte.b	PLUS0,PLUS1,PLUS2,PLUS3
+    722  7ff4
+    723  8000 ????				      SEG	InterruptVectors
+    724  7ffc					      ORG	FIXED_BANK + $7FC
+    725  7ffc					      RORG	$7ffC
+    726  7ffc
+    727  7ffc							;		 .word Reset	       ; NMI	    (not used)
+    728  7ffc		       03 fb		      .word.w	Reset	; RESET
+    729  7ffe		       03 fb		      .word.w	Reset	; IRQ	      (not used)
+    730  8000
+    731  8000							;---------------------------------------------------------------------------
 ------- FILE ./chess.asm
     447  8000
     448  8000							;END

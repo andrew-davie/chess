@@ -10,7 +10,7 @@ chess.bin: *.asm Makefile FORCE
 #	number=1 ; while [[ $$number -le 1000 ]] ; do \
 #        echo $$number ; \
 #        ((number = number + 1)) ;
-		(cd gfx && python ConvertChessPieces.py)
+#		(cd gfx && python ConvertChessPieces.py)
 		../dasm/bin/dasm ./chess.asm -l./chess.lst -f3 -s./chess.sym -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
 #    done
 	chmod 777 ./chess.bin

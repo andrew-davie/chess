@@ -345,7 +345,7 @@ BoardPiece
 
                 CLEAN_START
 
-                lda #$92
+                lda #$97
                 sta rnd
 
 
@@ -360,26 +360,10 @@ BoardPiece
 
     ; Patch the final row's "loop" to a RTS
 
-                lda #<SELFMOD_RTS_ON_LAST_ROW
-                sta __ptr
-                lda #>(SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE)
-                sta __ptr+1
-
-
-                ldy #0
-                lda #$60                        ; rts
-
-    ; the 'screen' is double-buffered - two sets of 8x1K banks
-    ; we need to put an RTS on the last of both of these
-
                 ldx #7
                 stx SET_BANK_RAM
-                sta (__ptr),y                   ; patch selfmod code to RTS
-
-                ldx #15
-                stx SET_BANK_RAM
-                sta (__ptr),y
-
+                lda #$60                        ; rts
+                sta SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE
 
                 jsr InitialiseChessboard
 
@@ -546,24 +530,27 @@ DrawVectorHI
 
     DEFINE_SUBROUTINE EraseStartPiece
 
-                lda fromSquare
-                sta drawPieceNumber
-                jsr CopySinglePiece      ; erase the existing piece
+                ;lda fromSquare
+                ;sta drawPieceNumber
+                ;jsr CopySinglePiece      ; erase the existing piece (now completely blank)
 
+                lda #BLANK
+                sta lastPiece
                 inc drawPhase
                 rts
 
     DEFINE_SUBROUTINE WriteStartPieceBlank
 
-                ldx fromSquare
-                stx drawPieceNumber
+                ;ldx fromSquare
+                ;stx drawPieceNumber
 
-                lda #BANK_CHESSBOARD
-                sta SET_BANK_RAM
-                lda #BLANK
-                sta Chessboard+RAM_WRITE,x                            ; put a "blank" on the board
+                ;lda #BANK_CHESSBOARD
+                ;sta SET_BANK_RAM
+                ;lda #BLANK
+                ;sta lastPiece
+                ;sta Chessboard+RAM_WRITE,x                            ; put a "blank" on the board
 
-                jsr CopySinglePiece          ; now draw the 'blank' square
+                ;jsr CopySinglePiece          ; now draw the 'blank' square
 
                 inc drawPhase
                 rts
@@ -575,9 +562,34 @@ DrawVectorHI
 
     DEFINE_SUBROUTINE MarchToTargetA
 
-                lda fromSquare
-                cmp toSquare
+                lda drawDelay
+                beq noDelay
+                dec drawDelay
+                rts
+noDelay
+
+
+                ldx fromSquare
+                cpx toSquare
                 beq .halt
+
+                stx drawPieceNumber
+                jsr CopySinglePiece                 ; erase piece currently on this square
+
+                lda #BANK_CHESSBOARD
+                sta SET_BANK_RAM
+                ldx drawPieceNumber
+                lda lastPiece
+                sta Chessboard+RAM_WRITE,x          ; replace original piece (or blank for starting)
+
+                inc drawPhase
+                rts
+
+MarchB
+
+                jsr CopySinglePiece                 ; restore/draw in original piece
+
+    ; Now we calculate move to new square
 
                 lda fromSquare
                 lsr
@@ -614,69 +626,37 @@ nowcol
 .leftCol        dec fromSquare
 colok
 
-
-
-                ldx fromSquare
-                stx drawPieceNumber
-                jsr CopySinglePiece             ; erase whatever WAS there - now completely blank
-
-
-                ;lda #1
-                ;sta drawDelay
-
-                inc drawPhase
-                rts
-
-MarchB
-
-;                lda drawDelay
-;                beq go2
-;                dec drawDelay
-;                jmp bypass
-;go2
-
-                ldx drawPieceNumber
-
-                lda #BANK_CHESSBOARD
-                sta SET_BANK_RAM
-                lda Chessboard,x
-                sta lastPiece
-                lda fromPiece
-                sta Chessboard+RAM_WRITE,x
-                jsr CopySinglePiece
-
-                lda #3
-                sta drawDelay
                 inc drawPhase
                 rts
 
     DEFINE_SUBROUTINE MarchToTargetB
 
-                lda drawDelay
-                beq gogogo
-                dec drawDelay
-                jmp bypass
-gogogo
-
                 ldx fromSquare
                 stx drawPieceNumber
-                jsr CopySinglePiece         ; undraw - now blank
+                lda #BANK_CHESSBOARD
+                sta SET_BANK_RAM
+                lda Chessboard,x
+                sta lastPiece
+                jsr CopySinglePiece             ; erase whatever WAS there - now completely blank
 
                 lda #BANK_CHESSBOARD
                 sta SET_BANK_RAM
                 ldx fromSquare
-                lda lastPiece
-                sta Chessboard+RAM_WRITE,x
+                lda fromPiece
+                sta Chessboard+RAM_WRITE,x      ; put moving piece on board
 
                 inc drawPhase
-bypass          rts
-
+                rts
 
     DEFINE_SUBROUTINE MarchB2
 
                 lda fromSquare
                 sta drawPieceNumber
-                jsr CopySinglePiece     ; restore original
+                jsr CopySinglePiece             ; draw new piece in new position
+
+    ; here we could delay
+                lda #10
+                sta drawDelay
 
                 lda #MARCH
                 sta drawPhase

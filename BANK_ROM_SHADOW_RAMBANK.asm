@@ -35,7 +35,7 @@
 ;=   ~465.4 cycles on average
 
 
-    ; WARNING: DO NOT ALLOW A RTS AS LAST BYTE OF BANK, as it triggers a write at F400 access
+    ; WARNING: DO NOT ALLOW A rts AS LAST BYTE OF BANK, as it triggers a write at F400 access
 
     CHECK_HALF_BANK_SIZE "ROM_SHADOW_OF_RAMBANK_CODE -- 1K"
 
