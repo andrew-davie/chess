@@ -9,6 +9,7 @@ TIA_BASE_ADDRESS = $40
                 processor 6502
                 include "vcs.h"
                 include "macro.h"
+                include "piece_defines.h"
 
 ORIGIN          SET 0
 ORIGIN_RAM      SET 0
@@ -441,6 +442,11 @@ RND_EOR_VAL = $FE ;B4
             include "BANK_ROM_SHADOW_SCREEN.asm"
             include "BANK_INITBANK.asm"         ; MUST be after banks that include levels -- otherwise MAX_LEVELBANK is not calculated properly
             include "BANK_CHESS_INCLUDES.asm"
+            include "titleScreen.asm"
+            include "engine6502.asm"
+            include "common_variables.asm"
+            include "Handler_KING.asm"
+            include "Handler_QUEEN.asm"
 
     ; MUST BE LAST...
             include "BANK_FIXED.asm"

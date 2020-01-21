@@ -1,0 +1,618 @@
+--- Symbol List (sorted by symbol)
+0.clearBoard             f094              (R )
+0.clearRow               f806              (R )
+0.copyPage               f8b2              (R )
+0.copyPiece              f09f              (R )
+0.copyPieceGfx           f89d              (R )
+0.copyPieceR             f0ae              (R )
+0.copyRowBanks           f8eb              (R )
+0.drawLine               f12a              (R )
+0.drawPieces             f815              (R )
+0.FREE_BYTES             0000                  
+0.LineColour             f15c              (R )
+0.loopVSync3             f0e6              (R )
+0.oscan                  f10f              (R )
+0.RestartChessFrame      f0e4              (R )
+0.ret                    f127              (R )
+0.rightSide              f0ac              (R )
+0.setupBoard             f839              (R )
+0.startLine              f128              (R )
+0.VerticalBlank          f0f2              (R )
+13.RAM_BANK_SIZE         0000              (R )
+139.TEMP                 07d8              (R )
+14.DUMMY                 0001                  
+15.RAM_BANK_SIZE         0000              (R )
+16.DUMMY                 0002                  
+17.RAM_BANK_SIZE         0000              (R )
+18.DUMMY                 0003                  
+19.RAM_BANK_SIZE         0000              (R )
+20.DUMMY                 0004                  
+21.RAM_BANK_SIZE         0000              (R )
+213.TEMP                 07d8              (R )
+22.DUMMY                 0005                  
+23.RAM_BANK_SIZE         0000              (R )
+24.DUMMY                 0006                  
+25.RAM_BANK_SIZE         0000              (R )
+26.DUMMY                 0007                  
+27.RAM_BANK_SIZE         0000              (R )
+287.TEMP                 07d8              (R )
+29.RAM_BANK_SIZE         0040              (R )
+31.RAM_BANK_SIZE         0000              (R )
+33.RAM_BANK_SIZE         0000              (R )
+35.RAM_BANK_SIZE         0000              (R )
+361.TEMP                 07d8              (R )
+37.RAM_BANK_SIZE         0000              (R )
+41.TEMP                  0000              (R )
+411.TEMP                 0548              (R )
+419.TEMP                 0150              (R )
+437.CLEAR_STACK          f8e0              (R )
+46.loopResync            f023              (R )
+46.loopWait              f036              (R )
+46.ntsc                  f036              (R )
+47.VSLP1                 f025              (R )
+50.TEMP                  006c              (R )
+59.loopResync            f0c7              (R )
+59.loopWait              f0da              (R )
+59.ntsc                  f0da              (R )
+60.VSLP1                 f0c9              (R )
+63.CYCLES                0006              (R )
+65.TEMP                  0027              (R )
+__CopyCount              008d                  
+__DASM__TOTAL_FREE_MEMORY 0000                  
+__destinationBank        008d                  
+__index                  008f                  
+__pieceShapeBuffer       008d              (R )
+__ptr                    00d5              (R )
+__ptr2                   00d7                  
+__ROM_SourceBank         008e                  
+__rows                   008d                  
+__sourceBank             008e              (R )
+_CURRENT_BANK            000f              (R )
+AUDC0                    0055                  
+AUDC1                    0056                  
+AUDF0                    0057                  
+AUDF1                    0058                  
+AUDV0                    0059                  
+AUDV1                    005a                  
+BANK_BLACK_BISHOP_on_BLACK_SQUARE_0 0007              (R )
+BANK_BLACK_BISHOP_on_BLACK_SQUARE_1 0007              (R )
+BANK_BLACK_BISHOP_on_BLACK_SQUARE_2 0007              (R )
+BANK_BLACK_BISHOP_on_BLACK_SQUARE_3 0007              (R )
+BANK_BLACK_BISHOP_on_WHITE_SQUARE_0 0005              (R )
+BANK_BLACK_BISHOP_on_WHITE_SQUARE_1 0005              (R )
+BANK_BLACK_BISHOP_on_WHITE_SQUARE_2 0005              (R )
+BANK_BLACK_BISHOP_on_WHITE_SQUARE_3 0005              (R )
+BANK_BLACK_BLANK_on_BLACK_SQUARE_0 0006              (R )
+BANK_BLACK_BLANK_on_BLACK_SQUARE_1 0006              (R )
+BANK_BLACK_BLANK_on_BLACK_SQUARE_2 0006              (R )
+BANK_BLACK_BLANK_on_BLACK_SQUARE_3 0006              (R )
+BANK_BLACK_BLANK_on_WHITE_SQUARE_0 0005              (R )
+BANK_BLACK_BLANK_on_WHITE_SQUARE_1 0005              (R )
+BANK_BLACK_BLANK_on_WHITE_SQUARE_2 0005              (R )
+BANK_BLACK_BLANK_on_WHITE_SQUARE_3 0005              (R )
+BANK_BLACK_KING_on_BLACK_SQUARE_0 0007              (R )
+BANK_BLACK_KING_on_BLACK_SQUARE_1 0007              (R )
+BANK_BLACK_KING_on_BLACK_SQUARE_2 0007              (R )
+BANK_BLACK_KING_on_BLACK_SQUARE_3 0007              (R )
+BANK_BLACK_KING_on_WHITE_SQUARE_0 0006              (R )
+BANK_BLACK_KING_on_WHITE_SQUARE_1 0006              (R )
+BANK_BLACK_KING_on_WHITE_SQUARE_2 0006              (R )
+BANK_BLACK_KING_on_WHITE_SQUARE_3 0006              (R )
+BANK_BLACK_KNIGHT_on_BLACK_SQUARE_0 0006              (R )
+BANK_BLACK_KNIGHT_on_BLACK_SQUARE_1 0006              (R )
+BANK_BLACK_KNIGHT_on_BLACK_SQUARE_2 0006              (R )
+BANK_BLACK_KNIGHT_on_BLACK_SQUARE_3 0006              (R )
+BANK_BLACK_KNIGHT_on_WHITE_SQUARE_0 0005              (R )
+BANK_BLACK_KNIGHT_on_WHITE_SQUARE_1 0005              (R )
+BANK_BLACK_KNIGHT_on_WHITE_SQUARE_2 0005              (R )
+BANK_BLACK_KNIGHT_on_WHITE_SQUARE_3 0005              (R )
+BANK_BLACK_PAWN_on_BLACK_SQUARE_0 0006              (R )
+BANK_BLACK_PAWN_on_BLACK_SQUARE_1 0006              (R )
+BANK_BLACK_PAWN_on_BLACK_SQUARE_2 0006              (R )
+BANK_BLACK_PAWN_on_BLACK_SQUARE_3 0006              (R )
+BANK_BLACK_PAWN_on_WHITE_SQUARE_0 0005              (R )
+BANK_BLACK_PAWN_on_WHITE_SQUARE_1 0005              (R )
+BANK_BLACK_PAWN_on_WHITE_SQUARE_2 0005              (R )
+BANK_BLACK_PAWN_on_WHITE_SQUARE_3 0005              (R )
+BANK_BLACK_QUEEN_on_BLACK_SQUARE_0 0007              (R )
+BANK_BLACK_QUEEN_on_BLACK_SQUARE_1 0007              (R )
+BANK_BLACK_QUEEN_on_BLACK_SQUARE_2 0007              (R )
+BANK_BLACK_QUEEN_on_BLACK_SQUARE_3 0007              (R )
+BANK_BLACK_QUEEN_on_WHITE_SQUARE_0 0006              (R )
+BANK_BLACK_QUEEN_on_WHITE_SQUARE_1 0006              (R )
+BANK_BLACK_QUEEN_on_WHITE_SQUARE_2 0006              (R )
+BANK_BLACK_QUEEN_on_WHITE_SQUARE_3 0006              (R )
+BANK_BLACK_ROOK_on_BLACK_SQUARE_0 0007              (R )
+BANK_BLACK_ROOK_on_BLACK_SQUARE_1 0007              (R )
+BANK_BLACK_ROOK_on_BLACK_SQUARE_2 0007              (R )
+BANK_BLACK_ROOK_on_BLACK_SQUARE_3 0007              (R )
+BANK_BLACK_ROOK_on_WHITE_SQUARE_0 0006              (R )
+BANK_BLACK_ROOK_on_WHITE_SQUARE_1 0006              (R )
+BANK_BLACK_ROOK_on_WHITE_SQUARE_2 0006              (R )
+BANK_BLACK_ROOK_on_WHITE_SQUARE_3 0006              (R )
+BANK_BOARD               000d                  
+BANK_Cart_Init           0000                  
+BANK_CHESSBOARD          0008              (R )
+BANK_ClearChessBitmap    000f                  
+BANK_ClearRowBitmap      0001                  
+BANK_CopyChessboardPiecesToBoard 000f                  
+BANK_CopyPieceFromRAMBufferToScreen 000f                  
+BANK_CopyPieceToRAMBuffer 000f                  
+BANK_CopyPieceToRowBitmap 0001                  
+BANK_CopyShadowROMtoRAM  000f                  
+BANK_DECODE_LEVEL        000c                  
+BANK_DECODE_LEVEL_SHADOW 0000                  
+BANK_DRAW_BUFFERS        000a                  
+BANK_DrawRow             0001                  
+BANK_DrawTheChessScreen  0001                  
+BANK_InitialiseChessboard 000f                  
+BANK_PIECE_VECTOR_BANK   0008              (R )
+BANK_PIECE_VECTOR_HI     0008                  
+BANK_PIECE_VECTOR_LO     0008                  
+BANK_PostScreenCleanup   0000                  
+BANK_Reset               000f                  
+BANK_Resync              0000                  
+BANK_ROM_SHADOW_OF_CHESS_BITMAP 0001              (R )
+BANK_SCORING             000b                  
+BANK_SCREEN              0009                  
+BANK_SCREENMARKII1       0000                  
+BANK_START               f000                  
+BANK_TimeSlice           000f                  
+BANK_WHITE_BISHOP_on_BLACK_SQUARE_0 0004              (R )
+BANK_WHITE_BISHOP_on_BLACK_SQUARE_1 0004              (R )
+BANK_WHITE_BISHOP_on_BLACK_SQUARE_2 0004              (R )
+BANK_WHITE_BISHOP_on_BLACK_SQUARE_3 0004              (R )
+BANK_WHITE_BISHOP_on_WHITE_SQUARE_0 0003              (R )
+BANK_WHITE_BISHOP_on_WHITE_SQUARE_1 0003              (R )
+BANK_WHITE_BISHOP_on_WHITE_SQUARE_2 0003              (R )
+BANK_WHITE_BISHOP_on_WHITE_SQUARE_3 0003              (R )
+BANK_WHITE_BLANK_on_BLACK_SQUARE_0 0004              (R )
+BANK_WHITE_BLANK_on_BLACK_SQUARE_1 0004              (R )
+BANK_WHITE_BLANK_on_BLACK_SQUARE_2 0004              (R )
+BANK_WHITE_BLANK_on_BLACK_SQUARE_3 0004              (R )
+BANK_WHITE_BLANK_on_WHITE_SQUARE_0 0003              (R )
+BANK_WHITE_BLANK_on_WHITE_SQUARE_1 0003              (R )
+BANK_WHITE_BLANK_on_WHITE_SQUARE_2 0003              (R )
+BANK_WHITE_BLANK_on_WHITE_SQUARE_3 0003              (R )
+BANK_WHITE_KING_on_BLACK_SQUARE_0 0005              (R )
+BANK_WHITE_KING_on_BLACK_SQUARE_1 0005              (R )
+BANK_WHITE_KING_on_BLACK_SQUARE_2 0005              (R )
+BANK_WHITE_KING_on_BLACK_SQUARE_3 0005              (R )
+BANK_WHITE_KING_on_WHITE_SQUARE_0 0004              (R )
+BANK_WHITE_KING_on_WHITE_SQUARE_1 0004              (R )
+BANK_WHITE_KING_on_WHITE_SQUARE_2 0004              (R )
+BANK_WHITE_KING_on_WHITE_SQUARE_3 0004              (R )
+BANK_WHITE_KNIGHT_on_BLACK_SQUARE_0 0004              (R )
+BANK_WHITE_KNIGHT_on_BLACK_SQUARE_1 0004              (R )
+BANK_WHITE_KNIGHT_on_BLACK_SQUARE_2 0004              (R )
+BANK_WHITE_KNIGHT_on_BLACK_SQUARE_3 0004              (R )
+BANK_WHITE_KNIGHT_on_WHITE_SQUARE_0 0003              (R )
+BANK_WHITE_KNIGHT_on_WHITE_SQUARE_1 0003              (R )
+BANK_WHITE_KNIGHT_on_WHITE_SQUARE_2 0003              (R )
+BANK_WHITE_KNIGHT_on_WHITE_SQUARE_3 0003              (R )
+BANK_WHITE_PAWN_on_BLACK_SQUARE_0 0004              (R )
+BANK_WHITE_PAWN_on_BLACK_SQUARE_1 0004              (R )
+BANK_WHITE_PAWN_on_BLACK_SQUARE_2 0004              (R )
+BANK_WHITE_PAWN_on_BLACK_SQUARE_3 0004              (R )
+BANK_WHITE_PAWN_on_WHITE_SQUARE_0 0003              (R )
+BANK_WHITE_PAWN_on_WHITE_SQUARE_1 0003              (R )
+BANK_WHITE_PAWN_on_WHITE_SQUARE_2 0003              (R )
+BANK_WHITE_PAWN_on_WHITE_SQUARE_3 0003              (R )
+BANK_WHITE_QUEEN_on_BLACK_SQUARE_0 0005              (R )
+BANK_WHITE_QUEEN_on_BLACK_SQUARE_1 0005              (R )
+BANK_WHITE_QUEEN_on_BLACK_SQUARE_2 0005              (R )
+BANK_WHITE_QUEEN_on_BLACK_SQUARE_3 0005              (R )
+BANK_WHITE_QUEEN_on_WHITE_SQUARE_0 0003              (R )
+BANK_WHITE_QUEEN_on_WHITE_SQUARE_1 0003              (R )
+BANK_WHITE_QUEEN_on_WHITE_SQUARE_2 0003              (R )
+BANK_WHITE_QUEEN_on_WHITE_SQUARE_3 0003              (R )
+BANK_WHITE_ROOK_on_BLACK_SQUARE_0 0004              (R )
+BANK_WHITE_ROOK_on_BLACK_SQUARE_1 0004              (R )
+BANK_WHITE_ROOK_on_BLACK_SQUARE_2 0004              (R )
+BANK_WHITE_ROOK_on_BLACK_SQUARE_3 0004              (R )
+BANK_WHITE_ROOK_on_WHITE_SQUARE_0 0003              (R )
+BANK_WHITE_ROOK_on_WHITE_SQUARE_1 0003              (R )
+BANK_WHITE_ROOK_on_WHITE_SQUARE_2 0003              (R )
+BANK_WHITE_ROOK_on_WHITE_SQUARE_3 0003              (R )
+BLACK_BISHOP_on_BLACK_SQUARE_0 f000              (R )
+BLACK_BISHOP_on_BLACK_SQUARE_1 f048              (R )
+BLACK_BISHOP_on_BLACK_SQUARE_2 f090              (R )
+BLACK_BISHOP_on_BLACK_SQUARE_3 f100              (R )
+BLACK_BISHOP_on_WHITE_SQUARE_0 f690              (R )
+BLACK_BISHOP_on_WHITE_SQUARE_1 f700              (R )
+BLACK_BISHOP_on_WHITE_SQUARE_2 f748              (R )
+BLACK_BISHOP_on_WHITE_SQUARE_3 f790              (R )
+BLACK_BLANK_on_BLACK_SQUARE_0 f400              (R )
+BLACK_BLANK_on_BLACK_SQUARE_1 f448              (R )
+BLACK_BLANK_on_BLACK_SQUARE_2 f490              (R )
+BLACK_BLANK_on_BLACK_SQUARE_3 f500              (R )
+BLACK_BLANK_on_WHITE_SQUARE_0 f290              (R )
+BLACK_BLANK_on_WHITE_SQUARE_1 f300              (R )
+BLACK_BLANK_on_WHITE_SQUARE_2 f348              (R )
+BLACK_BLANK_on_WHITE_SQUARE_3 f390              (R )
+BLACK_KING_on_BLACK_SQUARE_0 f400              (R )
+BLACK_KING_on_BLACK_SQUARE_1 f448              (R )
+BLACK_KING_on_BLACK_SQUARE_2 f490              (R )
+BLACK_KING_on_BLACK_SQUARE_3 f500              (R )
+BLACK_KING_on_WHITE_SQUARE_0 f290              (R )
+BLACK_KING_on_WHITE_SQUARE_1 f300              (R )
+BLACK_KING_on_WHITE_SQUARE_2 f348              (R )
+BLACK_KING_on_WHITE_SQUARE_3 f390              (R )
+BLACK_KNIGHT_on_BLACK_SQUARE_0 f690              (R )
+BLACK_KNIGHT_on_BLACK_SQUARE_1 f700              (R )
+BLACK_KNIGHT_on_BLACK_SQUARE_2 f748              (R )
+BLACK_KNIGHT_on_BLACK_SQUARE_3 f790              (R )
+BLACK_KNIGHT_on_WHITE_SQUARE_0 f548              (R )
+BLACK_KNIGHT_on_WHITE_SQUARE_1 f590              (R )
+BLACK_KNIGHT_on_WHITE_SQUARE_2 f600              (R )
+BLACK_KNIGHT_on_WHITE_SQUARE_3 f648              (R )
+BLACK_PAWN_on_BLACK_SQUARE_0 f548              (R )
+BLACK_PAWN_on_BLACK_SQUARE_1 f590              (R )
+BLACK_PAWN_on_BLACK_SQUARE_2 f600              (R )
+BLACK_PAWN_on_BLACK_SQUARE_3 f648              (R )
+BLACK_PAWN_on_WHITE_SQUARE_0 f400              (R )
+BLACK_PAWN_on_WHITE_SQUARE_1 f448              (R )
+BLACK_PAWN_on_WHITE_SQUARE_2 f490              (R )
+BLACK_PAWN_on_WHITE_SQUARE_3 f500              (R )
+BLACK_QUEEN_on_BLACK_SQUARE_0 f290              (R )
+BLACK_QUEEN_on_BLACK_SQUARE_1 f300              (R )
+BLACK_QUEEN_on_BLACK_SQUARE_2 f348              (R )
+BLACK_QUEEN_on_BLACK_SQUARE_3 f390              (R )
+BLACK_QUEEN_on_WHITE_SQUARE_0 f148              (R )
+BLACK_QUEEN_on_WHITE_SQUARE_1 f190              (R )
+BLACK_QUEEN_on_WHITE_SQUARE_2 f200              (R )
+BLACK_QUEEN_on_WHITE_SQUARE_3 f248              (R )
+BLACK_ROOK_on_BLACK_SQUARE_0 f148              (R )
+BLACK_ROOK_on_BLACK_SQUARE_1 f190              (R )
+BLACK_ROOK_on_BLACK_SQUARE_2 f200              (R )
+BLACK_ROOK_on_BLACK_SQUARE_3 f248              (R )
+BLACK_ROOK_on_WHITE_SQUARE_0 f000              (R )
+BLACK_ROOK_on_WHITE_SQUARE_1 f048              (R )
+BLACK_ROOK_on_WHITE_SQUARE_2 f090              (R )
+BLACK_ROOK_on_WHITE_SQUARE_3 f100              (R )
+Board_AddressR           0086                  
+Board_AddressW           0088                  
+BoardPiece               f843              (R )
+BufferedJoystick         0082              (R )
+Cart_Init                f000                  
+ChessBitmap              f000              (R )
+ChessBitmap0             f000              (R )
+ChessBitmap1             f018              (R )
+ChessBitmap2             f030              (R )
+ChessBitmap3             f048              (R )
+ChessBitmap4             f060              (R )
+ChessBitmap5             f078              (R )
+Chessboard               1000              (R )
+CHESSBOARD_ROWS          0008              (R )
+ClearChessBitmap         f804              (R )
+ClearRowBitmap           f090              (R )
+colour_table             0084                  
+COLUBK                   0049              (R )
+COLUP0                   0046                  
+COLUP1                   0047                  
+COLUPF                   0048              (R )
+COMPILE_ILLEGALOPCODES   0001                  
+CopyChessboardPiecesToBoard f80f              (R )
+CopyPieceFromRAMBufferToScreen f883              (R )
+CopyPieceToRAMBuffer     f888              (R )
+CopyPieceToRowBitmap     f09b              (R )
+CopyShadowROMtoRAM       f8ae              (R )
+CTRLPF                   004a              (R )
+CXBLPF                   0046                  
+CXCLR                    006c                  
+CXM0FB                   0044                  
+CXM0P                    0040                  
+CXM1FB                   0045                  
+CXM1P                    0041                  
+CXP0FB                   0042                  
+CXP1FB                   0043                  
+CXPPMM                   0047                  
+DIRECTION_BITS           0007                  
+DrawRow                  f128              (R )
+DrawTheChessScreen       f0bb              (R )
+EARLY_LOCATION           f4d8              (R )
+ENABL                    005f                  
+ENAM0                    005d              (R )
+ENAM1                    005e                  
+FINAL_VERSION            0000              (R )
+FIXED_BANK               7800              (R )
+GENERIC_BANK_1           0000              (R )
+GRP0                     005b              (R )
+GRP1                     005c              (R )
+HMBL                     0064                  
+HMCLR                    006b              (R )
+HMM0                     0062                  
+HMM1                     0063                  
+HMOVE                    006a                  
+HMP0                     0060                  
+HMP1                     0061                  
+INDEX_BLACK_BISHOP_on_BLACK_SQUARE_0 0060                  
+INDEX_BLACK_BISHOP_on_BLACK_SQUARE_1 0061              (R )
+INDEX_BLACK_BISHOP_on_BLACK_SQUARE_2 0062                  
+INDEX_BLACK_BISHOP_on_BLACK_SQUARE_3 0063                  
+INDEX_BLACK_BISHOP_on_WHITE_SQUARE_0 0044                  
+INDEX_BLACK_BISHOP_on_WHITE_SQUARE_1 0045                  
+INDEX_BLACK_BISHOP_on_WHITE_SQUARE_2 0046              (R )
+INDEX_BLACK_BISHOP_on_WHITE_SQUARE_3 0047                  
+INDEX_BLACK_BLANK_on_BLACK_SQUARE_0 0054                  
+INDEX_BLACK_BLANK_on_BLACK_SQUARE_1 0055                  
+INDEX_BLACK_BLANK_on_BLACK_SQUARE_2 0056                  
+INDEX_BLACK_BLANK_on_BLACK_SQUARE_3 0057                  
+INDEX_BLACK_BLANK_on_WHITE_SQUARE_0 0038                  
+INDEX_BLACK_BLANK_on_WHITE_SQUARE_1 0039                  
+INDEX_BLACK_BLANK_on_WHITE_SQUARE_2 003a                  
+INDEX_BLACK_BLANK_on_WHITE_SQUARE_3 003b                  
+INDEX_BLACK_KING_on_BLACK_SQUARE_0 006c                  
+INDEX_BLACK_KING_on_BLACK_SQUARE_1 006d                  
+INDEX_BLACK_KING_on_BLACK_SQUARE_2 006e                  
+INDEX_BLACK_KING_on_BLACK_SQUARE_3 006f                  
+INDEX_BLACK_KING_on_WHITE_SQUARE_0 0050              (R )
+INDEX_BLACK_KING_on_WHITE_SQUARE_1 0051                  
+INDEX_BLACK_KING_on_WHITE_SQUARE_2 0052                  
+INDEX_BLACK_KING_on_WHITE_SQUARE_3 0053                  
+INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_0 005c                  
+INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_1 005d              (R )
+INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_2 005e                  
+INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_3 005f                  
+INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_0 0040                  
+INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_1 0041                  
+INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_2 0042              (R )
+INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_3 0043                  
+INDEX_BLACK_PAWN_on_BLACK_SQUARE_0 0058              (R )
+INDEX_BLACK_PAWN_on_BLACK_SQUARE_1 0059                  
+INDEX_BLACK_PAWN_on_BLACK_SQUARE_2 005a              (R )
+INDEX_BLACK_PAWN_on_BLACK_SQUARE_3 005b                  
+INDEX_BLACK_PAWN_on_WHITE_SQUARE_0 003c                  
+INDEX_BLACK_PAWN_on_WHITE_SQUARE_1 003d              (R )
+INDEX_BLACK_PAWN_on_WHITE_SQUARE_2 003e                  
+INDEX_BLACK_PAWN_on_WHITE_SQUARE_3 003f              (R )
+INDEX_BLACK_QUEEN_on_BLACK_SQUARE_0 0068                  
+INDEX_BLACK_QUEEN_on_BLACK_SQUARE_1 0069                  
+INDEX_BLACK_QUEEN_on_BLACK_SQUARE_2 006a                  
+INDEX_BLACK_QUEEN_on_BLACK_SQUARE_3 006b              (R )
+INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0 004c                  
+INDEX_BLACK_QUEEN_on_WHITE_SQUARE_1 004d                  
+INDEX_BLACK_QUEEN_on_WHITE_SQUARE_2 004e                  
+INDEX_BLACK_QUEEN_on_WHITE_SQUARE_3 004f                  
+INDEX_BLACK_ROOK_on_BLACK_SQUARE_0 0064                  
+INDEX_BLACK_ROOK_on_BLACK_SQUARE_1 0065                  
+INDEX_BLACK_ROOK_on_BLACK_SQUARE_2 0066                  
+INDEX_BLACK_ROOK_on_BLACK_SQUARE_3 0067              (R )
+INDEX_BLACK_ROOK_on_WHITE_SQUARE_0 0048              (R )
+INDEX_BLACK_ROOK_on_WHITE_SQUARE_1 0049                  
+INDEX_BLACK_ROOK_on_WHITE_SQUARE_2 004a                  
+INDEX_BLACK_ROOK_on_WHITE_SQUARE_3 004b                  
+INDEX_WHITE_BISHOP_on_BLACK_SQUARE_0 0028                  
+INDEX_WHITE_BISHOP_on_BLACK_SQUARE_1 0029                  
+INDEX_WHITE_BISHOP_on_BLACK_SQUARE_2 002a              (R )
+INDEX_WHITE_BISHOP_on_BLACK_SQUARE_3 002b                  
+INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0 000c                  
+INDEX_WHITE_BISHOP_on_WHITE_SQUARE_1 000d              (R )
+INDEX_WHITE_BISHOP_on_WHITE_SQUARE_2 000e                  
+INDEX_WHITE_BISHOP_on_WHITE_SQUARE_3 000f                  
+INDEX_WHITE_BLANK_on_BLACK_SQUARE_0 001c              (R )
+INDEX_WHITE_BLANK_on_BLACK_SQUARE_1 001d              (R )
+INDEX_WHITE_BLANK_on_BLACK_SQUARE_2 001e              (R )
+INDEX_WHITE_BLANK_on_BLACK_SQUARE_3 001f              (R )
+INDEX_WHITE_BLANK_on_WHITE_SQUARE_0 0000              (R )
+INDEX_WHITE_BLANK_on_WHITE_SQUARE_1 0001              (R )
+INDEX_WHITE_BLANK_on_WHITE_SQUARE_2 0002              (R )
+INDEX_WHITE_BLANK_on_WHITE_SQUARE_3 0003              (R )
+INDEX_WHITE_KING_on_BLACK_SQUARE_0 0034              (R )
+INDEX_WHITE_KING_on_BLACK_SQUARE_1 0035                  
+INDEX_WHITE_KING_on_BLACK_SQUARE_2 0036                  
+INDEX_WHITE_KING_on_BLACK_SQUARE_3 0037                  
+INDEX_WHITE_KING_on_WHITE_SQUARE_0 0018                  
+INDEX_WHITE_KING_on_WHITE_SQUARE_1 0019                  
+INDEX_WHITE_KING_on_WHITE_SQUARE_2 001a                  
+INDEX_WHITE_KING_on_WHITE_SQUARE_3 001b                  
+INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_0 0024                  
+INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_1 0025                  
+INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_2 0026              (R )
+INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_3 0027                  
+INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0 0008                  
+INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_1 0009              (R )
+INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_2 000a                  
+INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_3 000b                  
+INDEX_WHITE_PAWN_on_BLACK_SQUARE_0 0020                  
+INDEX_WHITE_PAWN_on_BLACK_SQUARE_1 0021              (R )
+INDEX_WHITE_PAWN_on_BLACK_SQUARE_2 0022                  
+INDEX_WHITE_PAWN_on_BLACK_SQUARE_3 0023              (R )
+INDEX_WHITE_PAWN_on_WHITE_SQUARE_0 0004              (R )
+INDEX_WHITE_PAWN_on_WHITE_SQUARE_1 0005                  
+INDEX_WHITE_PAWN_on_WHITE_SQUARE_2 0006              (R )
+INDEX_WHITE_PAWN_on_WHITE_SQUARE_3 0007                  
+INDEX_WHITE_QUEEN_on_BLACK_SQUARE_0 0030                  
+INDEX_WHITE_QUEEN_on_BLACK_SQUARE_1 0031                  
+INDEX_WHITE_QUEEN_on_BLACK_SQUARE_2 0032                  
+INDEX_WHITE_QUEEN_on_BLACK_SQUARE_3 0033                  
+INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0 0014                  
+INDEX_WHITE_QUEEN_on_WHITE_SQUARE_1 0015                  
+INDEX_WHITE_QUEEN_on_WHITE_SQUARE_2 0016                  
+INDEX_WHITE_QUEEN_on_WHITE_SQUARE_3 0017              (R )
+INDEX_WHITE_ROOK_on_BLACK_SQUARE_0 002c              (R )
+INDEX_WHITE_ROOK_on_BLACK_SQUARE_1 002d                  
+INDEX_WHITE_ROOK_on_BLACK_SQUARE_2 002e                  
+INDEX_WHITE_ROOK_on_BLACK_SQUARE_3 002f                  
+INDEX_WHITE_ROOK_on_WHITE_SQUARE_0 0010                  
+INDEX_WHITE_ROOK_on_WHITE_SQUARE_1 0011                  
+INDEX_WHITE_ROOK_on_WHITE_SQUARE_2 0012                  
+INDEX_WHITE_ROOK_on_WHITE_SQUARE_3 0013              (R )
+INITBANK                 0002              (R )
+InitialiseChessboard     f833              (R )
+INPT0                    0048                  
+INPT1                    0049                  
+INPT2                    004a                  
+INPT3                    004b                  
+INPT4                    004c              (R )
+INPT5                    004d                  
+INTIM                    0284              (R )
+JoyDirX                  f022                  
+JoyDirY                  f020                  
+JoyMoveX                 f000                  
+JoyMoveY                 f010                  
+L276                     0001              (R )
+LINES_PER_CHAR           0018              (R )
+MAXIMUM_REQUIRED_OVERLAY_SIZE 004c              (R )
+MINIMUM_SEGTIME          0003                  
+NO                       0000              (R )
+NO_ILLEGAL_OPCODES       0000 ????         (R )
+noFlashBG                f064                  
+NUSIZ0                   0044              (R )
+NUSIZ1                   0045              (R )
+ObjIterator              008c                  
+ORIGIN                   8000                  
+ORIGIN_RAM               3800                  
+Overlay                  008d              (R )
+OVERLAY_DELTA            0002              (R )
+OVERLAY_NAME             6861646f7752414d      str     (R ) "SetupShadowRAM"
+OVERLAY_SIZE             004c              (R )
+OVERSCAN_TIM_NTSC        0023              (R )
+OVERSCAN_TIM_PAL         0029              (R )
+OverscanTime             f041              (R )
+PAL                      0002              (R )
+PAL_50                   0002              (R )
+PAL_60                   0003                  
+PF0                      004d              (R )
+PF1                      004e              (R )
+PF2                      004f              (R )
+PIECE_SHAPE_SIZE         0048              (R )
+PIECE_VECTOR_BANK        f0e0              (R )
+PIECE_VECTOR_HI          f070              (R )
+PIECE_VECTOR_LO          f000              (R )
+PIECE_VECTORS            0008              (R )
+PIECES_0                 0003              (R )
+PIECES_1                 0004              (R )
+PIECES_2                 0005              (R )
+PIECES_3                 0006              (R )
+PIECES_4                 0007              (R )
+Platform                 0081              (R )
+PLUS0                    00aa              (R )
+PLUS1                    0019              (R )
+PLUS2                    00af              (R )
+PLUS3                    0036              (R )
+PLUSCART                 0001                  
+PLUSCART_IO              7ff0                  
+PostScreenCleanup        f049                  
+PreviousJoystick         0083                  
+RAM_3E                   1000              (R )
+RAM_Bank                 008b                  
+RAM_SIZE                 0400              (R )
+RAM_WRITE                0400              (R )
+REFP0                    004b                  
+REFP1                    004c                  
+RESBL                    0054                  
+RESERVED_FOR_STACK       000c              (R )
+Reset                    f8da              (R )
+RESM0                    0052                  
+RESM1                    0053                  
+RESMP0                   0068                  
+RESMP1                   0069                  
+RESP0                    0050                  
+RESP1                    0051                  
+Restart                  f915                  
+Resync                   f01d                  
+Ret                      f040                  
+rnd                      0080              (R )
+ROM_Bank                 008a                  
+ROM_BANK_SIZE            0800              (R )
+ROW_BITMAP_SIZE          0090              (R )
+RSYNC                    0043                  
+SCANLINES_NTSC           0114              (R )
+SCANLINES_PAL            0138              (R )
+SCREEN_BITMAP_SIZE       0060                  
+SEGMENT_DECODE_LEVEL_SHADOW f000                  
+SEGTIME_MAN              0016                  
+SEGTIME_MINIMUM_TIMESLICE 0003              (R )
+SELFMOD_RTS_ON_LAST_ROW  f157              (R )
+SET_BANK                 003f              (R )
+SET_BANK_RAM             003e              (R )
+STELLA_AUTODETECT        f800                  
+SWACNT                   0281              (R )
+SWBCNT                   0283              (R )
+SWCHA                    0280              (R )
+SWCHB                    0282                  
+T1024T                   0297                  
+TEST_MINIMUM_SEGTIME     0000                  
+TEST_SEGTIME_MAN         0000                  
+TEST_SEGTIME_MINIMUM_TIMESLICE 0000                  
+THE_FIXED_BANK           000f              (R )
+theThrottler             f045                  
+THROT_BASE               0012              (R )
+TIA_BASE_ADDRESS         0040              (R )
+TIA_BASE_READ_ADDRESS    0040              (R )
+TIA_BASE_WRITE_ADDRESS   0040              (R )
+TIM1T                    0294                  
+TIM64T                   0296              (R )
+TIM8T                    0295                  
+timeExit                 f8ad              (R )
+TimeSlice                f8a6                  
+TIMINT                   0285                  
+VBLANK                   0041              (R )
+VBLANK_TIM_NTSC          0030              (R )
+VBLANK_TIM_PAL           0055                  
+VDELBL                   0067                  
+VDELP0                   0065                  
+VDELP1                   0066                  
+VERSION_MACRO            006a                  
+VERSION_VCS              0069                  
+VSYNC                    0040              (R )
+WHITE_BISHOP_on_BLACK_SQUARE_0 f548              (R )
+WHITE_BISHOP_on_BLACK_SQUARE_1 f590              (R )
+WHITE_BISHOP_on_BLACK_SQUARE_2 f600              (R )
+WHITE_BISHOP_on_BLACK_SQUARE_3 f648              (R )
+WHITE_BISHOP_on_WHITE_SQUARE_0 f400              (R )
+WHITE_BISHOP_on_WHITE_SQUARE_1 f448              (R )
+WHITE_BISHOP_on_WHITE_SQUARE_2 f490              (R )
+WHITE_BISHOP_on_WHITE_SQUARE_3 f500              (R )
+WHITE_BLANK_on_BLACK_SQUARE_0 f148              (R )
+WHITE_BLANK_on_BLACK_SQUARE_1 f190              (R )
+WHITE_BLANK_on_BLACK_SQUARE_2 f200              (R )
+WHITE_BLANK_on_BLACK_SQUARE_3 f248              (R )
+WHITE_BLANK_on_WHITE_SQUARE_0 f000              (R )
+WHITE_BLANK_on_WHITE_SQUARE_1 f048              (R )
+WHITE_BLANK_on_WHITE_SQUARE_2 f090              (R )
+WHITE_BLANK_on_WHITE_SQUARE_3 f100              (R )
+WHITE_KING_on_BLACK_SQUARE_0 f148              (R )
+WHITE_KING_on_BLACK_SQUARE_1 f190              (R )
+WHITE_KING_on_BLACK_SQUARE_2 f200              (R )
+WHITE_KING_on_BLACK_SQUARE_3 f248              (R )
+WHITE_KING_on_WHITE_SQUARE_0 f000              (R )
+WHITE_KING_on_WHITE_SQUARE_1 f048              (R )
+WHITE_KING_on_WHITE_SQUARE_2 f090              (R )
+WHITE_KING_on_WHITE_SQUARE_3 f100              (R )
+WHITE_KNIGHT_on_BLACK_SQUARE_0 f400              (R )
+WHITE_KNIGHT_on_BLACK_SQUARE_1 f448              (R )
+WHITE_KNIGHT_on_BLACK_SQUARE_2 f490              (R )
+WHITE_KNIGHT_on_BLACK_SQUARE_3 f500              (R )
+WHITE_KNIGHT_on_WHITE_SQUARE_0 f290              (R )
+WHITE_KNIGHT_on_WHITE_SQUARE_1 f300              (R )
+WHITE_KNIGHT_on_WHITE_SQUARE_2 f348              (R )
+WHITE_KNIGHT_on_WHITE_SQUARE_3 f390              (R )
+WHITE_PAWN_on_BLACK_SQUARE_0 f290              (R )
+WHITE_PAWN_on_BLACK_SQUARE_1 f300              (R )
+WHITE_PAWN_on_BLACK_SQUARE_2 f348              (R )
+WHITE_PAWN_on_BLACK_SQUARE_3 f390              (R )
+WHITE_PAWN_on_WHITE_SQUARE_0 f148              (R )
+WHITE_PAWN_on_WHITE_SQUARE_1 f190              (R )
+WHITE_PAWN_on_WHITE_SQUARE_2 f200              (R )
+WHITE_PAWN_on_WHITE_SQUARE_3 f248              (R )
+WHITE_QUEEN_on_BLACK_SQUARE_0 f000              (R )
+WHITE_QUEEN_on_BLACK_SQUARE_1 f048              (R )
+WHITE_QUEEN_on_BLACK_SQUARE_2 f090              (R )
+WHITE_QUEEN_on_BLACK_SQUARE_3 f100              (R )
+WHITE_QUEEN_on_WHITE_SQUARE_0 f690              (R )
+WHITE_QUEEN_on_WHITE_SQUARE_1 f700              (R )
+WHITE_QUEEN_on_WHITE_SQUARE_2 f748              (R )
+WHITE_QUEEN_on_WHITE_SQUARE_3 f790              (R )
+WHITE_ROOK_on_BLACK_SQUARE_0 f690              (R )
+WHITE_ROOK_on_BLACK_SQUARE_1 f700              (R )
+WHITE_ROOK_on_BLACK_SQUARE_2 f748              (R )
+WHITE_ROOK_on_BLACK_SQUARE_3 f790              (R )
+WHITE_ROOK_on_WHITE_SQUARE_0 f548              (R )
+WHITE_ROOK_on_WHITE_SQUARE_1 f590              (R )
+WHITE_ROOK_on_WHITE_SQUARE_2 f600              (R )
+WHITE_ROOK_on_WHITE_SQUARE_3 f648              (R )
+WSYNC                    0042              (R )
+YES                      0001              (R )
+--- End of Symbol List.

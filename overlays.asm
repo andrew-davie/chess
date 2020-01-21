@@ -105,6 +105,11 @@ __tempx           ds 1
     VALIDATE_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
+    OVERLAY "Handlers"
+__piece            ds 1
+    VALIDATE_OVERLAY
+
+;---------------------------------------------------------------------------------------------------
 
     ECHO "---- END OF OVERLAYS ----"
     ECHO "MAXIMUM OVERLAY SIZE NEEDED = ", MAXIMUM_REQUIRED_OVERLAY_SIZE

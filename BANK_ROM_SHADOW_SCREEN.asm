@@ -26,12 +26,10 @@ ChessBitmap5    ds 24
     DEFINE_SUBROUTINE ClearRowBitmap
 
                 lda #0
-.OFFSET SET 0
-    REPEAT ROW_BITMAP_SIZE
-                sta ChessBitmap+RAM_WRITE+.OFFSET
-.OFFSET SET .OFFSET + 1
-    REPEND
-
+                ldy #ROW_BITMAP_SIZE
+.clearRow       sta ChessBitmap+RAM_WRITE-1,y
+                dey
+                bne .clearRow
                 rts
 
 ;---------------------------------------------------------------------------------------------------
@@ -42,9 +40,10 @@ ChessBitmap5    ds 24
 
                 ldy #71
 .copyPiece      lda __pieceShapeBuffer,y
+                beq .blank1
                 eor ChessBitmap,y
                 sta ChessBitmap+RAM_WRITE,y
-                dey
+.blank1         dey
                 bpl .copyPiece
 
                 rts
@@ -53,18 +52,12 @@ ChessBitmap5    ds 24
 
                 ldy #71
 .copyPieceR     lda __pieceShapeBuffer,y
+                beq .blank2
                 eor ChessBitmap+72,y
                 sta ChessBitmap+72+RAM_WRITE,y
-                dey
+.blank2         dey
                 bpl .copyPieceR
 
-                rts
-
-;---------------------------------------------------------------------------------------------------
-
-    DEFINE_SUBROUTINE DrawTheChessScreen
-
-                jsr DrawRow                     ; draws all 8 rows with nifty bankswitching
                 rts
 
 ;---------------------------------------------------------------------------------------------------
@@ -113,20 +106,7 @@ SELFMOD_RTS_ON_LAST_ROW
 .LineColour
 ; The ICC triplet colour definitions for a single row of the chessboard
     REPEAT 8
-        .byte $48, $28, $96 ;$4A, $1A, $98
+        .byte $4A, $2A, $96
     REPEND
-
-    MAC TEST
-V SET "L"+{1}
-V2 SET "LAB" + V
-V2$
-    ENDM
-
-UNQ SET 0
-    TEST UNQ
-    .byte 1
-UNQ SET UNQ + 1
-    TEST UNQ
-
 
     ;VALIDATE_RAM_SIZE
