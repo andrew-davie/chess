@@ -1,4 +1,9 @@
-            NEWRAMBANK COMMON_VARIABLES
+
+
+
+
+
+            NEWRAMBANK COMMON_VARIABLES, RAM_VARS
 
 Board           ds 144
 

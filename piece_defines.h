@@ -14,12 +14,13 @@ PHANTOM             = 32                ; a phantom king (via castling)
 ; ID lives in bits 0-2
 
 BLANK               = 0
-PAWN                = 1
-KNIGHT              = 2
-BISHOP              = 3
-ROOK                = 4
-QUEEN               = 5
-KING                = 6
+WPAWN               = 1
+BPAWN               = 2
+KNIGHT              = 3
+BISHOP              = 4
+ROOK                = 5
+QUEEN               = 6
+KING                = 7
 
 PIECE_MASK          = 7                 ; trim off the flags leaving just piece ID
 

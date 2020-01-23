@@ -1,35 +1,12 @@
 ; Copyright (C)2020 Andrew Davie
+; Piece move handler for king
+
 
 ; This is the move handler for a KING
 ; "Check" is detected in the next ply of the search, so the move generation doesn't have to
 ; be concerned about that. To assist with castling over squares in check (which is illegal)
 ; the concept of a phantom king is introduced. Phantom kings are effectively blank squares
 ; but need to be checked when moving opposite-colour pieces to a square. Messy.
-
-    NEWRAMBANK HANDLER_KING
-    ; Handles everything to do with king moving
-
-    include "common_vectors.asm"         ; MUST BE FIRST
-
-;---------------------------------------------------------------------------------------------------
-; MACRO - Common code
-; Looks at a square offset {1} to see if piece can move to it
-; Adds the square to the movelist if it can
-
-    MAC MOVE_TO
-    SUBROUTINE
-
-                ldy ValidSquare+{1},x
-                bmi .invalid                    ; off board!
-                lda Board,y                     ; piece @ destination
-                beq .squareEmpty
-
-                eor currentPiece
-                bpl .invalid                    ; same colour
-
-.squareEmpty    jsr AddMove
-.invalid
-    ENDM
 
 ;---------------------------------------------------------------------------------------------------
 ; MACRO - Castling
@@ -119,5 +96,5 @@ QUEENSIDE       = -4
 .noCastle
                 rts
 
-
-            CHECK_HALF_BANK_SIZE "HANDLER_KING -- 1K"
+;---------------------------------------------------------------------------------------------------
+; EOF

@@ -229,21 +229,30 @@ FREE SET FREE + .
 
 
     MAC DEFINE_SUBROUTINE               ; name of subroutine
-BANK_{1}        = _CURRENT_BANK         ; bank in which this subroutine resides
+RAMBANK_{1}     SET _CURRENT_RAMBANK      ; RAMBANK in which subroutine lives, if switched in
+BANK_{1}        SET _CURRENT_BANK         ; bank in which this subroutine resides
                 SUBROUTINE              ; keep everything local
 {1}                                     ; entry point
     ENDM
 
 
+    MAC DEF
+    ; {1} subroutine name
+        DEFINE_SUBROUTINE {1}
+    ENDM
 
     ;--------------------------------------------------------------------------
 
     MAC NEWRAMBANK ; bank name
+    ; {1}       bank name
+    ; {2}       RAM bank number
+
                 SEG.U {1}
                 ORG ORIGIN_RAM
                 RORG RAM_3E
 BANK_START      SET *
-{1}             SET ORIGIN_RAM / RAM_SIZE
+BANK_{1}        SET ORIGIN_RAM / RAM_SIZE
+_CURRENT_RAMBANK SET BANK_{1}
 ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
     ENDM
 
@@ -357,7 +366,7 @@ SCREEN_BITMAP_SIZE      = 4 * LINES_PER_CHAR
 
 ;---------------------------------------------------------------------------------------------------
 
-    NEWRAMBANK BANK_CHESSBOARD
+    NEWRAMBANK CHESSBOARD
 Chessboard      ds 64
     VALIDATE_RAM_SIZE
 
@@ -445,8 +454,11 @@ RND_EOR_VAL = $FE ;B4
             include "titleScreen.asm"
             include "engine6502.asm"
             include "common_variables.asm"
-            include "Handler_KING.asm"
-            include "Handler_QUEEN.asm"
+
+    ; The handlers for piece move generation
+
+            include "Handler_BANK1.asm"
+            include "Handler_BANK2.asm"
 
     ; MUST BE LAST...
             include "BANK_FIXED.asm"

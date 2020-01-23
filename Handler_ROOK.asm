@@ -1,23 +1,21 @@
 ; Copyright (C)2020 Andrew Davie
+; Rook move handler
 
 ;---------------------------------------------------------------------------------------------------
-; QUEEN
+; ROOK
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE Handle_QUEEN
+    DEFINE_SUBROUTINE Handle_ROOK
 
     ; Pass...
     ; x = currentSquare (square the piece is on)
     ; currentPiece (with flags/colour attached)
 
-                MOVE_TOWARDS _DOWN+_LEFT
                 MOVE_TOWARDS _DOWN
-                MOVE_TOWARDS _DOWN+_RIGHT
                 MOVE_TOWARDS _RIGHT
-                MOVE_TOWARDS _UP+_RIGHT
                 MOVE_TOWARDS _UP
-                MOVE_TOWARDS _UP+_LEFT
                 MOVE_TOWARDS _LEFT
                 rts
 
+;---------------------------------------------------------------------------------------------------
 ; EOF

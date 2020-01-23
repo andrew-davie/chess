@@ -16,15 +16,6 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE ClearChessBitmap_PART0
-
-                rts
-
-    DEFINE_SUBROUTINE ClearChessBitmap_PART1
-                rts
-
-;---------------------------------------------------------------------------------------------------
-
     DEFINE_SUBROUTINE CopySinglePiece
 
                 lda #BANK_CHESSBOARD
@@ -122,14 +113,14 @@ Move
             .byte WHITE|KNIGHT,20,57,0 ; e2e4
             .byte WHITE|ROOK,20,56,0 ; e2e4
 
-            .byte WHITE|PAWN,20,55,0 ; e2e4
-            .byte WHITE|PAWN,20,54,0 ; e2e4
-            .byte WHITE|PAWN,20,53,0 ; e2e4
-            .byte WHITE|PAWN,20,52,0 ; e2e4
-            .byte WHITE|PAWN,20,51,0 ; e2e4
-            .byte WHITE|PAWN,20,50,0 ; e2e4
-            .byte WHITE|PAWN,20,49,0 ; e2e4
-            .byte WHITE|PAWN,20,48,0 ; e2e4
+            .byte WHITE|WPAWN,20,55,0 ; e2e4
+            .byte WHITE|WPAWN,20,54,0 ; e2e4
+            .byte WHITE|WPAWN,20,53,0 ; e2e4
+            .byte WHITE|WPAWN,20,52,0 ; e2e4
+            .byte WHITE|WPAWN,20,51,0 ; e2e4
+            .byte WHITE|WPAWN,20,50,0 ; e2e4
+            .byte WHITE|WPAWN,20,49,0 ; e2e4
+            .byte WHITE|WPAWN,20,48,0 ; e2e4
 
             .byte BLACK2|ROOK,43,0,0 ; e2e4
             .byte BLACK2|KNIGHT,43,1,0 ; e2e4
@@ -140,23 +131,23 @@ Move
             .byte BLACK2|KNIGHT,43,6,0 ; e2e4
             .byte BLACK2|ROOK,43,7,0 ; e2e4
 
-            .byte BLACK2|PAWN,43,8,0 ; e2e4
-            .byte BLACK2|PAWN,43,9,0 ; e2e4
-            .byte BLACK2|PAWN,43,10,0 ; e2e4
-            .byte BLACK2|PAWN,43,11,0 ; e2e4
-            .byte BLACK2|PAWN,43,12,0 ; e2e4
-            .byte BLACK2|PAWN,43,13,0 ; e2e4
-            .byte BLACK2|PAWN,43,14,0 ; e2e4
-            .byte BLACK2|PAWN,43,15,0 ; e2e4
+            .byte BLACK2|BPAWN,43,8,0 ; e2e4
+            .byte BLACK2|BPAWN,43,9,0 ; e2e4
+            .byte BLACK2|BPAWN,43,10,0 ; e2e4
+            .byte BLACK2|BPAWN,43,11,0 ; e2e4
+            .byte BLACK2|BPAWN,43,12,0 ; e2e4
+            .byte BLACK2|BPAWN,43,13,0 ; e2e4
+            .byte BLACK2|BPAWN,43,14,0 ; e2e4
+            .byte BLACK2|BPAWN,43,15,0 ; e2e4
 
 
 
-            .byte WHITE|PAWN,52,52-16,DELX ; e2e4
-            .byte BLACK2|PAWN,11,11+16,DELX ; d7d5
+            .byte WHITE|WPAWN,52,52-16,DELX ; e2e4
+            .byte BLACK2|BPAWN,11,11+16,DELX ; d7d5
             .byte WHITE|KNIGHT,62,62-17,DELX ; g1f3
-            .byte BLACK2|PAWN,27,27+9,DELX ;d5e4
+            .byte BLACK2|BPAWN,27,27+9,DELX ;d5e4
             .byte WHITE|KNIGHT,45,45-15,DELX ;f3-g5
-            .byte BLACK2|PAWN,13,13+16,DELX ;f7f5
+            .byte BLACK2|BPAWN,13,13+16,DELX ;f7f5
             .byte WHITE|BISHOP,61,61-3*8-3,DELX ;f1c4
             .byte BLACK2|KNIGHT,1,1+17,DELX  ;b8c6
             .byte WHITE|KING,60,62,DELX   ;0-0
@@ -259,21 +250,22 @@ PieceToShape
 
     .byte INDEX_WHITE_BLANK_on_WHITE_SQUARE_0
     .byte INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
     .byte INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0
     .byte INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0
     .byte INDEX_WHITE_ROOK_on_WHITE_SQUARE_0
     .byte INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
     .byte INDEX_WHITE_KING_on_WHITE_SQUARE_0
-    .byte 0
 
     .byte INDEX_BLACK_BLANK_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
     .byte INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
     .byte INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_0
     .byte INDEX_BLACK_BISHOP_on_WHITE_SQUARE_0
     .byte INDEX_BLACK_ROOK_on_WHITE_SQUARE_0
     .byte INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
     .byte INDEX_BLACK_KING_on_WHITE_SQUARE_0
-    .byte 0
+
 
 
 
@@ -840,31 +832,104 @@ MarchB
                 sta drawPhase
                 rts
 
+;---------------------------------------------------------------------------------------------------
 
-    ;---------------------------------------------------------------------------
+HandlerVectorBank
+
+    .byte 0                     ; blank
+    .byte RAMBANK_Handle_WHITE_PAWN
+    .byte RAMBANK_Handle_BLACK_PAWN
+    .byte RAMBANK_Handle_KNIGHT
+    .byte RAMBANK_Handle_BISHOP
+    .byte RAMBANK_Handle_ROOK
+    .byte RAMBANK_Handle_QUEEN
+    .byte RAMBANK_Handle_KING
+
+HandlerVectorLO
+
+    .byte 0                     ; blank
+    .byte <Handle_WHITE_PAWN
+    .byte <Handle_BLACK_PAWN
+    .byte <Handle_KNIGHT
+    .byte <Handle_BISHOP
+    .byte <Handle_ROOK
+    .byte <Handle_QUEEN
+    .byte <Handle_KING
+
+HandlerVectorHI
+
+    .byte 0                     ; blank
+    .byte >Handle_WHITE_PAWN
+    .byte >Handle_BLACK_PAWN
+    .byte >Handle_KNIGHT
+    .byte >Handle_BISHOP
+    .byte >Handle_ROOK
+    .byte >Handle_QUEEN
+    .byte >Handle_KING
+
+
+Piece
+
+    ; 16 bytes defining square on which a piece is
+
+    .byte 26,27,28,29,30,31,32,33
+    .byte 38,39,40,41,42,43,44,45
+
+
+
+
+    DEFINE_SUBROUTINE CallMoveGenerators
+
+    ; iterate piecelist
+    ; call move generators
+
+                ;ldx pieclistIndex
+                ldy Piece+11,x              ; square piece is on (hardwired pawn for now)
+                sty currentSquare
+                lda Board,y
+                sta currentPiece
+
+                and #PIECE_MASK
+                tax
+
+                lda HandlerVectorLO,x
+                sta __vector
+                lda HandlerVectorHI,x
+                sta __vector+1
+                lda HandlerVectorBank,x
+                sta SET_BANK_RAM
+
+                ldx currentSquare
+                jmp (__vector)
+
+;---------------------------------------------------------------------------------------------------
 
     ECHO "FREE BYTES IN FIXED BANK = ", $FFF0 - *
 
-    ;---------------------------------------------------------------------------
-    ; The reset vectors
-    ; these must live in the fixed bank (last 2K of any ROM image in TigerVision)
+;---------------------------------------------------------------------------------------------------
 
-                SEG PlusCart
-                ORG FIXED_BANK + $7F0
-                RORG $7FF0
+    SEG PlusCart
+    ORG FIXED_BANK + $7F0
+    RORG $7FF0
+
 PLUSCART_IO = *
 PLUS0 = %10101010
 PLUS1 = %00011001
 PLUS2 = %10101111
 PLUS3 = %00110110
-                .byte PLUS0,PLUS1,PLUS2,PLUS3
+    .byte PLUS0,PLUS1,PLUS2,PLUS3
 
-                SEG InterruptVectors
-                ORG FIXED_BANK + $7FC
-                RORG $7ffC
+;---------------------------------------------------------------------------------------------------
+    ; The reset vectors
+    ; these must live in the fixed bank (last 2K of any ROM image in TigerVision)
+
+    SEG InterruptVectors
+    ORG FIXED_BANK + $7FC
+    RORG $7ffC
 
 ;               .word Reset           ; NMI        (not used)
                 .word Reset           ; RESET
                 .word Reset           ; IRQ        (not used)
 
-    ;---------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------------------
+; EOF

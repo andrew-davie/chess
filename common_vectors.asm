@@ -4,6 +4,7 @@
 
     OPTIONAL_PAGEBREAK "ValidSquare", 144
     SUBROUTINE
+
     DEFINE_SUBROUTINE ValidSquare
 
     ; Use this table to

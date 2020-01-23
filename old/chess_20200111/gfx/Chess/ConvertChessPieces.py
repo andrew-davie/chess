@@ -44,11 +44,11 @@ class SquareColours(Enum):
 class PieceTypes(Enum):
     BLANK = 0
     PAWN = 1
-    KNIGHT = 2
-    BISHOP = 3
-    ROOK = 4
-    QUEEN = 5
-    KING = 6
+    KNIGHT = 3
+    BISHOP = 4
+    ROOK = 5
+    QUEEN = 6
+    KING = 7
 
 
 pixel_no_to_bit_position = [

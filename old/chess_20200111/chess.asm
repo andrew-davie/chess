@@ -243,6 +243,7 @@ BANK_{1}        = _CURRENT_BANK         ; bank in which this subroutine resides
                 RORG RAM_3E
 BANK_START      SET *
 {1}             SET ORIGIN_RAM / RAM_SIZE
+_CURRENT_RAMBANK    SET ORIGIN_RAM / RAM_SIZE
 ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
     ENDM
 

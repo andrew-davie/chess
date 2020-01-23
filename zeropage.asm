@@ -18,6 +18,7 @@ title_colour_table              ds 2
 currentPiece                    ds 1
 currentSquare                   ds 1
 returnBank                      ds 1
+enPassantPawn                   ds 1        ; TODO - this belongs in PLY bank
 
 fromSquare                      ds 1
 fromPiece                       ds 1
