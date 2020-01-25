@@ -1,7 +1,11 @@
 ; Copyright (C)2020 Andrew Davie
 
 BLACK               = 128
+BL                  = BLACK
+
 WHITE               = 0
+WH                  = WHITE
+
 PIECE_COLOUR        = 128               ; mask
 
 
@@ -14,13 +18,22 @@ PHANTOM             = 32                ; a phantom king (via castling)
 ; ID lives in bits 0-2
 
 BLANK               = 0
+███                 = BLANK
+
 WPAWN               = 1
+WP                  = WPAWN
 BPAWN               = 2
+BP                  = BPAWN
 KNIGHT              = 3
+N                   = KNIGHT
 BISHOP              = 4
+B                   = BISHOP
 ROOK                = 5
+R                   = ROOK
 QUEEN               = 6
+Q                   = QUEEN
 KING                = 7
+K                   = KING
 
 PIECE_MASK          = 7                 ; trim off the flags leaving just piece ID
 
@@ -28,9 +41,9 @@ PIECE_MASK          = 7                 ; trim off the flags leaving just piece 
 
 ; Movements
 
-_UP = 12        ; up
+_UP = 10        ; up
 _LEFT = -1      ; left
-_DOWN = -12     ; down
+_DOWN = -10     ; down
 _RIGHT = 1      ; right
 
 ; EOF

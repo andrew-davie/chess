@@ -6,7 +6,7 @@
 ;---------------------------------------------------------------------------------------------------
 
 WHITE_HOME_ROW  = 48            ; less than this and pawn hasn't moved yet
-BLACK_HOME_ROW  = 96            ; grater than this and pawn hasn't moved yet
+BLACK_HOME_ROW  = 96            ; greater than this and pawn hasn't moved yet
 
 ;---------------------------------------------------------------------------------------------------
 

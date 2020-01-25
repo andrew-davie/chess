@@ -111,6 +111,13 @@ __vector                ds 2
     VALIDATE_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
+    OVERLAY "Movers"
+__fromCol               ds 1
+__toCol                 ds 1
+
+    VALIDATE_OVERLAY
+
+;---------------------------------------------------------------------------------------------------
 
     ECHO "---- END OF OVERLAYS ----"
     ECHO "MAXIMUM OVERLAY SIZE NEEDED = ", MAXIMUM_REQUIRED_OVERLAY_SIZE

@@ -12,39 +12,43 @@ ORIGIN          SET FIXED_BANK
                 NEWBANK THE_FIXED_BANK
                 RORG $f800
 
-STELLA_AUTODETECT .byte $85,$3e,$a9,$00
 
 ;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE CopySinglePiece
 
-                lda #BANK_CHESSBOARD
-                sta SET_BANK_RAM
 
-                lda drawPieceNumber
+    ; figure colouration of square
+                lda drawPieceNumber ;0-63
                 lsr
                 lsr
                 lsr
                 clc
                 adc drawPieceNumber
                 and #1
-                ;eor #1
+                eor #1
                 beq .white
                 lda #28
 .white          sta __pieceColour           ; actually SQUARE black/white
 
     ; PieceColour = 0 for white square, 28 for black square
 
-                ldy drawPieceNumber
+                lda #RAMBANK_MOVES_RAM
+                sta SET_BANK_RAM
 
+                ldy drawPieceNumber         ;0-63
+                ldx Base64ToIndex,y
+
+                lda Chessboard,x
+                asl
+                bcc .blackAdjust
+                ora #16
+.blackAdjust    lsr
+                tax
 
                 tya
                 and #3          ; shift position in PF
 
-        ldx #BANK_CHESSBOARD
-        stx SET_BANK_RAM
-
-                ldx Chessboard,y
                 clc
                 adc PieceToShape,x
                 clc
@@ -56,6 +60,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
                 lsr
                 lsr
                 lsr
+                eor #7
                 ;ora doubleBufferBase
                 tax             ; row
 
@@ -72,12 +77,12 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
 
                 ldx movePointer
                 lda Move,x
-                bmi halted
+                beq halted
 
                 lda Move+1,x
                 sta fromSquare
                 tay
-                lda #BANK_CHESSBOARD
+                lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM
                 lda Move,x ;Chessboard,y
                 sta fromPiece
@@ -104,6 +109,9 @@ DELX = 50
 
 Move
 
+    ; numbering is BASE64
+
+#if 0
             .byte WHITE|ROOK,20,63,0 ; e2e4
             .byte WHITE|KNIGHT,20,62,0 ; e2e4
             .byte WHITE|BISHOP,20,61,0 ; e2e4
@@ -122,44 +130,45 @@ Move
             .byte WHITE|WPAWN,20,49,0 ; e2e4
             .byte WHITE|WPAWN,20,48,0 ; e2e4
 
-            .byte BLACK2|ROOK,43,0,0 ; e2e4
-            .byte BLACK2|KNIGHT,43,1,0 ; e2e4
-            .byte BLACK2|BISHOP,43,2,0 ; e2e4
-            .byte BLACK2|QUEEN,43,3,0 ; e2e4
-            .byte BLACK2|KING,43,4,0 ; e2e4
-            .byte BLACK2|BISHOP,43,5,0 ; e2e4
-            .byte BLACK2|KNIGHT,43,6,0 ; e2e4
-            .byte BLACK2|ROOK,43,7,0 ; e2e4
+            .byte BLACK|ROOK,43,0,0 ; e2e4
+            .byte BLACK|KNIGHT,43,1,0 ; e2e4
+            .byte BLACK|BISHOP,43,2,0 ; e2e4
+            .byte BLACK|QUEEN,43,3,0 ; e2e4
+            .byte BLACK|KING,43,4,0 ; e2e4
+            .byte BLACK|BISHOP,43,5,0 ; e2e4
+            .byte BLACK|KNIGHT,43,6,0 ; e2e4
+            .byte BLACK|ROOK,43,7,0 ; e2e4
 
-            .byte BLACK2|BPAWN,43,8,0 ; e2e4
-            .byte BLACK2|BPAWN,43,9,0 ; e2e4
-            .byte BLACK2|BPAWN,43,10,0 ; e2e4
-            .byte BLACK2|BPAWN,43,11,0 ; e2e4
-            .byte BLACK2|BPAWN,43,12,0 ; e2e4
-            .byte BLACK2|BPAWN,43,13,0 ; e2e4
-            .byte BLACK2|BPAWN,43,14,0 ; e2e4
-            .byte BLACK2|BPAWN,43,15,0 ; e2e4
+            .byte BLACK|BPAWN,43,8,0 ; e2e4
+            .byte BLACK|BPAWN,43,9,0 ; e2e4
+            .byte BLACK|BPAWN,43,10,0 ; e2e4
+            .byte BLACK|BPAWN,43,11,0 ; e2e4
+            .byte BLACK|BPAWN,43,12,0 ; e2e4
+            .byte BLACK|BPAWN,43,13,0 ; e2e4
+            .byte BLACK|BPAWN,43,14,0 ; e2e4
+            .byte BLACK|BPAWN,43,15,0 ; e2e4
 
+#endif
 
-
-            .byte WHITE|WPAWN,52,52-16,DELX ; e2e4
-            .byte BLACK2|BPAWN,11,11+16,DELX ; d7d5
+            .byte WHITE|WPAWN,12,12+16,DELX ; e2e4
+            .byte BLACK|BPAWN,51,51-16,DELX ; d7d5
+#if 0
             .byte WHITE|KNIGHT,62,62-17,DELX ; g1f3
-            .byte BLACK2|BPAWN,27,27+9,DELX ;d5e4
+            .byte BLACK|BPAWN,27,27+9,DELX ;d5e4
             .byte WHITE|KNIGHT,45,45-15,DELX ;f3-g5
-            .byte BLACK2|BPAWN,13,13+16,DELX ;f7f5
+            .byte BLACK|BPAWN,13,13+16,DELX ;f7f5
             .byte WHITE|BISHOP,61,61-3*8-3,DELX ;f1c4
-            .byte BLACK2|KNIGHT,1,1+17,DELX  ;b8c6
+            .byte BLACK|KNIGHT,1,1+17,DELX  ;b8c6
             .byte WHITE|KING,60,62,DELX   ;0-0
             .byte WHITE|ROOK,63,61,0
-            .byte BLACK2|KNIGHT,6,6+15,DELX ;g8f6
+            .byte BLACK|KNIGHT,6,6+15,DELX ;g8f6
             .byte WHITE|KNIGHT,30,20,DELX ;g5e6
-            .byte BLACK2|QUEEN,3,3+16,DELX ;D8d6
+            .byte BLACK|QUEEN,3,3+16,DELX ;D8d6
             .byte WHITE|KNIGHT,20,20-15,DELX ;e6f8
-            .byte BLACK2|KNIGHT,21,21+17,DELX ;f6g4
+            .byte BLACK|KNIGHT,21,21+17,DELX ;f6g4
             .byte WHITE|KNIGHT,57,42,DELX ;B1C3
-            .byte BLACK2|QUEEN,19,55,DELX ;qxp mate
-
+            .byte BLACK|QUEEN,19,55,DELX ;qxp mate
+#endif
 
 ;            .byte 7,5,DELX
 ;            .byte 51,51-16,DELX
@@ -176,75 +185,46 @@ Move
 ;            .byte 56,58,DELX
 ;            .byte 21,21+17,DELX
             .byte WHITE|KING,62,62,DELX
-            .byte -1
+            .byte 0
 
+;---------------------------------------------------------------------------------------------------
 
+    DEFINE_SUBROUTINE ConvertToBase64
 
-    DEFINE_SUBROUTINE RandomPieceMove
+    ; convert from 10x12 square numbering (0-119) to 8x8 square numbering (0-63)
 
-        jmp MoveViaList
+            sec
+            sbc #22
 
+            ldx #$FF
+.conv64     sbc #10
+            inx
+            bcs .conv64
+            adc #10
 
+    ; A = column (0-7)
+    ; X = row (0-7)
 
-                lda #BANK_CHESSBOARD
-                sta SET_BANK_RAM
+            rts
 
-                NEXT_RANDOM
-                tax
-.nextX          inx
-                txa
-                and #63
-                tax
-
-                lda Chessboard,x
-                ;cmp #BLANK
-                beq .nextX
-
-                stx fromSquare
-
-                NEXT_RANDOM
-                tay
-.nextY          iny
-                tya
-                and #63
-                tay
-
-
-                ;lda #BLANK
-                ;sta fromPiece
-
-                lda Chessboard,y
-                ;cmp #BLANK
-                bne .nextY
-
-                sty toSquare
-
-                lda Chessboard,x
-                sta fromPiece
-
-;                sta Chessboard+RAM_WRITE,y
-;                lda #BLANK
-;                sta Chessboard+RAM_WRITE,x
-
-                rts
 
 ;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE InitialiseChessboard
-
-                lda #BANK_CHESSBOARD
+ rts
+                lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM
 
                 ldx #63
-.setupBoard     lda BoardPiece,x
-                sta Chessboard+RAM_WRITE,x
+.setupBoard     ldy Base64ToIndex,x
+                lda #BLANK ;BoardPiece,x
+                sta Chessboard+RAM_WRITE,y
                 dex
                 bpl .setupBoard
 
                 rts
 
 
-BLACK2 = 8
 
 PieceToShape
 
@@ -267,132 +247,6 @@ PieceToShape
     .byte INDEX_BLACK_KING_on_WHITE_SQUARE_0
 
 
-
-
-BoardPiece
-
-;WHITE_PAWN = INDEX_WHITE_PAWN_on_BLACK_SQUARE_0
-;WHITE_ROOK = INDEX_WHITE_ROOK_on_BLACK_SQUARE_0
-;WHITE_KNIGHT = INDEX_WHITE_KNIGHT_on_BLACK_SQUARE_0
-;WHITE_BISHOP = INDEX_WHITE_BISHOP_on_BLACK_SQUARE_0
-;WHITE_QUEEN = INDEX_WHITE_QUEEN_on_BLACK_SQUARE_0
-;WHITE_KING = INDEX_WHITE_KING_on_BLACK_SQUARE_0
-;BLACK_PAWN = INDEX_BLACK_PAWN_on_BLACK_SQUARE_0
-;BLACK_ROOK = INDEX_BLACK_ROOK_on_BLACK_SQUARE_0
-;BLACK_KNIGHT = INDEX_BLACK_KNIGHT_on_BLACK_SQUARE_0
-;BLACK_BISHOP = INDEX_BLACK_BISHOP_on_BLACK_SQUARE_0
-;BLACK_QUEEN = INDEX_BLACK_QUEEN_on_BLACK_SQUARE_0
-;BLACK_KING = INDEX_BLACK_KING_on_BLACK_SQUARE_0
-
-    ;.byte BLACK|ROOK ;0
-    ;.byte BLACK|KNIGHT ;1
-    ;.byte BLACK|BISHOP ;2
-    ;.byte BLACK|QUEEN ;3
-    ;.byte BLACK|KING ;4
-    ;.byte BLACK|BISHOP ;5
-    ;.byte BLACK|KNIGHT ;6
-    ;.byte BLACK|ROOK ;7
-
-    ;.byte BLACK|PAWN
-    ;.byte BLACK|PAWN
-    ;.byte BLACK|PAWN
-    ;.byte BLACK|PAWN
-    ;.byte BLACK|PAWN
-    ;.byte BLACK|PAWN
-    ;.byte BLACK|PAWN
-    ;.byte BLACK|PAWN
-
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-    .byte BLANK
-
-    ;.byte WHITE|PAWN
-    ;.byte WHITE|PAWN
-    ;.byte WHITE|PAWN
-    ;.byte WHITE|PAWN
-    ;.byte WHITE|PAWN
-    ;.byte WHITE|PAWN
-    ;.byte WHITE|PAWN
-    ;.byte WHITE|PAWN
-
-    ;.byte WHITE|ROOK
-    ;.byte WHITE|KNIGHT
-    ;.byte WHITE|BISHOP
-    ;.byte WHITE|QUEEN
-    ;.byte WHITE|KING
-    ;.byte WHITE|BISHOP
-    ;.byte WHITE|KNIGHT
-    ;.byte WHITE|ROOK
-
-
 ;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE CopyPieceToRAMBuffer
@@ -411,11 +265,12 @@ BoardPiece
                 sta SET_BANK
 
                 ldy #PIECE_SHAPE_SIZE-1
-        REPEAT PIECE_SHAPE_SIZE
-                lda (__ptr),y
+        ;REPEAT PIECE_SHAPE_SIZE
+.copyP          lda (__ptr),y
                 sta __pieceShapeBuffer,y
                 dey
-        REPEND
+                bpl .copyP
+        ;REPEND
 
 ;.copyPieceGfx   lda (__ptr),y
 ;                sta __pieceShapeBuffer,y
@@ -490,6 +345,14 @@ BoardPiece
                 lda #$60                        ; rts
                 sta SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE
 
+
+    ; copy the BOARD/MOVES bank
+
+                ldy #RAMBANK_MOVES_RAM
+                ldx #MOVES
+                jsr CopyShadowROMtoRAM              ; this auto-initialises Board too
+
+
                 jsr InitialiseChessboard
 
     ; Now the board is "living" in RAM (along with support code) we can do stuff with it
@@ -525,9 +388,7 @@ BoardPiece
                 bne .VerticalBlank
                 sta VBLANK
 
-                lda doubleBufferBase
-                ;eor #8
-                tax
+                ldx doubleBufferBase
                 stx SET_BANK_RAM
                 jsr DrawRow
 
@@ -587,7 +448,6 @@ Restart     ; go here on RESET + SELECT
                 jmp (__ptr)
 
 MARCH = 6
-MARCH_END = 10
 STARTMOVE = 3
 
 DrawVectorLO
@@ -651,7 +511,7 @@ DrawVectorHI
 
     DEFINE_SUBROUTINE FlipBuffers
 
-                jsr RandomPieceMove
+                jsr MoveViaList
 
                 lda #BLANK
                 sta previousPiece
@@ -705,6 +565,7 @@ deCount         lda drawCount
 flashDone       inc drawPhase
                 ;rts
 
+;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE MarchToTargetA
 
@@ -759,15 +620,19 @@ colok
                 sta drawPieceNumber
                 jsr CopySinglePiece             ; erase destination--> blank
 
-                lda #BANK_CHESSBOARD
+                lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM
                 ldx fromSquare
-                lda Chessboard,x
+                ldy Base64ToIndex,x
+
+                lda Chessboard,y
                 sta lastPiece                   ; what we are overwriting
                 lda fromPiece
-                sta Chessboard+RAM_WRITE,x      ; and what'w actually moving there
+                sta Chessboard+RAM_WRITE,y      ; and what'w actually moving there
                 inc drawPhase
                 rts
+
+;---------------------------------------------------------------------------------------------------
 
 MarchB
 
@@ -780,6 +645,8 @@ MarchB
 
                 inc drawPhase
                 rts
+
+;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE MarchToTargetB
 
@@ -796,17 +663,21 @@ MarchB
                 sta drawPieceNumber
                 jsr CopySinglePiece             ; erase whatever was on the previous square (completely blank)
 
-                lda #BANK_CHESSBOARD
+                lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM
                 lda previousPiece
+
                 ldx lastSquare
-                sta Chessboard+RAM_WRITE,x
+                ldy Base64ToIndex,x
+                sta Chessboard+RAM_WRITE,y
 
                 lda lastPiece
                 sta previousPiece
 
                 inc drawPhase
                 rts
+
+;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE MarchB2
 
@@ -826,59 +697,16 @@ MarchB
                 sta drawPhase
                 rts
 
-
-
 .halt           lda #STARTMOVE
                 sta drawPhase
                 rts
 
 ;---------------------------------------------------------------------------------------------------
 
-HandlerVectorBank
-
-    .byte 0                     ; blank
-    .byte RAMBANK_Handle_WHITE_PAWN
-    .byte RAMBANK_Handle_BLACK_PAWN
-    .byte RAMBANK_Handle_KNIGHT
-    .byte RAMBANK_Handle_BISHOP
-    .byte RAMBANK_Handle_ROOK
-    .byte RAMBANK_Handle_QUEEN
-    .byte RAMBANK_Handle_KING
-
-HandlerVectorLO
-
-    .byte 0                     ; blank
-    .byte <Handle_WHITE_PAWN
-    .byte <Handle_BLACK_PAWN
-    .byte <Handle_KNIGHT
-    .byte <Handle_BISHOP
-    .byte <Handle_ROOK
-    .byte <Handle_QUEEN
-    .byte <Handle_KING
-
-HandlerVectorHI
-
-    .byte 0                     ; blank
-    .byte >Handle_WHITE_PAWN
-    .byte >Handle_BLACK_PAWN
-    .byte >Handle_KNIGHT
-    .byte >Handle_BISHOP
-    .byte >Handle_ROOK
-    .byte >Handle_QUEEN
-    .byte >Handle_KING
-
-
-Piece
-
-    ; 16 bytes defining square on which a piece is
-
-    .byte 26,27,28,29,30,31,32,33
-    .byte 38,39,40,41,42,43,44,45
-
-
-
-
     DEFINE_SUBROUTINE CallMoveGenerators
+
+                lda #RAMBANK_MOVES_RAM
+                sta SET_BANK_RAM
 
     ; iterate piecelist
     ; call move generators
@@ -896,28 +724,17 @@ Piece
                 sta __vector
                 lda HandlerVectorHI,x
                 sta __vector+1
-                lda HandlerVectorBank,x
-                sta SET_BANK_RAM
 
                 ldx currentSquare
                 jmp (__vector)
 
+    include "Handler_KNIGHT.asm"
+    include "Handler_PAWN.asm"
+
+
 ;---------------------------------------------------------------------------------------------------
 
-    ECHO "FREE BYTES IN FIXED BANK = ", $FFF0 - *
-
-;---------------------------------------------------------------------------------------------------
-
-    SEG PlusCart
-    ORG FIXED_BANK + $7F0
-    RORG $7FF0
-
-PLUSCART_IO = *
-PLUS0 = %10101010
-PLUS1 = %00011001
-PLUS2 = %10101111
-PLUS3 = %00110110
-    .byte PLUS0,PLUS1,PLUS2,PLUS3
+    ECHO "FREE BYTES IN FIXED BANK = ", $FFFC - *
 
 ;---------------------------------------------------------------------------------------------------
     ; The reset vectors

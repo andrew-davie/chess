@@ -13,12 +13,12 @@
 .project        ldy ValidSquare+{1},x
                 bmi .invalid                    ; off board!
                 lda Board,y                     ; piece @ destination
-                beq .squareEmpty
+                beq .empty
 
                 eor currentPiece
                 bpl .invalid                    ; same colour
 
-.squareEmpty    jsr AddMove
+.empty          jsr AddMove
 
                 lda Board,y
                 bne .invalid                    ; stop when we hit something
@@ -34,17 +34,16 @@
 
     MAC MOVE_TO
     SUBROUTINE
-
                 ldy ValidSquare+{1},x
-                bmi .invalidK                   ; off board!
+                bmi .invalid                    ; off board!
                 lda Board,y                     ; piece @ destination
                 beq .squareEmpty
 
                 eor currentPiece
-                bpl .invalidK                   ; same colour
+                bpl .invalid                    ; same colour
 
 .squareEmpty    jsr AddMove
-.invalidK
+.invalid
     ENDM
 
 ;---------------------------------------------------------------------------------------------------

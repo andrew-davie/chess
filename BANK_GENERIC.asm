@@ -10,6 +10,7 @@
     ENDIF
     #endif
 
+STELLA_AUTODETECT .byte $85,$3e,$a9,$00
 
             CHECK_HALF_BANK_SIZE "GENERIC_BANK_1 (DECODE_LEVEL)"
 

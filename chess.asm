@@ -229,7 +229,6 @@ FREE SET FREE + .
 
 
     MAC DEFINE_SUBROUTINE               ; name of subroutine
-RAMBANK_{1}     SET _CURRENT_RAMBANK      ; RAMBANK in which subroutine lives, if switched in
 BANK_{1}        SET _CURRENT_BANK         ; bank in which this subroutine resides
                 SUBROUTINE              ; keep everything local
 {1}                                     ; entry point
@@ -251,8 +250,8 @@ BANK_{1}        SET _CURRENT_BANK         ; bank in which this subroutine reside
                 ORG ORIGIN_RAM
                 RORG RAM_3E
 BANK_START      SET *
-BANK_{1}        SET ORIGIN_RAM / RAM_SIZE
-_CURRENT_RAMBANK SET BANK_{1}
+RAMBANK_{1}     SET ORIGIN_RAM / RAM_SIZE
+_CURRENT_RAMBANK SET RAMBANK_{1}
 ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
     ENDM
 
@@ -321,21 +320,18 @@ ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
     ;------------------------------------------------------------------------------
 
     ; NOW THE VERY INTERESTING '3E' RAM BANKS
-    ; EACH BANK HAS A READ-ADDRESS AND A WRITE-ADDRESS, WITH 2k TOTAL
+    ; EACH BANK HAS A READ-ADDRESS AND A WRITE-ADDRESS, WITH 1k TOTAL ACCESSIBLE
+    ; IN A 2K MEMORY SPACE
 
-                NEWRAMBANK BANK_SCREENMARKII1
+    NEWRAMBANK CHESS_BOARD_ROW
+    REPEAT (CHESSBOARD_ROWS) - 1
+        NEWRAMBANK .DUMMY
+        VALIDATE_RAM_SIZE
+    REPEND
 
     ; NOTE: THIS BANK JUST *LOOKS* EMPTY.
     ; It actually contains everything copied from the ROM copy of the ROW RAM banks.
     ; The variable definitions are also in that ROM bank (even though they're RAM :)
-
-SCREEN_BITMAP_SIZE      = 4 * LINES_PER_CHAR
-
-    ; These banks (there are #CHESSBOARD_ROWS of them) hold a RAM copy of the screen draw
-    ; code.  This code is self-modifying, in that the colour values for each scanline
-    ; are set to NTSC or PAL values on startup -- thus, the single binary can run
-    ; on either format system.  The main purpose for copying the draw code to RAM,
-    ; though, is to free up space in the fixed bank (which is incredibly valuable).
 
     ; A neat feature of having multiple copies of the same code in different RAM banks
     ; is that we can use that code to switch between banks, and the system will happily
@@ -347,91 +343,14 @@ SCREEN_BITMAP_SIZE      = 4 * LINES_PER_CHAR
     ; changed by changing the #LINES_PER_CHAR value.  Note that this depth should be
     ; a multiple of 3, so that the RGB scanlines match at character joins.
 
-    ; The next part of the graphics data is a bitmap sprite buffer -- space for two
-    ; sprites' graphics shape and colour data.  The shape and colour may be set as
-    ; part of the draw routine *every* scanline (though the system currently uses
-    ; one colour shared between both players).
-
-                VALIDATE_RAM_SIZE
-
-    ; We have one bank for each screen row.  These banks are duplicates of the above,
+    ; We have one bank for each chessboard row.  These banks are duplicates of the above,
     ; accessed via the above labels but with the appropriate bank switched in.
 
     ;------------------------------------------------------------------------------
 
-    REPEAT (CHESSBOARD_ROWS) - 1
-        NEWRAMBANK .DUMMY
-        VALIDATE_RAM_SIZE
-    REPEND
 
 ;---------------------------------------------------------------------------------------------------
 
-    NEWRAMBANK CHESSBOARD
-Chessboard      ds 64
-    VALIDATE_RAM_SIZE
-
-    ;------------------------------------------------------------------------------
-    ;##############################################################################
-    ;------------------------------------------------------------------------------
-
-            NEWRAMBANK BANK_SCREEN
-; VARS DEFINED IN ROM_SHADOW_OF_SCREEN
-            VALIDATE_RAM_SIZE
-
-
-                NEWRAMBANK BANK_DRAW_BUFFERS
-; VARS DEFINED IN ROM_SHADOW_OF_BANK_DRAW_BUFFERS
-; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
-                VALIDATE_RAM_SIZE
-
-    ;------------------------------------------------------------------------------
-    ;##############################################################################
-    ;------------------------------------------------------------------------------
-
-                NEWRAMBANK BANK_SCORING
-; VARS DEFINED IN ROM_SHADOW_OF_BANK_SCORING
-; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
-                VALIDATE_RAM_SIZE
-
-    ;------------------------------------------------------------------------------
-    ;##############################################################################
-    ;------------------------------------------------------------------------------
-
-                NEWRAMBANK BANK_DECODE_LEVEL
-; VARS DEFINED IN BANK_DECODE_LEVEL_SHADOW
-; SELF-MODIFYING SUBROUTINES MAY BE PRESENT IN THIS BANK TOO!
-                VALIDATE_RAM_SIZE
-
-    ;------------------------------------------------------------------------------
-    ;##############################################################################
-    ;------------------------------------------------------------------------------
-
-
-    ;------------------------------------------------------------------------------
-    ;##############################################################################
-    ;------------------------------------------------------------------------------
-
-                NEWRAMBANK BANK_BOARD
-
-    ; Now the interesting 'BOARD' -- which in reality is a free-form system of M*N
-    ; rows and columns.  We need to reserve enough RAM for the board's entirety, but
-    ; don't really care much how it overlaps the 1K bank limit.  The code accessing
-    ; the board *MUST* calculate and take account of the correct RAM bank to switch
-    ; when accessing.
-
-    ; The system is fairly free-form, in that it rearranges the memory and tables
-    ; automatically based on the sizes set in these constants. The board may overlay
-    ; MULTIPLE banks -- just as long as any particular LINE does not cross a bank
-    ; we're doing OK.
-
-    ; NOTE: Assumption is that board lines CANNOT CROSS page boundaries.
-
-; now fits into one single bank (if we don't reserve too much space for code)
-
-
-    ;------------------------------------------------------------------------------
-    ;##############################################################################
-    ;------------------------------------------------------------------------------
 
 RND_EOR_VAL = $FE ;B4
 
@@ -447,20 +366,18 @@ RND_EOR_VAL = $FE ;B4
 
 ;ORIGIN      SET 0
 
-            include "BANK_GENERIC.asm"
-            include "BANK_ROM_SHADOW_SCREEN.asm"
-            include "BANK_INITBANK.asm"         ; MUST be after banks that include levels -- otherwise MAX_LEVELBANK is not calculated properly
-            include "BANK_CHESS_INCLUDES.asm"
-            include "titleScreen.asm"
-            include "engine6502.asm"
-            include "common_variables.asm"
+    include "Handler_MACROS.asm"
+
+    include "BANK_GENERIC.asm"
+    include "BANK_ROM_SHADOW_SCREEN.asm"
+    include "BANK_INITBANK.asm"         ; MUST be after banks that include levels -- otherwise MAX_LEVELBANK is not calculated properly
+    include "BANK_CHESS_INCLUDES.asm"
+    include "titleScreen.asm"
 
     ; The handlers for piece move generation
-
-            include "Handler_BANK1.asm"
-            include "Handler_BANK2.asm"
+    include "Handler_BANK1.asm"
 
     ; MUST BE LAST...
-            include "BANK_FIXED.asm"
+    include "BANK_FIXED.asm"
 
             ;END

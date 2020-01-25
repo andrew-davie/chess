@@ -24,6 +24,10 @@ QUEENSIDE       = -4
         ; Note: castling with squares that are "in check" is problematic
         ; TODO: next ply have a "phantom" king on the positions king moves over...?
 
+    ; todo: incomplete... x/y regs usage etc
+
+                ldy currentSquare
+
         IF {1} = QUEENSIDE
                 lda Board-3,y               ; nothing in N pos
                 bne .noCastle
