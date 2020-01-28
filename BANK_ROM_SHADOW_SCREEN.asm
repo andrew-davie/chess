@@ -82,7 +82,7 @@ ChessBitmap5    ds 24
 
                 SLEEP 6                     ; 6 @30
 
-                lda ChessBitmap3,y          ; 5
+                lda ChessBitmap3,y          ; 5 dd
                 sta PF0                     ; 3 @38
                 lda ChessBitmap4,y          ; 5
                 sta PF1                     ; 3 @46
