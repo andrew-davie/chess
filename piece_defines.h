@@ -1,10 +1,9 @@
 ; Copyright (C)2020 Andrew Davie
 
 BLACK               = 128
-BL                  = BLACK
 
 WHITE               = 0
-WH                  = WHITE
+;WH                  = WHITE
 
 PIECE_COLOUR        = 128               ; mask
 
@@ -12,6 +11,7 @@ PIECE_COLOUR        = 128               ; mask
 MOVED               = 64                ; mark ALL pieces when moved. Used for castling
                                         ; but maybe useful for evaluation of development
 PHANTOM             = 32                ; a phantom king (via castling)
+HELPER              = 16
 
 ;---------------------------------------------------------------------------------------------------
 ; DEFINE THE PIECES

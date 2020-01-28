@@ -55,6 +55,7 @@ MAXIMUM_REQUIRED_OVERLAY_SIZE       SET 0
 ; ADD AN OVERLAY FOR EACH ROUTINE'S USE, SO CLASHES CAN BE EASILY CHECKED
 
 Overlay         ds OVERLAY_SIZE       ;--> overlay (share) variables
+END_OF_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
 ; And now... the overlays....
@@ -97,6 +98,14 @@ __sourceBank            ds 1
 ;---------------------------------------------------------------------------------------------------
     OVERLAY "DrawPiece"
 __pieceColour           ds 1
+__boardc                ds 1
+
+    VALIDATE_OVERLAY
+
+
+;---------------------------------------------------------------------------------------------------
+    OVERLAY "InitPly"
+__plyBank               ds 1
     VALIDATE_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
@@ -104,7 +113,16 @@ __pieceColour           ds 1
 __tempx           ds 1
     VALIDATE_OVERLAY
 
+    OVERLAY "Overlay000"
+__fromRow                       ds 1
+    VALIDATE_OVERLAY
 ;---------------------------------------------------------------------------------------------------
+    OVERLAY "Overlay001"
+__from                       ds 1
+__to                         ds 1
+    VALIDATE_OVERLAY
+;---------------------------------------------------------------------------------------------------
+
     OVERLAY "Handlers"
 __piece                 ds 1
 __vector                ds 2
@@ -114,11 +132,13 @@ __vector                ds 2
     OVERLAY "Movers"
 __fromCol               ds 1
 __toCol                 ds 1
+__temp                  ds 1
 
     VALIDATE_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
 
+    ORG END_OF_OVERLAY
     ECHO "---- END OF OVERLAYS ----"
     ECHO "MAXIMUM OVERLAY SIZE NEEDED = ", MAXIMUM_REQUIRED_OVERLAY_SIZE
 

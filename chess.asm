@@ -376,6 +376,7 @@ RND_EOR_VAL = $FE ;B4
 
     ; The handlers for piece move generation
     include "Handler_BANK1.asm"
+    include "ply.asm"
 
     ; MUST BE LAST...
     include "BANK_FIXED.asm"

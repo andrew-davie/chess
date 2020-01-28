@@ -5,8 +5,8 @@
 ; WHITE PAWN
 ;---------------------------------------------------------------------------------------------------
 
-WHITE_HOME_ROW  = 48            ; less than this and pawn hasn't moved yet
-BLACK_HOME_ROW  = 96            ; greater than this and pawn hasn't moved yet
+WHITE_HOME_ROW     = 40                    ; < this, on home row
+BLACK_HOME_ROW     = 82                    ; >= this, on home row
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -15,6 +15,9 @@ BLACK_HOME_ROW  = 96            ; greater than this and pawn hasn't moved yet
     ; {1} = _LEFT or _RIGHT
                 ldy ValidSquare+{1},x
                 cpy enPassantPawn
+                bne .invalid
+                ldy ValidSquare+{1}+{2},x   ; en-passant endpoint must be blank
+                lda Board,y
                 bne .invalid
                 jsr AddMove                 ; the MOVE will need to deal with the details of en-passant??
 .invalid
@@ -56,14 +59,14 @@ BLACK_HOME_ROW  = 96            ; greater than this and pawn hasn't moved yet
     ; {1} = BLACK or WHITE
 
         IF {1} = WHITE
-                cpy #108                        ; last rank?
+                cpy #90                        ; last rank?
                 bcc .standard
                 jsr PromoteWhitePawn
                 jmp .pMoved
         ENDIF
 
         IF {1} = BLACK
-                cpy #36                         ; last rank?
+                cpy #30                         ; last rank?
                 bcs .standard
                 jsr PromoteBlackPawn
                 jmp .pMoved
@@ -110,8 +113,11 @@ BLACK_HOME_ROW  = 96            ; greater than this and pawn hasn't moved yet
 
                 MOVE_OR_PROMOTE_PAWN WHITE
 
+
+
     ; the +2 move off the home rank...
 
+                ldx currentSquare
                 cpx #WHITE_HOME_ROW
                 bcs .pMoved                     ; pawn has moved so can't do +2
                 ldy ValidSquare+_UP+_UP,x       ; WILL be a valid square
@@ -119,6 +125,7 @@ BLACK_HOME_ROW  = 96            ; greater than this and pawn hasn't moved yet
                 bne .pMoved                     ; destination square occupied
 
                 jsr AddMove                     ; add the +2UP move off home row
+                ldx currentSquare
 
 .pMoved
 
@@ -127,17 +134,19 @@ BLACK_HOME_ROW  = 96            ; greater than this and pawn hasn't moved yet
                 lda enPassantPawn
                 beq .noEnPassant
 
-                EN_PASSANT _LEFT
-                EN_PASSANT _RIGHT
+                EN_PASSANT _LEFT, _UP
+                ldx currentSquare
+                EN_PASSANT _RIGHT, _UP
 
 .noEnPassant
 
     ; regular captures...
 
                 TAKE _UP+_LEFT, WHITE
+                ldx currentSquare
                 TAKE _UP+_RIGHT, WHITE
 
-                rts
+                jmp MoveReturn
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -162,6 +171,7 @@ BLACK_HOME_ROW  = 96            ; greater than this and pawn hasn't moved yet
 
     ; the +2 move off the home rank...
 
+                ldx currentSquare
                 cpx #BLACK_HOME_ROW
                 bcc .pMoved                     ; pawn has moved so can't do +2
                 ldy ValidSquare+_DOWN+_DOWN,x   ; WILL be a valid square
@@ -177,16 +187,18 @@ BLACK_HOME_ROW  = 96            ; greater than this and pawn hasn't moved yet
                 lda enPassantPawn
                 beq .noEnPassant
 
-                EN_PASSANT _LEFT
-                EN_PASSANT _RIGHT
+                EN_PASSANT _LEFT, _DOWN
+                ldx currentSquare
+                EN_PASSANT _RIGHT, _DOWN
 
 .noEnPassant
 
     ; regular captures...
 
                 TAKE _DOWN+_LEFT, BLACK
+                ldx currentSquare
                 TAKE _DOWN+_RIGHT, BLACK
 
-                rts
+Handle_BLANK    jmp MoveReturn
 
 ; EOF

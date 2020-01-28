@@ -10,22 +10,16 @@
     SUBROUTINE
 
                 ldx currentSquare
+                bpl .project                    ; unconditional
+
+.empty          jsr AddMove
 .project        ldy ValidSquare+{1},x
                 bmi .invalid                    ; off board!
                 lda Board,y                     ; piece @ destination
                 beq .empty
-
                 eor currentPiece
                 bpl .invalid                    ; same colour
-
-.empty          jsr AddMove
-
-                lda Board,y
-                bne .invalid                    ; stop when we hit something
-
-                tya
-                tax                             ; move to next square
-                jmp .project
+                jsr AddMove                     ; and exit
 
 .invalid
     ENDM
@@ -43,6 +37,8 @@
                 bpl .invalid                    ; same colour
 
 .squareEmpty    jsr AddMove
+                ldx currentSquare
+
 .invalid
     ENDM
 

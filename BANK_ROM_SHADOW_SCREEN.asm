@@ -106,7 +106,7 @@ SELFMOD_RTS_ON_LAST_ROW
 .LineColour
 ; The ICC triplet colour definitions for a single row of the chessboard
     REPEAT 8
-        .byte $4A, $2A, $96
+        .byte $48, $26, $C2
     REPEND
 
     ;VALIDATE_RAM_SIZE

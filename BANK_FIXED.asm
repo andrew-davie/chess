@@ -15,6 +15,24 @@ ORIGIN          SET FIXED_BANK
 
 ;---------------------------------------------------------------------------------------------------
 
+    DEFINE_SUBROUTINE CopySinglePieceB
+
+                pha
+                lda #BLACK                  ; just the dots!
+                sta Board+RAM_WRITE,y
+                pla
+
+                jsr ConvertToBase64
+                sty drawPieceNumber
+
+                jsr CopySinglePiece
+                lda #RAMBANK_MOVES_RAM
+                sta SET_BANK_RAM
+                rts
+
+
+
+
     DEFINE_SUBROUTINE CopySinglePiece
 
 
@@ -39,7 +57,7 @@ ORIGIN          SET FIXED_BANK
                 ldy drawPieceNumber         ;0-63
                 ldx Base64ToIndex,y
 
-                lda Chessboard,x
+                lda Board,x
                 asl
                 bcc .blackAdjust
                 ora #16
@@ -75,121 +93,144 @@ ORIGIN          SET FIXED_BANK
 
     DEFINE_SUBROUTINE MoveViaList
 
-                ldx movePointer
-                lda Move,x
-                beq halted
+                lda sideToMove
+                asl
+                adc #RAMBANK_PLY
+                sta SET_BANK_RAM                ; switch in movelist
 
-                lda Move+1,x
-                sta fromSquare
+                lda moveIndex
+                cmp #-1
+                beq halted                      ; no valid moves
+
+    ; choose one of the moves randomly (V.SLOW)
+
+.nrp                NEXT_RANDOM
+                tax
+
+.randomMove     inx
+                txa
+                and #15
+                tax
+
+                NEXT_RANDOM
+                and #15                         ; 15th occcurance of move for piece
                 tay
-                lda #RAMBANK_MOVES_RAM
-                sta SET_BANK_RAM
-                lda Move,x ;Chessboard,y
-                sta fromPiece
-                lda Move+2,x
+                sty fromX12 ;tmp
+
+                lda PieceSquare,x               ; piece on square
+                beq .randomMove                 ; dead piece
+
+    ; find a from-square which is that piece and do that (1st) move
+
+
+.zapr           ldx #0
+.findMove       cmp MoveFrom,x
+                bne .nof
+                dey
+                bmi .foundMove
+.nof            inx
+                cpx moveIndex
+                bcc .findMove
+
+                cpy fromX12
+                beq .nrp
+                bne .zapr
+
+
+
+
+.foundMove
+                lda MoveFrom,x
+                sta fromSquare
+    sta fromX12
+                lda MoveTo,x
                 sta toSquare
+    sta toX12
+                lda MovePiece,x
+                sta fromPiece
 
-    lda Move+3,x
-;    beq zz
-;    NEXT_RANDOM
-;    and #31
-;    adc Move+2,x
-;    asl
-zz                sta drawDelay
-                inx
-                inx
-                inx
-                inx
-                stx movePointer
 
+                lda fromSquare
+                jsr ConvertToBase64
+                sta fromSquare          ;B64
+
+                lda toSquare
+                jsr ConvertToBase64
+                sta toSquare            ;B64
+
+                rts
+
+
+    DEFINE_SUBROUTINE FinaliseMove
+
+                jsr FixPieceList
+
+    ;            lda #RAMBANK_MOVES_RAM
+    ;            sta SET_BANK_RAM
+    ;            ldx toSquare              ; = destination now
+    ;            stx drawPieceNumber
+
+    ;            lda fromPiece
+    ;            sta Board+RAM_WRITE,x
+
+    ;            jsr CopySinglePiece
+
+    ;            ldx fromX12
+    ;            lda #BLANK
+    ;            sta Board+RAM_WRITE,x
+    ;            ldx toX12
+    ;            lda fromPiece
+    ;            sta Board+RAM_WRITE,x
+
+    ; and piecelist
+
+                lda sideToMove
+                eor #128
+                asl
+                adc #RAMBANK_PLY
+                sta SET_BANK_RAM
+
+                lda toX12
+                sta fromX12
+                lda #0
+                sta toX12
+    ;            jsr FixPieceList                ; delete piece if in opposition list
 
 halted          rts
 
+
+#if 0
 DELX = 50
 
 Move
 
     ; numbering is BASE64
 
-#if 0
-            .byte WHITE|ROOK,20,63,0 ; e2e4
-            .byte WHITE|KNIGHT,20,62,0 ; e2e4
-            .byte WHITE|BISHOP,20,61,0 ; e2e4
-            .byte WHITE|KING,20,60,0 ; e2e4
-            .byte WHITE|QUEEN,20,59,0 ; e2e4
-            .byte WHITE|BISHOP,20,58,0 ; e2e4
-            .byte WHITE|KNIGHT,20,57,0 ; e2e4
-            .byte WHITE|ROOK,20,56,0 ; e2e4
-
-            .byte WHITE|WPAWN,20,55,0 ; e2e4
-            .byte WHITE|WPAWN,20,54,0 ; e2e4
-            .byte WHITE|WPAWN,20,53,0 ; e2e4
-            .byte WHITE|WPAWN,20,52,0 ; e2e4
-            .byte WHITE|WPAWN,20,51,0 ; e2e4
-            .byte WHITE|WPAWN,20,50,0 ; e2e4
-            .byte WHITE|WPAWN,20,49,0 ; e2e4
-            .byte WHITE|WPAWN,20,48,0 ; e2e4
-
-            .byte BLACK|ROOK,43,0,0 ; e2e4
-            .byte BLACK|KNIGHT,43,1,0 ; e2e4
-            .byte BLACK|BISHOP,43,2,0 ; e2e4
-            .byte BLACK|QUEEN,43,3,0 ; e2e4
-            .byte BLACK|KING,43,4,0 ; e2e4
-            .byte BLACK|BISHOP,43,5,0 ; e2e4
-            .byte BLACK|KNIGHT,43,6,0 ; e2e4
-            .byte BLACK|ROOK,43,7,0 ; e2e4
-
-            .byte BLACK|BPAWN,43,8,0 ; e2e4
-            .byte BLACK|BPAWN,43,9,0 ; e2e4
-            .byte BLACK|BPAWN,43,10,0 ; e2e4
-            .byte BLACK|BPAWN,43,11,0 ; e2e4
-            .byte BLACK|BPAWN,43,12,0 ; e2e4
-            .byte BLACK|BPAWN,43,13,0 ; e2e4
-            .byte BLACK|BPAWN,43,14,0 ; e2e4
-            .byte BLACK|BPAWN,43,15,0 ; e2e4
-
-#endif
-
             .byte WHITE|WPAWN,12,12+16,DELX ; e2e4
-            .byte BLACK|BPAWN,51,51-16,DELX ; d7d5
-#if 0
-            .byte WHITE|KNIGHT,62,62-17,DELX ; g1f3
-            .byte BLACK|BPAWN,27,27+9,DELX ;d5e4
-            .byte WHITE|KNIGHT,45,45-15,DELX ;f3-g5
-            .byte BLACK|BPAWN,13,13+16,DELX ;f7f5
-            .byte WHITE|BISHOP,61,61-3*8-3,DELX ;f1c4
-            .byte BLACK|KNIGHT,1,1+17,DELX  ;b8c6
-            .byte WHITE|KING,60,62,DELX   ;0-0
-            .byte WHITE|ROOK,63,61,0
-            .byte BLACK|KNIGHT,6,6+15,DELX ;g8f6
-            .byte WHITE|KNIGHT,30,20,DELX ;g5e6
-            .byte BLACK|QUEEN,3,3+16,DELX ;D8d6
-            .byte WHITE|KNIGHT,20,20-15,DELX ;e6f8
-            .byte BLACK|KNIGHT,21,21+17,DELX ;f6g4
-            .byte WHITE|KNIGHT,57,42,DELX ;B1C3
-            .byte BLACK|QUEEN,19,55,DELX ;qxp mate
-#endif
+            ;.byte BLACK|BPAWN,51,51-16,DELX ; d7d5
+            ;.byte WHITE|KNIGHT,6,21,DELX ; g1f3
+            ;.byte BLACK|BPAWN,35,28,DELX ;d5e4
+            ;.byte WHITE|KNIGHT,21,38,DELX ;f3-g5
+            ;.byte BLACK|BPAWN,53,37,DELX ;f7f5
+            ;.byte WHITE|B,5,26,DELX ;f1c4
+            ;.byte BLACK|N,57,42,DELX ;b8c6
+            ;.byte WHITE|KNIGHT,38,53,DELX ;f3-g5
+            ;.byte WHITE|KING,4,4,DELX
 
-;            .byte 7,5,DELX
-;            .byte 51,51-16,DELX
-;            .byte 36,43,DELX
-;            .byte 35,35,0
-;            .byte 59,59-16,DELX
-;            .byte 19,19+3*8,DELX
-;            .byte 50,43,DELX
-;            .byte 18,18+17,DELX
-;            .byte 57,57-17,DELX
-;            .byte 35,35+17,DELX
-;            .byte 62,63,DELX
-;            .byte 52,58,DELX
-;            .byte 56,58,DELX
-;            .byte 21,21+17,DELX
-            .byte WHITE|KING,62,62,DELX
+
+            .byte WHITE|QUEEN,3,21,DELX
+            .byte WHITE|QUEEN,21,17,DELX
+            .byte WHITE|QUEEN,17,41,DELX
+            .byte WHITE|QUEEN,41,46,DELX
+            .byte WHITE|QUEEN,46,30,DELX
+            .byte WHITE|KING,4,4,255
             .byte 0
+#endif
 
 ;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE ConvertToBase64
+    ; uses OVERLAY "Movers"
 
     ; convert from 10x12 square numbering (0-119) to 8x8 square numbering (0-63)
 
@@ -202,6 +243,14 @@ Move
             bcs .conv64
             adc #10
 
+    sta __temp
+    txa
+    asl
+    asl
+    asl
+    ora __temp
+    tay
+
     ; A = column (0-7)
     ; X = row (0-7)
 
@@ -211,18 +260,28 @@ Move
 ;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE InitialiseChessboard
+
+;    lda #25
+;    sta followPiece
+
+    lda #0
+    sta sideToMove          ; white
+
  rts
+
+#if 0
                 lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM
 
                 ldx #63
 .setupBoard     ldy Base64ToIndex,x
                 lda #BLANK ;BoardPiece,x
-                sta Chessboard+RAM_WRITE,y
+                sta Board+RAM_WRITE,y
                 dex
                 bpl .setupBoard
 
                 rts
+#endif
 
 
 
@@ -321,10 +380,10 @@ PieceToShape
 
                 lda #BANK_TitleScreen
                 sta SET_BANK
-                jsr TitleScreen
+                ;jsr TitleScreen
 
 
-                lda #$97
+                lda #$98
                 sta rnd
                 lda #0
                 sta movePointer
@@ -351,6 +410,26 @@ PieceToShape
                 ldy #RAMBANK_MOVES_RAM
                 ldx #MOVES
                 jsr CopyShadowROMtoRAM              ; this auto-initialises Board too
+
+
+    ; copy the PLY banks
+
+                lda #MAX_PLY
+                sta __plyBank
+                ldy #RAMBANK_PLY
+                sty currentPly
+.copyPlyBanks   ldx #BANK_PLY
+                jsr CopyShadowROMtoRAM
+                iny
+                dec __plyBank
+                bne .copyPlyBanks
+
+
+                lda currentPly
+                sta SET_BANK_RAM
+                jsr NewPlyInitialise                ; must be called at the start of every new ply
+
+
 
 
                 jsr InitialiseChessboard
@@ -418,8 +497,14 @@ PieceToShape
 
 
 
-                lda INPT4
-                bpl .ret
+but                lda INPT4
+                bmi .nret
+    NEXT_RANDOM
+
+;pl .ret
+.nret
+
+
                 jmp .doubleBufferLoop
 
 ;                jmp .RestartChessFrame
@@ -447,14 +532,18 @@ Restart     ; go here on RESET + SELECT
                 sta __ptr+1
                 jmp (__ptr)
 
-MARCH = 6
+MARCH = 7
 STARTMOVE = 3
 
 DrawVectorLO
     .byte <StartClearBoard
     .byte <ClearEachRow
     .byte <DrawEntireBoard
+;    .byte <ClearTracks
+;    .byte <ClearTracksB
+
     .byte <FlipBuffers
+    .byte <FB2
     .byte <EraseStartPiece
     .byte <WriteStartPieceBlank
     .byte <MarchToTargetA
@@ -466,7 +555,10 @@ DrawVectorHI
     .byte >StartClearBoard
     .byte >ClearEachRow
     .byte >DrawEntireBoard
+;    .byte >ClearTracks
+;    .byte >ClearTracksB
     .byte >FlipBuffers
+    .byte >FB2
     .byte >EraseStartPiece
     .byte >WriteStartPieceBlank
     .byte >MarchToTargetA
@@ -507,24 +599,87 @@ DrawVectorHI
                 inc drawPhase
 .incomplete     rts
 
+
+#if 0
+    DEFINE_SUBROUTINE ClearTracks
+
+                lda #63
+                sta drawPieceNumber
+
+                inc drawPhase
+
+    DEFINE_SUBROUTINE ClearTracksB
+
+                lda #RAMBANK_MOVES_RAM
+                sta SET_BANK_RAM
+.checkAnotherTrack
+                ldx drawPieceNumber
+                ldy Base64ToIndex,x
+                lda Board,y
+                cmp #BLACK
+                beq undoTrack
+                dec drawPieceNumber
+                bpl .checkAnotherTrack
+                inc drawPhase
+                rts
+
+undoTrack        jsr CopySinglePiece
+                lda #RAMBANK_MOVES_RAM
+                sta SET_BANK_RAM
+
+                ldy drawPieceNumber         ;0-63
+                ldx Base64ToIndex,y
+                lda #0
+                sta Board+RAM_WRITE,x
+
+                rts
+
+#endif
+
+
+
+
+
     ; Now we've finished drawing the screen square by square.
 
     DEFINE_SUBROUTINE FlipBuffers
 
+;    lda sideToMove
+;    eor #128
+;    sta sideToMove
+
+
+                jsr CallMoveGenerators
+
+                inc drawPhase
+                rts
+
+
+    DEFINE_SUBROUTINE FB2
+
                 jsr MoveViaList
+                jsr FinaliseMove
+
+                lda fromSquare
+                cmp toSquare
+                bne marchAway
+
+                rts
+
+marchAway
+
 
                 lda #BLANK
                 sta previousPiece
 
                 lda drawDelay
-                bne normaldraw
+;tmp                bne normaldraw
 
-                lda #0
-                sta snail
-
-                lda #6
-                sta drawPhase
-                jmp MarchToTargetA
+;tmp...                lda #0
+;                sta snail
+;                lda #6
+;                sta drawPhase
+;                jmp MarchToTargetA
 
 normaldraw
                 lda #5
@@ -535,8 +690,8 @@ normaldraw
     DEFINE_SUBROUTINE EraseStartPiece
 
 
-                lda #12
-                sta drawCount
+                lda #6 ;20
+                sta drawCount           ; flashing for piece about to move
 
                 inc drawPhase
                 ;rts
@@ -552,7 +707,7 @@ deCount         lda drawCount
                 beq flashDone
                 dec drawCount
 
-                lda #5
+                lda #10 ;5
                 sta drawDelay
 
                 lda fromSquare
@@ -563,7 +718,7 @@ deCount         lda drawCount
                 rts
 
 flashDone       inc drawPhase
-                ;rts
+                rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -625,10 +780,10 @@ colok
                 ldx fromSquare
                 ldy Base64ToIndex,x
 
-                lda Chessboard,y
+                lda Board,y
                 sta lastPiece                   ; what we are overwriting
                 lda fromPiece
-                sta Chessboard+RAM_WRITE,y      ; and what'w actually moving there
+                sta Board+RAM_WRITE,y      ; and what'w actually moving there
                 inc drawPhase
                 rts
 
@@ -669,7 +824,7 @@ MarchB
 
                 ldx lastSquare
                 ldy Base64ToIndex,x
-                sta Chessboard+RAM_WRITE,y
+                sta Board+RAM_WRITE,y
 
                 lda lastPiece
                 sta previousPiece
@@ -705,32 +860,87 @@ MarchB
 
     DEFINE_SUBROUTINE CallMoveGenerators
 
+                lda currentPly
+                sta SET_BANK_RAM
+                jsr NewPlyInitialise                ; zap movelist for this ply
+
+                jmp GenerateMovesForAllPieces
+
+;---------------------------------------------------------------------------------------------------
+
+    DEFINE_SUBROUTINE MoveForSinglePiece
+
+        ; generate a move for 'followPiece' (X12 square)
+
                 lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM
 
     ; iterate piecelist
     ; call move generators
 
-                ;ldx pieclistIndex
-                ldy Piece+11,x              ; square piece is on (hardwired pawn for now)
-                sty currentSquare
+        lda #52
+        sta enPassantPawn       ; TODO - set this when a pawn double-moves, clear for all otherwise
+
+                ldy currentSquare
                 lda Board,y
+ ;beq .woops                             ; tmp until movelist parsed properly
                 sta currentPiece
 
                 and #PIECE_MASK
-                tax
+                tay
 
-                lda HandlerVectorLO,x
+                lda HandlerVectorLO,y
                 sta __vector
-                lda HandlerVectorHI,x
+                lda HandlerVectorHI,y
                 sta __vector+1
 
                 ldx currentSquare
+
                 jmp (__vector)
 
-    include "Handler_KNIGHT.asm"
+MoveReturn
+.woops          lda currentPly
+                sta SET_BANK_RAM
+                rts
+
+;---------------------------------------------------------------------------------------------------
+
     include "Handler_PAWN.asm"
 
+;---------------------------------------------------------------------------------------------------
+
+    DEFINE_SUBROUTINE AddMove
+
+    ; add square in y register to movelist as destination (X12 format)
+    ; currentPiece = piece moving
+    ; currentSquare = start square (X12)
+    ; do not modify y
+
+                lda currentPly
+                sta SET_BANK_RAM
+
+    ; [y]               to square (X12)
+    ; currentSquare     from square (X12)
+    ; currentPiece      piece
+    ; do not modify [Y]
+
+    ; add a move to the movelist
+
+                ldx moveIndex
+                inx
+                stx moveIndex+RAM_WRITE
+
+                lda currentSquare
+                sta MoveFrom+RAM_WRITE,x
+                lda currentPiece
+                sta MovePiece+RAM_WRITE,x
+                tya
+                sta MoveTo+RAM_WRITE,x
+                tax
+
+                lda #RAMBANK_MOVES_RAM
+                sta SET_BANK_RAM
+                rts
 
 ;---------------------------------------------------------------------------------------------------
 

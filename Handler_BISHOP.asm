@@ -14,7 +14,7 @@
                 MOVE_TOWARDS _DOWN+_RIGHT
                 MOVE_TOWARDS _UP+_LEFT
                 MOVE_TOWARDS _UP+_RIGHT
-                rts
 
+                jmp MoveReturn
 
             ;CHECK_HALF_BANK_SIZE "HANDLER_MOVE -- 1K"

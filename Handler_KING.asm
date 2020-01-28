@@ -74,6 +74,7 @@ QUEENSIDE       = -4
 
     DEFINE_SUBROUTINE Handle_KING
 
+ #if 1
     ; Pass...
     ; x = currentSquare (square the KING is on)
     ; currentPiece (KING of course, but with flags/colour attached)
@@ -94,11 +95,13 @@ QUEENSIDE       = -4
                 bit currentPiece            ; WARNING: D6 (=MOVED) assumed
                 bvs .noCastle               ; can't castle - king has moved
 
-                CASTLE KINGSIDE
-                CASTLE QUEENSIDE
+;tmp                CASTLE KINGSIDE
+;tmp                CASTLE QUEENSIDE
 
 .noCastle
-                rts
+ #endif
+
+                jmp MoveReturn
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

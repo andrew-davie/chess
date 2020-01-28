@@ -44,8 +44,8 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
                 lda #%100                       ; players/missiles BEHIND BG
                 sta CTRLPF
 
-                lda #$FF
-                sta BufferedJoystick
+;                lda #$FF
+;                sta BufferedJoystick
 
                 ;lda #DIRECTION_BITS             ;???
                 ;sta ManLastDirection
@@ -121,9 +121,9 @@ noFlashBG
 
     ; Create a 'standardised' joystick with D4-D7 having bits CLEAR if the appropriate direction is chosen.
 
-                lda SWCHA
-                and BufferedJoystick
-                sta BufferedJoystick
+;                lda SWCHA
+;                and BufferedJoystick
+;                sta BufferedJoystick
 
                 rts
 

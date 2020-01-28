@@ -18,6 +18,7 @@
                 MOVE_TOWARDS _UP
                 MOVE_TOWARDS _UP+_LEFT
                 MOVE_TOWARDS _LEFT
-                rts
+
+                jmp MoveReturn
 
 ; EOF

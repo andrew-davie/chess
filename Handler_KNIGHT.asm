@@ -6,7 +6,6 @@
 ;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE Handle_KNIGHT
-
     ; Pass...
     ; x = currentSquare (square the piece is on)
     ; currentPiece (with flags/colour attached)
@@ -21,6 +20,6 @@
                 MOVE_TO _UP+_LEFT+_LEFT
                 MOVE_TO _UP+_RIGHT+_RIGHT
 
-                rts
+                jmp MoveReturn
 
 ; EOF
