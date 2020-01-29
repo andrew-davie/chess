@@ -17,6 +17,8 @@ snail                           ds 1
 ;title_colour_table              ds 2
 fromX12                         ds 1
 toX12                           ds 1
+xx                              ds 1
+currentPlyBank                  ds 1
 
 currentPiece                    ds 1
 currentSquare                   ds 1

@@ -129,22 +129,30 @@ BLACK_HOME_ROW     = 82                    ; >= this, on home row
 
 .pMoved
 
-    ; en-passant captures...
-
-                lda enPassantPawn
-                beq .noEnPassant
-
-                EN_PASSANT _LEFT, _UP
-                ldx currentSquare
-                EN_PASSANT _RIGHT, _UP
-
-.noEnPassant
-
     ; regular captures...
 
                 TAKE _UP+_LEFT, WHITE
                 ldx currentSquare
                 TAKE _UP+_RIGHT, WHITE
+
+
+    ; en-passant captures...
+
+#if 0
+                lda enPassantPawn
+                beq .noEnPassant
+
+                lda currentPiece
+                ora #ENPASSANT
+                sta currentPiece
+
+                ldx currentSquare
+                EN_PASSANT _LEFT, _UP
+                ldx currentSquare
+                EN_PASSANT _RIGHT, _UP
+
+.noEnPassant
+#endif
 
                 jmp MoveReturn
 
@@ -178,26 +186,32 @@ BLACK_HOME_ROW     = 82                    ; >= this, on home row
                 lda Board,y
                 bne .pMoved                     ; destination square occupied
 
-                jsr AddMove                     ; add the +2DOWN move off home row
+                ;jsr AddMove                     ; add the +2DOWN move off home row
 
 .pMoved
-
-    ; en-passant captures...
-
-                lda enPassantPawn
-                beq .noEnPassant
-
-                EN_PASSANT _LEFT, _DOWN
-                ldx currentSquare
-                EN_PASSANT _RIGHT, _DOWN
-
-.noEnPassant
 
     ; regular captures...
 
                 TAKE _DOWN+_LEFT, BLACK
                 ldx currentSquare
                 TAKE _DOWN+_RIGHT, BLACK
+
+    ; en-passant captures...
+
+#if 0
+                lda enPassantPawn
+                beq .noEnPassant
+
+                lda currentPiece
+                ora #ENPASSANT
+                sta currentPiece
+
+                EN_PASSANT _LEFT, _DOWN
+                ldx currentSquare
+                EN_PASSANT _RIGHT, _DOWN
+
+.noEnPassant
+#endif
 
 Handle_BLANK    jmp MoveReturn
 

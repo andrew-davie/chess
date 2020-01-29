@@ -35,14 +35,23 @@ MAX_PLY  = 10
 
     OPTIONAL_PAGEBREAK "PieceSquare", 16
     DEFINE_SUBROUTINE PieceSquare
+
+#if 1
     .byte 22,23,24,25,26,27,28,29
     .byte 32,33,34,35,36,37,38,39
+#endif
 
-;    OPTIONAL_PAGEBREAK "BlackPieceSquare", 16
-;    DEFINE_SUBROUTINE BlackPieceSquare
-;    .byte 92,93,94,95,96,97,98,99
-;    .byte 82,83,84,85,86,87,88,89
+#if 0
+    .byte 0,26,29,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0
+#endif
 
+
+
+; The X12 square at which a pawn CAN be taken en-passant. Normally 0.
+; This is set/cleared whenever a move is made. The flag is indicated in the move description.
+
+enPassantSquare         ds 1
 
 ;---------------------------------------------------------------------------------------------------
 ; Move tables hold piece moves for this current ply
@@ -66,14 +75,50 @@ MAX_MOVES = 128
 
 ;---------------------------------------------------------------------------------------------------
 
+    DEFINE_SUBROUTINE InitialisePieceSquares
+
+                lda #RAMBANK_PLY
+                sta SET_BANK_RAM                    ; screwy self-referential bank-switching!
+
+                ldx #15
+.fillWP         lda WhitePiecelist,x
+                sta PieceSquare+RAM_WRITE,x
+                dex
+                bpl .fillWP
+
+                lda #RAMBANK_PLY+1                  ; screwy self-referential bank-switching!
+                sta SET_BANK_RAM
+
+                ldx #15
+.fillBP         lda BlackPiecelist,x
+                sta PieceSquare+RAM_WRITE,x
+                dex
+                bpl .fillBP
+                rts
+
+WhitePiecelist
+    .byte 22,23,24,25,26,27,28,29
+    .byte 32,33,34,35,36,37,38,39
+
+BlackPiecelist
+    .byte 82,83,84,85,86,87,88,89
+    .byte 92,93,94,95,96,97,98,99
+
+
+;---------------------------------------------------------------------------------------------------
+
+
     DEFINE_SUBROUTINE NewPlyInitialise
 
     ; This MUST be called at the start of a new ply
     ; It initialises the movelist to empty
 
                 ldx #-1
-                stx moveIndex+RAM_WRITE         ; no valid moves
+                stx moveIndex+RAM_WRITE             ; no valid moves
+                lda #0
+                sta enPassantSquare+RAM_WRITE       ; no enPassant available
                 rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -83,13 +128,20 @@ MAX_MOVES = 128
     ; piece square into 'currentSquare'. then...
 
 
+;
+;                ldx #15                 ; piece index
+;                stx piecelistIndex
 
-                ldx #15                 ; piece index
-                stx piecelistIndex
+                inc piecelistIndex
+                lda piecelistIndex
+                and #15
+                sta piecelistIndex
+
+                tax
 
 .scanPiece      lda sideToMove
                 asl
-                adc #RAMBANK_PLY
+                adc #RAMBANK_PLY                ; W piecelist in "PLY0" bank, and B in "PLY1"
                 sta SET_BANK_RAM                ; ooh! self-switching bank
 
                 ldx piecelistIndex
@@ -100,47 +152,23 @@ MAX_MOVES = 128
                 jsr MoveForSinglePiece
 
 .noPieceHere
+
+
                 ;lda currentPly
                 ;sta SET_BANK_RAM                ; switch back to "me" (done in MoveForSinglePiece)
 
-                dec piecelistIndex
-                bpl .scanPiece
+;                dec piecelistIndex
+;                bpl .scanPiece
 
+TIMEREND
                 rts
-
-;---------------------------------------------------------------------------------------------------
-
-#if 0
-    DEFINE_SUBROUTINE AddMoveToMoveList
-
-    ; [y]               to square (X12)
-    ; currentSquare     from square (X12)
-    ; currentPiece      piece
-    ; do not modify [Y]
-
-    ; add a move to the movelist
-
-                ldx moveIndex
-                inx
-                stx moveIndex+RAM_WRITE
-
-                tya
-                sta MoveTo+RAM_WRITE,x
-                lda currentSquare
-                sta MoveFrom+RAM_WRITE,x
-                lda currentPiece
-                sta MovePiece+RAM_WRITE,x
-
-                rts
-#endif
 
 ;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE FixPieceList
     ; uses OVERLAY Overlay001
-
     ; fromX12            X12 square piece moved from
-    ; toX12              X12 square piece moved to
+    ; toX12              X12 square piece moved to (0 to erase piece from list)
 
     ; It scans the piece list looking for the '__from' square and sets it to the '__to' square
     ; Eventually this will have to be more sophisticated when moves (like castling) involve
@@ -166,16 +194,11 @@ MAX_MOVES = 128
                 lda fromX12
                 ldy toX12
 
-
-
-
-
-
-
-                lda sideToMove
-                eor #128
-                asl
-                adc #RAMBANK_PLY
+;                lda sideToMove
+;                eor #128
+;                asl
+;                adc #RAMBANK_PLY
+    lda currentPly
                 sta SET_BANK_RAM
 
                 lda toX12

@@ -23,6 +23,7 @@ ChessBitmap5    ds 24
 
 ;---------------------------------------------------------------------------------------------------
 
+#if 0
     DEFINE_SUBROUTINE ClearRowBitmap
 
                 lda #0
@@ -31,14 +32,15 @@ ChessBitmap5    ds 24
                 dey
                 bne .clearRow
                 rts
+#endif
 
 ;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE CopyPieceToRowBitmap
 
+                ldy #71
                 bcs .rightSide
 
-                ldy #71
 .copyPiece      lda __pieceShapeBuffer,y
                 beq .blank1
                 eor ChessBitmap,y
@@ -49,8 +51,6 @@ ChessBitmap5    ds 24
                 rts
 
 .rightSide
-
-                ldy #71
 .copyPieceR     lda __pieceShapeBuffer,y
                 beq .blank2
                 eor ChessBitmap+72,y
@@ -82,7 +82,7 @@ ChessBitmap5    ds 24
 
                 SLEEP 6                     ; 6 @30
 
-                lda ChessBitmap3,y          ; 5 dd
+                lda ChessBitmap3,y          ; 5
                 sta PF0                     ; 3 @38
                 lda ChessBitmap4,y          ; 5
                 sta PF1                     ; 3 @46
@@ -106,7 +106,7 @@ SELFMOD_RTS_ON_LAST_ROW
 .LineColour
 ; The ICC triplet colour definitions for a single row of the chessboard
     REPEAT 8
-        .byte $48, $26, $C2
+        .byte $46, $28, $94
     REPEND
 
     ;VALIDATE_RAM_SIZE

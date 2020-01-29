@@ -16,7 +16,7 @@ QUEENSIDE       = -4
 
     MAC CASTLE
     ; {1} == KINGSIDE or QUEENSIDE
-    SUBROUTINE
+
 
         ; Most likely failure trigger is there are pieces in the way (N or B) (or Q)
         ; Check these squares first as it's the cheapest "exit" from castle check
@@ -65,6 +65,13 @@ QUEENSIDE       = -4
     ; squares the king traverses so that "check" (and thus illegal moves) can be detected on the
     ; next move. Castling will be detected by K moving > 1 square.
 
+                lda currentPiece
+                ora #CASTLE
+                sta currentPiece
+
+                ldx currentSquare
+                ldy ValidSquare+{2},x
+
                 jsr AddMove
 .noCastle
     ENDM
@@ -74,13 +81,13 @@ QUEENSIDE       = -4
 
     DEFINE_SUBROUTINE Handle_KING
 
- #if 1
     ; Pass...
     ; x = currentSquare (square the KING is on)
     ; currentPiece (KING of course, but with flags/colour attached)
 
     ; regular moving...
 
+#if 1
                 MOVE_TO _DOWN+_LEFT
                 MOVE_TO _DOWN
                 MOVE_TO _DOWN+_RIGHT
@@ -89,17 +96,17 @@ QUEENSIDE       = -4
                 MOVE_TO _UP
                 MOVE_TO _UP+_LEFT
                 MOVE_TO _LEFT
+#endif
 
     ; castling...
 
                 bit currentPiece            ; WARNING: D6 (=MOVED) assumed
                 bvs .noCastle               ; can't castle - king has moved
 
-;tmp                CASTLE KINGSIDE
-;tmp                CASTLE QUEENSIDE
+                CASTLE KINGSIDE, 2
+                CASTLE QUEENSIDE, -2
 
 .noCastle
- #endif
 
                 jmp MoveReturn
 

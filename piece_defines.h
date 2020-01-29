@@ -1,17 +1,16 @@
 ; Copyright (C)2020 Andrew Davie
 
 BLACK               = 128
-
 WHITE               = 0
-;WH                  = WHITE
 
 PIECE_COLOUR        = 128               ; mask
-
-
 MOVED               = 64                ; mark ALL pieces when moved. Used for castling
                                         ; but maybe useful for evaluation of development
-PHANTOM             = 32                ; a phantom king (via castling)
-HELPER              = 16
+ENPASSANT           = 32
+CASTLE              = 16
+
+;PHANTOM             = 32                ; a phantom king (via castling)  -- requires bigger movelist OR DOES IT
+;HELPER              = 16
 
 ;---------------------------------------------------------------------------------------------------
 ; DEFINE THE PIECES

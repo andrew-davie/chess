@@ -11,10 +11,12 @@
     ; x = currentSquare (square the piece is on)
     ; currentPiece (with flags/colour attached)
 
+#if 1
                 MOVE_TOWARDS _DOWN
                 MOVE_TOWARDS _RIGHT
                 MOVE_TOWARDS _UP
                 MOVE_TOWARDS _LEFT
+#endif
 
                 jmp MoveReturn
 

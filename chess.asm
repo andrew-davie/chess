@@ -27,8 +27,11 @@ FIXED_BANK             = 15 * 2048           ; ->> 32K
 YES                     = 1
 NO                      = 0
 
+; assemble diagnostics. Remove for release.
+ASSERTS                 = 1
+
 ;===================================
-FINAL_VERSION                   = NO           ; this OVERRIDES any selections below and sets everything correct for a final release
+FINAL_VERSION                  = NO           ; this OVERRIDES any selections below and sets everything correct for a final release
 ;===================================
 
 ;-------------------------------------------------------------------------------

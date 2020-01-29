@@ -62,6 +62,7 @@ ORIGIN          SET FIXED_BANK
                 bcc .blackAdjust
                 ora #16
 .blackAdjust    lsr
+                and #%1111
                 tax
 
                 tya
@@ -93,61 +94,53 @@ ORIGIN          SET FIXED_BANK
 
     DEFINE_SUBROUTINE MoveViaList
 
-                lda sideToMove
-                asl
-                adc #RAMBANK_PLY
+                lda currentPly
                 sta SET_BANK_RAM                ; switch in movelist
 
                 lda moveIndex
                 cmp #-1
                 beq halted                      ; no valid moves
 
-    ; choose one of the moves randomly (V.SLOW)
 
-.nrp                NEXT_RANDOM
+.another        NEXT_RANDOM
+                and #31
+                cmp moveIndex
+                bcs .another
                 tax
-
-.randomMove     inx
-                txa
-                and #15
-                tax
-
-                NEXT_RANDOM
-                and #15                         ; 15th occcurance of move for piece
-                tay
-                sty fromX12 ;tmp
-
-                lda PieceSquare,x               ; piece on square
-                beq .randomMove                 ; dead piece
-
-    ; find a from-square which is that piece and do that (1st) move
-
-
-.zapr           ldx #0
-.findMove       cmp MoveFrom,x
-                bne .nof
-                dey
-                bmi .foundMove
-.nof            inx
-                cpx moveIndex
-                bcc .findMove
-
-                cpy fromX12
-                beq .nrp
-                bne .zapr
-
 
 
 
 .foundMove
                 lda MoveFrom,x
                 sta fromSquare
-    sta fromX12
+                sta fromX12
                 lda MoveTo,x
                 sta toSquare
-    sta toX12
+                sta toX12
+
+
+    ; If en-passant flag set (pawn doing opening double-move) then record its square as the
+    ; en-passant square for the ply.
+
+#if 0
+ TODO BANK/BUGGERED AFTER
+                lda currentPly
+                sta SET_BANK_RAM
+
+                ldy #0
                 lda MovePiece,x
-                sta fromPiece
+                and #ENPASSANT
+                beq .notEP
+                ldy toSquare
+.notEP          sty enPassantSquare+RAM_WRITE
+
+#endif
+
+
+                lda MovePiece,x
+                and #~ENPASSANT                 ;? unsure
+                ora #MOVED                      ; piece has now been moved (flag used for castling checks)
+                sta fromPiece                   ; MIGHT have castling bit set, which should be handled last
 
 
                 lda fromSquare
@@ -158,12 +151,36 @@ ORIGIN          SET FIXED_BANK
                 jsr ConvertToBase64
                 sta toSquare            ;B64
 
-                rts
+halted          rts
 
 
     DEFINE_SUBROUTINE FinaliseMove
 
+                lda sideToMove
+                asl
+                adc #RAMBANK_PLY
+                sta SET_BANK_RAM
+
                 jsr FixPieceList
+
+                lda toX12
+                sta fromX12
+
+                lda #0
+                sta toX12                   ; --> deleted (square=0)
+
+                lda sideToMove
+                eor #128
+                asl
+                adc #RAMBANK_PLY
+                sta SET_BANK_RAM
+                jsr FixPieceList            ; REMOVE any captured object
+
+
+
+                lda sideToMove
+                eor #128
+                sta sideToMove
 
     ;            lda #RAMBANK_MOVES_RAM
     ;            sta SET_BANK_RAM
@@ -184,19 +201,19 @@ ORIGIN          SET FIXED_BANK
 
     ; and piecelist
 
-                lda sideToMove
-                eor #128
-                asl
-                adc #RAMBANK_PLY
-                sta SET_BANK_RAM
+;                lda sideToMove
+;                eor #128
+;                asl
+;                adc #RAMBANK_PLY
+;                sta SET_BANK_RAM
 
-                lda toX12
-                sta fromX12
-                lda #0
-                sta toX12
+;                lda toX12
+;                sta fromX12
+;                lda #0
+;                sta toX12
     ;            jsr FixPieceList                ; delete piece if in opposition list
 
-halted          rts
+                rts
 
 
 #if 0
@@ -261,29 +278,11 @@ Move
 
     DEFINE_SUBROUTINE InitialiseChessboard
 
-;    lda #25
-;    sta followPiece
-
-    lda #0
-    sta sideToMove          ; white
-
- rts
-
-#if 0
-                lda #RAMBANK_MOVES_RAM
-                sta SET_BANK_RAM
-
-                ldx #63
-.setupBoard     ldy Base64ToIndex,x
-                lda #BLANK ;BoardPiece,x
-                sta Board+RAM_WRITE,y
-                dex
-                bpl .setupBoard
-
+                lda #WHITE
+                sta sideToMove
                 rts
-#endif
 
-
+;---------------------------------------------------------------------------------------------------
 
 PieceToShape
 
@@ -324,17 +323,10 @@ PieceToShape
                 sta SET_BANK
 
                 ldy #PIECE_SHAPE_SIZE-1
-        ;REPEAT PIECE_SHAPE_SIZE
 .copyP          lda (__ptr),y
                 sta __pieceShapeBuffer,y
                 dey
                 bpl .copyP
-        ;REPEND
-
-;.copyPieceGfx   lda (__ptr),y
-;                sta __pieceShapeBuffer,y
-;                dey
-;                bpl .copyPieceGfx
 
                 rts
 
@@ -383,7 +375,7 @@ PieceToShape
                 ;jsr TitleScreen
 
 
-                lda #$98
+                lda #$9A
                 sta rnd
                 lda #0
                 sta movePointer
@@ -424,6 +416,10 @@ PieceToShape
                 dec __plyBank
                 bne .copyPlyBanks
 
+                lda #RAMBANK_PLY
+                sta SET_BANK_RAM
+                jsr InitialisePieceSquares
+
 
                 lda currentPly
                 sta SET_BANK_RAM
@@ -462,14 +458,30 @@ PieceToShape
 
                 jsr PhasedProcessor
 
-.VerticalBlank  sta WSYNC
-                lda INTIM
-                bne .VerticalBlank
-                sta VBLANK
+;.VB2            lda INTIM
+;                bne .VB2
+;                sta VBLANK
+;
+
+
+
+
+;whoops  bit TIMINT
+;    bmi whoops
+
+wait    bit TIMINT
+        bpl wait
+ lda #0
+ sta VBLANK
 
                 ldx doubleBufferBase
                 stx SET_BANK_RAM
                 jsr DrawRow
+
+                sta WSYNC
+
+                lda #%01000010                  ; bit6 is not required
+                sta VBLANK                      ; end of screen - enter blanking
 
                 lda #26
                 sta TIM64T
@@ -479,44 +491,36 @@ PieceToShape
                 sta PF1
                 sta PF2
 
-                ;jsr PhasedProcessor
 
     ; D1 VBLANK turns off beam
     ; It needs to be turned on 37 scanlines later
 
-.oscan          lda INTIM
-                bne .oscan
+
+
+
+Waitforit
+  BIT TIMINT
+  BPL Waitforit
+
+;.oscan          lda INTIM
+;                bne .oscan
 
                 sta WSYNC
-                sta WSYNC
-;                sta WSYNC
-;                sta WSYNC
 
-                lda #%01000010                  ; bit6 is not required
-                sta VBLANK                      ; end of screen - enter blanking
+;                lda #2
+;                sta VSYNC
+;                lda #%01000010                  ; bit6 is not required
+;                sta VBLANK                      ; end of screen - enter blanking
 
+    ; if button pressed, call random - just a bit of added randomness
 
-
-but                lda INPT4
+                lda INPT4
                 bmi .nret
-    NEXT_RANDOM
-
-;pl .ret
+                NEXT_RANDOM
 .nret
-
 
                 jmp .doubleBufferLoop
 
-;                jmp .RestartChessFrame
-
-.ret
-
-                ;jmp .doubleBufferLoop
-
-                ;lda #2
-                ;sta VSYNC
-                ;lda #%01000010                  ; bit6 is not required
-                ;sta VBLANK                      ; end of screen - enter blanking
 
 Restart     ; go here on RESET + SELECT
 
@@ -525,6 +529,7 @@ Restart     ; go here on RESET + SELECT
 ;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE PhasedProcessor
+
                 ldx drawPhase
                 lda DrawVectorLO,x
                 sta __ptr
@@ -532,8 +537,9 @@ Restart     ; go here on RESET + SELECT
                 sta __ptr+1
                 jmp (__ptr)
 
-MARCH = 7
+MARCH = 9
 STARTMOVE = 3
+CSL = 6
 
 DrawVectorLO
     .byte <StartClearBoard
@@ -543,13 +549,16 @@ DrawVectorLO
 ;    .byte <ClearTracksB
 
     .byte <FlipBuffers
+    .byte <FB0
     .byte <FB2
+    .byte <FB3
     .byte <EraseStartPiece
     .byte <WriteStartPieceBlank
     .byte <MarchToTargetA
     .byte <MarchB
     .byte <MarchToTargetB
     .byte <MarchB2
+    .byte <FinalFlash
 
 DrawVectorHI
     .byte >StartClearBoard
@@ -558,13 +567,16 @@ DrawVectorHI
 ;    .byte >ClearTracks
 ;    .byte >ClearTracksB
     .byte >FlipBuffers
+    .byte >FB0
     .byte >FB2
+    .byte >FB3
     .byte >EraseStartPiece
     .byte >WriteStartPieceBlank
     .byte >MarchToTargetA
     .byte >MarchB
     .byte >MarchToTargetB
     .byte >MarchB2
+    .byte >FinalFlash
 
     DEFINE_SUBROUTINE StartClearBoard
 
@@ -578,7 +590,7 @@ DrawVectorHI
                 bmi .bitmapCleared
                 ldx drawCount
                 stx SET_BANK_RAM
-                jsr ClearRowBitmap
+                ;jsr ClearRowBitmap
 
                 rts
 
@@ -600,101 +612,66 @@ DrawVectorHI
 .incomplete     rts
 
 
-#if 0
-    DEFINE_SUBROUTINE ClearTracks
-
-                lda #63
-                sta drawPieceNumber
-
-                inc drawPhase
-
-    DEFINE_SUBROUTINE ClearTracksB
-
-                lda #RAMBANK_MOVES_RAM
-                sta SET_BANK_RAM
-.checkAnotherTrack
-                ldx drawPieceNumber
-                ldy Base64ToIndex,x
-                lda Board,y
-                cmp #BLACK
-                beq undoTrack
-                dec drawPieceNumber
-                bpl .checkAnotherTrack
-                inc drawPhase
-                rts
-
-undoTrack        jsr CopySinglePiece
-                lda #RAMBANK_MOVES_RAM
-                sta SET_BANK_RAM
-
-                ldy drawPieceNumber         ;0-63
-                ldx Base64ToIndex,y
-                lda #0
-                sta Board+RAM_WRITE,x
-
-                rts
-
-#endif
-
-
-
+; NOTE: to draw "track" set the blank square tO BLACK
 
 
     ; Now we've finished drawing the screen square by square.
 
     DEFINE_SUBROUTINE FlipBuffers
 
-;    lda sideToMove
-;    eor #128
-;    sta sideToMove
+                lda enPassantSquare                 ; potentially set by move in previous ply
+                sta enPassantPawn                   ; grab enPassant flag from PLY for later checking
 
-
-                jsr CallMoveGenerators
+                lda currentPly
+                sta SET_BANK_RAM
+                jsr NewPlyInitialise                ; zap movelist for this ply
 
                 inc drawPhase
                 rts
+
+
+    DEFINE_SUBROUTINE FB0
+
+                lda currentPly
+                sta SET_BANK_RAM
+                jsr GenerateMovesForAllPieces
+
+                lda piecelistIndex
+                and #15
+                cmp #15
+                bne .waitgen
+
+                inc drawPhase
+.waitgen        rts
 
 
     DEFINE_SUBROUTINE FB2
 
                 jsr MoveViaList
-                jsr FinaliseMove
-
-                lda fromSquare
-                cmp toSquare
-                bne marchAway
-
+                inc drawPhase
                 rts
 
-marchAway
+    DEFINE_SUBROUTINE FB3
 
+                jsr FinaliseMove
 
                 lda #BLANK
                 sta previousPiece
 
-                lda drawDelay
-;tmp                bne normaldraw
-
-;tmp...                lda #0
-;                sta snail
-;                lda #6
-;                sta drawPhase
-;                jmp MarchToTargetA
-
-normaldraw
-                lda #5
-                sta snail
-
                 inc drawPhase
+;                rts
+
 
     DEFINE_SUBROUTINE EraseStartPiece
 
 
-                lda #6 ;20
+                lda #6                  ; on/off count
                 sta drawCount           ; flashing for piece about to move
+                lda #0
+                sta drawDelay
 
                 inc drawPhase
-                ;rts
+
 
     DEFINE_SUBROUTINE WriteStartPieceBlank
 
@@ -707,20 +684,16 @@ deCount         lda drawCount
                 beq flashDone
                 dec drawCount
 
-                lda #10 ;5
-                sta drawDelay
+                lda #6
+                sta drawDelay               ; "getting ready to move" flash
 
                 lda fromSquare
                 sta drawPieceNumber
                 jsr CopySinglePiece
-
-                dec drawDelay
                 rts
 
 flashDone       inc drawPhase
-                rts
 
-;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE MarchToTargetA
 
@@ -783,19 +756,18 @@ colok
                 lda Board,y
                 sta lastPiece                   ; what we are overwriting
                 lda fromPiece
-                sta Board+RAM_WRITE,y      ; and what'w actually moving there
+                and #~CASTLE
+                sta Board+RAM_WRITE,y           ; and what's actually moving there
                 inc drawPhase
                 rts
 
 ;---------------------------------------------------------------------------------------------------
 
-MarchB
-
-                lda fromSquare
+MarchB          lda fromSquare
                 sta drawPieceNumber
                 jsr CopySinglePiece             ; draw the moving piece into the new square
 
-                lda snail    ; snail trail
+                lda #6                          ; snail trail delay
                 sta drawDelay
 
                 inc drawPhase
@@ -842,35 +814,116 @@ MarchB
 
                 lda fromSquare
                 cmp toSquare
-                beq .halt
+                beq xhalt
 
-    ; here we could delay
-                ;lda #5            ; inter-move segment speed
-                ;sta drawDelay
+                lda #1            ; inter-move segment speed (can be 0)
+                sta drawDelay
 
                 lda #MARCH
                 sta drawPhase
                 rts
 
-.halt           lda #STARTMOVE
+
+
+
+
+KSquare         .byte 2,6,58,62
+RSquareStart    .byte 22,29,92,99
+RSquareEnd      .byte 25,27,95,97
+RSquareStart64  .byte 0,7,56,63
+RSquareEnd64    .byte 3,5,59,61
+
+xhalt
+
+
+                lda #6                  ; on/off count
+                sta drawCount           ; flashing for piece about to move
+                lda #0
+                sta drawDelay
+
+                inc drawPhase
+                rts
+
+
+    DEFINE_SUBROUTINE FinalFlash
+
+                lda drawDelay
+                beq .deCount
+                dec drawDelay
+                rts
+
+.deCount         lda drawCount
+                beq flashDone2
+                dec drawCount
+
+                lda #3
+                sta drawDelay               ; "getting ready to move" flash
+
+                lda fromSquare
+                sta drawPieceNumber
+                jsr CopySinglePiece
+                rts
+
+flashDone2       ;inc drawPhase
+
+
+
+
+
+
+    ; fixup any castling issues
+    ; at this point the king has finished his two-square march
+    ; based on the finish square, we determine which rook we're interacting with
+    ; and generate a 'move' for the rook to position on the other side of the king
+
+                lda fromPiece
+                and #CASTLE
+                beq .noCast
+
+                ldx #-1
+                lda toSquare
+.findCast       inx
+                cmp KSquare,x
+                bne .findCast
+
+                lda RSquareEnd,x
+                sta toX12
+                lda RSquareStart64,x
+                sta fromSquare
+                lda RSquareEnd64,x
+                sta toSquare
+
+                ldy RSquareStart,x
+                sty fromX12
+
+                lda fromPiece
+                and #128
+                ora #ROOK
+                sta fromPiece
+
+    ; todo: fixpiecesquare!!!!! for rook or will this be auto?
+
+    ;            lda #RAMBANK_MOVES_RAM
+    ;            sta SET_BANK_RAM
+    ;            lda Board,y
+    ;            sta fromPiece
+
+                lda #CSL
                 sta drawPhase
                 rts
 
-;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE CallMoveGenerators
 
-                lda currentPly
-                sta SET_BANK_RAM
-                jsr NewPlyInitialise                ; zap movelist for this ply
+.noCast
 
-                jmp GenerateMovesForAllPieces
+                lda #STARTMOVE
+                sta drawPhase
+                rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
     DEFINE_SUBROUTINE MoveForSinglePiece
-
-        ; generate a move for 'followPiece' (X12 square)
 
                 lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM
@@ -878,16 +931,16 @@ MarchB
     ; iterate piecelist
     ; call move generators
 
-        lda #52
-        sta enPassantPawn       ; TODO - set this when a pawn double-moves, clear for all otherwise
-
                 ldy currentSquare
                 lda Board,y
- ;beq .woops                             ; tmp until movelist parsed properly
                 sta currentPiece
 
                 and #PIECE_MASK
                 tay
+
+    IF ASSERTS
+lock    beq lock                    ; catch errors
+    ENDIF
 
                 lda HandlerVectorLO,y
                 sta __vector
@@ -895,17 +948,16 @@ MarchB
                 sta __vector+1
 
                 ldx currentSquare
-
                 jmp (__vector)
 
-MoveReturn
-.woops          lda currentPly
+MoveReturn      lda currentPly
                 sta SET_BANK_RAM
                 rts
 
 ;---------------------------------------------------------------------------------------------------
 
     include "Handler_PAWN.asm"
+    include "Handler_KING.asm"
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -921,7 +973,7 @@ MoveReturn
 
     ; [y]               to square (X12)
     ; currentSquare     from square (X12)
-    ; currentPiece      piece
+    ; currentPiece      piece. ENPASSANT flag set if pawn double-moving off opening rank
     ; do not modify [Y]
 
     ; add a move to the movelist

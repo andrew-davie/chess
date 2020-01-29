@@ -53,7 +53,7 @@
     ; and sause "segfaults". 22 is the max offset (a knight move). These spare bytes can
     ; be re-used for something else - we just need to guarantee there are 22 of them there
 
-    ds 22                      ; so indexing of "ValidSquare-22,x" won't fail
+    ds 30                      ; so indexing of "ValidSquare-22,x" won't fail
 
     ; Note, we will never index INTO the above bytes - x will always be >= 22
     ; We just need to make sure that the actual indexing will not have an address before
@@ -112,13 +112,19 @@
     .byte -1, -1,  BLACK|R,  BLACK|N,  BLACK|B,  BLACK|Q,  BLACK|K,  BLACK|B,  BLACK|N,  BLACK|R
 #endif
 
+
+
+
+
+
+
     ; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 103
 
 ;---------------------------------------------------------------------------------------------------
 
 HandlerVectorLO
 
-    .byte 0 ;<Handle_BLANK                     ; ERROR
+    .byte 0 ;<(Handle_BLANK-1)                     ; ERROR
     .byte <Handle_WHITE_PAWN
     .byte <Handle_BLACK_PAWN
     .byte <Handle_KNIGHT
@@ -144,7 +150,6 @@ HandlerVectorHI
     include "Handler_QUEEN.asm"
     include "Handler_BISHOP.asm"
     include "Handler_ROOK.asm"
-    include "Handler_KING.asm"
     include "Handler_KNIGHT.asm"
 
 
