@@ -53,7 +53,7 @@
     ; and sause "segfaults". 22 is the max offset (a knight move). These spare bytes can
     ; be re-used for something else - we just need to guarantee there are 22 of them there
 
-    ds 30                      ; so indexing of "ValidSquare-22,x" won't fail
+    ds 22                      ; so indexing of "ValidSquare-22,x" won't fail
 
     ; Note, we will never index INTO the above bytes - x will always be >= 22
     ; We just need to make sure that the actual indexing will not have an address before
@@ -80,28 +80,27 @@
     .byte -1, -1, 92, 93, 94, 95, 96, 97, 98, 99    ; CONTINUES...
 
     DEFINE_SUBROUTINE Board
-    ;DEFINE_SUBROUTINE Chessboard
 
-    ; A 10X10...
+    ; A 10X10... we should never write using invalid square
     ; ON COPY TO RAM BANK, 'BOARD' SELF-INITIALISES TO THE FOLLOWING VALUES
     ; FROM THEN ON IT'S WRITEABLE (REMEMBER TO +RAM_WRITE) FOR MODIFICATIONS
 
     .byte -1, -1, -1, -1, -1, -1, -1, -1, -1, -1        ; shared with above table
     .byte -1, -1, -1, -1, -1, -1, -1, -1, -1, -1        ; shared with above table
 
-#if 0
+#if TEST_POSITION
     .byte -1, -1,  0, 0, 0, 0, 0, 0, 0, 0
     .byte -1, -1,  0, 0, 0, 0, 0, 0, 0, 0
     .byte -1, -1,  0, 0, 0, 0, 0, 0, 0, 0
-    .byte -1, -1,  WHITE|WP, BLACK|Q, 0, 0, 0, 0, 0, 0
     .byte -1, -1,  0, 0, 0, 0, 0, 0, 0, 0
+    .byte -1, -1,  0, 0, 0, WHITE|WP, BLACK|BP|MOVED|ENPASSANT, 0, 0, 0
     .byte -1, -1,  0, 0, 0, 0, 0, 0, 0, 0
     .byte -1, -1,  0, 0, 0, 0, 0, 0, 0, 0
     .byte -1, -1,  0, 0, 0, 0, 0, 0, 0, 0
 #endif
 
 
-#if 1
+#if !TEST_POSITION
     .byte -1, -1,  WHITE|R,  WHITE|N,  WHITE|B,  WHITE|Q,  WHITE|K,  WHITE|B,  WHITE|N,  WHITE|R
     .byte -1, -1, WHITE|WP, WHITE|WP, WHITE|WP, WHITE|WP, WHITE|WP, WHITE|WP, WHITE|WP, WHITE|WP
     .byte -1, -1,        0,        0,        0,        0,        0,        0,        0,        0
@@ -112,45 +111,18 @@
     .byte -1, -1,  BLACK|R,  BLACK|N,  BLACK|B,  BLACK|Q,  BLACK|K,  BLACK|B,  BLACK|N,  BLACK|R
 #endif
 
+    ; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 99
 
-
-
-
-
-
-    ; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 103
+    ; PARANOIA... following not used, but there in case above violated
+    ;.byte -1, -1, -1, -1, -1, -1, -1, -1, -1, -1        ; shared with above table
+    ;.byte -1, -1, -1, -1, -1, -1, -1, -1, -1, -1        ; shared with above table
 
 ;---------------------------------------------------------------------------------------------------
-
-HandlerVectorLO
-
-    .byte 0 ;<(Handle_BLANK-1)                     ; ERROR
-    .byte <Handle_WHITE_PAWN
-    .byte <Handle_BLACK_PAWN
-    .byte <Handle_KNIGHT
-    .byte <Handle_BISHOP
-    .byte <Handle_ROOK
-    .byte <Handle_QUEEN
-    .byte <Handle_KING
-
-HandlerVectorHI
-
-    .byte 0 ;>Handle_BLANK
-    .byte >Handle_WHITE_PAWN
-    .byte >Handle_BLACK_PAWN
-    .byte >Handle_KNIGHT
-    .byte >Handle_BISHOP
-    .byte >Handle_ROOK
-    .byte >Handle_QUEEN
-    .byte >Handle_KING
-
-;---------------------------------------------------------------------------------------------------
-
 
     include "Handler_QUEEN.asm"
     include "Handler_BISHOP.asm"
     include "Handler_ROOK.asm"
-    include "Handler_KNIGHT.asm"
+    include "Handler_KING.asm"
 
 
     ;OPTIONAL_PAGEBREAK "Base64ToIndex", 64

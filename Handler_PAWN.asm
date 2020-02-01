@@ -32,20 +32,24 @@ BLACK_HOME_ROW     = 82                    ; >= this, on home row
                 lda currentPiece
                 pha
 
+                sty __temp
                 lda #{1}|QUEEN
                 sta currentPiece
                 jsr AddMove
 
                 lda #{1}|ROOK
                 sta currentPiece
+                ldy __temp
                 jsr AddMove
 
                 lda #{1}|BISHOP
                 sta currentPiece
+                ldy __temp
                 jsr AddMove
 
                 lda #{1}|KNIGHT
                 sta currentPiece
+                ldy __temp
                 jsr AddMove
 
                 pla
@@ -137,8 +141,8 @@ BLACK_HOME_ROW     = 82                    ; >= this, on home row
 
 
     ; en-passant captures...
-
-#if 0
+EN_PASSANTING
+#if 1
                 lda enPassantPawn
                 beq .noEnPassant
 
@@ -186,7 +190,8 @@ BLACK_HOME_ROW     = 82                    ; >= this, on home row
                 lda Board,y
                 bne .pMoved                     ; destination square occupied
 
-                ;jsr AddMove                     ; add the +2DOWN move off home row
+                jsr AddMove                     ; add the +2DOWN move off home row
+                ldx currentSquare
 
 .pMoved
 
@@ -198,7 +203,7 @@ BLACK_HOME_ROW     = 82                    ; >= this, on home row
 
     ; en-passant captures...
 
-#if 0
+#if 1
                 lda enPassantPawn
                 beq .noEnPassant
 

@@ -10,7 +10,7 @@
     SUBROUTINE
 
                 ldx currentSquare
-                bpl .project                    ; unconditional
+                bne .project                    ; unconditional
 
 .empty          jsr AddMove
 .project        ldy ValidSquare+{1},x
@@ -32,15 +32,18 @@
                 bmi .invalid                    ; off board!
                 lda Board,y                     ; piece @ destination
                 beq .squareEmpty
-
                 eor currentPiece
                 bpl .invalid                    ; same colour
-
 .squareEmpty    jsr AddMove
-                ldx currentSquare
-
 .invalid
     ENDM
+
+
+    MAC MOVE_TO_X
+                ldx currentSquare
+                MOVE_TO {1}
+    ENDM
+
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

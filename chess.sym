@@ -1,43 +1,47 @@
 --- Symbol List (sorted by symbol)
-0.adjustPiece            f274              (R )
-0.another                f867              (R )
-0.bitmapCleared          fa43              (R )
-0.blackAdjust            f837              (R )
+0.adjustPiece            f27a              (R )
+0.bitmapCleared          fa38              (R )
+0.blackAdjust            f823              (R )
 0.blank1                 f09f              (R )
 0.blank2                 f0ae              (R )
-0.conv64                 f8c8              (R )
-0.copyP                  f903              (R )
-0.copyPage               f910              (R )
+0.bottomOut              f2ba              (R )
+0.castleKing             f304              (R )
+0.conv64                 f8bf              (R )
+0.copyP                  f8fa              (R )
+0.copyPage               f907              (R )
 0.copyPiece              f094              (R )
 0.copyPieceR             f0a3              (R )
-0.copyPlyBanks           f971              (R )
-0.copyRowBanks           f951              (R )
-0.deCount                fb76              (R )
-0.doubleBufferLoop       f9bb              (R )
-0.downRow                facd              (R )
+0.copyPlyBanks           f968              (R )
+0.copyRowBanks           f948              (R )
+0.deCount                fb72              (R )
+0.doubleBufferLoop       f9b0              (R )
+0.downRow                fac9              (R )
 0.drawLine               f0b4              (R )
 0.fillBP                 f215              (R )
 0.fillWP                 f206              (R )
-0.findCast               fb92              (R )
-0.foundMove              f878                  
+0.findCast               fb8e              (R )
+0.foundMove              f86f                  
 0.FREE_BYTES             0000                  
-0.incomplete             fa53              (R )
-0.leftCol                fae8              (R )
+0.incomplete             fa48              (R )
+0.leftCol                fae4              (R )
 0.LineColour             f0e6              (R )
 0.loopVSync2             f041              (R )
-0.loopVSync3             f9bd              (R )
-0.mb                     fb1e              (R )
-0.noCast                 fbb9              (R )
-0.noPieceHere            f266              (R )
-0.nret                   fa03              (R )
-0.pieceCheck             f26b              (R )
-0.pMoved                 fc2d              (R )
-0.progress               fab0              (R )
+0.loopVSync3             f9b2              (R )
+0.mb                     fb1a              (R )
+0.mulx                   f866              (R )
+0.noCast                 fbb5              (R )
+0.noEnPassant            fcae              (R )
+0.noEP                   fbbb              (R )
+0.noPieceHere            f26a              (R )
+0.nover                  f86c              (R )
+0.nret                   f9f8              (R )
+0.pieceCheck             f271              (R )
+0.pMoved                 fc44              (R )
+0.progress               faac              (R )
 0.rightSide              f0a3              (R )
-0.scanPiece              f253                  
 0.startLine              f0b2              (R )
-0.waitgen                fa74              (R )
-0.white                  f824              (R )
+0.waitgen                fa70              (R )
+0.white                  f810              (R )
 135.TEMP                 07d8              (R )
 209.TEMP                 07d8              (R )
 28.RAM_BANK_SIZE         0000              (R )
@@ -72,151 +76,156 @@
 427.STEP3                0000              (R )
 428.TEMP                 07c0              (R )
 43.TEMP                  0004              (R )
-439.empty                f0fa              (R )
-439.invalid              f10e              (R )
-439.project              f0fd              (R )
-441.empty                f112              (R )
-441.invalid              f126              (R )
-441.project              f115              (R )
-443.empty                f12a              (R )
-443.invalid              f13e              (R )
-443.project              f12d              (R )
-445.empty                f142              (R )
-445.invalid              f156              (R )
-445.project              f145              (R )
-447.empty                f15a              (R )
-447.invalid              f16e              (R )
-447.project              f15d              (R )
-449.empty                f172              (R )
-449.invalid              f186              (R )
-449.project              f175              (R )
-451.empty                f18a              (R )
-451.invalid              f19e              (R )
-451.project              f18d              (R )
-453.empty                f1a2              (R )
-453.invalid              f1b6              (R )
-453.project              f1a5              (R )
-457.empty                f1bd              (R )
-457.invalid              f1d1              (R )
-457.project              f1c0              (R )
-459.empty                f1d5              (R )
-459.invalid              f1e9              (R )
-459.project              f1d8              (R )
-461.empty                f1ed              (R )
-461.invalid              f201              (R )
-461.project              f1f0              (R )
-463.empty                f205              (R )
-463.invalid              f219              (R )
-463.project              f208              (R )
-467.empty                f220              (R )
-467.invalid              f234              (R )
-467.project              f223              (R )
-469.empty                f238              (R )
-469.invalid              f24c              (R )
-469.project              f23b              (R )
-471.empty                f250              (R )
-471.invalid              f264              (R )
-471.project              f253              (R )
-473.empty                f268              (R )
-473.invalid              f27c              (R )
-473.project              f26b              (R )
-477.invalid              f292              (R )
-477.squareEmpty          f28d              (R )
-479.invalid              f2a5              (R )
-479.squareEmpty          f2a0              (R )
+439.empty                f0e2              (R )
+439.invalid              f0f6              (R )
+439.project              f0e5              (R )
+441.empty                f0fa              (R )
+441.invalid              f10e              (R )
+441.project              f0fd              (R )
+443.empty                f112              (R )
+443.invalid              f126              (R )
+443.project              f115              (R )
+445.empty                f12a              (R )
+445.invalid              f13e              (R )
+445.project              f12d              (R )
+447.empty                f142              (R )
+447.invalid              f156              (R )
+447.project              f145              (R )
+449.empty                f15a              (R )
+449.invalid              f16e              (R )
+449.project              f15d              (R )
+451.empty                f172              (R )
+451.invalid              f186              (R )
+451.project              f175              (R )
+453.empty                f18a              (R )
+453.invalid              f19e              (R )
+453.project              f18d              (R )
+457.empty                f1a5              (R )
+457.invalid              f1b9              (R )
+457.project              f1a8              (R )
+459.empty                f1bd              (R )
+459.invalid              f1d1              (R )
+459.project              f1c0              (R )
+461.empty                f1d5              (R )
+461.invalid              f1e9              (R )
+461.project              f1d8              (R )
+463.empty                f1ed              (R )
+463.invalid              f201              (R )
+463.project              f1f0              (R )
+467.empty                f208              (R )
+467.invalid              f21c              (R )
+467.project              f20b              (R )
+469.empty                f220              (R )
+469.invalid              f234              (R )
+469.project              f223              (R )
+471.empty                f238              (R )
+471.invalid              f24c              (R )
+471.project              f23b              (R )
+473.empty                f250              (R )
+473.invalid              f264              (R )
+473.project              f253              (R )
+477.invalid              f278              (R )
+477.squareEmpty          f275              (R )
 48.loopResync            f023              (R )
 48.loopWait              f036              (R )
 48.ntsc                  f036              (R )
-481.invalid              f2b8              (R )
-481.squareEmpty          f2b3              (R )
-483.invalid              f2cb              (R )
-483.squareEmpty          f2c6              (R )
-485.invalid              f2de              (R )
-485.squareEmpty          f2d9              (R )
-487.invalid              f2f1              (R )
-487.squareEmpty          f2ec              (R )
-489.invalid              f304              (R )
-489.squareEmpty          f2ff              (R )
+480.invalid              f28b              (R )
+480.squareEmpty          f288              (R )
+483.invalid              f29e              (R )
+483.squareEmpty          f29b              (R )
+486.invalid              f2b1              (R )
+486.squareEmpty          f2ae              (R )
+489.invalid              f2c4              (R )
+489.squareEmpty          f2c1              (R )
 49.VSLP1                 f025              (R )
-491.invalid              f317              (R )
-491.squareEmpty          f312              (R )
-494.TEMP                 035a              (R )
+492.invalid              f2d7              (R )
+492.squareEmpty          f2d4              (R )
+495.invalid              f2ea              (R )
+495.squareEmpty          f2e7              (R )
+498.invalid              f2fd              (R )
+498.squareEmpty          f2fa              (R )
+499.noCastle             f331              (R )
+500.noCastle             f363              (R )
+503.TEMP                 03a6              (R )
 52.TEMP                  0065              (R )
-528.TEMP                 0287              (R )
-536.skipEOR              f86e              (R )
-549.CLEAR_STACK          f93e              (R )
-550.loopResync           f99e              (R )
-550.loopWait             f9b1              (R )
-550.ntsc                 f9b1              (R )
-551.VSLP1                f9a0              (R )
-552.skipEOR              fa01              (R )
+533.TEMP                 02c7              (R )
+539.skipEOR              f860              (R )
+554.CLEAR_STACK          f935              (R )
+555.loopResync           f993              (R )
+555.loopWait             f9a6              (R )
+555.ntsc                 f9a6              (R )
+556.VSLP1                f995              (R )
+557.skipEOR              f9f6              (R )
 59.CYCLES                0006              (R )
-590.pMoved               fc1a              (R )
-590.standard             fc17              (R )
-592.invalid              fc48              (R )
-594.pMoved               fc48              (R )
-594.standard             fc45              (R )
-596.invalid              fc65              (R )
-598.pMoved               fc65              (R )
-598.standard             fc62              (R )
-605.noCastle             fde8              (R )
-605.pMoved               fcae              (R )
-607.pMoved               fca0              (R )
-607.standard             fc9d              (R )
-609.invalid              fcc9              (R )
+596.pMoved               fc31              (R )
+596.standard             fc2e              (R )
+598.invalid              fc5f              (R )
+600.pMoved               fc5f              (R )
+600.standard             fc5c              (R )
+602.invalid              fc7c              (R )
+604.pMoved               fc7c              (R )
+604.standard             fc79              (R )
+606.invalid              fc9a              (R )
+608.invalid              fcae              (R )
 61.TEMP                  0027              (R )
-611.pMoved               fcc9              (R )
-611.standard             fcc6              (R )
-613.invalid              fce6              (R )
-615.pMoved               fce6              (R )
-615.standard             fce3              (R )
-619.invalid              fcfc              (R )
-619.squareEmpty          fcf7              (R )
-621.invalid              fd0f              (R )
-621.squareEmpty          fd0a              (R )
-623.invalid              fd22              (R )
-623.squareEmpty          fd1d              (R )
-625.invalid              fd35              (R )
-625.squareEmpty          fd30              (R )
-627.invalid              fd48              (R )
-627.squareEmpty          fd43              (R )
-629.invalid              fd5b              (R )
-629.squareEmpty          fd56              (R )
-631.invalid              fd6e              (R )
-631.squareEmpty          fd69              (R )
-633.invalid              fd81              (R )
-633.squareEmpty          fd7c              (R )
-634.noCastle             fdb4              (R )
-635.noCastle             fde8              (R )
-__boardc                 009f                  
-__CopyCount              009e                  
+615.noEnPassant          fd6c              (R )
+615.pMoved               fd04              (R )
+617.pMoved               fcf1              (R )
+617.standard             fcee              (R )
+619.invalid              fd1f              (R )
+621.pMoved               fd1f              (R )
+621.standard             fd1c              (R )
+623.invalid              fd3c              (R )
+625.pMoved               fd3c              (R )
+625.standard             fd39              (R )
+627.invalid              fd58              (R )
+629.invalid              fd6c              (R )
+633.invalid              fd80              (R )
+633.squareEmpty          fd7d              (R )
+636.invalid              fd93              (R )
+636.squareEmpty          fd90              (R )
+639.invalid              fda6              (R )
+639.squareEmpty          fda3              (R )
+642.invalid              fdb9              (R )
+642.squareEmpty          fdb6              (R )
+645.invalid              fdcc              (R )
+645.squareEmpty          fdc9              (R )
+648.invalid              fddf              (R )
+648.squareEmpty          fddc              (R )
+651.invalid              fdf2              (R )
+651.squareEmpty          fdef              (R )
+654.invalid              fe05              (R )
+654.squareEmpty          fe02              (R )
+__boardc                 009b                  
+__CopyCount              009a                  
 __DASM__TOTAL_FREE_MEMORY 0000                  
-__destinationBank        009e                  
-__from                   009e                  
-__fromCol                009e                  
-__fromRow                009e              (R )
-__index                  00a0                  
-__piece                  009e              (R )
-__pieceColour            009e              (R )
-__pieceShapeBuffer       009e              (R )
-__plyBank                009e              (R )
-__ptr                    00e6              (R )
-__ptr2                   00e8                  
-__ROM_SourceBank         009f                  
-__rows                   009e                  
-__sourceBank             009f              (R )
-__temp                   00a0              (R )
-__tempx                  009e                  
-__to                     009f                  
-__toCol                  009f                  
-__vector                 009f              (R )
+__destinationBank        009a                  
+__from                   009a                  
+__fromCol                009a                  
+__fromRow                009a              (R )
+__index                  009c                  
+__piece                  009a              (R )
+__pieceColour            009a              (R )
+__pieceShapeBuffer       009a              (R )
+__plyBank                009a              (R )
+__ptr                    00e2              (R )
+__ptr2                   00e4                  
+__ROM_SourceBank         009b                  
+__rows                   009a                  
+__sourceBank             009b              (R )
+__temp                   009c              (R )
+__tempx                  009a                  
+__to                     009b                  
+__toCol                  009b                  
+__vector                 009b              (R )
 _CURRENT_BANK            000f              (R )
-_CURRENT_RAMBANK         0012                  
+_CURRENT_RAMBANK         000e                  
 _DOWN                    fffffffffffffff6              (R )
 _LEFT                    ffffffffffffffff              (R )
 _RIGHT                   0001              (R )
 _UP                      000a              (R )
-AddMove                  fdeb              (R )
+AddMove                  fe08              (R )
+alphaBeta                f280              (R )
 ASSERTS                  0001              (R )
 AUDC0                    0055                  
 AUDC1                    0056                  
@@ -226,6 +235,7 @@ AUDV0                    0059
 AUDV1                    005a                  
 B                        0004              (R )
 BANK_AddMove             000f                  
+BANK_alphaBeta           000b                  
 BANK_Base64ToIndex       000a                  
 BANK_BLACK_BISHOP_on_BLACK_SQUARE_0 0007              (R )
 BANK_BLACK_BISHOP_on_BLACK_SQUARE_1 0007              (R )
@@ -291,9 +301,7 @@ BANK_CopyPieceToRAMBuffer 000f
 BANK_CopyPieceToRowBitmap 0001                  
 BANK_CopyShadowROMtoRAM  000f                  
 BANK_CopySinglePiece     000f                  
-BANK_CopySinglePieceB    000f                  
 BANK_DECODE_LEVEL_SHADOW 0000                  
-BANK_DeletePiece         000b                  
 BANK_DrawEntireBoard     000f                  
 BANK_DrawRow             0001                  
 BANK_EraseStartPiece     000f                  
@@ -304,11 +312,11 @@ BANK_FinalFlash          000f
 BANK_FinaliseMove        000f                  
 BANK_FixPieceList        000b                  
 BANK_FlipBuffers         000f                  
-BANK_GenerateMovesForAllPieces 000b                  
+BANK_GenerateMovesForNextPiece 000b                  
 BANK_Handle_BISHOP       000a                  
 BANK_Handle_BLACK_PAWN   000f                  
-BANK_Handle_KING         000f                  
-BANK_Handle_KNIGHT       000a                  
+BANK_Handle_KING         000a                  
+BANK_Handle_KNIGHT       000f                  
 BANK_Handle_QUEEN        000a                  
 BANK_Handle_ROOK         000a                  
 BANK_Handle_WHITE_PAWN   000f                  
@@ -324,6 +332,7 @@ BANK_MoveTo              000b
 BANK_MoveViaList         000f                  
 BANK_NewPlyInitialise    000b                  
 BANK_PhasedProcessor     000f                  
+BANK_PhysicallyMovePiece 000f                  
 BANK_PIECE_VECTOR_BANK   0008              (R )
 BANK_PIECE_VECTOR_HI     0008                  
 BANK_PIECE_VECTOR_LO     0008                  
@@ -397,7 +406,7 @@ BANK_WHITE_ROOK_on_WHITE_SQUARE_1 0003              (R )
 BANK_WHITE_ROOK_on_WHITE_SQUARE_2 0003              (R )
 BANK_WHITE_ROOK_on_WHITE_SQUARE_3 0003              (R )
 BANK_WriteStartPieceBlank 000f                  
-Base64ToIndex            f31a              (R )
+Base64ToIndex            f366              (R )
 BISHOP                   0004              (R )
 BLACK                    0080              (R )
 BLACK_BISHOP_on_BLACK_SQUARE_0 f000              (R )
@@ -459,7 +468,7 @@ BLACK_ROOK_on_WHITE_SQUARE_2 f090              (R )
 BLACK_ROOK_on_WHITE_SQUARE_3 f100              (R )
 BlackPiecelist           f22f              (R )
 BLANK                    0000              (R )
-Board                    f082              (R )
+Board                    f07a              (R )
 BP                       0002              (R )
 BPAWN                    0002              (R )
 Cart_Init                f004                  
@@ -472,15 +481,15 @@ ChessBitmap3             f048              (R )
 ChessBitmap4             f060              (R )
 ChessBitmap5             f078              (R )
 CHESSBOARD_ROWS          0008              (R )
-ClearEachRow             fa3a              (R )
+ClearEachRow             fa2f              (R )
 COL_0                    f2b0              (R )
 COL_1                    f388              (R )
 COL_2                    f460              (R )
 COL_3                    f538              (R )
 COL_4                    f610              (R )
 COL_5                    f6e8              (R )
-colok                    faea              (R )
-colour_table             009c              (R )
+colok                    fae6              (R )
+colour_table             0098              (R )
 colr_ntsc2               f100              (R )
 colr_pal                 f1d8              (R )
 COLUBK                   0049              (R )
@@ -489,18 +498,16 @@ COLUP1                   0047
 COLUPF                   0048              (R )
 colvec                   f004                  
 COMPILE_ILLEGALOPCODES   0001                  
-ConvertToBase64          f8c3              (R )
-CopyPieceToRAMBuffer     f8ee              (R )
+ConvertToBase64          f8ba              (R )
+CopyPieceToRAMBuffer     f8e5              (R )
 CopyPieceToRowBitmap     f090              (R )
-CopyShadowROMtoRAM       f90c              (R )
-CopySinglePiece          f814              (R )
-CopySinglePieceB         f800                  
+CopyShadowROMtoRAM       f903              (R )
+CopySinglePiece          f800              (R )
 CSL                      0006              (R )
 CTRLPF                   004a              (R )
-currentPiece             008c              (R )
-currentPly               0091              (R )
-currentPlyBank           008b                  
-currentSquare            008d              (R )
+currentPiece             0088              (R )
+currentPly               008d              (R )
+currentSquare            0089              (R )
 CXBLPF                   0046                  
 CXCLR                    006c                  
 CXM0FB                   0044                  
@@ -510,57 +517,56 @@ CXM1P                    0041
 CXP0FB                   0042                  
 CXP1FB                   0043                  
 CXPPMM                   0047                  
-deCount                  fa95              (R )
-DeletePiece              f27a              (R )
+deCount                  fa91              (R )
 DIRECTION_BITS           0007                  
-doubleBufferBase         0082              (R )
-drawCount                0086              (R )
-drawDelay                0084              (R )
-DrawEntireBoard          fa4a              (R )
-drawPhase                0083              (R )
+drawCount                0085              (R )
+drawDelay                0083              (R )
+DrawEntireBoard          fa3f              (R )
+drawPhase                0082              (R )
 drawPieceNumber          0080              (R )
 DrawRow                  f0b2              (R )
-DrawVectorHI             fa26              (R )
-DrawVectorLO             fa18              (R )
-EARLY_LOCATION           f092              (R )
+DrawVectorHI             fa1b              (R )
+DrawVectorLO             fa0d              (R )
+EARLY_LOCATION           f094              (R )
+EN_PASSANTING            fc7c                  
 ENABL                    005f                  
 ENAM0                    005d              (R )
 ENAM1                    005e                  
-END_OF_OVERLAY           00ea              (R )
+END_OF_OVERLAY           00e6              (R )
 ENPASSANT                0020              (R )
-enPassantPawn            008f              (R )
-enPassantSquare          f010              (R )
-EraseStartPiece          fa84              (R )
-FB0                      fa63              (R )
-FB2                      fa75              (R )
-FB3                      fa7b              (R )
+enPassantPawn            008b              (R )
+enPassantSquare          f012              (R )
+EraseStartPiece          fa80              (R )
+FB0                      fa58              (R )
+FB2                      fa71              (R )
+FB3                      fa77              (R )
 FINAL_VERSION            0000              (R )
-FinalFlash               fb6f              (R )
-FinaliseMove             f89e              (R )
+FinalFlash               fb6b              (R )
+FinaliseMove             f895              (R )
 FIXED_BANK               7800              (R )
-FixPieceList             f267              (R )
-flashDone                faa7              (R )
-flashDone2               fb88              (R )
-FlipBuffers              fa54              (R )
-followPiece              0090                  
-fromPiece                0095              (R )
-fromSquare               0094              (R )
-fromX12                  0088              (R )
-GenerateMovesForAllPieces f24a              (R )
+FixPieceList             f26d              (R )
+flashDone                faa3              (R )
+flashDone2               fb84              (R )
+FlipBuffers              fa49              (R )
+followPiece              008c                  
+fromPiece                0091              (R )
+fromSquare               0090              (R )
+fromX12                  0086              (R )
+GenerateMovesForNextPiece f254              (R )
 GENERIC_BANK_1           0000              (R )
 GRP0                     005b              (R )
 GRP1                     005c              (R )
-halted                   f89d              (R )
-Handle_BISHOP            f1b9              (R )
-Handle_BLACK_PAWN        fc8b              (R )
-Handle_BLANK             fce6                  
-Handle_KING              fce9              (R )
-Handle_KNIGHT            f27f              (R )
-Handle_QUEEN             f0f6              (R )
-Handle_ROOK              f21c              (R )
-Handle_WHITE_PAWN        fc05              (R )
-HandlerVectorHI          f0ee              (R )
-HandlerVectorLO          f0e6              (R )
+halted                   f894              (R )
+Handle_BISHOP            f1a1              (R )
+Handle_BLACK_PAWN        fcdc              (R )
+Handle_BLANK             fd6c                  
+Handle_KING              f267              (R )
+Handle_KNIGHT            fd6f              (R )
+Handle_QUEEN             f0de              (R )
+Handle_ROOK              f204              (R )
+Handle_WHITE_PAWN        fc1c              (R )
+HandlerVectorHI          fbea              (R )
+HandlerVectorLO          fbe3              (R )
 HMBL                     0064                  
 HMCLR                    006b              (R )
 HMM0                     0062                  
@@ -681,7 +687,7 @@ INDEX_WHITE_ROOK_on_WHITE_SQUARE_1 0011
 INDEX_WHITE_ROOK_on_WHITE_SQUARE_2 0012                  
 INDEX_WHITE_ROOK_on_WHITE_SQUARE_3 0013                  
 INITBANK                 0002              (R )
-InitialiseChessboard     f8d9              (R )
+InitialiseChessboard     f8d0              (R )
 InitialisePieceSquares   f200              (R )
 INPT0                    0048                  
 INPT1                    0049                  
@@ -690,6 +696,7 @@ INPT3                    004b
 INPT4                    004c              (R )
 INPT5                    004d                  
 INTIM                    0284              (R )
+iterPieces               f29c              (R )
 JoyDirX                  f022                  
 JoyDirY                  f020                  
 JoyMoveX                 f000                  
@@ -699,43 +706,45 @@ k2                       f050              (R )
 KING                     0007              (R )
 KINGSIDE                 0003              (R )
 KNIGHT                   0003              (R )
-KSquare                  fb50              (R )
+KSquare                  fb4c              (R )
 L276                     0001              (R )
-lastPiece                0098              (R )
-lastSquare               0085              (R )
+lastPiece                0094              (R )
+lastSquare               0084              (R )
 LINES_PER_CHAR           0018                  
-lock                     fbcc              (R )
+lock                     fbce              (R )
 MARCH                    0009              (R )
-MarchB                   fb09              (R )
-MarchB2                  fb3a              (R )
-MarchToTargetA           faa9              (R )
-MarchToTargetB           fb17              (R )
+MarchB                   fb05              (R )
+MarchB2                  fb36              (R )
+MarchToTargetA           faa5              (R )
+MarchToTargetB           fb13              (R )
 MAX_MOVES                0080              (R )
-MAX_PLY                  000a              (R )
+MAX_PLY                  0006              (R )
 MAXIMUM_REQUIRED_OVERLAY_SIZE 004c              (R )
 MINIMUM_SEGTIME          0003                  
 MOVED                    0040              (R )
-MoveForSinglePiece       fbbe              (R )
-MoveFrom                 f012              (R )
-moveIndex                f011              (R )
+MoveForSinglePiece       fbc0              (R )
+MoveFrom                 f014              (R )
+moveIndex                f013              (R )
 MovePiece                f180              (R )
-movePointer              009a              (R )
+movePointer              0096              (R )
 MoveReturn               fbdd              (R )
 MOVES                    000a              (R )
 MoveTo                   f100              (R )
-MoveViaList              f85c              (R )
+MoveViaList              f848              (R )
+muldone                  f86f              (R )
 N                        0003              (R )
 NewPlyInitialise         f23f              (R )
 NO                       0000              (R )
 NO_ILLEGAL_OPCODES       0000 ????         (R )
 noFlashBG                f064                  
-nowcol                   fad3              (R )
+nowcol                   facf              (R )
 NUSIZ0                   0044              (R )
 NUSIZ1                   0045              (R )
+oo                       7fff              (R )
 ORIGIN                   8000                  
-ORIGIN_RAM               4c00                  
+ORIGIN_RAM               3c00                  
 oscan                    f0a9              (R )
-Overlay                  009e              (R )
+Overlay                  009a              (R )
 OVERLAY_DELTA            0003              (R )
 OVERLAY_NAME             4d6f76657273      str     (R ) "Movers"
 OVERLAY_SIZE             004c              (R )
@@ -749,7 +758,8 @@ PAL_60                   0003
 PF0                      004d              (R )
 PF1                      004e              (R )
 PF2                      004f              (R )
-PhasedProcessor          fa09              (R )
+PhasedProcessor          f9fe              (R )
+PhysicallyMovePiece      f86f                  
 PIECE_COLOUR             0080                  
 PIECE_MASK               0007              (R )
 PIECE_SHAPE_SIZE         0048              (R )
@@ -757,20 +767,21 @@ PIECE_VECTOR_BANK        f0e0              (R )
 PIECE_VECTOR_HI          f070              (R )
 PIECE_VECTOR_LO          f000              (R )
 PIECE_VECTORS            0008              (R )
-piecelistIndex           0092              (R )
+piecelistIndex           008e              (R )
 PIECES_0                 0003              (R )
 PIECES_1                 0004              (R )
 PIECES_2                 0005              (R )
 PIECES_3                 0006              (R )
 PIECES_4                 0007              (R )
 PieceSquare              f000              (R )
-PieceToShape             f8de              (R )
-Platform                 009b              (R )
+PieceToShape             f8d5              (R )
+Platform                 0097              (R )
 PLUSCART                 0001                  
+plyValue                 f010              (R )
 PostScreenCleanup        f049                  
-previousPiece            0099              (R )
-PromoteBlackPawn         fc68              (R )
-PromoteWhitePawn         fbe2              (R )
+previousPiece            0095              (R )
+PromoteBlackPawn         fcb1              (R )
+PromoteWhitePawn         fbf1              (R )
 Q                        0006              (R )
 QUEEN                    0006              (R )
 QUEENSIDE                fffffffffffffffc              (R )
@@ -779,7 +790,7 @@ RAM_3E                   1000              (R )
 RAM_SIZE                 0400              (R )
 RAM_WRITE                0400              (R )
 RAMBANK_.DUMMY           0007              (R )
-RAMBANK_.DUMMY_PLY       0012              (R )
+RAMBANK_.DUMMY_PLY       000e              (R )
 RAMBANK_CHESS_BOARD_ROW  0000              (R )
 RAMBANK_MOVES_RAM        0008              (R )
 RAMBANK_PLY              0009              (R )
@@ -787,30 +798,30 @@ REFP0                    004b
 REFP1                    004c                  
 RESBL                    0054                  
 RESERVED_FOR_STACK       000c              (R )
-Reset                    f938              (R )
+Reset                    f92f              (R )
 RESM0                    0052                  
 RESM1                    0053                  
 RESMP0                   0068                  
 RESMP1                   0069                  
 RESP0                    0050                  
 RESP1                    0051                  
-Restart                  fa06                  
+Restart                  f9fb                  
 RestartFrame             f03d              (R )
 RestartFrame0            f03d                  
 Resync                   f01d                  
 Ret                      f040                  
 ret                      f0b9              (R )
-returnBank               008e                  
+returnBank               008a                  
 rnd                      0081              (R )
 RND_EOR_VAL              00fe              (R )
 ROM_BANK_SIZE            0800              (R )
 ROOK                     0005              (R )
 ROW_BITMAP_SIZE          0090              (R )
-rowOK                    fad3              (R )
-RSquareEnd               fb58              (R )
-RSquareEnd64             fb60              (R )
-RSquareStart             fb54              (R )
-RSquareStart64           fb5c              (R )
+rowOK                    facf              (R )
+RSquareEnd               fb54              (R )
+RSquareEnd64             fb5c              (R )
+RSquareStart             fb50              (R )
+RSquareStart64           fb58              (R )
 RSYNC                    0043                  
 SCANLINES_NTSC           0114              (R )
 SCANLINES_PAL            0138              (R )
@@ -820,10 +831,9 @@ SEGTIME_MINIMUM_TIMESLICE 0003
 SELFMOD_RTS_ON_LAST_ROW  f0e1              (R )
 SET_BANK                 003f              (R )
 SET_BANK_RAM             003e              (R )
-sideToMove               0093              (R )
-snail                    0087                  
+sideToMove               008f              (R )
 SokoLogo                 f05f              (R )
-StartClearBoard          fa34              (R )
+StartClearBoard          fa29              (R )
 STARTMOVE                0003              (R )
 STELLA_AUTODETECT        f000                  
 SWACNT                   0281              (R )
@@ -832,6 +842,7 @@ SWCHA                    0280
 SWCHB                    0282                  
 T1024T                   0297                  
 TEST_MINIMUM_SEGTIME     0000                  
+TEST_POSITION            0000              (R )
 TEST_SEGTIME_MAN         0000                  
 TEST_SEGTIME_MINIMUM_TIMESLICE 0000                  
 THE_FIXED_BANK           000f              (R )
@@ -843,16 +854,15 @@ TIA_BASE_WRITE_ADDRESS   0040              (R )
 TIM1T                    0294                  
 TIM64T                   0296              (R )
 TIM8T                    0295                  
-TIMEREND                 f266                  
 TIMINT                   0285              (R )
-TitleScreen              f00a                  
 TITLESCREEN              0009              (R )
+TitleScreen              f00a                  
 TitleSequence            f00a                  
-toPiece                  0097                  
-toSquare                 0096              (R )
-toX12                    0089              (R )
+toPiece                  0093                  
+toSquare                 0092              (R )
+toX12                    0087              (R )
 triplet                  f061              (R )
-ValidSquare              f01e              (R )
+ValidSquare              f016              (R )
 VBLANK                   0041              (R )
 VBLANK_TIM_NTSC          0030                  
 VBLANK_TIM_PAL           0055                  
@@ -864,8 +874,8 @@ VERSION_MACRO            006a
 VERSION_VCS              0069                  
 VerticalBlank            f054              (R )
 VSYNC                    0040              (R )
-wait                     f9cc              (R )
-Waitforit                f9ef              (R )
+wait                     f9c1              (R )
+Waitforit                f9e4              (R )
 WHITE                    0000              (R )
 WHITE_BISHOP_on_BLACK_SQUARE_0 f548              (R )
 WHITE_BISHOP_on_BLACK_SQUARE_1 f590              (R )
@@ -927,10 +937,9 @@ WHITE_ROOK_on_WHITE_SQUARE_3 f648              (R )
 WhitePiecelist           f21f              (R )
 WP                       0001              (R )
 WPAWN                    0001              (R )
-WriteStartPieceBlank     fa8e              (R )
+WriteStartPieceBlank     fa8a              (R )
 WSYNC                    0042              (R )
-xhalt                    fb64              (R )
-xx                       008a                  
+xhalt                    fb60              (R )
 YES                      0001              (R )
 ███                0000                  
 --- End of Symbol List.

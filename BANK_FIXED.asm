@@ -15,24 +15,6 @@ ORIGIN          SET FIXED_BANK
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE CopySinglePieceB
-
-                pha
-                lda #BLACK                  ; just the dots!
-                sta Board+RAM_WRITE,y
-                pla
-
-                jsr ConvertToBase64
-                sty drawPieceNumber
-
-                jsr CopySinglePiece
-                lda #RAMBANK_MOVES_RAM
-                sta SET_BANK_RAM
-                rts
-
-
-
-
     DEFINE_SUBROUTINE CopySinglePiece
 
 
@@ -101,14 +83,25 @@ ORIGIN          SET FIXED_BANK
                 cmp #-1
                 beq halted                      ; no valid moves
 
+                tay                             ; loop count
+                cpy #0
+                beq muldone
+                iny
 
-.another        NEXT_RANDOM
-                and #31
-                cmp moveIndex
-                bcs .another
-                tax
+                NEXT_RANDOM
+
+                ldx #0
+                lda #0
+.mulx           clc
+                adc rnd
+                bcc .nover
+                inx
+.nover          dey
+                bne .mulx
+muldone
 
 
+    DEFINE_SUBROUTINE PhysicallyMovePiece
 
 .foundMove
                 lda MoveFrom,x
@@ -214,35 +207,6 @@ halted          rts
     ;            jsr FixPieceList                ; delete piece if in opposition list
 
                 rts
-
-
-#if 0
-DELX = 50
-
-Move
-
-    ; numbering is BASE64
-
-            .byte WHITE|WPAWN,12,12+16,DELX ; e2e4
-            ;.byte BLACK|BPAWN,51,51-16,DELX ; d7d5
-            ;.byte WHITE|KNIGHT,6,21,DELX ; g1f3
-            ;.byte BLACK|BPAWN,35,28,DELX ;d5e4
-            ;.byte WHITE|KNIGHT,21,38,DELX ;f3-g5
-            ;.byte BLACK|BPAWN,53,37,DELX ;f7f5
-            ;.byte WHITE|B,5,26,DELX ;f1c4
-            ;.byte BLACK|N,57,42,DELX ;b8c6
-            ;.byte WHITE|KNIGHT,38,53,DELX ;f3-g5
-            ;.byte WHITE|KING,4,4,DELX
-
-
-            .byte WHITE|QUEEN,3,21,DELX
-            .byte WHITE|QUEEN,21,17,DELX
-            .byte WHITE|QUEEN,17,41,DELX
-            .byte WHITE|QUEEN,41,46,DELX
-            .byte WHITE|QUEEN,46,30,DELX
-            .byte WHITE|KING,4,4,255
-            .byte 0
-#endif
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -433,7 +397,7 @@ PieceToShape
     ; Now the board is "living" in RAM (along with support code) we can do stuff with it
 
                 lda #0
-                sta doubleBufferBase
+                ;sta doubleBufferBase
                 sta drawPhase
 
 
@@ -474,7 +438,7 @@ wait    bit TIMINT
  lda #0
  sta VBLANK
 
-                ldx doubleBufferBase
+                ldx #0
                 stx SET_BANK_RAM
                 jsr DrawRow
 
@@ -619,12 +583,14 @@ DrawVectorHI
 
     DEFINE_SUBROUTINE FlipBuffers
 
-                lda enPassantSquare                 ; potentially set by move in previous ply
-                sta enPassantPawn                   ; grab enPassant flag from PLY for later checking
 
                 lda currentPly
                 sta SET_BANK_RAM
+
                 jsr NewPlyInitialise                ; zap movelist for this ply
+
+                lda enPassantSquare                 ; potentially set by move in previous ply
+                sta enPassantPawn                   ; grab enPassant flag from PLY for later checking
 
                 inc drawPhase
                 rts
@@ -634,7 +600,11 @@ DrawVectorHI
 
                 lda currentPly
                 sta SET_BANK_RAM
-                jsr GenerateMovesForAllPieces
+                jsr alphaBeta
+
+                lda currentPly
+                sta SET_BANK_RAM
+                jsr GenerateMovesForNextPiece
 
                 lda piecelistIndex
                 and #15
@@ -836,7 +806,7 @@ RSquareEnd64    .byte 3,5,59,61
 xhalt
 
 
-                lda #6                  ; on/off count
+                lda #4                  ; on/off count
                 sta drawCount           ; flashing for piece about to move
                 lda #0
                 sta drawDelay
@@ -856,7 +826,7 @@ xhalt
                 beq flashDone2
                 dec drawCount
 
-                lda #3
+                lda #10
                 sta drawDelay               ; "getting ready to move" flash
 
                 lda fromSquare
@@ -901,21 +871,23 @@ flashDone2       ;inc drawPhase
                 ora #ROOK
                 sta fromPiece
 
-    ; todo: fixpiecesquare!!!!! for rook or will this be auto?
-
-    ;            lda #RAMBANK_MOVES_RAM
-    ;            sta SET_BANK_RAM
-    ;            lda Board,y
-    ;            sta fromPiece
-
                 lda #CSL
                 sta drawPhase
                 rts
 
 
 
-.noCast
+.noCast         lda fromPiece
+                and #ENPASSANT
+                beq .noEP
 
+
+    ; TODO - handle the en-passant capture and fixup
+
+
+
+
+.noEP
                 lda #STARTMOVE
                 sta drawPhase
                 rts
@@ -923,16 +895,15 @@ flashDone2       ;inc drawPhase
 
 ;---------------------------------------------------------------------------------------------------
 
+
+
     DEFINE_SUBROUTINE MoveForSinglePiece
 
                 lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM
 
-    ; iterate piecelist
-    ; call move generators
-
-                ldy currentSquare
-                lda Board,y
+                ldx currentSquare               ; used in move handlers
+                lda Board,x
                 sta currentPiece
 
                 and #PIECE_MASK
@@ -942,22 +913,45 @@ flashDone2       ;inc drawPhase
 lock    beq lock                    ; catch errors
     ENDIF
 
-                lda HandlerVectorLO,y
+                lda HandlerVectorLO-1,y
                 sta __vector
-                lda HandlerVectorHI,y
+                lda HandlerVectorHI-1,y
                 sta __vector+1
 
-                ldx currentSquare
                 jmp (__vector)
 
 MoveReturn      lda currentPly
                 sta SET_BANK_RAM
+
                 rts
+
+    OPTIONAL_PAGEBREAK "Vector Tables", 15
+    .byte 0     ; dummy to prevent page cross access on index 0
+
+HandlerVectorLO
+
+    .byte <Handle_WHITE_PAWN
+    .byte <Handle_BLACK_PAWN
+    .byte <Handle_KNIGHT
+    .byte <Handle_BISHOP
+    .byte <Handle_ROOK
+    .byte <Handle_QUEEN
+    .byte <Handle_KING
+
+HandlerVectorHI
+
+    .byte >Handle_WHITE_PAWN
+    .byte >Handle_BLACK_PAWN
+    .byte >Handle_KNIGHT
+    .byte >Handle_BISHOP
+    .byte >Handle_ROOK
+    .byte >Handle_QUEEN
+    .byte >Handle_KING
 
 ;---------------------------------------------------------------------------------------------------
 
     include "Handler_PAWN.asm"
-    include "Handler_KING.asm"
+    include "Handler_KNIGHT.asm"
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -978,17 +972,19 @@ MoveReturn      lda currentPly
 
     ; add a move to the movelist
 
-                ldx moveIndex
-                inx
-                stx moveIndex+RAM_WRITE
+                tya
+
+                ldy moveIndex
+                iny
+                sty moveIndex+RAM_WRITE
+
+                sta MoveTo+RAM_WRITE,y
+                tax                             ; new square (for projections)
 
                 lda currentSquare
-                sta MoveFrom+RAM_WRITE,x
+                sta MoveFrom+RAM_WRITE,y
                 lda currentPiece
-                sta MovePiece+RAM_WRITE,x
-                tya
-                sta MoveTo+RAM_WRITE,x
-                tax
+                sta MovePiece+RAM_WRITE,y
 
                 lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM

@@ -29,6 +29,7 @@ NO                      = 0
 
 ; assemble diagnostics. Remove for release.
 ASSERTS                 = 1
+TEST_POSITION           = 0                   ; 0=normal, 1 = setup test position
 
 ;===================================
 FINAL_VERSION                  = NO           ; this OVERRIDES any selections below and sets everything correct for a final release
@@ -47,7 +48,6 @@ L276                            SET YES         ; use 276 line display for NTSC
 ;-------------------------------------------------------------------------------
 
 COMPILE_ILLEGALOPCODES          = 1
-RESERVED_FOR_STACK              = 12            ; bytes guaranteed not overwritten by variable use
 
 DIRECTION_BITS              = %111              ; for ManLastDirection
 

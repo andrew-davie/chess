@@ -24,29 +24,8 @@ QUEENSIDE       = -4
         ; Note: castling with squares that are "in check" is problematic
         ; TODO: next ply have a "phantom" king on the positions king moves over...?
 
-    ; todo: incomplete... x/y regs usage etc
-
-                ldy currentSquare
-
-        IF {1} = QUEENSIDE
-                lda Board-3,y               ; nothing in N pos
-                bne .noCastle
-                lda Board-2,y               ; nothing in B pos
-                bne .noCastle
-                lda Board-1,y               ; nothing in Q pos
-                bne .noCastle
-        ENDIF
-
-        IF {1} = KINGSIDE
-                lda Board+2,y               ; check N pos
-                bne .noCastle
-                lda Board+1,y               ; check B pos
-                bne .noCastle
-        ENDIF
-
-        ; appropriate N/B/(Q) squares are vacant so we proceed with more checks...
-
-                lda Board+{1},y             ; we expect a R
+                ldx currentSquare
+                lda Board+{1},x             ; we expect a R
                 sta __piece
 
                 and #PIECE_MASK
@@ -60,6 +39,27 @@ QUEENSIDE       = -4
                 bit __piece
                 bvs .noCastle               ; it's previously moved so we can't castle
 
+        ; Check for vacant squares between K and R
+
+        IF {1} = QUEENSIDE
+                lda Board-3,x               ; nothing in N pos
+                bne .noCastle
+                lda Board-2,x               ; nothing in B pos
+                bne .noCastle
+                lda Board-1,x               ; nothing in Q pos
+                bne .noCastle
+
+        ENDIF
+
+        IF {1} = KINGSIDE
+                lda Board+2,x               ; check N pos
+                bne .noCastle
+                lda Board+1,x               ; check B pos
+                bne .noCastle
+        ENDIF
+
+        ; appropriate N/B/(Q) squares are vacant so we proceed with more checks...
+
     ; FINALLY -- king can castle
     ; note: when we actually DO the move we MUST insert "Phantom" kings onto the board over the
     ; squares the king traverses so that "check" (and thus illegal moves) can be detected on the
@@ -69,7 +69,6 @@ QUEENSIDE       = -4
                 ora #CASTLE
                 sta currentPiece
 
-                ldx currentSquare
                 ldy ValidSquare+{2},x
 
                 jsr AddMove
@@ -87,26 +86,22 @@ QUEENSIDE       = -4
 
     ; regular moving...
 
-#if 1
                 MOVE_TO _DOWN+_LEFT
-                MOVE_TO _DOWN
-                MOVE_TO _DOWN+_RIGHT
-                MOVE_TO _RIGHT
-                MOVE_TO _UP+_RIGHT
-                MOVE_TO _UP
-                MOVE_TO _UP+_LEFT
-                MOVE_TO _LEFT
-#endif
+                MOVE_TO_X _DOWN
+                MOVE_TO_X _DOWN+_RIGHT
+                MOVE_TO_X _RIGHT
+                MOVE_TO_X _UP+_RIGHT
+                MOVE_TO_X _UP
+                MOVE_TO_X _UP+_LEFT
+                MOVE_TO_X _LEFT
 
-    ; castling...
+                bit currentPiece            ; has king moved moved?
+                bvc .castleKing             ; no, so try castling
 
-                bit currentPiece            ; WARNING: D6 (=MOVED) assumed
-                bvs .noCastle               ; can't castle - king has moved
+                jmp MoveReturn
 
-                CASTLE KINGSIDE, 2
+.castleKing     CASTLE KINGSIDE, 2
                 CASTLE QUEENSIDE, -2
-
-.noCastle
 
                 jmp MoveReturn
 

@@ -8,17 +8,12 @@
 drawPieceNumber                 ds 1        ; partial - square being drawn
 
 rnd                             ds 1        ; random
-doubleBufferBase                ds 1        ; switcher for which draw buffer in use points to DRAW one
 drawPhase                       ds 1        ; ticks through the board draw process
 drawDelay                       ds 1
 lastSquare                      ds 1
 drawCount                       ds 1
-snail                           ds 1
-;title_colour_table              ds 2
 fromX12                         ds 1
 toX12                           ds 1
-xx                              ds 1
-currentPlyBank                  ds 1
 
 currentPiece                    ds 1
 currentSquare                   ds 1

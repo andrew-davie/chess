@@ -10,17 +10,17 @@
 ; A ply will hold the move list for that position
 
 
-MAX_PLY  = 10
+MAX_PLY  = 6
     NEWRAMBANK PLY                ; RAM bank for holding the following ROM shadow
     REPEAT MAX_PLY-1
         NEWRAMBANK .DUMMY_PLY
     REPEND
 
-
 ;---------------------------------------------------------------------------------------------------
 ; and now the ROM shadow - this is copied to ALL of the RAM ply banks
 
     NEWBANK BANK_PLY                   ; ROM SHADOW
+
 
 ;---------------------------------------------------------------------------------------------------
 ; The piece-lists
@@ -35,17 +35,14 @@ MAX_PLY  = 10
 
     OPTIONAL_PAGEBREAK "PieceSquare", 16
     DEFINE_SUBROUTINE PieceSquare
+    ds 16
 
-#if 1
-    .byte 22,23,24,25,26,27,28,29
-    .byte 32,33,34,35,36,37,38,39
-#endif
 
-#if 0
-    .byte 0,26,29,0,0,0,0,0
-    .byte 0,0,0,0,0,0,0,0
-#endif
 
+;---------------------------------------------------------------------------------------------------
+
+oo                     = 32767         ; "infinity"
+plyValue               ds 2            ; signed value of the current position
 
 
 ; The X12 square at which a pawn CAN be taken en-passant. Normally 0.
@@ -96,6 +93,7 @@ MAX_MOVES = 128
                 bpl .fillBP
                 rts
 
+#if !TEST_POSITION
 WhitePiecelist
     .byte 22,23,24,25,26,27,28,29
     .byte 32,33,34,35,36,37,38,39
@@ -103,6 +101,18 @@ WhitePiecelist
 BlackPiecelist
     .byte 82,83,84,85,86,87,88,89
     .byte 92,93,94,95,96,97,98,99
+#endif
+
+#if TEST_POSITION
+WhitePiecelist
+    .byte 65,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0
+
+BlackPiecelist
+    .byte 66,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0
+#endif
+
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -115,52 +125,51 @@ BlackPiecelist
 
                 ldx #-1
                 stx moveIndex+RAM_WRITE             ; no valid moves
+#if !TEST_POSITION
                 lda #0
+#endif
+
+#if TEST_POSITION
+                lda #66
+#endif
+
                 sta enPassantSquare+RAM_WRITE       ; no enPassant available
+
+
+    ; The evaluation of the current position is a signed 16-bit number
+    ; +ve is good for the current side.
+    ; This is used during the alpha-beta search for finding best position
+
+
+                lda #<oo
+                sta plyValue
+                lda #>oo
+                sta plyValue+1
+
+
                 rts
 
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE GenerateMovesForAllPieces
+    DEFINE_SUBROUTINE GenerateMovesForNextPiece
 
-    ; TODO; create a piece list and iterate through it (black/white) for pieces to move
-    ; piece square into 'currentSquare'. then...
-
-
-;
-;                ldx #15                 ; piece index
-;                stx piecelistIndex
-
-                inc piecelistIndex
                 lda piecelistIndex
                 and #15
-                sta piecelistIndex
-
                 tax
 
-.scanPiece      lda sideToMove
+                lda sideToMove
                 asl
                 adc #RAMBANK_PLY                ; W piecelist in "PLY0" bank, and B in "PLY1"
                 sta SET_BANK_RAM                ; ooh! self-switching bank
 
-                ldx piecelistIndex
                 lda PieceSquare,x
                 beq .noPieceHere                ; piece deleted
                 sta currentSquare
 
                 jsr MoveForSinglePiece
 
-.noPieceHere
-
-
-                ;lda currentPly
-                ;sta SET_BANK_RAM                ; switch back to "me" (done in MoveForSinglePiece)
-
-;                dec piecelistIndex
-;                bpl .scanPiece
-
-TIMEREND
+.noPieceHere    inc piecelistIndex
                 rts
 
 ;---------------------------------------------------------------------------------------------------
@@ -189,6 +198,7 @@ TIMEREND
 
 ;---------------------------------------------------------------------------------------------------
 
+#if 0
     DEFINE_SUBROUTINE DeletePiece
 
                 lda fromX12
@@ -198,13 +208,71 @@ TIMEREND
 ;                eor #128
 ;                asl
 ;                adc #RAMBANK_PLY
-    lda currentPly
+                lda currentPly
                 sta SET_BANK_RAM
 
                 lda toX12
                 jsr DeletePiece
+#endif
 
 ;---------------------------------------------------------------------------------------------------
+
+    DEFINE_SUBROUTINE alphaBeta
+
+ rts
+                inc currentPly
+                lda currentPly
+
+                cmp #MAX_PLY+RAMBANK_PLY
+                beq .bottomOut                      ; at a leaf node of the search?
+                sta SET_BANK_RAM                    ; self-referential weirdness!
+
+                lda sideToMove
+                eor #128
+                sta sideToMove
+
+                jsr NewPlyInitialise
+
+                lda currentPly
+                sta SET_BANK_RAM
+
+                lda #0
+                sta piecelistIndex
+iterPieces      jsr GenerateMovesForNextPiece
+                lda piecelistIndex
+                cmp #15
+                bne iterPieces
+
+        ; Perform a recursive search
+        ; simulate alpha-beta cull to just 7 moves per node
+
+    REPEAT 7
+            ;jsr PhysicallyMovePiece
+            ;jsr FinaliseMove
+            jsr alphaBeta
+    REPEND
+
+.bottomOut
+
+        ; TODO: evaluate board position
+        ; reverse move to previous position
+        ; check the results, update scores and move pointers
+        ; and return vars to expected
+
+                lda sideToMove
+                eor #128
+                sta sideToMove
+
+                dec currentPly
+                lda currentPly
+                sta SET_BANK_RAM                    ; self-referential weirdness!
+
+                rts
+
+
+
+;---------------------------------------------------------------------------------------------------
+
 
     CHECK_HALF_BANK_SIZE "PLY -- 1K"
 
