@@ -29,7 +29,6 @@ toSquare                        ds 1
 toPiece                         ds 1
 lastPiece                       ds 1
 previousPiece                   ds 1
-movePointer                     ds 1
 
 Platform                        ds 1        ; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
 ;BufferedJoystick                ds 1        ; player joystick input

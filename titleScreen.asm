@@ -10,7 +10,7 @@ colvec
 
 VBlankTime  .byte 50,50
 
-  DEFINE_SUBROUTINE TitleScreen
+  DEF TitleScreen
 
   ; Start of new frame
 
@@ -60,7 +60,7 @@ rollcols        clc
 finxc
 #endif
 
-    DEFINE_SUBROUTINE RestartFrame
+    DEF RestartFrame
                 LDA #0
                 lda #%1110                       ; VSYNC ON
 .loopVSync2     sta WSYNC

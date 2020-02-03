@@ -231,16 +231,10 @@ FREE SET FREE + .
     ENDM
 
 
-    MAC DEFINE_SUBROUTINE               ; name of subroutine
+    MAC DEF               ; name of subroutine
 BANK_{1}        SET _CURRENT_BANK         ; bank in which this subroutine resides
                 SUBROUTINE              ; keep everything local
 {1}                                     ; entry point
-    ENDM
-
-
-    MAC DEF
-    ; {1} subroutine name
-        DEFINE_SUBROUTINE {1}
     ENDM
 
     ;--------------------------------------------------------------------------

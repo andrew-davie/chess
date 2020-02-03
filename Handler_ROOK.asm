@@ -5,7 +5,7 @@
 ; ROOK
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE Handle_ROOK
+    DEF Handle_ROOK
 
     ; Pass...
     ; x = currentSquare (square the piece is on)

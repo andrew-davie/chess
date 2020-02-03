@@ -5,7 +5,7 @@
 ; KNIGHT
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE Handle_KNIGHT
+    DEF Handle_KNIGHT
 
     ; x = currentSquare (square the piece is on)
     ; currentPiece (with flags/colour attached)

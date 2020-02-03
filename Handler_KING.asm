@@ -78,7 +78,7 @@ QUEENSIDE       = -4
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE Handle_KING
+    DEF Handle_KING
 
     ; Pass...
     ; x = currentSquare (square the KING is on)

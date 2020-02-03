@@ -20,7 +20,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
     ; bank finishes.  Just continue on from where it left off...
     ;------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE Cart_Init ; in GENERIC_BANK_1
+    DEF Cart_Init ; in GENERIC_BANK_1
 
     ; Note the variables from the title selection are incredibly transient an can be stomped
     ; at any time.  So they need to be used immediately.
@@ -64,7 +64,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00
 
     ;-------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE Resync
+    DEF Resync
                 RESYNC
 Ret             rts
 
@@ -80,7 +80,7 @@ THROT_BASE = 18
 theThrottler
         .byte THROT_BASE, THROT_BASE, THROT_BASE*60/50, THROT_BASE
 
-    DEFINE_SUBROUTINE PostScreenCleanup
+    DEF PostScreenCleanup
 
                 iny                             ; --> 0
 

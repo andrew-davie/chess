@@ -15,7 +15,7 @@ ORIGIN          SET FIXED_BANK
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE CopySinglePiece
+    DEF CopySinglePiece
 
 
     ; figure colouration of square
@@ -74,7 +74,7 @@ ORIGIN          SET FIXED_BANK
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE MoveViaList
+    DEF MoveViaList
 
                 lda currentPly
                 sta SET_BANK_RAM                ; switch in movelist
@@ -100,8 +100,10 @@ ORIGIN          SET FIXED_BANK
                 bne .mulx
 muldone
 
+; fall through...
+;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE PhysicallyMovePiece
+    DEF PhysicallyMovePiece
 
 .foundMove
                 lda MoveFrom,x
@@ -147,9 +149,16 @@ muldone
 halted          rts
 
 
-    DEFINE_SUBROUTINE FinaliseMove
+;---------------------------------------------------------------------------------------------------
+
+    DEF FinaliseMove
+
+    ; Now the visible movement on the board has happened, fix up the pointers to the pieces
+    ; for both sides.
+
 
                 lda sideToMove
+                and #128
                 asl
                 adc #RAMBANK_PLY
                 sta SET_BANK_RAM
@@ -157,8 +166,7 @@ halted          rts
                 jsr FixPieceList
 
                 lda toX12
-                sta fromX12
-
+                sta fromX12                 ; there MAY be no other-side piece at this square - that is OK!
                 lda #0
                 sta toX12                   ; --> deleted (square=0)
 
@@ -167,50 +175,20 @@ halted          rts
                 asl
                 adc #RAMBANK_PLY
                 sta SET_BANK_RAM
+
                 jsr FixPieceList            ; REMOVE any captured object
 
-
+    ; And swap sides to move...
 
                 lda sideToMove
                 eor #128
                 sta sideToMove
 
-    ;            lda #RAMBANK_MOVES_RAM
-    ;            sta SET_BANK_RAM
-    ;            ldx toSquare              ; = destination now
-    ;            stx drawPieceNumber
-
-    ;            lda fromPiece
-    ;            sta Board+RAM_WRITE,x
-
-    ;            jsr CopySinglePiece
-
-    ;            ldx fromX12
-    ;            lda #BLANK
-    ;            sta Board+RAM_WRITE,x
-    ;            ldx toX12
-    ;            lda fromPiece
-    ;            sta Board+RAM_WRITE,x
-
-    ; and piecelist
-
-;                lda sideToMove
-;                eor #128
-;                asl
-;                adc #RAMBANK_PLY
-;                sta SET_BANK_RAM
-
-;                lda toX12
-;                sta fromX12
-;                lda #0
-;                sta toX12
-    ;            jsr FixPieceList                ; delete piece if in opposition list
-
                 rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE ConvertToBase64
+    DEF ConvertToBase64
     ; uses OVERLAY "Movers"
 
     ; convert from 10x12 square numbering (0-119) to 8x8 square numbering (0-63)
@@ -240,7 +218,7 @@ halted          rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE InitialiseChessboard
+    DEF InitialiseChessboard
 
                 lda #WHITE
                 sta sideToMove
@@ -271,7 +249,7 @@ PieceToShape
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE CopyPieceToRAMBuffer
+    DEF CopyPieceToRAMBuffer
 
     ; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
     ; y = piece index
@@ -296,7 +274,7 @@ PieceToShape
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE CopyShadowROMtoRAM
+    DEF CopyShadowROMtoRAM
     ; pass x = source bank
     ; pass y = destination bank (preserved)
 
@@ -330,19 +308,34 @@ PieceToShape
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE Reset
+    DEF Reset
 
-                CLEAN_START
+;                CLEAN_START
 
-                lda #BANK_TitleScreen
-                sta SET_BANK
+
+                sei
+                cld
+
+                ldy INTIM               ; hopefully "random" - preserve it before clearing the machine
+
+                ldx #0
+                txa
+.CLEAR_STACK    dex
+                txs
+                pha
+                bne .CLEAR_STACK     ; SP=$FF, X = A = Y = 0
+
+
+    cpy #0
+    bne toR
+                ldy #$9A
+toR                sty rnd
+
+
+                ;lda #BANK_TitleScreen
+                ;sta SET_BANK
                 ;jsr TitleScreen
 
-
-                lda #$9A
-                sta rnd
-                lda #0
-                sta movePointer
 
     ; Move a copy of the row bank template to the first 8 banks of RAM
     ; and then terminate the draw subroutine by substituting in a RTS on the last one
@@ -385,6 +378,7 @@ PieceToShape
                 jsr InitialisePieceSquares
 
 
+PostInit
                 lda currentPly
                 sta SET_BANK_RAM
                 jsr NewPlyInitialise                ; must be called at the start of every new ply
@@ -492,7 +486,7 @@ Restart     ; go here on RESET + SELECT
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE PhasedProcessor
+    DEF PhasedProcessor
 
                 ldx drawPhase
                 lda DrawVectorLO,x
@@ -509,9 +503,6 @@ DrawVectorLO
     .byte <StartClearBoard
     .byte <ClearEachRow
     .byte <DrawEntireBoard
-;    .byte <ClearTracks
-;    .byte <ClearTracksB
-
     .byte <FlipBuffers
     .byte <FB0
     .byte <FB2
@@ -528,8 +519,6 @@ DrawVectorHI
     .byte >StartClearBoard
     .byte >ClearEachRow
     .byte >DrawEntireBoard
-;    .byte >ClearTracks
-;    .byte >ClearTracksB
     .byte >FlipBuffers
     .byte >FB0
     .byte >FB2
@@ -542,13 +531,13 @@ DrawVectorHI
     .byte >MarchB2
     .byte >FinalFlash
 
-    DEFINE_SUBROUTINE StartClearBoard
+    DEF StartClearBoard
 
                 ldx #8
                 stx drawCount               ; = bank
                 inc drawPhase
 
-    DEFINE_SUBROUTINE ClearEachRow
+    DEF ClearEachRow
 
                 dec drawCount
                 bmi .bitmapCleared
@@ -566,7 +555,7 @@ DrawVectorHI
                 inc drawPhase
                 rts
 
-    DEFINE_SUBROUTINE DrawEntireBoard
+    DEF DrawEntireBoard
 
                 jsr CopySinglePiece
                 dec drawPieceNumber
@@ -581,8 +570,11 @@ DrawVectorHI
 
     ; Now we've finished drawing the screen square by square.
 
-    DEFINE_SUBROUTINE FlipBuffers
+;---------------------------------------------------------------------------------------------------
 
+    DEF FlipBuffers
+
+    ; Initialise for a new move
 
                 lda currentPly
                 sta SET_BANK_RAM
@@ -595,8 +587,12 @@ DrawVectorHI
                 inc drawPhase
                 rts
 
+;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE FB0
+    DEF FB0
+
+    ; Call move generation for all pieces
+    ; Test alpha-beta
 
                 lda currentPly
                 sta SET_BANK_RAM
@@ -614,16 +610,29 @@ DrawVectorHI
                 inc drawPhase
 .waitgen        rts
 
+;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE FB2
+    DEF FB2
+
+    ; Choose one of the moves
+
+                lda currentPly
+                sta SET_BANK_RAM                ; switch in movelist
+
+                lda moveIndex
+                cmp #-1
+                beq .halted                      ; no valid moves
+
 
                 jsr MoveViaList
+
+
                 inc drawPhase
-                rts
+.halted         rts
 
-    DEFINE_SUBROUTINE FB3
+;---------------------------------------------------------------------------------------------------
 
-                jsr FinaliseMove
+    DEF FB3
 
                 lda #BLANK
                 sta previousPiece
@@ -632,7 +641,7 @@ DrawVectorHI
 ;                rts
 
 
-    DEFINE_SUBROUTINE EraseStartPiece
+    DEF EraseStartPiece
 
 
                 lda #6                  ; on/off count
@@ -642,30 +651,39 @@ DrawVectorHI
 
                 inc drawPhase
 
+;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE WriteStartPieceBlank
+    DEF WriteStartPieceBlank
+
+
+    ; Flash the piece in-place preparatory to moving it.
+    ; drawDelay = flash speed
+    ; drawCount = # of flashes
 
                 lda drawDelay
                 beq deCount
                 dec drawDelay
                 rts
 
-deCount         lda drawCount
+deCount         lda #6
+                sta drawDelay               ; "getting ready to move" flash
+
+                lda drawCount
                 beq flashDone
                 dec drawCount
 
-                lda #6
-                sta drawDelay               ; "getting ready to move" flash
-
                 lda fromSquare
                 sta drawPieceNumber
-                jsr CopySinglePiece
+                jsr CopySinglePiece         ; EOR-draw = flash
                 rts
 
 flashDone       inc drawPhase
 
+;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE MarchToTargetA
+    DEF MarchToTargetA
+
+    ; Start marching towards destination
 
                 lda drawDelay
                 beq .progress
@@ -716,7 +734,7 @@ colok
 
                 lda fromSquare
                 sta drawPieceNumber
-                jsr CopySinglePiece             ; erase destination--> blank
+                jsr CopySinglePiece             ; erase next square along --> blank
 
                 lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM
@@ -733,7 +751,11 @@ colok
 
 ;---------------------------------------------------------------------------------------------------
 
-MarchB          lda fromSquare
+MarchB
+
+    ; Draw the piece in the new square
+
+                lda fromSquare
                 sta drawPieceNumber
                 jsr CopySinglePiece             ; draw the moving piece into the new square
 
@@ -745,7 +767,7 @@ MarchB          lda fromSquare
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE MarchToTargetB
+    DEF MarchToTargetB
 
                 lda drawDelay
                 beq .mb
@@ -776,7 +798,7 @@ MarchB          lda fromSquare
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE MarchB2
+    DEF MarchB2
 
                 lda lastSquare
                 sta drawPieceNumber
@@ -786,7 +808,7 @@ MarchB          lda fromSquare
                 cmp toSquare
                 beq xhalt
 
-                lda #1            ; inter-move segment speed (can be 0)
+                lda #0            ; inter-move segment speed (can be 0)
                 sta drawDelay
 
                 lda #MARCH
@@ -805,8 +827,10 @@ RSquareEnd64    .byte 3,5,59,61
 
 xhalt
 
+                jsr FinaliseMove
 
-                lda #4                  ; on/off count
+
+                lda #4               ; on/off count
                 sta drawCount           ; flashing for piece about to move
                 lda #0
                 sta drawDelay
@@ -815,7 +839,7 @@ xhalt
                 rts
 
 
-    DEFINE_SUBROUTINE FinalFlash
+    DEF FinalFlash
 
                 lda drawDelay
                 beq .deCount
@@ -888,6 +912,10 @@ flashDone2       ;inc drawPhase
 
 
 .noEP
+
+                jsr checkPieces
+
+
                 lda #STARTMOVE
                 sta drawPhase
                 rts
@@ -897,7 +925,7 @@ flashDone2       ;inc drawPhase
 
 
 
-    DEFINE_SUBROUTINE MoveForSinglePiece
+    DEF MoveForSinglePiece
 
                 lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM
@@ -955,7 +983,7 @@ HandlerVectorHI
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE AddMove
+    DEF AddMove
 
     ; add square in y register to movelist as destination (X12 format)
     ; currentPiece = piece moving
@@ -989,6 +1017,115 @@ HandlerVectorHI
                 lda #RAMBANK_MOVES_RAM
                 sta SET_BANK_RAM
                 rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF checkPieces
+
+                ldx #15
+check1          lda #RAMBANK_PLY
+                sta SET_BANK_RAM
+                ldy PieceSquare,x
+                beq .nonehere
+                lda #RAMBANK_MOVES_RAM
+                sta SET_BANK_RAM
+.fail           lda Board,y
+                beq .fail
+                bmi .fail
+.nonehere       dex
+                bpl check1
+
+
+                ldx #15
+check2          lda #RAMBANK_PLY+1
+                sta SET_BANK_RAM
+                ldy PieceSquare,x
+                beq .nonehere2
+                lda #RAMBANK_MOVES_RAM
+                sta SET_BANK_RAM
+.fail2           lda Board,y
+                beq .fail2
+                bpl .fail2
+.nonehere2       dex
+                bpl check2
+
+                rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF InitialisePieceSquares
+
+    ; Zap the board with the "blank" ROM copy
+
+                ldy #99
+.zeroBoard
+                ldx #MOVES
+                stx SET_BANK
+                lda Board,y
+                ldx #RAMBANK_MOVES_RAM
+                stx SET_BANK_RAM
+                sta Board+RAM_WRITE,y
+                dey
+                bpl .zeroBoard
+
+    ; Initialise the piecelists and the board for the two piecelist banks (BLACK/WHITE)
+
+                ldy #1
+.clearb         tya
+                clc
+                adc #RAMBANK_PLY
+                sta SET_BANK_RAM                    ; BLACK/WHITE piecelists
+                jsr Inits
+                dey
+                bpl .clearb
+
+SetupBoard
+
+    ; Now setup the board/piecelists
+
+                ldx #0
+.fillPieceLists
+
+                lda #RAMBANK_PLY
+                sta SET_BANK_RAM
+
+                lda InitPieceList,x               ; colour/-1
+                beq .finBoardSetup
+
+                asl
+                lda #RAMBANK_PLY
+                adc #0
+                sta SET_BANK_RAM                    ; BLACK/WHITE
+
+                ldy PieceListPtr
+                iny
+
+                lda InitPieceList+1,x                 ; square
+                sta PieceSquare+RAM_WRITE,y
+                tya
+                sta SortedPieceList+RAM_WRITE,y
+
+                lda InitPieceList,x               ; piece type
+                sta PieceType+RAM_WRITE,y
+                pha
+
+                sty PieceListPtr+RAM_WRITE
+
+
+                ldy InitPieceList+1,x                 ; square
+
+                lda #RAMBANK_MOVES_RAM
+                sta SET_BANK_RAM
+                pla
+                sta Board+RAM_WRITE,y
+
+                inx
+                inx
+                bpl .fillPieceLists
+
+.finBoardSetup
+FinBoard        rts
 
 ;---------------------------------------------------------------------------------------------------
 

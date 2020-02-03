@@ -100,13 +100,13 @@ BLACK_HOME_ROW     = 82                    ; >= this, on home row
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE PromoteWhitePawn
+    DEF PromoteWhitePawn
                 PROMOTE_PAWN WHITE
                 rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE Handle_WHITE_PAWN
+    DEF Handle_WHITE_PAWN
 
                 ldy ValidSquare+_UP,x           ; square above must be blank (WILL NOT EVER be off-board!)
                 lda Board,y
@@ -165,11 +165,11 @@ EN_PASSANTING
 ; BLACK PAWN
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE PromoteBlackPawn
+    DEF PromoteBlackPawn
                 PROMOTE_PAWN BLACK
                 rts
 
-    DEFINE_SUBROUTINE Handle_BLACK_PAWN
+    DEF Handle_BLACK_PAWN
     SUBROUTINE
 
                 ldy ValidSquare+_DOWN,x         ; square below must be blank (WILL NOT EVER be off-board!)

@@ -24,7 +24,7 @@ ChessBitmap5    ds 24
 ;---------------------------------------------------------------------------------------------------
 
 #if 0
-    DEFINE_SUBROUTINE ClearRowBitmap
+    DEF ClearRowBitmap
 
                 lda #0
                 ldy #ROW_BITMAP_SIZE
@@ -36,7 +36,7 @@ ChessBitmap5    ds 24
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE CopyPieceToRowBitmap
+    DEF CopyPieceToRowBitmap
 
                 ldy #71
                 bcs .rightSide
@@ -62,13 +62,20 @@ ChessBitmap5    ds 24
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE DrawRow
+    DEF DrawRow
+
+    lda #255
+    sta GRP0
+    sta GRP1
+    sta COLUP0
+    sta COLUP1
 
     ; x = row # (and bank#)
 
 .startLine      ldy #0                     ; 2
 
 .drawLine       sta WSYNC                   ; 3 @0
+
 
                 lda .LineColour,y           ; 5
                 sta COLUPF                  ; 3 @8
@@ -79,8 +86,6 @@ ChessBitmap5    ds 24
                 sta PF1                     ; 3
                 lda ChessBitmap2,y          ; 5
                 sta PF2                     ; 3 @32
-
-                SLEEP 6                     ; 6 @30
 
                 lda ChessBitmap3,y          ; 5
                 sta PF0                     ; 3 @38
@@ -94,6 +99,8 @@ ChessBitmap5    ds 24
                 bcc .drawLine               ; 3(2) @57 (taken)
 
 ; @56
+
+    sta RESP0
 
     ; The following 'inx' is replaced in the LAST row bank with a 'RTS', thus ending the draw loop
     ; Note that the other 7 row banks are unmodified (keeping the 'inx')

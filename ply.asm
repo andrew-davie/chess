@@ -32,18 +32,87 @@ MAX_PLY  = 6
 ; WHITE pieces in bank BANK_PLY
 ; BLACK pieces in bank BANK_PLY+1
 
+    OPTIONAL_PAGEBREAK "PieceLists", 48
 
-    OPTIONAL_PAGEBREAK "PieceSquare", 16
-    DEFINE_SUBROUTINE PieceSquare
-    ds 16
+SortedPieceList         ds 16           ; indexes into PieceSquare, PieceType.  NEG = no piece
+PieceSquare             ds 16
+PieceType               ds 16
+
+PieceListPtr            ds 1
+
+;---------------------------------------------------------------------------------------------------
+
+infinity                = 32767
+
+plyValue                ds 2            ; 16-bit signed score value
+bestMove                ds 1            ; index of move (-1 = none)
+
+#if 0
+; reverting a move
+; from/to/piece/toOriginal
+; castling   affects 4 squares (2xfrom/to each with original piece)
+; en-passant
+
+from/to/piece
+
+
+from = piece
+to = originalPiece
+from2 = piece2
+to2 = originalPiece2
+
+
+
+so, normal move (N)
+
+B1 = knight
+C3 = blank
+null/null
+
+pawn promot with capture
+A7 = WP
+B8 = BLACK_ROOK
+
+
+castle
+E1=king
+G1=blank
+H1=rook
+F1=blank
+
+
+en-passant
+B4=P
+A3=blank
+A4=P
+A3=blank
+
+FROM
+TO
+CAPTURED_PIECE
+ORIG_PIECE
+FROM2
+TO2
+PIECE2
+
+board[FROM] = ORIG_PIECE
+board[TO] = CAPTURED_PIECE
+
+value = -new_piece + orig_piece - captured_piece
+
+
+#endif
+
+
+
+
+
+
+
 
 
 
 ;---------------------------------------------------------------------------------------------------
-
-oo                     = 32767         ; "infinity"
-plyValue               ds 2            ; signed value of the current position
-
 
 ; The X12 square at which a pawn CAN be taken en-passant. Normally 0.
 ; This is set/cleared whenever a move is made. The flag is indicated in the move description.
@@ -59,48 +128,78 @@ moveIndex       ds 1                ; points to first available 'slot' for move 
 MAX_MOVES = 128
 
     OPTIONAL_PAGEBREAK "MoveFrom", MAX_MOVES
-    DEFINE_SUBROUTINE MoveFrom
+    DEF MoveFrom
     ds MAX_MOVES
 
     OPTIONAL_PAGEBREAK "MoveTo", MAX_MOVES
-    DEFINE_SUBROUTINE MoveTo
+    DEF MoveTo
     ds MAX_MOVES
 
     OPTIONAL_PAGEBREAK "MovePiece", MAX_MOVES
-    DEFINE_SUBROUTINE MovePiece
+    DEF MovePiece
     ds MAX_MOVES
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE InitialisePieceSquares
+    DEF Inits
 
-                lda #RAMBANK_PLY
-                sta SET_BANK_RAM                    ; screwy self-referential bank-switching!
-
-                ldx #15
-.fillWP         lda WhitePiecelist,x
-                sta PieceSquare+RAM_WRITE,x
-                dex
-                bpl .fillWP
-
-                lda #RAMBANK_PLY+1                  ; screwy self-referential bank-switching!
-                sta SET_BANK_RAM
+                lda #-1
+                sta PieceListPtr+RAM_WRITE
 
                 ldx #15
-.fillBP         lda BlackPiecelist,x
+.clearLists     sta SortedPieceList+RAM_WRITE,x
                 sta PieceSquare+RAM_WRITE,x
+                sta PieceType+RAM_WRITE,x
                 dex
-                bpl .fillBP
+                bpl .clearLists
+
                 rts
 
-#if !TEST_POSITION
-WhitePiecelist
-    .byte 22,23,24,25,26,27,28,29
-    .byte 32,33,34,35,36,37,38,39
+;---------------------------------------------------------------------------------------------------
 
-BlackPiecelist
-    .byte 82,83,84,85,86,87,88,89
-    .byte 92,93,94,95,96,97,98,99
+#if !TEST_POSITION
+InitPieceList
+
+    .byte WHITE|Q, 25
+    .byte WHITE|B, 24
+    .byte WHITE|B, 27
+    .byte WHITE|R, 22
+    .byte WHITE|R, 29
+    .byte WHITE|N, 23
+    .byte WHITE|N, 28
+
+    .byte WHITE|WP, 35
+    .byte WHITE|WP, 36
+    .byte WHITE|WP, 34
+    .byte WHITE|WP, 37
+    .byte WHITE|WP, 33
+    .byte WHITE|WP, 38
+    .byte WHITE|WP, 32
+    .byte WHITE|WP, 39
+
+    .byte WHITE|K, 26
+
+    .byte BLACK|Q, 95
+    .byte BLACK|B, 94
+    .byte BLACK|B, 97
+    .byte BLACK|R, 92
+    .byte BLACK|R, 99
+    .byte BLACK|N, 93
+    .byte BLACK|N, 98
+
+    .byte BLACK|BP, 85
+    .byte BLACK|BP, 86
+    .byte BLACK|BP, 84
+    .byte BLACK|BP, 87
+    .byte BLACK|BP, 83
+    .byte BLACK|BP, 88
+    .byte BLACK|BP, 82
+    .byte BLACK|BP, 89
+
+    .byte BLACK|K, 96
+
+    .byte 0 ;end
+
 #endif
 
 #if TEST_POSITION
@@ -118,13 +217,15 @@ BlackPiecelist
 ;---------------------------------------------------------------------------------------------------
 
 
-    DEFINE_SUBROUTINE NewPlyInitialise
+    DEF NewPlyInitialise
 
     ; This MUST be called at the start of a new ply
     ; It initialises the movelist to empty
 
                 ldx #-1
                 stx moveIndex+RAM_WRITE             ; no valid moves
+                sta bestMove+RAM_WRITE
+
 #if !TEST_POSITION
                 lda #0
 #endif
@@ -132,7 +233,6 @@ BlackPiecelist
 #if TEST_POSITION
                 lda #66
 #endif
-
                 sta enPassantSquare+RAM_WRITE       ; no enPassant available
 
 
@@ -140,11 +240,10 @@ BlackPiecelist
     ; +ve is good for the current side.
     ; This is used during the alpha-beta search for finding best position
 
-
-                lda #<oo
-                sta plyValue
-                lda #>oo
-                sta plyValue+1
+                lda #<(-infinity)
+                sta plyValue+RAM_WRITE
+                lda #>(-infinity)
+                sta plyValue+RAM_WRITE+1
 
 
                 rts
@@ -152,13 +251,14 @@ BlackPiecelist
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE GenerateMovesForNextPiece
+    DEF GenerateMovesForNextPiece
 
                 lda piecelistIndex
                 and #15
                 tax
 
                 lda sideToMove
+                and #128
                 asl
                 adc #RAMBANK_PLY                ; W piecelist in "PLY0" bank, and B in "PLY1"
                 sta SET_BANK_RAM                ; ooh! self-switching bank
@@ -174,7 +274,8 @@ BlackPiecelist
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE FixPieceList
+    DEF FixPieceList
+
     ; uses OVERLAY Overlay001
     ; fromX12            X12 square piece moved from
     ; toX12              X12 square piece moved to (0 to erase piece from list)
@@ -182,6 +283,8 @@ BlackPiecelist
     ; It scans the piece list looking for the '__from' square and sets it to the '__to' square
     ; Eventually this will have to be more sophisticated when moves (like castling) involve
     ; more than one piece.
+
+    ; TODO: this is slow and should use a pointer to pieces instead
 
 
                 ldx #15
@@ -199,7 +302,7 @@ BlackPiecelist
 ;---------------------------------------------------------------------------------------------------
 
 #if 0
-    DEFINE_SUBROUTINE DeletePiece
+    DEF DeletePiece
 
                 lda fromX12
                 ldy toX12
@@ -217,7 +320,7 @@ BlackPiecelist
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE alphaBeta
+    DEF alphaBeta
 
  rts
                 inc currentPly
@@ -269,6 +372,20 @@ iterPieces      jsr GenerateMovesForNextPiece
 
                 rts
 
+;---------------------------------------------------------------------------------------------------
+
+    DEF RevertMove
+
+    ; backtrack after a move, restoring things to the way they were
+
+
+
+
+
+
+
+
+                rts
 
 
 ;---------------------------------------------------------------------------------------------------

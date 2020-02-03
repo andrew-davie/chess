@@ -4,7 +4,7 @@
 ; BISHOP
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE Handle_BISHOP
+    DEF Handle_BISHOP
 
     ; Pass...
     ; x = currentSquare (square the piece is on)

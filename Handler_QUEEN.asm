@@ -4,7 +4,7 @@
 ; QUEEN
 ;---------------------------------------------------------------------------------------------------
 
-    DEFINE_SUBROUTINE Handle_QUEEN
+    DEF Handle_QUEEN
 
     ; Pass...
     ; x = currentSquare (square the piece is on)

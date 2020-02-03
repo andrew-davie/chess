@@ -92,7 +92,7 @@ def grab(pieces_bitmap, side_colour, square_colour, piece_type, wrapper, indexer
         name = side_colour.name + "_" + piece_type.name + "_on_" + square_colour.name + "_SQUARE_" + str(square_offset)
         f = open(name + '.asm', 'w')
         f.write(' OPTIONAL_PAGEBREAK "' + name + '", 72\n')
-        f.write(' DEFINE_SUBROUTINE ' + name + "\n")
+        f.write(' DEF ' + name + "\n")
 
         lo.append(' .byte <' + name + '\n')
         hi.append(' .byte >' + name + '\n')
@@ -170,15 +170,15 @@ for side in PieceColours:
             grab(pix, side, square, piece, wrap, index)
             index += 4
 
-f_vector.write(' DEFINE_SUBROUTINE PIECE_VECTOR_LO\n')
+f_vector.write(' DEF PIECE_VECTOR_LO\n')
 for low_ptr in lo:
     f_vector.write(low_ptr)
 
-f_vector.write(' DEFINE_SUBROUTINE PIECE_VECTOR_HI\n')
+f_vector.write(' DEF PIECE_VECTOR_HI\n')
 for high_ptr in hi:
     f_vector.write(high_ptr)
 
-f_vector.write(' DEFINE_SUBROUTINE PIECE_VECTOR_BANK\n')
+f_vector.write(' DEF PIECE_VECTOR_BANK\n')
 for bank_ptr in bank:
     f_vector.write(bank_ptr)
 
