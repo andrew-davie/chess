@@ -39,6 +39,8 @@ SQUARE_HEIGHT = 8
 class PieceColours(Enum):
     WHITE = 0
     BLACK = 1
+#    WHITE_MARKED = 2
+#    BLACK_MARKED = 3
 
 
 class SquareColours(Enum):
@@ -54,6 +56,7 @@ class PieceTypes(Enum):
     ROOK = 4
     QUEEN = 5
     KING = 6
+    MARKER = 7
 
 
 pixel_no_to_bit_position = [
@@ -117,6 +120,8 @@ def grab(pieces_bitmap, side_colour, square_colour, piece_type, wrapper, indexer
             for x_bitmap in range(0, SQUARE_WIDTH):
 
                 pixel_icc_colour = pieces_bitmap[x_start + x_bitmap, y_start + y_bitmap]
+                if piece_type != PieceTypes.BLANK:
+                    pixel_icc_colour ^= pieces_bitmap[x_bitmap, y_start + y_bitmap]
                 x_pf_pixel = x_bitmap + square_offset * SQUARE_WIDTH
 
                 if (pixel_icc_colour & 4) != 0:
@@ -138,13 +143,34 @@ def grab(pieces_bitmap, side_colour, square_colour, piece_type, wrapper, indexer
         # write the three 'columns' PF0, PF1, PF2
         # columns make it easier to access/draw using Y as an index to indirect pointers to columns
 
+        mangled = [[],[],[]]
+        for line in range(0, 24, 3):
+            mangled[0].append(pf[0][line])
+            mangled[1].append(pf[1][line])
+            mangled[2].append(pf[2][line])
+        for line in range(0, 24, 3):
+            mangled[0].append(pf[0][line+1])
+            mangled[1].append(pf[1][line+1])
+            mangled[2].append(pf[2][line+1])
+        for line in range(0, 24, 3):
+            mangled[0].append(pf[0][line+2])
+            mangled[1].append(pf[1][line+2])
+            mangled[2].append(pf[2][line+2])
+
+        mangled2 = [[],[],[]]
+        for block in range(0, 3):
+            for line in range(7, -1, -1):
+                mangled2[0].append(mangled[0][block*8+line])
+                mangled2[1].append(mangled[1][block*8+line])
+                mangled2[2].append(mangled[2][block*8+line])
+
         for playfield in range(0, 3):
-            f.write(' .byte ' + ','.join(f'${x:02x}' for x in pf[playfield])
+            f.write(' .byte ' + ','.join(f'${x:02x}' for x in mangled2[playfield])
                     + ' ;PF' + str(playfield) + '\n')
 
         f.close()
 
-print("Hello world")
+print("Converting chess pieces")
 
 im = Image.open("pieces.gif")
 pix = im.load()

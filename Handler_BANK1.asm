@@ -3,6 +3,8 @@
 
 ;---------------------------------------------------------------------------------------------------
 
+
+
     NEWRAMBANK MOVES_RAM                ; RAM bank for holding the following ROM shadow
     NEWBANK MOVES                       ; copy the following bank to RAMBANK_MOVES_RAM
 
@@ -107,7 +109,7 @@
     include "Handler_KING.asm"
 
 
-    ;OPTIONAL_PAGEBREAK "Base64ToIndex", 64
+    OPTIONAL_PAGEBREAK "Base64ToIndex", 64
     DEF Base64ToIndex
     ; Convert from 0-63 numbering into an index into the Chessboard
 
@@ -119,6 +121,101 @@
     .byte 72,73,74,75,76,77,78,79
     .byte 82,83,84,85,86,87,88,89
     .byte 92,93,94,95,96,97,98,99
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF PutAllPieces
+    ; Call SAFEly
+
+                ldy #99
+.zeroBoard
+                lda Board,y
+                jsr SAFE_PutPieceToBoard
+
+                dey
+                bpl .zeroBoard
+                rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CopySetupForMarker
+
+                ;lda #RAMBANK_MOVES_RAM
+                ;sta SET_BANK_RAM
+
+                lda drawPieceNumber
+                and #3          ; shift position in PF
+                clc
+                adc #INDEX_WHITE_MARKER_on_BLACK_SQUARE_0
+                tay
+                rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CopySetup
+
+    ; figure colouration of square
+                lda drawPieceNumber ;0-63
+                lsr
+                lsr
+                lsr
+                clc
+                adc drawPieceNumber
+                and #1
+                eor #1
+                beq .white
+                lda #32
+.white          sta __pieceColour           ; actually SQUARE black/white
+
+    ; PieceColour = 0 for white square, 28 for black square
+
+                ;lda #RAMBANK_MOVES_RAM
+                ;sta SET_BANK_RAM
+
+                ldy drawPieceNumber         ;0-63
+                ldx Base64ToIndex,y
+
+                lda Board,x
+                asl
+                bcc .blackAdjust
+                ora #16
+.blackAdjust    lsr
+                and #%1111
+                tax
+
+                tya
+                and #3          ; shift position in PF
+
+                clc
+                adc PieceToShape,x
+                clc
+                adc __pieceColour
+                tay
+                rts
+
+PieceToShape
+
+    .byte INDEX_WHITE_BLANK_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_ROOK_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_KING_on_WHITE_SQUARE_0
+
+    .byte INDEX_BLACK_BLANK_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_BISHOP_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_ROOK_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_KING_on_WHITE_SQUARE_0
+
+
+;---------------------------------------------------------------------------------------------------
 
 
     CHECK_HALF_BANK_SIZE "HANDLER_BANK1 -- 1K"

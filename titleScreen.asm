@@ -24,9 +24,9 @@ TitleSequence
 
                 ldx #0 ;Platform
                 lda #<colr_ntsc2 ;colvec,x
-                sta colour_table
+                sta __colour_table
                 lda #>colr_ntsc2 ;colvec+1,x
-                sta colour_table+1
+                sta __colour_table+1
 
 ;                sta rndHi
 ;                sta rnd
@@ -106,7 +106,7 @@ VerticalBlank   sta WSYNC
 
                 ldy #210-1  ; this counts our scanline number
 SokoLogo        ldx #3
-triplet         lda (colour_table),y
+triplet         lda (__colour_table),y
 ;    eor digit-1,x
                 sta WSYNC
                 sta COLUPF         ; 3

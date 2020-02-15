@@ -14,6 +14,20 @@ lastSquare                      ds 1
 drawCount                       ds 1
 fromX12                         ds 1
 toX12                           ds 1
+highlight_row                   ds 2
+highlight_col                   ds 2
+mdelay                          ds 1
+ccur                            ds 1
+savedBank                       ds 1        ; switched-in bank for FIXED returns
+aiPhase                         ds 1        ; human/computer state machine
+aiFlashDelay                    ds 1
+aiFromSquare                    ds 1
+aiToSquare                      ds 1
+aiFromSquareX12                 ds 1
+aiToSquareX12                   ds 1
+aiMoveIndex                     ds 1
+
+aiFlashPhase                    ds 1
 
 currentPiece                    ds 1
 currentSquare                   ds 1
@@ -34,4 +48,4 @@ Platform                        ds 1        ; TV system (%0x=NTSC, %10=PAL-50, %
 ;BufferedJoystick                ds 1        ; player joystick input
 ;PreviousJoystick                ds 1
 ;BGColour                        ds 1
-colour_table                    ds 2
+aiPiece                         ds 1

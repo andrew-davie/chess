@@ -143,8 +143,8 @@ BANK_{1}        SET _CURRENT_BANK
             ENDM
 
 
+;---------------------------------------------------------------------------------------------------
 
-    ;--------------------------------------------------------------------------
     ; Macro inserts a page break if the object would overlap a page
 
     MAC OPTIONAL_PAGEBREAK ; { string, size }
@@ -193,51 +193,15 @@ EARLY_LOCATION  SET *
     ENDM
 
 
-    MAC CHECKPAGE_BNE
-        LIST OFF
-        IF 0;>(. + 2) != >{1}
-            ECHO ""
-            ECHO "ERROR: different pages! (", {1}, ",", ., ")"
-            ECHO ""
-            ERR
-        ENDIF
-        LIST ON
-            bne     {1}
-    ENDM
-
-    MAC CHECKPAGE_BPL
-        LIST OFF
-        IF (>(.+2 )) != >{1}
-            ECHO ""
-            ECHO "ERROR: different pages! (", {1}, ",", ., ")"
-            ECHO ""
-            ERR
-        ENDIF
-        LIST ON
-            bpl     {1}
-    ENDM
-
-  MAC ALIGN_FREE
-FREE SET FREE - .
-    align {1}
-FREE SET FREE + .
-    echo "@", ., ":", FREE
-  ENDM
-
-    ;--------------------------------------------------------------------------
-
-    MAC VECTOR              ; just a word pointer to code
-        .word {1}
-    ENDM
-
+;---------------------------------------------------------------------------------------------------
 
     MAC DEF               ; name of subroutine
 BANK_{1}        SET _CURRENT_BANK         ; bank in which this subroutine resides
-                SUBROUTINE              ; keep everything local
+;    SUBROUTINE      ; doesn't work in a macro!
 {1}                                     ; entry point
     ENDM
 
-    ;--------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------------------
 
     MAC NEWRAMBANK ; bank name
     ; {1}       bank name
@@ -261,6 +225,7 @@ ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
         ENDIF
     ENDM
 
+;---------------------------------------------------------------------------------------------------
 
     MAC RESYNC
 ; resync screen, X and Y == 0 afterwards
@@ -301,7 +266,27 @@ ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
     ENDM
 
 
-;------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------------------
+
+    MAC JSRAM_SAFE ; {routine}
+    ; Saves bank of routine to variable for later restore.
+    ; Switches to the bank and does a JSR to the routine.
+
+                lda #BANK_{1}
+                sta savedBank
+                sta SET_BANK
+                jsr {1}
+    ENDM
+
+
+    MAC JSRAM ; {routine}
+
+                lda #BANK_{1}
+                sta SET_BANK
+                jsr {1}
+    ENDM
+
+;---------------------------------------------------------------------------------------------------
 
     #include "zeropage.asm"
     #include "overlays.asm"
@@ -369,6 +354,8 @@ RND_EOR_VAL = $FE ;B4
     include "BANK_ROM_SHADOW_SCREEN.asm"
     include "BANK_INITBANK.asm"         ; MUST be after banks that include levels -- otherwise MAX_LEVELBANK is not calculated properly
     include "BANK_CHESS_INCLUDES.asm"
+    include "BANK_StateMachine.asm"
+
     include "titleScreen.asm"
 
     ; The handlers for piece move generation

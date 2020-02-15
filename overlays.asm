@@ -137,6 +137,27 @@ __temp                  ds 1
     VALIDATE_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
+    OVERLAY "checkPieces"
+__x                     ds 1
+__bank                  ds 1
+
+    VALIDATE_OVERLAY
+
+;---------------------------------------------------------------------------------------------------
+    OVERLAY "aiSelectStartSquare"
+__cursorColour          ds 1
+    VALIDATE_OVERLAY
+
+;---------------------------------------------------------------------------------------------------
+    OVERLAY "TitleScreen"
+__colour_table          ds 2
+    VALIDATE_OVERLAY
+;---------------------------------------------------------------------------------------------------
+
+    OVERLAY "SAFE_showMoveOptions"
+__moveDotColour          ds 2
+    VALIDATE_OVERLAY
+;---------------------------------------------------------------------------------------------------
 
     ORG END_OF_OVERLAY
     ECHO "---- END OF OVERLAYS ----"

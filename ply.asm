@@ -141,7 +141,7 @@ MAX_MOVES = 128
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF Inits
+    DEF InitPieceLists
 
                 lda #-1
                 sta PieceListPtr+RAM_WRITE
@@ -153,7 +153,67 @@ MAX_MOVES = 128
                 dex
                 bpl .clearLists
 
+    ; General inits that are moved out of FIXED....
+
+
+                lda #%111  ; 111= quad
+                sta NUSIZ0
+                sta NUSIZ1              ; quad-width
+
+
+
+
+                lda #%00000100
+                sta CTRLPF
+                lda #BACKGCOL
+                sta COLUBK
+
+                lda #0
+                sta aiPhase
+
                 rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+#if ASSERTS
+
+    DEF checkPiecesBank
+    ; odd usage - switches between concurrent bank code
+
+                ldx #15
+.check          lda __bank
+                sta SET_BANK_RAM
+                ldy PieceSquare,x
+                beq .nonehere
+
+                stx __x
+
+                jsr SAFE_GetPieceFromBoard
+.fail           beq .fail
+                cmp #-1
+.fail2          beq .fail2
+
+                ldx __x
+
+.nonehere       dex
+                bpl .check
+                rts
+
+
+    DEF DIAGNOSTIC_checkPieces
+    ; SAFE call
+    ; DIAGNOSTIC ONLY
+    ; Scan the piecelist and the board square it points to and make sure non blank, non -1
+
+                lda #RAMBANK_PLY
+                sta __bank
+                jsr checkPiecesBank
+                inc __bank
+                jsr checkPiecesBank
+                rts
+
+#endif
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -246,6 +306,9 @@ BlackPiecelist
                 sta plyValue+RAM_WRITE+1
 
 
+                lda #0
+                sta piecelistIndex
+
                 rts
 
 
@@ -258,9 +321,9 @@ BlackPiecelist
                 tax
 
                 lda sideToMove
-                and #128
                 asl
-                adc #RAMBANK_PLY                ; W piecelist in "PLY0" bank, and B in "PLY1"
+                lda #RAMBANK_PLY                ; W piecelist in "PLY0" bank, and B in "PLY1"
+                adc #0
                 sta SET_BANK_RAM                ; ooh! self-switching bank
 
                 lda PieceSquare,x
@@ -389,6 +452,153 @@ iterPieces      jsr GenerateMovesForNextPiece
 
 
 ;---------------------------------------------------------------------------------------------------
+
+    DEF MoveViaListAtPly
+
+                lda moveIndex
+                cmp #-1
+                beq halted                      ; no valid moves
+
+                tay                             ; loop count
+                cpy #0
+                beq muldone
+                iny
+
+                NEXT_RANDOM
+
+                ldx #0
+                lda #0
+.mulx           clc
+                adc rnd
+                bcc .nover
+                inx
+.nover          dey
+                bne .mulx
+muldone
+
+; fall through...
+;---------------------------------------------------------------------------------------------------
+
+    DEF PhysicallyMovePiece
+
+.foundMove
+                lda MoveFrom,x
+                sta fromSquare
+                sta fromX12
+                lda MoveTo,x
+                sta toSquare
+                sta toX12
+
+
+    ; If en-passant flag set (pawn doing opening double-move) then record its square as the
+    ; en-passant square for the ply.
+
+#if 0
+ TODO BANK/BUGGERED AFTER
+                lda currentPly
+                sta SET_BANK_RAM
+
+                ldy #0
+                lda MovePiece,x
+                and #ENPASSANT
+                beq .notEP
+                ldy toSquare
+.notEP          sty enPassantSquare+RAM_WRITE
+
+#endif
+
+
+                lda MovePiece,x
+                and #~ENPASSANT                 ;? unsure
+                ora #MOVED                      ; piece has now been moved (flag used for castling checks)
+                sta fromPiece                   ; MIGHT have castling bit set, which should be handled last
+
+
+                lda fromSquare
+                jsr ConvertToBase64
+                sta fromSquare          ;B64
+
+                lda toSquare
+                jsr ConvertToBase64
+                sta toSquare            ;B64
+
+halted          rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF ConvertToBase64
+    ; uses OVERLAY "Movers"
+
+    ; convert from 10x12 square numbering (0-119) to 8x8 square numbering (0-63)
+
+                    sec
+                    sbc #22
+
+                    ldx #$FF
+.conv64             sbc #10
+                    inx
+                    bcs .conv64
+                    adc #10
+
+                    sta __temp
+                    txa
+                    asl
+                    asl
+                    asl
+                    ora __temp
+                    tay
+
+    ; A = column (0-7)
+    ; X = row (0-7)
+
+                    rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CheckMoveListFromSquare
+
+    ; X12 in A
+    ; y = -1 on return if NOT FOUND
+
+                    ldy moveIndex
+                    bmi .failed
+
+.scan               cmp MoveFrom,y
+                    beq .scanned
+                    dey
+                    bpl .scan
+
+.scanned            lda MovePiece,y
+                    sta aiPiece
+
+.failed             rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CheckMoveListToSquare
+    SUBROUTINE
+
+    ; X12 in A
+    ; y = -1 on return if NOT FOUND
+
+                    ldy moveIndex
+                    bmi .sout
+.scan               cmp MoveTo,y
+                    bne .xscanned
+
+                    pha
+                    lda MoveFrom,y
+                    cmp aiFromSquareX12
+                    beq .scanned
+                    pla
+
+.xscanned           dey
+                    bpl .scan
+                    pha
+
+.scanned            pla
+.sout               rts
 
 
     CHECK_HALF_BANK_SIZE "PLY -- 1K"

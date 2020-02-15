@@ -127,7 +127,227 @@ noFlashBG
 
                 rts
 
-;------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------------------
+
+    DEF StartClearBoard
+
+                ldx #8
+                stx drawCount               ; = bank
+                inc drawPhase
+                rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF ClearEachRow
+
+                dec drawCount
+                bmi .bitmapCleared
+                ldy drawCount
+                jmp CallClear
+
+.bitmapCleared
+
+                lda #63
+                sta drawPieceNumber
+
+                inc drawPhase
+                rts
+
+;---------------------------------------------------------------------------------------------------
+
+
+    DEF FB3
+                lda #BLANK
+                sta previousPiece
+
+                inc drawPhase
+                rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF EraseStartPiece
+
+
+                lda toSquare
+                cmp fromSquare
+                beq .idleErase
+
+                lda #6                  ; on/off count
+                sta drawCount           ; flashing for piece about to move
+                lda #0
+                sta drawDelay
+
+                inc drawPhase
+.idleErase      rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF WriteStartPieceBlank
+
+
+    ; Flash the piece in-place preparatory to moving it.
+    ; drawDelay = flash speed
+    ; drawCount = # of flashes
+
+                lda drawDelay
+                beq deCount
+                dec drawDelay
+                rts
+
+deCount
+
+                lda drawCount
+                beq flashDone
+                dec drawCount
+
+                lda #4
+                sta drawDelay               ; "getting ready to move" flash
+
+                lda fromSquare
+                sta drawPieceNumber
+                jsr SAFE_CopySinglePiece         ; EOR-draw = flash
+                rts
+
+flashDone       inc drawPhase
+                rts
+
+;---------------------------------------------------------------------------------------------------
+
+
+    DEF DEB2
+
+                jsr SAFE_CopySinglePiece
+                dec drawPieceNumber
+                bmi .comp
+
+                dec drawPhase
+                rts
+
+.comp           inc drawPhase
+                rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF MarchB
+
+    ; Draw the piece in the new square
+
+                lda fromSquare
+                sta drawPieceNumber
+                jsr SAFE_CopySinglePiece             ; draw the moving piece into the new square
+
+                lda #6                          ; snail trail delay
+                sta drawDelay
+
+                inc drawPhase
+                rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF FinalFlash
+
+                lda drawDelay
+                beq .deCount
+                dec drawDelay
+                rts
+
+.deCount        lda drawCount
+                beq flashDone2
+                dec drawCount
+
+                lda #10
+                sta drawDelay               ; "getting ready to move" flash
+
+                lda fromSquare
+                sta drawPieceNumber
+                jsr SAFE_CopySinglePiece
+                rts
+
+
+flashDone2      inc drawPhase
+                rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CastleFixup
+
+    ; fixup any castling issues
+    ; at this point the king has finished his two-square march
+    ; based on the finish square, we determine which rook we're interacting with
+    ; and generate a 'move' for the rook to position on the other side of the king
+
+
+                lda fromPiece
+                and #CASTLE
+                beq .noCast
+
+                ldx #-1
+                lda toSquare
+.findCast       inx
+                cmp KSquare,x
+                bne .findCast
+
+                lda RSquareEnd,x
+                sta toX12
+                lda RSquareStart64,x
+                sta fromSquare
+                lda RSquareEnd64,x
+                sta toSquare
+
+                ldy RSquareStart,x
+                sty fromX12
+
+                lda fromPiece
+                and #128
+                ora #ROOK
+                sta fromPiece
+
+                lda #CSL
+                sta drawPhase
+.noCast         rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF SetupBanks
+    ; SAFE
+
+                ldy #7
+.copyRowBanks   ldx #BANK_ROM_SHADOW_OF_CHESS_BITMAP
+                jsr SAFE_CopyShadowROMtoRAM
+                dey
+                bpl .copyRowBanks
+
+    ; copy the BOARD/MOVES bank
+
+                ldy #RAMBANK_MOVES_RAM
+                ldx #MOVES
+                jsr SAFE_CopyShadowROMtoRAM              ; this auto-initialises Board too
+
+    ; copy the PLY banks
+
+                lda #MAX_PLY
+                sta __plyBank
+                ldy #RAMBANK_PLY
+                sty currentPly
+.copyPlyBanks   ldx #BANK_PLY
+                jsr SAFE_CopyShadowROMtoRAM
+                iny
+                dec __plyBank
+                bne .copyPlyBanks
+
+    ; The state machine bank
+
+;                ldy #RAMBANK_STATEMACHINE
+;                ldx #STATEMACHINE
+;                jsr SAFE_CopyShadowROMtoRAM
+
+                rts
+
+
+;---------------------------------------------------------------------------------------------------
 
 
             CHECK_BANK_SIZE "GENERIC_BANK_1 -- full 2K"
