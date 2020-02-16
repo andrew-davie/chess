@@ -143,7 +143,7 @@ STATEMAC            jsr AiStateMachine
 ; END OF VISIBLE SCREEN
 ; HERE'S SOME TIME TO DO STUFF
 
-                    lda #26
+                    lda #38
                     sta TIM64T
 
 ;
@@ -160,6 +160,7 @@ zapem               stx SET_BANK_RAM
                     bpl zapem
 
                     jsr WriteCursor
+
 
 Waitforit           bit TIMINT
                     bpl Waitforit
@@ -342,6 +343,60 @@ isab            inc drawPhase
 
 ;---------------------------------------------------------------------------------------------------
 
+    DEF SAFE_InitialiseMoveGeneration
+    SUBROUTINE
+                    lda currentPly
+                    sta SET_BANK_RAM
+
+                    jsr NewPlyInitialise
+
+                    lda savedBank
+                    sta SET_BANK
+                    rts
+
+
+    DEF SAFE_GenerateOneMove
+    SUBROUTINE
+
+                    lda currentPly
+                    sta SET_BANK_RAM
+                    jsr GenerateMovesForNextPiece
+
+                    lda savedBank
+                    sta SET_BANK
+                    rts
+
+
+    DEF SAFE_LookForCheck
+    SUBROUTINE
+
+                    lda currentPly
+                    sta SET_BANK_RAM
+
+                    ldy moveIndex
+                    bmi .failed
+
+.scan               ldx MoveTo,y
+                    lda Board,x
+                    and #PIECE_MASK
+                    cmp #KING
+                    beq .inCheck            ; --> CS too
+                    dey
+                    bpl .scan
+
+.failed             clc
+
+.inCheck            lda savedBank           ; CS or CC
+                    sta SET_BANK
+                    rts
+
+
+
+
+;---------------------------------------------------------------------------------------------------
+
+
+
     DEF FB0
 
     ; Call move generation for all pieces
@@ -469,7 +524,7 @@ colok
                 lda Board,y
                 sta lastPiece                   ; what we are overwriting
                 lda fromPiece
-                and #~CASTLE
+                ora #FLAG_MOVED                ; prevents usage in castling for K/R
                 sta Board+RAM_WRITE,y           ; and what's actually moving there
                 inc drawPhase
 
@@ -534,16 +589,6 @@ colok
                 sta drawPhase
                 rts
 
-
-
-
-
-KSquare         .byte 2,6,58,62
-RSquareStart    .byte 22,29,92,99
-RSquareEnd      .byte 25,27,95,97
-RSquareStart64  .byte 0,7,56,63
-RSquareEnd64    .byte 3,5,59,61
-
 xhalt
 
                 jsr FinaliseMove
@@ -562,12 +607,15 @@ xhalt
 
     DEF SpecialMoveFixup
 
+                lda #STARTMOVE
+                sta drawPhase
+
                 JSRAM_SAFE CastleFixup
 
     ; Handle en-passant captures
 
                 lda fromPiece
-                and #ENPASSANT
+                and #FLAG_ENPASSANT
                 beq .noEP
 
 
@@ -577,19 +625,16 @@ xhalt
 
 
 
-                lda #STARTMOVE
-                sta drawPhase
-
 #if ASSERTS
                 JSRAM_SAFE DIAGNOSTIC_checkPieces
 #endif
 
-                lda sideToMove
-                bmi .skip
-                lda #0
-                sta aiPhase
-.skip
 
+;                lda sideToMove
+;                bpl .skip
+;                lda #0
+;                sta aiPhase
+;.skip
 
 
                 rts
@@ -809,13 +854,29 @@ FinBoard
                     ldy Base64ToIndex,x
                     sty aiFromSquareX12
 
-;                    lda Board,y     ; should be the movelist piece
-;                    sta aiPiece
                     tya
 
                     ldy currentPly
                     sty SET_BANK_RAM
                     jsr CheckMoveListFromSquare
+
+                    lda savedBank
+                    sta SET_BANK
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF SAFE_GetPiece
+    SUBROUTINE
+
+    ; Retrieve the piece+flags from the movelist, given from/to squares
+    ; Required as moves have different flags but same origin squares (e.g., castling)
+
+                    lda currentPly
+                    sta SET_BANK_RAM
+
+                    jsr GetPieceGivenFromToSquares
 
                     lda savedBank
                     sta SET_BANK
@@ -1002,9 +1063,10 @@ FinBoard
 
     ; And swap sides to move...
 
-.notake         lda sideToMove
-                eor #128
-                sta sideToMove
+.notake
+                ;lda sideToMove
+                ;eor #128
+                ;sta sideToMove
 
                 rts
 

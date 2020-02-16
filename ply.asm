@@ -500,7 +500,7 @@ muldone
 
                 ldy #0
                 lda MovePiece,x
-                and #ENPASSANT
+                and #FLAG_ENPASSANT
                 beq .notEP
                 ldy toSquare
 .notEP          sty enPassantSquare+RAM_WRITE
@@ -509,8 +509,8 @@ muldone
 
 
                 lda MovePiece,x
-                and #~ENPASSANT                 ;? unsure
-                ora #MOVED                      ; piece has now been moved (flag used for castling checks)
+                and #~FLAG_ENPASSANT                 ;? unsure
+                ora #FLAG_MOVED                ; prevents usage in castling (for K/R)
                 sta fromPiece                   ; MIGHT have castling bit set, which should be handled last
 
 
@@ -556,6 +556,7 @@ halted          rts
 ;---------------------------------------------------------------------------------------------------
 
     DEF CheckMoveListFromSquare
+    SUBROUTINE
 
     ; X12 in A
     ; y = -1 on return if NOT FOUND
@@ -572,6 +573,33 @@ halted          rts
                     sta aiPiece
 
 .failed             rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF GetPieceGivenFromToSquares
+    SUBROUTINE
+
+    ; We need to get the piece from the movelist because it contains flags (e.g., castling) about
+    ; the move. We need to do from/to checks because moves can have multiple origin/desinations.
+    ; This fixes the move with/without castle flag
+
+                    ldy moveIndex
+                    bmi .fail               ; shouldn't happen
+.scan               lda fromX12
+                    cmp MoveFrom,y
+                    bne .next
+                    lda toX12
+                    cmp MoveTo,y
+                    beq .found
+.next               dey
+                    bpl .scan
+.fail               rts
+
+.found              lda MovePiece,y
+                    sta aiPiece
+                    rts
+
 
 
 ;---------------------------------------------------------------------------------------------------

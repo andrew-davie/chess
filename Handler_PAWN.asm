@@ -147,7 +147,7 @@ EN_PASSANTING
                 beq .noEnPassant
 
                 lda currentPiece
-                ora #ENPASSANT
+                ora #FLAG_ENPASSANT
                 sta currentPiece
 
                 ldx currentSquare
@@ -208,7 +208,7 @@ EN_PASSANTING
                 beq .noEnPassant
 
                 lda currentPiece
-                ora #ENPASSANT
+                ora #FLAG_ENPASSANT
                 sta currentPiece
 
                 EN_PASSANT _LEFT, _DOWN

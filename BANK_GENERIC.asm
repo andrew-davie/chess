@@ -280,14 +280,16 @@ flashDone2      inc drawPhase
 
 
                 lda fromPiece
-                and #CASTLE
+                and #FLAG_CASTLE
                 beq .noCast
 
-                ldx #-1
+                ldx #4
                 lda toSquare
-.findCast       inx
+.findCast       dex
+                bmi .noCast
                 cmp KSquare,x
                 bne .findCast
+
 
                 lda RSquareEnd,x
                 sta toX12
@@ -301,12 +303,31 @@ flashDone2      inc drawPhase
 
                 lda fromPiece
                 and #128
-                ora #ROOK
+                ora #ROOK                       ; preserve colour
                 sta fromPiece
 
                 lda #CSL
                 sta drawPhase
-.noCast         rts
+                rts
+
+
+.noCast
+                lda sideToMove
+                eor #128
+                sta sideToMove
+                bmi .skip
+                lda #0
+                sta aiPhase
+.skip
+                rts
+
+
+KSquare         .byte 2,6,58,62
+RSquareStart    .byte 22,29,92,99
+RSquareEnd      .byte 25,27,95,97
+RSquareStart64  .byte 0,7,56,63
+RSquareEnd64    .byte 3,5,59,61
+
 
 
 ;---------------------------------------------------------------------------------------------------

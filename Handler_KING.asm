@@ -17,29 +17,14 @@ QUEENSIDE       = -4
     MAC CASTLE
     ; {1} == KINGSIDE or QUEENSIDE
 
-
-        ; Most likely failure trigger is there are pieces in the way (N or B) (or Q)
-        ; Check these squares first as it's the cheapest "exit" from castle check
-
-        ; Note: castling with squares that are "in check" is problematic
-        ; TODO: next ply have a "phantom" king on the positions king moves over...?
-
                 ldx currentSquare
-                lda Board+{1},x             ; we expect a R
-                sta __piece
-
-                and #PIECE_MASK
+                lda Board+{1},x             ; kingside/queenside R position
+                and #PIECE_MASK|FLAG_MOVED
                 cmp #ROOK
-                bne .noCastle               ; not a R
+                bne .noCastle               ; not a R that hasn't moved
 
-                lda __piece
-                eor currentPiece
-                bmi .noCastle               ; not correct colour
-
-                bit __piece
-                bvs .noCastle               ; it's previously moved so we can't castle
-
-        ; Check for vacant squares between K and R
+        ; It's a R and it *HAS* to be correct colour because it hasn't moved!
+        ; AND the K hasn't moved (earlier check), so check for vacant squares between K and R
 
         IF {1} = QUEENSIDE
                 lda Board-3,x               ; nothing in N pos
@@ -58,20 +43,21 @@ QUEENSIDE       = -4
                 bne .noCastle
         ENDIF
 
-        ; appropriate N/B/(Q) squares are vacant so we proceed with more checks...
+        ; appropriate N/B/(Q) squares are vacant so we proceed...
 
     ; FINALLY -- king can castle
     ; note: when we actually DO the move we MUST insert "Phantom" kings onto the board over the
     ; squares the king traverses so that "check" (and thus illegal moves) can be detected on the
-    ; next move. Castling will be detected by K moving > 1 square.
+    ; next move. Castling will be detected by K moving > 1 square. (TODO: FIX?? not CASTLE flag??)
 
                 lda currentPiece
-                ora #CASTLE
+                ora #FLAG_CASTLE                   ; flag it's a castling move
                 sta currentPiece
 
                 ldy ValidSquare+{2},x
 
                 jsr AddMove
+
 .noCastle
     ENDM
 
@@ -80,11 +66,8 @@ QUEENSIDE       = -4
 
     DEF Handle_KING
 
-    ; Pass...
     ; x = currentSquare (square the KING is on)
     ; currentPiece (KING of course, but with flags/colour attached)
-
-    ; regular moving...
 
                 MOVE_TO _DOWN+_LEFT
                 MOVE_TO_X _DOWN
@@ -95,15 +78,13 @@ QUEENSIDE       = -4
                 MOVE_TO_X _UP+_LEFT
                 MOVE_TO_X _LEFT
 
-                bit currentPiece            ; has king moved moved?
-                bvc .castleKing             ; no, so try castling
+                bit currentPiece
+                bvs .retMov                 ; king has moved, so no castling
 
-                jmp MoveReturn
-
-.castleKing     CASTLE KINGSIDE, 2
+                CASTLE KINGSIDE, 2
                 CASTLE QUEENSIDE, -2
 
-                jmp MoveReturn
+.retMov         jmp MoveReturn
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

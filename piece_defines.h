@@ -3,14 +3,11 @@
 BLACK               = 128
 WHITE               = 0
 
-PIECE_COLOUR        = 128               ; mask
-MOVED               = 64                ; mark ALL pieces when moved. Used for castling
+FLAG_COLOUR         = 128               ; mask
+FLAG_MOVED          = 64                ; mark ALL pieces when moved. Used for castling
                                         ; but maybe useful for evaluation of development
-ENPASSANT           = 32
-CASTLE              = 16
-
-;PHANTOM             = 32                ; a phantom king (via castling)  -- requires bigger movelist OR DOES IT
-;HELPER              = 16
+FLAG_ENPASSANT      = 32
+FLAG_CASTLE         = 16
 
 ;---------------------------------------------------------------------------------------------------
 ; DEFINE THE PIECES

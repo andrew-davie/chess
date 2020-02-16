@@ -18,6 +18,10 @@ AI_SelectDestinationSquare        = 7
 AI_Quiescent                      = 8
 AI_Halt                           = 9
 AI_ReselectDebounce               = 10
+AI_SartMoveGen                    = 11
+AI_StepMoveGen                    = 12
+AI_LookForCheck                   = 13
+
 
     MAC PHASE ;#
     lda #{1}
@@ -36,6 +40,9 @@ AiVectorLO          .byte <aiBeginSelectMovePhase           ; 0
                     .byte <aiQuiescent                      ; 9
                     .byte <aiHalt                           ; 10
                     .byte <aiReselectDebounce               ; 11
+                    .byte <aiStartMoveGen                   ; 12
+                    .byte <aiStepMoveGen                    ; 13
+                    .byte <aiLookForCheck                   ; 14
 
 AiVectorHI          .byte >aiBeginSelectMovePhase           ; 0
                     .byte >aiSelectStartSquare              ; 1
@@ -48,6 +55,60 @@ AiVectorHI          .byte >aiBeginSelectMovePhase           ; 0
                     .byte >aiQuiescent                      ; 9
                     .byte >aiHalt                           ; 10
                     .byte >aiReselectDebounce               ; 11
+                    .byte >aiStartMoveGen                   ; 12
+                    .byte >aiStepMoveGen                    ; 13
+                    .byte >aiLookForCheck                   ; 14
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiStartMoveGen
+    SUBROUTINE
+
+    ; We have a movelist already, but it may contain invalid moves that leave the player
+    ; in check. To find out if this is so, we make each move and then generate a movelist for
+    ; the opponent. Scan the opponent's moves to see if any of them take the player's king.
+    ; If this is so, then the player move is invalid and is removed from the movelist.
+
+    ;TODO: loop/make all moves one-by-one and iterate below
+
+                inc currentPly
+                jsr SAFE_InitialiseMoveGeneration
+                PHASE AI_StepMoveGen
+                rts
+
+
+    DEF aiStepMoveGen
+    SUBROUTINE
+
+    ; Because we're (possibly) running with the screen on, processing time is very short and
+    ; we generate the opponent moves piece by piece. Time isn't really an isssue here, so
+    ; this happens over multiple frames.
+
+                jsr SAFE_GenerateOneMove
+
+                lda piecelistIndex
+                and #15
+                cmp #0
+                bne .waitgen
+
+                PHASE AI_LookForCheck
+.waitgen        rts
+
+
+
+    DEF aiLookForCheck
+
+    ; TODO - make moves one at a time
+
+
+                jsr SAFE_LookForCheck
+                bcc .notInCheck
+
+
+.notInCheck     dec currentPly
+
+                PHASE AI_BeginSelectMovePhase
+                rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -142,7 +203,7 @@ AiVectorHI          .byte >aiBeginSelectMovePhase           ; 0
                     lda ccur
                     lsr
                     lsr
-                    and #7
+                    and #6
                     ora #$C0
 
 .writeCursorCol     sta COLUP0
@@ -238,6 +299,9 @@ JoyMoveY        .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,  
 
     ; Aha! Button released, so we know the selected piece and can start flashing it
     ; and allowing movement of the selector to a destination square...
+
+                    lda #4*4
+                    sta ccur                            ; bright green square for selection
 
                     PHASE AI_SelectDestinationSquare
 
@@ -468,14 +532,18 @@ CAP_SPEED           = 8
                     sta fromSquare
                     lda aiToSquare
                     sta toSquare
-                    lda aiPiece
-                    sta fromPiece
-                    sta toPiece
 
                     lda aiFromSquareX12
                     sta fromX12
                     lda aiToSquareX12
                     sta toX12
+
+                    jsr SAFE_GetPiece
+
+                    lda aiPiece
+                    sta fromPiece
+                    ora #FLAG_MOVED                ; for K/R prevents usage in castling
+                    sta toPiece
 
                     PHASE AI_Halt
                     rts
