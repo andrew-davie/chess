@@ -1,21 +1,20 @@
 ; Copyright (C)2020 Andrew Davie
-; Piece move handler for king
-
-
-; This is the move handler for a KING
-; "Check" is detected in the next ply of the search, so the move generation doesn't have to
-; be concerned about that. To assist with castling over squares in check (which is illegal)
-; the concept of a phantom king is introduced. Phantom kings are effectively blank squares
-; but need to be checked when moving opposite-colour pieces to a square. Messy.
 
 ;---------------------------------------------------------------------------------------------------
+; KING
+; This is the move handler for a KING
+; "Check" is detected in the next ply of the search.
+
+
+;---------------------------------------------------------------------------------------------------
+
 ; MACRO - Castling
 
 KINGSIDE        = 3
 QUEENSIDE       = -4
 
     MAC CASTLE
-    ; {1} == KINGSIDE or QUEENSIDE
+    ; {1} = "KINGSIDE" or "QUEENSIDE"
 
                 ldx currentSquare
                 lda Board+{1},x             ; kingside/queenside R position
@@ -54,9 +53,15 @@ QUEENSIDE       = -4
                 ora #FLAG_CASTLE                   ; flag it's a castling move
                 sta currentPiece
 
-                ldy ValidSquare+{2},x
+        IF {1} = KINGSIDE
+                ldy ValidSquare+2,x
+        ENDIF
 
-                jsr AddMove
+        IF {1} = QUEENSIDE
+                ldy ValidSquare-2,x
+        ENDIF
+
+                jsr AddMove                     ; 57
 
 .noCastle
     ENDM
@@ -65,6 +70,7 @@ QUEENSIDE       = -4
 ;---------------------------------------------------------------------------------------------------
 
     DEF Handle_KING
+    SUBROUTINE
 
     ; x = currentSquare (square the KING is on)
     ; currentPiece (KING of course, but with flags/colour attached)
@@ -79,12 +85,12 @@ QUEENSIDE       = -4
                 MOVE_TO_X _LEFT
 
                 bit currentPiece
-                bvs .retMov                 ; king has moved, so no castling
+                bvs .exit                           ; king has moved, so no castling
 
-                CASTLE KINGSIDE, 2
-                CASTLE QUEENSIDE, -2
+                CASTLE KINGSIDE
+                CASTLE QUEENSIDE
 
-.retMov         jmp MoveReturn
+.exit           jmp MoveReturn
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

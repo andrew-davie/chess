@@ -168,9 +168,7 @@ MAX_MOVES = 128
                 lda #BACKGCOL
                 sta COLUBK
 
-                lda #0
-                sta aiPhase
-
+                PHASE AI_StartClearBoard
                 rts
 
 
@@ -514,44 +512,16 @@ muldone
                 sta fromPiece                   ; MIGHT have castling bit set, which should be handled last
 
 
-                lda fromSquare
-                jsr ConvertToBase64
-                sta fromSquare          ;B64
+                ldx fromSquare
+                ldy X12toBase64,x
+                sty fromSquare          ;B64
 
-                lda toSquare
-                jsr ConvertToBase64
-                sta toSquare            ;B64
+                ldx toSquare
+                ldy X12toBase64,x
+                sty toSquare            ;B64
 
 halted          rts
 
-;---------------------------------------------------------------------------------------------------
-
-    DEF ConvertToBase64
-    ; uses OVERLAY "Movers"
-
-    ; convert from 10x12 square numbering (0-119) to 8x8 square numbering (0-63)
-
-                    sec
-                    sbc #22
-
-                    ldx #$FF
-.conv64             sbc #10
-                    inx
-                    bcs .conv64
-                    adc #10
-
-                    sta __temp
-                    txa
-                    asl
-                    asl
-                    asl
-                    ora __temp
-                    tay
-
-    ; A = column (0-7)
-    ; X = row (0-7)
-
-                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -573,6 +543,49 @@ halted          rts
                     sta aiPiece
 
 .failed             rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF IsSquareUnderAttack
+    SUBROUTINE
+
+    ; Scan the movelist to find if given square is under attack
+
+    ; Pass:         A = X12 square to check
+    ; Return:       CC = no
+
+                    ldy moveIndex
+                    bmi .exit
+.scan               cmp MoveTo,y
+                    beq .found                      ; YES!
+                    dey
+                    bpl .scan
+
+.exit               clc
+.found              rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF GetKingSquare
+    SUBROUTINE
+
+    ; Return:       a = square king is on (or -1)
+
+                    ldy PieceListPtr
+                    bmi .exit                       ; no pieces?!
+.find               lda PieceType,y
+                    and #PIECE_MASK
+                    cmp #KING
+                    beq .found
+                    dey
+                    bpl .find
+
+.exit               lda #-1                         ; not found/no king square
+                    rts
+
+.found              lda PieceSquare,y
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------

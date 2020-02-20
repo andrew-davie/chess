@@ -9,9 +9,9 @@
 ; we effectively have 1K
 ;---------------------------------------------------------------------------------------------------
 
-COLOUR_LINE_1 = $94
+COLOUR_LINE_1 = $a6
 COLOUR_LINE_2 = $4a
-COLOUR_LINE_3 = $28
+COLOUR_LINE_3 = $2a
 BACKGCOL      = $00
 
 ; good 94/46/28/0

@@ -1,8 +1,0 @@
-on making a move of a piece...
-    set "enPassantPawn" to 0
-    When a pawn moves 2 on initial move, set "enPassantPawn" to the square of the pawn
-    set MOVED flag to 1 for the piece
-
-for pawn move
-    if en-passant, then remove captured pawn from the board
-    should this be jigged into the movelist?

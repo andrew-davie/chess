@@ -8,18 +8,19 @@
 
     MAC MOVE_TOWARDS
     SUBROUTINE
+    ; = 76 for single square (empty/take)
 
-                ldx currentSquare
-                bne .project                    ; unconditional
+                ldx currentSquare               ; 3
+                bne .project                    ; 3   unconditional
 
-.empty          jsr AddMove
-.project        ldy ValidSquare+{1},x
-                bmi .invalid                    ; off board!
-                lda Board,y                     ; piece @ destination
-                beq .empty
-                eor currentPiece
-                bpl .invalid                    ; same colour
-                jsr AddMove                     ; and exit
+.empty          jsr AddMove                     ; 57
+.project        ldy ValidSquare+{1},x           ; 4
+                bmi .invalid                    ; 2/3 off board!
+                lda Board,y                     ; 4   piece @ destination
+                beq .empty                      ; 2/3
+                eor currentPiece                ; 3
+                bpl .invalid                    ; 2/3 same colour
+                jsr AddMove                     ; 57  and exit
 
 .invalid
     ENDM

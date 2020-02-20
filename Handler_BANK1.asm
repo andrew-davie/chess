@@ -1,9 +1,6 @@
 ; Copyright (C)2020 Andrew Davie
-; andrew@taswegian.com
 
 ;---------------------------------------------------------------------------------------------------
-
-
 
     NEWRAMBANK MOVES_RAM                ; RAM bank for holding the following ROM shadow
     NEWBANK MOVES                       ; copy the following bank to RAMBANK_MOVES_RAM
@@ -126,73 +123,79 @@
 ;---------------------------------------------------------------------------------------------------
 
     DEF PutAllPieces
+    SUBROUTINE
+
     ; Call SAFEly
 
-                ldy #99
-.zeroBoard
-                lda Board,y
-                jsr SAFE_PutPieceToBoard
+                    ldy #99
+.zeroBoard          lda Board,y
+                    jsr SAFE_PutPieceToBoard
 
-                dey
-                bpl .zeroBoard
-                rts
+                    dey
+                    bpl .zeroBoard
+                    rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF CopySetupForMarker
+    SUBROUTINE
 
-                ;lda #RAMBANK_MOVES_RAM
-                ;sta SET_BANK_RAM
+                    ;lda #RAMBANK_MOVES_RAM
+                    ;sta SET_BANK_RAM
 
-                lda drawPieceNumber
-                and #3          ; shift position in PF
-                clc
-                adc #INDEX_WHITE_MARKER_on_BLACK_SQUARE_0
-                tay
-                rts
+                    lda drawPieceNumber
+                    and #3                          ; shift position in PF
+                    clc
+                    adc #INDEX_WHITE_MARKER_on_BLACK_SQUARE_0
+                    tay
+                    rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF CopySetup
+    SUBROUTINE
 
     ; figure colouration of square
-                lda drawPieceNumber ;0-63
-                lsr
-                lsr
-                lsr
-                clc
-                adc drawPieceNumber
-                and #1
-                eor #1
-                beq .white
-                lda #32
-.white          sta __pieceColour           ; actually SQUARE black/white
+
+                    lda drawPieceNumber ;0-63
+                    lsr
+                    lsr
+                    lsr
+                    clc
+                    adc drawPieceNumber
+                    and #1
+                    eor #1
+                    beq .white
+                    lda #32
+.white              sta __pieceColour               ; actually SQUARE black/white
 
     ; PieceColour = 0 for white square, 28 for black square
 
-                ;lda #RAMBANK_MOVES_RAM
-                ;sta SET_BANK_RAM
+                    ;lda #RAMBANK_MOVES_RAM
+                    ;sta SET_BANK_RAM
 
-                ldy drawPieceNumber         ;0-63
-                ldx Base64ToIndex,y
+                    ldy drawPieceNumber             ; 0-63
+                    ldx Base64ToIndex,y
 
-                lda Board,x
-                asl
-                bcc .blackAdjust
-                ora #16
-.blackAdjust    lsr
-                and #%1111
-                tax
+                    lda Board,x
+                    asl
+                    bcc .blackAdjust
+                    ora #16
+.blackAdjust        lsr
+                    and #%1111
+                    tax
 
-                tya
-                and #3          ; shift position in PF
+                    tya
+                    and #3                          ; shift position in PF
 
-                clc
-                adc PieceToShape,x
-                clc
-                adc __pieceColour
-                tay
-                rts
+                    clc
+                    adc PieceToShape,x
+                    clc
+                    adc __pieceColour
+                    tay
+                    rts
 
 PieceToShape
 

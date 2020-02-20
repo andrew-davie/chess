@@ -6,7 +6,6 @@
 
     DEF Handle_BISHOP
 
-    ; Pass...
     ; x = currentSquare (square the piece is on)
     ; currentPiece (with flags/colour attached)
 
@@ -17,4 +16,5 @@
 
                 jmp MoveReturn
 
-            ;CHECK_HALF_BANK_SIZE "HANDLER_MOVE -- 1K"
+;---------------------------------------------------------------------------------------------------
+; EOF

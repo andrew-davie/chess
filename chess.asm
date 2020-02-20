@@ -346,13 +346,19 @@ RND_EOR_VAL = $FE ;B4
 
 ;--------------------------------------------------------------------------------
 
+    MAC PHASE ;#
+    lda #{1}
+    sta aiPhase
+    ENDM
+
+;--------------------------------------------------------------------------------
+
 ;ORIGIN      SET 0
 
     include "Handler_MACROS.asm"
 
     include "BANK_GENERIC.asm"
     include "BANK_ROM_SHADOW_SCREEN.asm"
-    include "BANK_INITBANK.asm"         ; MUST be after banks that include levels -- otherwise MAX_LEVELBANK is not calculated properly
     include "BANK_CHESS_INCLUDES.asm"
     include "BANK_StateMachine.asm"
 

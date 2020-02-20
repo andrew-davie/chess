@@ -2,34 +2,56 @@
 
     NEWBANK STATEMACHINE
 
+;    MAC PHASE ;#
+;    lda #{1}
+;    sta aiPhase
+;    ENDM
+
+; Banks holding data (ply 0 doubles as WHITE, and ply 1 as BLACK)
+
+PLAYER              = RAMBANK_PLY
+OPPONENT            = PLAYER + 1
 
 ;---------------------------------------------------------------------------------------------------
 
 STARTSELECTPIECE = 1
 
-AI_BeginSelectMovePhase           = 0
-AI_SelectStartSquare              = 1
-AI_StartSquareSelected            = 2
-AI_DrawMoves                      = 3
-AI_ShowMoveCaptures               = 4
-AI_SlowFlash                      = 5
-AI_DrawTargetSquares              = 6
-AI_SelectDestinationSquare        = 7
-AI_Quiescent                      = 8
-AI_Halt                           = 9
-AI_ReselectDebounce               = 10
-AI_SartMoveGen                    = 11
-AI_StepMoveGen                    = 12
-AI_LookForCheck                   = 13
+AI_BeginSelectMovePhase         = 0
+AI_SelectStartSquare            = 1
+AI_StartSquareSelected          = 2
+AI_DrawMoves                    = 3
+AI_ShowMoveCaptures             = 4
+AI_SlowFlash                    = 5
+AI_DrawTargetSquares            = 6
+AI_SelectDestinationSquare      = 7
+AI_Quiescent                    = 8
+AI_Halt                         = 9
+AI_ReselectDebounce             = 10
+AI_StartMoveGen                 = 11
+AI_StepMoveGen                  = 12
+AI_LookForCheck                 = 13
+AI_StartClearBoard              = 14
+AI_ClearEachRow                 = 15
+AI_DrawEntireBoard              = 16
+AI_DEB2                         = 17
+AI_FlipBuffers                  = 18
+AI_FB0                          = 19
+AI_FB2                          = 20
+AI_FB3                          = 21
+AI_EraseStartPiece              = 22
+AI_WriteStartPieceBlank         = 23
+AI_MarchToTargetA               = 24
+AI_MarchB                       = 25
+AI_MarchToTargetB               = 26
+AI_MarchB2                      = 27
+AI_FinalFlash                   = 28
+AI_SpecialMoveFixup             = 29
 
 
-    MAC PHASE ;#
-    lda #{1}
-    sta aiPhase
-    ENDM
 
+    DEF AiVectorLO
 
-AiVectorLO          .byte <aiBeginSelectMovePhase           ; 0
+                    .byte <aiBeginSelectMovePhase           ; 0
                     .byte <aiSelectStartSquare              ; 1
                     .byte <aiStartSquareSelected            ; 2
                     .byte <aiDrawMoves                      ; 3
@@ -37,14 +59,32 @@ AiVectorLO          .byte <aiBeginSelectMovePhase           ; 0
                     .byte <aiSlowFlash                      ; 5
                     .byte <aiDrawTargetSquares              ; 6
                     .byte <aiSelectDestinationSquare        ; 7
-                    .byte <aiQuiescent                      ; 9
-                    .byte <aiHalt                           ; 10
-                    .byte <aiReselectDebounce               ; 11
-                    .byte <aiStartMoveGen                   ; 12
-                    .byte <aiStepMoveGen                    ; 13
-                    .byte <aiLookForCheck                   ; 14
+                    .byte <aiQuiescent                      ; 8
+                    .byte <aiHalt                           ; 9
+                    .byte <aiReselectDebounce               ; 10
+                    .byte <aiStartMoveGen                   ; 11
+                    .byte <aiStepMoveGen                    ; 12
+                    .byte <aiLookForCheck                   ; 13
+                    .byte <aiStartClearBoard                ; 14
+                    .byte <aiClearEachRow                   ; 15
+                    .byte <aiDrawEntireBoard                ; 16
+                    .byte <aiDEB2                           ; 17
+                    .byte <aiFlipBuffers                    ; 18
+                    .byte <aiFB0                            ; 19
+                    .byte <aiFB2                            ; 20
+                    .byte <aiFB3                            ; 21
+                    .byte <aiEraseStartPiece                ; 22
+                    .byte <aiWriteStartPieceBlank           ; 23
+                    .byte <aiMarchToTargetA                 ; 24
+                    .byte <aiMarchB                         ; 25
+                    .byte <aiMarchToTargetB                 ; 26
+                    .byte <aiMarchB2                        ; 27
+                    .byte <aiFinalFlash                     ; 28
+                    .byte <aiSpecialMoveFixup               ; 29
 
-AiVectorHI          .byte >aiBeginSelectMovePhase           ; 0
+
+    DEF AiVectorHI
+                    .byte >aiBeginSelectMovePhase           ; 0
                     .byte >aiSelectStartSquare              ; 1
                     .byte >aiStartSquareSelected            ; 2
                     .byte >aiDrawMoves                      ; 3
@@ -52,30 +92,87 @@ AiVectorHI          .byte >aiBeginSelectMovePhase           ; 0
                     .byte >aiSlowFlash                      ; 5
                     .byte >aiDrawTargetSquares              ; 6
                     .byte >aiSelectDestinationSquare        ; 7
-                    .byte >aiQuiescent                      ; 9
-                    .byte >aiHalt                           ; 10
-                    .byte >aiReselectDebounce               ; 11
-                    .byte >aiStartMoveGen                   ; 12
-                    .byte >aiStepMoveGen                    ; 13
-                    .byte >aiLookForCheck                   ; 14
+                    .byte >aiQuiescent                      ; 8
+                    .byte >aiHalt                           ; 9
+                    .byte >aiReselectDebounce               ; 10
+                    .byte >aiStartMoveGen                   ; 11
+                    .byte >aiStepMoveGen                    ; 12
+                    .byte >aiLookForCheck                   ; 13
+                    .byte >aiStartClearBoard                ; 14
+                    .byte >aiClearEachRow                   ; 15
+                    .byte >aiDrawEntireBoard                ; 16
+                    .byte >aiDEB2                           ; 17
+                    .byte >aiFlipBuffers                    ; 18
+                    .byte >aiFB0                            ; 19
+                    .byte >aiFB2                            ; 20
+                    .byte >aiFB3                            ; 21
+                    .byte >aiEraseStartPiece                ; 22
+                    .byte >aiWriteStartPieceBlank           ; 23
+                    .byte >aiMarchToTargetA                 ; 24
+                    .byte >aiMarchB                         ; 25
+                    .byte >aiMarchToTargetB                 ; 26
+                    .byte >aiMarchB2                        ; 27
+                    .byte >aiFinalFlash                     ; 28
+                    .byte >aiSpecialMoveFixup               ; 29
+
+    DEF AiVectorBANK
+                    .byte BANK_aiBeginSelectMovePhase       ; 0
+                    .byte BANK_aiSelectStartSquare          ; 1
+                    .byte BANK_aiStartSquareSelected        ; 2
+                    .byte BANK_aiDrawMoves                  ; 3
+                    .byte BANK_aiShowMoveCaptures           ; 4
+                    .byte BANK_aiSlowFlash                  ; 5
+                    .byte BANK_aiDrawTargetSquares          ; 6
+                    .byte BANK_aiSelectDestinationSquare    ; 7
+                    .byte BANK_aiQuiescent                  ; 8
+                    .byte BANK_aiHalt                       ; 9
+                    .byte BANK_aiReselectDebounce           ; 10
+                    .byte BANK_aiStartMoveGen               ; 11
+                    .byte BANK_aiStepMoveGen                ; 12
+                    .byte BANK_aiLookForCheck               ; 13
+                    .byte BANK_aiStartClearBoard            ; 14
+                    .byte BANK_aiClearEachRow               ; 15
+                    .byte BANK_aiDrawEntireBoard            ; 16
+                    .byte BANK_aiDEB2                       ; 17
+                    .byte BANK_aiFlipBuffers                ; 18
+                    .byte BANK_aiFB0                        ; 19
+                    .byte BANK_aiFB2                        ; 20
+                    .byte BANK_aiFB3                        ; 21
+                    .byte BANK_aiEraseStartPiece            ; 22
+                    .byte BANK_aiWriteStartPieceBlank       ; 23
+                    .byte BANK_aiMarchToTargetA             ; 24
+                    .byte BANK_aiMarchB                     ; 25
+                    .byte BANK_aiMarchToTargetB             ; 26
+                    .byte BANK_aiMarchB2                    ; 27
+                    .byte BANK_aiFinalFlash                 ; 28
+                    .byte BANK_aiSpecialMoveFixup           ; 29
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiStartMoveGen
     SUBROUTINE
 
-    ; We have a movelist already, but it may contain invalid moves that leave the player
-    ; in check. To find out if this is so, we make each move and then generate a movelist for
-    ; the opponent. Scan the opponent's moves to see if any of them take the player's king.
-    ; If this is so, then the player move is invalid and is removed from the movelist.
+    ; To assist with castling, generate the moves for the opponent, giving us effectively
+    ; a list of squares that are being attacked. The castling can't happen if the king is
+    ; in check or if the squares it would have to move over are in check
 
-    ;TODO: loop/make all moves one-by-one and iterate below
+    ; we don't need to worry about this if K has moved, or relevant R has moved or if
+    ; the squares between are occupied. We can tell THAT by examining the movelist to see
+    ; if there are K-moves marked "FLAG_CASTLE" - and the relevant squares
 
-                inc currentPly
-                jsr SAFE_InitialiseMoveGeneration
-                PHASE AI_StepMoveGen
-                rts
+                    lda #OPPONENT
+                    sta currentPly
+                    jsr SAFE_InitialiseMoveGeneration
 
+                    lda sideToMove
+                    eor #128
+                    sta sideToMove              ; for movegen to know
+
+                    PHASE AI_StepMoveGen
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
 
     DEF aiStepMoveGen
     SUBROUTINE
@@ -84,35 +181,47 @@ AiVectorHI          .byte >aiBeginSelectMovePhase           ; 0
     ; we generate the opponent moves piece by piece. Time isn't really an isssue here, so
     ; this happens over multiple frames.
 
-                jsr SAFE_GenerateOneMove
+                    jsr SAFE_GenerateOneMove
 
-                lda piecelistIndex
-                and #15
-                cmp #0
-                bne .waitgen
+                    lda piecelistIndex
+                    and #15
+                    cmp #0
+                    bne .wait                       ; still generating
 
-                PHASE AI_LookForCheck
-.waitgen        rts
-
-
-
-    DEF aiLookForCheck
-
-    ; TODO - make moves one at a time
+                    lda sideToMove
+                    eor #128
+                    sta sideToMove
 
 
-                jsr SAFE_LookForCheck
-                bcc .notInCheck
+                    PHASE AI_LookForCheck
+.wait               rts
 
-
-.notInCheck     dec currentPly
-
-                PHASE AI_BeginSelectMovePhase
-                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiBeginSelectMovePhase ;#0
+    DEF aiLookForCheck
+    SUBROUTINE
+
+    ; now we've finished generating the opponent moves
+    ; See if the square our king is on is an attacked square (that is, it appears as a TO
+    ; square in the opponent's movelist)
+
+                    lda #PLAYER
+                    sta currentPly
+                    jsr SAFE_GetKingSquare          ; king's current X12 square
+                    jsr SAFE_IsSquareUnderAttack
+                    bcc .exit
+
+    ; king attack found!
+kk jmp kk
+
+
+.exit               PHASE AI_BeginSelectMovePhase
+                    rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiBeginSelectMovePhase
     SUBROUTINE
 
                     lda #4
@@ -145,10 +254,6 @@ AiVectorHI          .byte >aiBeginSelectMovePhase           ; 0
 
                     cpy #-1
                     beq .noButton                   ; illegal square
-
-                    lda aiFlashPhase
-                    and #1
-                    bne .noButton                   ; prevent EOR-error on flashing selected piece
 
                     lda INPT4
                     bmi .noButton
@@ -203,8 +308,9 @@ AiVectorHI          .byte >aiBeginSelectMovePhase           ; 0
                     lda ccur
                     lsr
                     lsr
-                    and #6
-                    ora #$C0
+                    and #3
+                    clc
+                    adc #$C0 ;COLOUR_LINE_1
 
 .writeCursorCol     sta COLUP0
                     rts
@@ -219,7 +325,7 @@ JoyMoveY        .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,  
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiStartSquareSelected ;#2
+    DEF aiStartSquareSelected
     SUBROUTINE
 
     ; Mark all the valid moves for the selected piece on the board
@@ -300,7 +406,7 @@ JoyMoveY        .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,  
     ; Aha! Button released, so we know the selected piece and can start flashing it
     ; and allowing movement of the selector to a destination square...
 
-                    lda #4*4
+                    lda #6*4
                     sta ccur                            ; bright green square for selection
 
                     PHASE AI_SelectDestinationSquare
@@ -338,7 +444,7 @@ JoyMoveY        .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,  
 
 CAP_SPEED           = 8
 
-    DEF aiShowMoveCaptures ;#4
+    DEF aiShowMoveCaptures
     SUBROUTINE
 
     ; draw/undraw ALL captured pieces
@@ -370,7 +476,7 @@ CAP_SPEED           = 8
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiSlowFlash ;#5
+    DEF aiSlowFlash
     SUBROUTINE
 
     ; Joystick button is held down, so we're displaying the available moves
@@ -410,7 +516,6 @@ CAP_SPEED           = 8
 
 ;---------------------------------------------------------------------------------------------------
 
-
     DEF moveCursor
     SUBROUTINE
 
@@ -424,6 +529,10 @@ CAP_SPEED           = 8
                     lsr
                     lsr
                     lsr
+
+                    cmp #15
+                    beq .cursor
+
                     tay
 
                     clc
@@ -444,7 +553,7 @@ CAP_SPEED           = 8
                     lda #5
                     sta mdelay
 
-                    jsr setCursorPriority
+.cursor             jsr setCursorPriority
 
 
 .delaym             rts
@@ -484,25 +593,43 @@ CAP_SPEED           = 8
 
     ; y = valid square
 
-                    lda aiFlashPhase
-                    and #1
-                    bne .noButton                   ; prevent EOR-error on flashing selected piece
-
                     lda INPT4
                     bmi .noButton
 
-                    cpy #-1
-                    bne .done                       ; valid square
-
                     lda aiToSquare
                     cmp aiFromSquare                ; is to==from?  that's a cancelllation
-                    bne .noButton                   ; no, so it's an INVALID square
+                    beq .cancel
 
-                    PHASE AI_ReselectDebounce
+                    cpy #-1
+                    beq .noButton                   ; not a valid square
+
+                    lda aiFlashPhase
+                    and #1
+                    beq .done
+
+    ; EOR-phase incorrect - force quick fix to allow next-frame button detect
+
+                    lda #1
+                    sta aiFlashDelay
+                    rts
+
+.cancel
+
+                    lda aiFlashPhase
+                    and #1
+                    beq .doCancel
+
+    ; EOR-phase incorrect - force quick fix to allow next-frame button detect
+
+                    lda #1
+                    sta aiFlashDelay
+                    rts
+
+
+.doCancel           PHASE AI_ReselectDebounce
                     rts
 
 .done               PHASE AI_Quiescent              ; destination selected!
-
 .noButton           rts
 
 
@@ -522,7 +649,7 @@ CAP_SPEED           = 8
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiQuiescent ;#10
+    DEF aiQuiescent
     SUBROUTINE
 
                     lda #-1
@@ -545,7 +672,7 @@ CAP_SPEED           = 8
                     ora #FLAG_MOVED                ; for K/R prevents usage in castling
                     sta toPiece
 
-                    PHASE AI_Halt
+                    PHASE AI_FB3
                     rts
 
 ;---------------------------------------------------------------------------------------------------
