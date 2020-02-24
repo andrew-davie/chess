@@ -147,6 +147,7 @@ MAX_MOVES = 128
                 sta PieceListPtr+RAM_WRITE
 
                 ldx #15
+                lda #0
 .clearLists     sta SortedPieceList+RAM_WRITE,x
                 sta PieceSquare+RAM_WRITE,x
                 sta PieceType+RAM_WRITE,x
@@ -215,8 +216,9 @@ MAX_MOVES = 128
 
 ;---------------------------------------------------------------------------------------------------
 
-#if !TEST_POSITION
 InitPieceList
+
+#if !TEST_POSITION
 
     .byte WHITE|Q, 25
     .byte WHITE|B, 24
@@ -258,18 +260,14 @@ InitPieceList
 
     .byte 0 ;end
 
+#else ; test position...
+
+    .byte WHITE|WP, 75
+    .byte BLACK|BP, 87
+        .byte BLACK|K, 96
+    .byte 0
+
 #endif
-
-#if TEST_POSITION
-WhitePiecelist
-    .byte 65,0,0,0,0,0,0,0
-    .byte 0,0,0,0,0,0,0,0
-
-BlackPiecelist
-    .byte 66,0,0,0,0,0,0,0
-    .byte 0,0,0,0,0,0,0,0
-#endif
-
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -291,6 +289,7 @@ BlackPiecelist
 #if TEST_POSITION
                 lda #66
 #endif
+                lda #0
                 sta enPassantSquare+RAM_WRITE       ; no enPassant available
 
 
@@ -359,25 +358,6 @@ BlackPiecelist
 .adjustPiece    lda toX12
                 sta PieceSquare+RAM_WRITE,x
                 rts
-
-;---------------------------------------------------------------------------------------------------
-
-#if 0
-    DEF DeletePiece
-
-                lda fromX12
-                ldy toX12
-
-;                lda sideToMove
-;                eor #128
-;                asl
-;                adc #RAMBANK_PLY
-                lda currentPly
-                sta SET_BANK_RAM
-
-                lda toX12
-                jsr DeletePiece
-#endif
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -452,27 +432,33 @@ iterPieces      jsr GenerateMovesForNextPiece
 ;---------------------------------------------------------------------------------------------------
 
     DEF MoveViaListAtPly
+    SUBROUTINE
 
-                lda moveIndex
-                cmp #-1
-                beq halted                      ; no valid moves
+                    ldy moveIndex
+                    bmi halted                      ; no valid moves (stalemate if not in check)
 
-                tay                             ; loop count
-                cpy #0
-                beq muldone
-                iny
+                    NEXT_RANDOM
 
-                NEXT_RANDOM
+    ; int(random * # moves) --> a random move #
 
-                ldx #0
-                lda #0
-.mulx           clc
-                adc rnd
-                bcc .nover
-                inx
-.nover          dey
-                bne .mulx
-muldone
+                    lda #0
+                    tax                             ; selected move
+                    clc
+.mulxcc             adc rnd
+                    bcc .mulx
+                    clc
+                    inx
+.mulx               dey
+                    bpl .mulxcc
+
+    IF ASSERTS
+    ; Catch illgal move/index
+                    cpx moveIndex
+                    beq .ok
+.whoops             bcs .whoops
+.ok
+    ENDIF
+
 
 ; fall through...
 ;---------------------------------------------------------------------------------------------------
@@ -480,19 +466,19 @@ muldone
     DEF PhysicallyMovePiece
 
 .foundMove
-                lda MoveFrom,x
-                sta fromSquare
-                sta fromX12
-                lda MoveTo,x
-                sta toSquare
-                sta toX12
+                    lda MoveFrom,x
+                    sta fromSquare
+                    sta fromX12
+                    lda MoveTo,x
+                    sta toSquare
+                    sta toX12
 
 
     ; If en-passant flag set (pawn doing opening double-move) then record its square as the
     ; en-passant square for the ply.
 
-#if 0
- TODO BANK/BUGGERED AFTER
+#if 1
+ ;TODO BANK/BUGGERED AFTER
                 lda currentPly
                 sta SET_BANK_RAM
 
@@ -585,6 +571,7 @@ halted          rts
                     rts
 
 .found              lda PieceSquare,y
+                    ldx PieceType,y
                     rts
 
 

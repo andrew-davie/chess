@@ -142,6 +142,25 @@
  include "gfx/BLACK_MARKER_on_WHITE_SQUARE_2.asm"
  include "gfx/BLACK_MARKER_on_WHITE_SQUARE_3.asm"
 
+ include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_0.asm"
+ include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_1.asm"
+ include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_2.asm"
+ include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_3.asm"
+ include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_0.asm"
+ include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_1.asm"
+ include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_2.asm"
+ include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_3.asm"
+
+ include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_0.asm"
+ include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_1.asm"
+ include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_2.asm"
+ include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_3.asm"
+ include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_0.asm"
+ include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_1.asm"
+ include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_2.asm"
+ include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_3.asm"
+
+
 #if 0
  include "gfx/WHITE_MARKED_BLANK_on_WHITE_SQUARE_0.asm"
  include "gfx/WHITE_MARKED_BLANK_on_WHITE_SQUARE_1.asm"

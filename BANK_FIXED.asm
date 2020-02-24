@@ -61,9 +61,6 @@ ORIGIN              SET FIXED_BANK
 
     ; Now the board is "living" in RAM (along with support code) we can do stuff with it
 
-                    lda #0
-                    sta drawPhase
-
 ;---------------------------------------------------------------------------------------------------
 
                     ;RESYNC
@@ -78,7 +75,7 @@ ORIGIN              SET FIXED_BANK
                     lsr
                     bne .loopVSync3                 ; branch until VYSNC has been reset
 
-                    ldy #55 ;VBLANK_TIM_NTSC
+                    ldy #TIME_PART_1
                     sty TIM64T
 
     ; LOTS OF PROCESSING TIME - USE IT
@@ -92,8 +89,6 @@ ORIGIN              SET FIXED_BANK
 ;                    sta COLUBK                     ; colour timing band top of screen
         ENDIF
 
-;                    lda #STATEMACHINE
-;                    sta SET_BANK
                     jsr AiStateMachine
 
                     ;jsr SAFE_PhasedProcessor
@@ -148,10 +143,11 @@ ORIGIN              SET FIXED_BANK
 ; END OF VISIBLE SCREEN
 ; HERE'S SOME TIME TO DO STUFF
 
-                    lda #38
+                    lda #TIME_PART_2
                     sta TIM64T
 
-;
+                    ;jsr AiStateMachine
+
                     JSRAM PositionSprites
 
 
@@ -183,18 +179,16 @@ _rts                rts
 
                     lda #BANK_AiVectorLO
                     sta SET_BANK                ; to access vectors
-
-                    ldx aiPhase
-                    lda AiVectorLO,x
-                    sta __ptr
-                    lda AiVectorHI,x
-                    sta __ptr+1
-
-                    lda AiVectorBANK,x
-                    sta savedBank
+                    jsr AiSetupVectors
+                    bcs .exit
                     sta SET_BANK
 
-                    jmp (__ptr)
+                    jsr .ind
+                    rts ;tmp jmp AiStateMachine
+
+
+.exit               rts
+.ind                jmp (__ptr)
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -206,87 +200,6 @@ _rts                rts
 ;                    lda savedBank
 ;                    sta SET_BANK
 ;                    rts
-
-;---------------------------------------------------------------------------------------------------
-
-#if 0
-    DEF PhaseJump
-    SUBROUTINE
-
-                    ldx drawPhase
-                    lda DrawVectorLO,x
-                    sta __ptr
-                    lda DrawVectorHI,x
-                    sta __ptr+1
-                    lda DrawVectorBANK,x
-                    sta savedBank
-                    sta SET_BANK
-                    jmp (__ptr)
-#endif
-
-MARCH = 10
-STARTMOVE = 4
-CSL = 7
-
-#if 0
-
-DrawVectorLO
-                    .byte <aiStartClearBoard          ; 0
-                    .byte <aiClearEachRow             ; 1
-                    .byte <aiDrawEntireBoard          ; 2
-                    .byte <aiDEB2                     ; 3
-                    .byte <FlipBuffers              ; 4
-                    .byte <FB0                      ; 5
-                    .byte <FB2                      ; 6
-                    .byte <FB3                      ; 7
-                    .byte <EraseStartPiece          ; 8
-                    .byte <WriteStartPieceBlank     ; 9
-                    .byte <MarchToTargetA           ; 10
-                    .byte <MarchB                   ; 11
-                    .byte <MarchToTargetB           ; 12
-                    .byte <MarchB2                  ; 13
-                    .byte <FinalFlash               ; 14
-                    .byte <SpecialMoveFixup         ; 15
-
-DrawVectorHI
-                    .byte >aiStartClearBoard
-                    .byte >aiClearEachRow
-                    .byte >aiDrawEntireBoard
-                    .byte >aiDEB2
-                    .byte >FlipBuffers
-                    .byte >FB0
-                    .byte >FB2
-                    .byte >FB3
-                    .byte >EraseStartPiece
-                    .byte >WriteStartPieceBlank
-                    .byte >MarchToTargetA
-                    .byte >MarchB
-                    .byte >MarchToTargetB
-                    .byte >MarchB2
-                    .byte >FinalFlash
-                    .byte >SpecialMoveFixup
-
-DrawVectorBANK
-
-                    .byte BANK_aiStartClearBoard
-                    .byte BANK_aiClearEachRow
-                    .byte BANK_aiDrawEntireBoard
-                    .byte BANK_aiDEB2
-                    .byte BANK_FlipBuffers
-                    .byte BANK_FB0
-                    .byte BANK_FB2
-                    .byte BANK_FB3
-                    .byte BANK_EraseStartPiece
-                    .byte BANK_WriteStartPieceBlank
-                    .byte BANK_MarchToTargetA
-                    .byte BANK_MarchB
-                    .byte BANK_MarchToTargetB
-                    .byte BANK_MarchB2
-                    .byte BANK_FinalFlash
-                    .byte BANK_SpecialMoveFixup
-
-#endif
-
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -335,9 +248,7 @@ DrawVectorBANK
                     pla
                     sta Board+RAM_WRITE,y
 
-.isablank           inc drawPhase
-
-                    PHASE AI_DEB2
+.isablank           PHASE AI_DEB2
                     rts
 
 
@@ -348,20 +259,15 @@ DrawVectorBANK
 
     ; Initialise for a new move
 
-
-
                     lda currentPly
                     sta SET_BANK_RAM
 
                     jsr NewPlyInitialise            ; zap movelist for this ply
 
-                    lda enPassantSquare             ; potentially set by move in previous ply
-                    sta enPassantPawn               ; grab enPassant flag from PLY for later checking
-
+                    ;lda enPassantSquare             ; potentially set by move in previous ply
+                    ;sta enPassantPawn               ; grab enPassant flag from PLY for later checking
 
                     PHASE AI_FB0
-
-                    inc drawPhase
                     rts
 
 
@@ -423,6 +329,11 @@ DrawVectorBANK
 
 ;---------------------------------------------------------------------------------------------------
 
+;lab dc "aiFB0"
+;mymac eqm aiFB0 + ..
+;mylist dv mymac, 1, 2, 3
+
+
     DEF aiFB0
     SUBROUTINE
 
@@ -440,23 +351,22 @@ DrawVectorBANK
                     lda piecelistIndex
                     and #15
                     cmp #0
-                    bne .wait
+                    beq .stop
 
-                    inc drawPhase
+                    lda INTIM
+                    cmp #15
+                    bcs aiFB0
+                    rts
 
 
-                    ldx sideToMove
+.stop               ldx sideToMove
                     bpl .player
 
                     PHASE AI_FB2                ; computer select move
                     rts
 
 
-.player              PHASE AI_StartMoveGen
-
-
-
-
+.player             PHASE AI_StartMoveGen
 .wait               rts
 
 
@@ -484,8 +394,7 @@ DrawVectorBANK
 
                     jsr MoveViaList
 
-.notComputer        inc drawPhase
-                    PHASE AI_FB3
+.notComputer        PHASE AI_FB3
 .halted             rts
 
 
@@ -578,7 +487,6 @@ colok
                     ora #FLAG_MOVED                 ; prevents usage in castling for K/R
                     sta Board+RAM_WRITE,y           ; and what's actually moving there
 
-                    inc drawPhase
                     PHASE AI_MarchB
 
 .unmoved            rts
@@ -613,7 +521,6 @@ colok
                     lda lastPiece
                     sta previousPiece
 
-                    inc drawPhase
                     PHASE AI_MarchB2
 
                     rts
@@ -641,10 +548,6 @@ colok
 
                     lda #0                          ; inter-move segment speed (can be 0)
                     sta drawDelay
-
-                    lda #MARCH
-                    sta drawPhase
-
                     PHASE AI_MarchToTargetA
 
                     rts
@@ -659,8 +562,6 @@ xhalt
                     lda #0
                     sta drawDelay
 
-                    inc drawPhase
-
                     PHASE AI_FinalFlash
                     rts
 
@@ -669,10 +570,6 @@ xhalt
 
     DEF aiSpecialMoveFixup
     SUBROUTINE
-
-                    lda #STARTMOVE
-                    sta drawPhase
-
 
                     PHASE AI_FlipBuffers
 
@@ -686,7 +583,26 @@ xhalt
                     beq .noEP
 
 
-    ; TODO - handle the en-passant capture and fixup
+IsEnpassant
+
+                    ldy enPassantPawn
+                    sty fromX12
+                    lda X12toBase64,y
+                    sta drawPieceNumber
+
+                    lda #RAMBANK_MOVES_RAM
+                    sta SET_BANK_RAM
+                    lda Board,y
+                    jsr CopySinglePiece             ; ERASE pawn
+
+
+                    lda sideToMove
+                    asl
+                    lda #RAMBANK_PLY
+                    adc #0
+                    sta SET_BANK_RAM
+
+                    jsr FixPieceList                ; REMOVE any captured object
 
 .noEP
 
@@ -1089,6 +1005,8 @@ HandlerVectorHI
                     lda PIECE_VECTOR_BANK,y
                     sta SET_BANK
 
+;    DEF BockCopyToRamBuffer
+
                     ldy #PIECE_SHAPE_SIZE-1
 .copy               lda (__ptr),y
                     sta __pieceShapeBuffer,y
@@ -1101,7 +1019,7 @@ HandlerVectorHI
                     lsr
                     lsr
                     eor #7
-                    tax
+                    tax                             ; ROW
 
                     lda drawPieceNumber
                     and #4
@@ -1146,6 +1064,8 @@ HandlerVectorHI
                     sta fromX12                     ; there MAY be no other-side piece at this square - that is OK!
                     lda #0
                     sta toX12                       ; --> deleted (square=0)
+
+
 
                     lda lastPiece
                     beq .notake
@@ -1210,7 +1130,7 @@ HandlerVectorHI
                     sta SET_BANK_RAM
 
                     lda Board,y
-                    bne .next
+                    bne .next                       ; don't draw dots on captures - they are flashed later
 
                     lda drawPieceNumber
                     pha
@@ -1218,6 +1138,7 @@ HandlerVectorHI
                     lda X12toBase64,y
                     sta drawPieceNumber
 
+                    ldx #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
                     jsr CopySetupForMarker
                     jsr InterceptMarkerCopy
 
@@ -1228,6 +1149,37 @@ HandlerVectorHI
                     sta SET_BANK
                     rts
 
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF SAFE_showPromoteOptions
+    SUBROUTINE
+
+    ; Pass          X = character shape # (?/N/B/R/Q)
+
+                    ldy toX12
+                    lda X12toBase64,y
+                    sta drawPieceNumber
+
+                    lda #RAMBANK_MOVES_RAM
+                    sta SET_BANK_RAM
+
+                    jsr CopySetupForMarker
+                    jsr InterceptMarkerCopy
+
+                    lda savedBank
+                    sta SET_BANK
+                    rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF SAFE_BackupBitmaps
+
+                    sty SET_BANK_RAM
+                    jsr SaveBitmap
+                    lda savedBank
+                    sta SET_BANK
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -1258,10 +1210,6 @@ HandlerVectorHI
 
 .next               ldx aiMoveIndex
                     bmi .skip                       ; no moves in list
-
-                    ;lda INTIM
-                    ;cmp #24 ;SAFETIME
-                    ;bcc .skip
 
                     lda #RAMBANK_PLY                ; white
                     sta SET_BANK_RAM

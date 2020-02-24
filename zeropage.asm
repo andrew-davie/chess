@@ -8,7 +8,6 @@
 drawPieceNumber                 ds 1        ; partial - square being drawn
 
 rnd                             ds 1        ; random
-drawPhase                       ds 1        ; ticks through the board draw process
 drawDelay                       ds 1
 lastSquare                      ds 1
 drawCount                       ds 1
@@ -40,7 +39,7 @@ sideToMove                      ds 1        ; d7 == side, 0=white, 128 = black
 fromSquare                      ds 1
 fromPiece                       ds 1
 toSquare                        ds 1
-toPiece                         ds 1
+;toPiece                         ds 1
 lastPiece                       ds 1
 previousPiece                   ds 1
 

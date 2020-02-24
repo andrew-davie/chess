@@ -141,8 +141,7 @@ BLACK_HOME_ROW     = 82                    ; >= this, on home row
 
 
     ; en-passant captures...
-EN_PASSANTING
-#if 1
+
                 lda enPassantPawn
                 beq .noEnPassant
 
@@ -156,7 +155,6 @@ EN_PASSANTING
                 EN_PASSANT _RIGHT, _UP
 
 .noEnPassant
-#endif
 
                 jmp MoveReturn
 
@@ -203,7 +201,6 @@ EN_PASSANTING
 
     ; en-passant captures...
 
-#if 1
                 lda enPassantPawn
                 beq .noEnPassant
 
@@ -216,8 +213,6 @@ EN_PASSANTING
                 EN_PASSANT _RIGHT, _DOWN
 
 .noEnPassant
-#endif
-
-Handle_BLANK    jmp MoveReturn
+                jmp MoveReturn
 
 ; EOF

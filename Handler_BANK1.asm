@@ -141,18 +141,37 @@
     DEF CopySetupForMarker
     SUBROUTINE
 
-                    ;lda #RAMBANK_MOVES_RAM
-                    ;sta SET_BANK_RAM
+                    lda drawPieceNumber ;0-63
+                    lsr
+                    lsr
+                    lsr
+                    clc
+                    adc drawPieceNumber
+                    and #1
+                    eor #1
+                    beq .white
+                    lda #36
+.white
+                    sta __pieceColour               ; actually SQUARE black/white
+
+                    txa
+                    clc
+                    adc __pieceColour
+                    sta __pieceColour
+
 
                     lda drawPieceNumber
                     and #3                          ; shift position in PF
                     clc
-                    adc #INDEX_WHITE_MARKER_on_BLACK_SQUARE_0
+                    adc __pieceColour
                     tay
                     rts
 
 
+#endif
+
 ;---------------------------------------------------------------------------------------------------
+
 
     DEF CopySetup
     SUBROUTINE
@@ -168,7 +187,7 @@
                     and #1
                     eor #1
                     beq .white
-                    lda #32
+                    lda #36
 .white              sta __pieceColour               ; actually SQUARE black/white
 
     ; PieceColour = 0 for white square, 28 for black square

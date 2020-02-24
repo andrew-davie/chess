@@ -58,7 +58,6 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
                     ldx #8
                     stx drawCount                   ; = bank
-                    inc drawPhase
 
                     lda #-1
                     sta highlight_row
@@ -81,8 +80,6 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
                     lda #63
                     sta drawPieceNumber
 
-                    inc drawPhase
-
                     PHASE AI_DrawEntireBoard
                     rts
 
@@ -95,7 +92,6 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
                     lda #BLANK
                     sta previousPiece
 
-                    inc drawPhase
                     PHASE AI_EraseStartPiece
                     rts
 
@@ -106,14 +102,13 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
                     lda toSquare
                     cmp fromSquare
-                    beq .idleErase
+                    ;beq .idleErase
 
                     lda #6                          ; on/off count
                     sta drawCount                   ; flashing for piece about to move
                     lda #0
                     sta drawDelay
 
-                    inc drawPhase
                     PHASE AI_WriteStartPieceBlank
 .idleErase          rts
 
@@ -146,9 +141,7 @@ deCount
                     jsr SAFE_CopySinglePiece        ; EOR-draw = flash
                     rts
 
-flashDone           inc drawPhase
-;                    PHASE AI_DEB2
-                    PHASE AI_MarchToTargetA
+flashDone           PHASE AI_MarchToTargetA
                     rts
 
 
@@ -161,13 +154,10 @@ flashDone           inc drawPhase
                     dec drawPieceNumber
                     bmi .comp
 
-                    dec drawPhase
                     PHASE AI_DrawEntireBoard
-
                     rts
 
-.comp               inc drawPhase
-                    PHASE AI_FlipBuffers
+.comp               PHASE AI_FlipBuffers
                     rts
 
 
@@ -185,9 +175,7 @@ flashDone           inc drawPhase
                     lda #6                          ; snail trail delay
                     sta drawDelay
 
-                    inc drawPhase
                     PHASE AI_MarchToTargetB
-
                     rts
 
 
@@ -213,8 +201,7 @@ flashDone           inc drawPhase
                     jsr SAFE_CopySinglePiece
                     rts
 
-flashDone2          inc drawPhase
-                    PHASE AI_SpecialMoveFixup
+flashDone2          PHASE AI_SpecialMoveFixup
                     rts
 
 
@@ -222,9 +209,6 @@ flashDone2          inc drawPhase
 
     DEF CastleFixup
     SUBROUTINE
-
-    jsr debug
-
 
     ; fixup any castling issues
     ; at this point the king has finished his two-square march
@@ -259,11 +243,7 @@ flashDone2          inc drawPhase
                     ora #ROOK                       ; preserve colour
                     sta fromPiece
 
-                    lda #CSL
-                    sta drawPhase
-
                     PHASE AI_FB3
-
                     rts
 
 .noCast

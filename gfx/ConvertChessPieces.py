@@ -57,6 +57,7 @@ class PieceTypes(Enum):
     QUEEN = 5
     KING = 6
     MARKER = 7
+    PROMOTE = 8
 
 
 pixel_no_to_bit_position = [

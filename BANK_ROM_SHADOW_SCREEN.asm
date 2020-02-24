@@ -72,6 +72,11 @@ SpriteBuffer2
     .byte %00011111
 #endif
 
+testxxx ds 32,5
+
+    OPTIONAL_PAGEBREAK BackupBitmap, ROW_BITMAP_SIZE
+
+BackupBitmap    ds ROW_BITMAP_SIZE
 
 ;---------------------------------------------------------------------------------------------------
 #if 1
@@ -88,6 +93,7 @@ SpriteBuffer2
 ;---------------------------------------------------------------------------------------------------
 
     DEF CopyPieceToRowBitmap
+    SUBROUTINE
 
                 ldy #17
                 bcs .rightSide
@@ -149,6 +155,7 @@ SpriteBuffer2
                 bpl .copyPieceR
 
                 rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -328,6 +335,70 @@ SMSPRITE8_1     lda SpriteBuffer2+8,y       ; 4
 
 .noCursor
                 rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF SaveBitmap
+    SUBROUTINE
+
+                ldy #71
+.fromTo         lda ChessBitmap,y
+                sta BackupBitmap+RAM_WRITE,y
+                lda ChessBitmap+72,y
+                sta BackupBitmap+72+RAM_WRITE,y
+                dey
+                bpl .fromTo
+                rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF RestoreBitmap
+    SUBROUTINE
+
+                ldy #71
+.fromTo         lda BackupBitmap,y
+                sta ChessBitmap+RAM_WRITE,y
+                lda BackupBitmap+72,y
+                sta ChessBitmap+72+RAM_WRITE,y
+                dey
+                bpl .fromTo
+                rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CopyTextToRowBitmap
+    SUBROUTINE
+
+    ; An OR-draw, used for placing matricies/text onscreen
+    ; Similar to the EOR - first copy data into __pieceShapeBuffer, then call this function
+    ; The draw can be bracketed by "SaveBitmap" and "RestoreBitmap" to leave screen
+    ; in original state once text disappears
+
+                ldy #71
+                bcs .rightSide
+
+.copy           lda __pieceShapeBuffer,y
+                ora ChessBitmap,y
+                sta ChessBitmap+RAM_WRITE,y
+                dey
+                bpl .copy
+
+                rts
+
+.rightSide
+
+    SUBROUTINE
+
+.copy           lda __pieceShapeBuffer,y
+                ora ChessBitmap+72,y
+                sta ChessBitmap+RAM_WRITE+72,y
+                dey
+                bpl .copy
+
+                rts
+
+;---------------------------------------------------------------------------------------------------
 
     CHECK_HALF_BANK_SIZE "ROM_SHADOW_SCREEN"
     ;VALIDATE_RAM_SIZE

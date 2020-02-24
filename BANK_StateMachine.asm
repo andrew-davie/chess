@@ -12,6 +12,8 @@
 PLAYER              = RAMBANK_PLY
 OPPONENT            = PLAYER + 1
 
+CURSOR_MOVE_SPEED               = 8
+
 ;---------------------------------------------------------------------------------------------------
 
 STARTSELECTPIECE = 1
@@ -46,8 +48,12 @@ AI_MarchToTargetB               = 26
 AI_MarchB2                      = 27
 AI_FinalFlash                   = 28
 AI_SpecialMoveFixup             = 29
-
-
+AI_InCheckBackup                = 30
+AI_InCheckDelay                 = 31
+AI_PromotePawnStart             = 32
+AI_RollPromotionPiece           = 33
+AI_ChoosePromotePiece           = 34
+AI_ChooseDebounce               = 35
 
     DEF AiVectorLO
 
@@ -81,6 +87,12 @@ AI_SpecialMoveFixup             = 29
                     .byte <aiMarchB2                        ; 27
                     .byte <aiFinalFlash                     ; 28
                     .byte <aiSpecialMoveFixup               ; 29
+                    .byte <aiInCheckBackup                  ; 30
+                    .byte <aiInCheckDelay                   ; 31
+                    .byte <aiPromotePawnStart               ; 32
+                    .byte <aiRollPromotionPiece             ; 33
+                    .byte <aiChoosePromotePiece             ; 34
+                    .byte <aiChooseDebounce                 ; 35
 
 
     DEF AiVectorHI
@@ -114,6 +126,13 @@ AI_SpecialMoveFixup             = 29
                     .byte >aiMarchB2                        ; 27
                     .byte >aiFinalFlash                     ; 28
                     .byte >aiSpecialMoveFixup               ; 29
+                    .byte >aiInCheckBackup                  ; 30
+                    .byte >aiInCheckDelay                   ; 31
+                    .byte >aiPromotePawnStart               ; 32
+                    .byte >aiRollPromotionPiece             ; 33
+                    .byte >aiChoosePromotePiece             ; 34
+                    .byte >aiChooseDebounce                 ; 35
+
 
     DEF AiVectorBANK
                     .byte BANK_aiBeginSelectMovePhase       ; 0
@@ -146,6 +165,83 @@ AI_SpecialMoveFixup             = 29
                     .byte BANK_aiMarchB2                    ; 27
                     .byte BANK_aiFinalFlash                 ; 28
                     .byte BANK_aiSpecialMoveFixup           ; 29
+                    .byte BANK_aiInCheckBackup              ; 30
+                    .byte BANK_aiInCheckDelay               ; 31
+                    .byte BANK_aiPromotePawnStart           ; 32
+                    .byte BANK_aiRollPromotionPiece         ; 33
+                    .byte BANK_aiChoosePromotePiece         ; 34
+                    .byte BANK_aiChooseDebounce             ; 35
+
+
+    DEF AiTimeRequired
+
+                    .byte 1                                  ; 0
+                    .byte 40                                 ; 1
+                    .byte 40                                 ; 2
+                    .byte 40                                 ; 3
+                    .byte 40                                 ; 4
+                    .byte 40                                 ; 5
+                    .byte 40                                 ; 6
+                    .byte 40                                 ; 7
+                    .byte 40                                 ; 8
+                    .byte 40                                 ; 9
+                    .byte 40                                 ; 10
+                    .byte 0                                  ; 11
+                    .byte 5                                  ; 12
+                    .byte 40                                 ; 13
+                    .byte 40                                 ; 14
+                    .byte 40                                 ; 15
+                    .byte 0                                  ; 16
+                    .byte 40                                 ; 17
+                    .byte 40                                 ; 18
+                    .byte 40                                 ; 19
+                    .byte 40                                 ; 20
+                    .byte 40                                 ; 21
+                    .byte 40                                 ; 22
+                    .byte 40                                 ; 23
+                    .byte 40                                 ; 24
+                    .byte 40                                 ; 25
+                    .byte 40                                 ; 26
+                    .byte 40                                 ; 27
+                    .byte 40                                 ; 28
+                    .byte 40                                 ; 29
+                    .byte 40                                 ; 30
+                    .byte 40                                 ; 31
+                    .byte 40                                 ; 32
+                    .byte 40                                 ; 33
+                    .byte 40                                 ; 34
+                    .byte 40                                 ; 35
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF AiSetupVectors
+    SUBROUTINE
+
+                    ldx aiPhase
+
+                    lda AiTimeRequired,x
+                    cmp INTIM                       ; is there enough time left?
+                    bcs .exit                       ; nope
+
+                    lda AiVectorLO,x
+                    sta __ptr
+                    lda AiVectorHI,x
+                    sta __ptr+1
+
+                    lda AiVectorBANK,x
+                    sta savedBank
+
+                    clc
+.exit               rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiNULL
+    SUBROUTINE
+
+    ; Vectored too when not enough processing time
+
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -186,9 +282,15 @@ AI_SpecialMoveFixup             = 29
                     lda piecelistIndex
                     and #15
                     cmp #0
-                    bne .wait                       ; still generating
+                    beq .swap
 
-                    lda sideToMove
+                    lda INTIM
+                    cmp #20
+                    bcs aiStepMoveGen               ; repeat!!
+                    rts
+
+
+.swap               lda sideToMove
                     eor #128
                     sta sideToMove
 
@@ -202,6 +304,8 @@ AI_SpecialMoveFixup             = 29
     DEF aiLookForCheck
     SUBROUTINE
 
+    jsr debug
+
     ; now we've finished generating the opponent moves
     ; See if the square our king is on is an attacked square (that is, it appears as a TO
     ; square in the opponent's movelist)
@@ -209,15 +313,66 @@ AI_SpecialMoveFixup             = 29
                     lda #PLAYER
                     sta currentPly
                     jsr SAFE_GetKingSquare          ; king's current X12 square
+
+    inc currentPly
                     jsr SAFE_IsSquareUnderAttack
+    dec currentPly
                     bcc .exit
 
-    ; king attack found!
-kk jmp kk
+    ; in check!
 
+                    lda #$40
+                    sta COLUBK
+
+                    lda #50
+                    sta mdelay
+
+                    lda #8
+                    sta drawCount               ; row #
+
+                    PHASE AI_InCheckBackup
+                    rts
 
 .exit               PHASE AI_BeginSelectMovePhase
                     rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiInCheckBackup
+    SUBROUTINE
+
+    ; We're about to draw some large text on the screen
+    ; Make a backup copy of all of the row bitmaps, so that we can restore once text is done
+
+                    dec drawCount
+                    bmi .exit                   ; done all rows
+                    ldy drawCount
+                    jmp SAFE_BackupBitmaps
+
+.exit               PHASE AI_InCheckDelay
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiInCheckDelay
+    SUBROUTINE
+
+
+                    dec mdelay
+                    bne .exit
+
+                    lda #0
+                    sta COLUBK
+
+                    PHASE AI_BeginSelectMovePhase
+
+
+
+.exit               rts
+
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -436,6 +591,11 @@ JoyMoveY        .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,  
                     lda aiMoveIndex
                     bpl .exit                           ; still drawing in this phase
 
+                    ;lda INTIM
+                    ;cmp #10
+                    ;bcs .valid
+
+
                     PHASE AI_SelectStartSquare
 
 .exit               rts
@@ -460,10 +620,7 @@ CAP_SPEED           = 8
                     jsr SAFE_getMoveIndex
                     sta aiMoveIndex
 
-.valid              ;lda INTIM
-                    ;cmp #22
-                    ;bcc .exit                  ; try to prevent time overflows
-
+.valid
                     jsr SAFE_showMoveCaptures
                     lda aiMoveIndex
                     bpl .exit
@@ -521,19 +678,20 @@ CAP_SPEED           = 8
 
     ; Part (a) move cursor around the board waiting for joystick press
 
-                    dec mdelay
-                    bpl .delaym
 
                     lda SWCHA
                     lsr
                     lsr
                     lsr
                     lsr
+                    tay
 
                     cmp #15
-                    beq .cursor
+                    beq .cursor             ; nothing pressed - skip delays
 
-                    tay
+                    dec mdelay
+                    bpl .delaym
+
 
                     clc
                     lda highlight_row
@@ -550,11 +708,15 @@ CAP_SPEED           = 8
                     sta highlight_col
 .abandon2
 
-                    lda #5
+                    lda #CURSOR_MOVE_SPEED
                     sta mdelay
+                    jsr setCursorPriority
+                    rts
 
-.cursor             jsr setCursorPriority
 
+.cursor             lda #0
+                    sta mdelay
+                    jsr setCursorPriority
 
 .delaym             rts
 
@@ -668,11 +830,29 @@ CAP_SPEED           = 8
                     jsr SAFE_GetPiece
 
                     lda aiPiece
+                    and #PIECE_MASK
                     sta fromPiece
-                    ora #FLAG_MOVED                ; for K/R prevents usage in castling
-                    sta toPiece
+                    ;ora #FLAG_MOVED                ; for K/R prevents usage in castling
+                    ;sta toPiece
+
+                    ldy fromX12
+                    jsr SAFE_GetPieceFromBoard
+
+                    and #PIECE_MASK
+                    cmp fromPiece
+                    bne .promote
+
+
+                    ldx #0
+                    and #FLAG_ENPASSANT
+                    beq .noep
+                    ldx toX12
+.noep               stx enPassantPawn               ; capturable square for en-passant move
 
                     PHASE AI_FB3
+                    rts
+
+.promote            PHASE AI_PromotePawnStart
                     rts
 
 ;---------------------------------------------------------------------------------------------------
@@ -683,6 +863,156 @@ CAP_SPEED           = 8
     ; Effectively halt at this point until the other state machine resets the AI state machine
 
                     rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiPromotePawnStart
+    SUBROUTINE
+
+                    lda #0
+                    sta aiFlashPhase
+                    sta aiFlashDelay
+
+                    ldy aiToSquare
+                    sty drawPieceNumber
+
+                    jsr SAFE_CopySinglePiece            ; remove existing piece if capture
+
+                    PHASE AI_RollPromotionPiece
+.exit               rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiRollPromotionPiece
+    SUBROUTINE
+
+    ; Flash the '?' and wait for an UDLR move
+
+                    lda SWCHA
+                    and #$F0
+                    cmp #$F0
+                    beq .nojoy
+
+                    lda #0
+                    sta aiFlashDelay
+
+                    lda aiFlashPhase
+                    and #1
+                    beq .even
+
+.nojoy              dec aiFlashDelay
+                    bpl .exit
+
+                    lda #10
+                    sta aiFlashDelay
+
+                    ldx #INDEX_WHITE_PROMOTE_on_WHITE_SQUARE_0
+                    jsr SAFE_showPromoteOptions
+
+                    inc aiFlashPhase
+
+.exit               rts
+
+.even
+                    lda #0
+                    sta aiPiece             ; cycles as index to NBRQ
+
+                    PHASE AI_ChoosePromotePiece
+                    rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiChoosePromotePiece
+    SUBROUTINE
+
+
+    ; Question-mark phase has exited via joystick direction
+    ; Now we cycle through the selectable pieces
+
+
+                    lda INPT4
+                    bmi .nobut                      ; no press
+
+    ; button pressed but make sure phase is correct for exit
+
+                    lda aiFlashPhase
+                    and #1
+                    beq .chosen                     ; button pressed --> selection made
+
+.nobut              lda SWCHA
+                    and #$F0
+                    cmp #$F0
+                    beq .odd                        ; no direction pressed
+
+    ; joystick but make sure phase is correct
+
+                    lda #0
+                    sta aiFlashDelay
+
+                    lda aiFlashPhase
+                    and #1
+                    bne .odd                        ; must wait until piece undrawn
+
+    ; cycle to the next promotable piece (N/B/R/Q)
+    ; TODO; use joy table for mod instead of just incrementing all the time
+
+                    clc
+                    lda aiPiece
+                    adc #1
+                    and #3
+                    sta aiPiece
+
+                    PHASE AI_ChooseDebounce         ; wait for release
+
+.odd                dec aiFlashDelay
+                    bpl .exit
+
+                    lda #10
+                    sta aiFlashDelay
+
+                    inc aiFlashPhase
+
+                    ldy aiPiece
+                    ldx .promotePiece,y
+                    jsr SAFE_showPromoteOptions
+
+.exit               rts
+
+
+.chosen
+                    ldx aiPiece
+                    lda .promoteType,x
+                    sta fromPiece
+
+                    jsr SAFE_CopySinglePiece            ; restore existing piece
+
+                    PHASE AI_FB3
+                    rts
+
+    OPTIONAL_PAGEBREAK .promotePiece, 4
+.promotePiece       .byte INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0
+                    .byte INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0
+                    .byte INDEX_WHITE_ROOK_on_WHITE_SQUARE_0
+                    .byte INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
+
+    OPTIONAL_PAGEBREAK .promoteType, 4
+.promoteType        .byte KNIGHT, BISHOP, ROOK, QUEEN
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiChooseDebounce
+    SUBROUTINE
+
+    ; We've changed promotion piece, but wait for joystick to be released
+
+                    lda SWCHA
+                    and #$F0
+                    cmp #$F0
+                    bne .exit                       ; wait while joystick still pressed
+
+                    PHASE AI_ChoosePromotePiece
+.exit               rts
 
 ;---------------------------------------------------------------------------------------------------
 

@@ -1,20 +1,9 @@
-;   Unknown mnemonic/macro
+;   immediate
 
-	processor 6502
-	ORG $1000
+    processor 6502
+    org $1000
 
-    jmp .forward
-
-
-	lda #1
-	TEST
-	lda #1
-
-    MAC TEST
-    lda #2
-    ENDM
-
-.forward
+    lda $$50             ; should be an error?
 
 
 ; EOF

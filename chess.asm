@@ -71,6 +71,8 @@ RAM_SIZE                    = $400
 RAM_WRITE                   = $400              ; add this to RAM address when doing writes
 
 
+
+
 ; Platform constants:
 PAL                 = %10
 PAL_50              = PAL|0
@@ -97,6 +99,10 @@ SCANLINES_NTSC      = 276                       ; NTSC 276 (Desert Falcon does 2
 SCANLINES_NTSC      = 262                       ; NTSC 262
     ENDIF
 SCANLINES_PAL       = 312
+
+
+TIME_PART_2         = 38
+TIME_PART_1         = 55
 
 
 ;------------------------------------------------------------------------------
@@ -361,6 +367,7 @@ RND_EOR_VAL = $FE ;B4
     include "BANK_ROM_SHADOW_SCREEN.asm"
     include "BANK_CHESS_INCLUDES.asm"
     include "BANK_StateMachine.asm"
+    include "BANK_TEXT_OVERLAYS.asm"
 
     include "titleScreen.asm"
 
