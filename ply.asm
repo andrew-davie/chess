@@ -262,9 +262,11 @@ InitPieceList
 
 #else ; test position...
 
-    .byte WHITE|WP, 75
-    .byte BLACK|BP, 87
+    .byte WHITE|WP, 85
+    .byte WHITE|WP, 82
+    .byte BLACK|BP, 86
         .byte BLACK|K, 96
+        .byte BLACK|Q, 94
     .byte 0
 
 #endif
@@ -282,14 +284,7 @@ InitPieceList
                 stx moveIndex+RAM_WRITE             ; no valid moves
                 sta bestMove+RAM_WRITE
 
-#if !TEST_POSITION
-                lda #0
-#endif
-
-#if TEST_POSITION
-                lda #66
-#endif
-                lda #0
+                lda enPassantPawn                   ; flag/square from last actual move made
                 sta enPassantSquare+RAM_WRITE       ; no enPassant available
 
 
@@ -326,6 +321,9 @@ InitPieceList
                 lda PieceSquare,x
                 beq .noPieceHere                ; piece deleted
                 sta currentSquare
+
+                lda enPassantSquare             ; saved from previous side's move...
+                sta enPassantPawn               ; used for move generation
 
                 jsr MoveForSinglePiece
 
@@ -477,36 +475,28 @@ iterPieces      jsr GenerateMovesForNextPiece
     ; If en-passant flag set (pawn doing opening double-move) then record its square as the
     ; en-passant square for the ply.
 
-#if 1
- ;TODO BANK/BUGGERED AFTER
-                lda currentPly
-                sta SET_BANK_RAM
-
-                ldy #0
-                lda MovePiece,x
-                and #FLAG_ENPASSANT
-                beq .notEP
-                ldy toSquare
-.notEP          sty enPassantSquare+RAM_WRITE
-
-#endif
+                    ldy #0
+                    lda MovePiece,x
+                    and #FLAG_ENPASSANT
+                    beq .notEP
+                    ldy toSquare
+.notEP              ;sty enPassantPawn
 
 
-                lda MovePiece,x
-                and #~FLAG_ENPASSANT                 ;? unsure
-                ora #FLAG_MOVED                ; prevents usage in castling (for K/R)
-                sta fromPiece                   ; MIGHT have castling bit set, which should be handled last
+                    lda MovePiece,x
+                    and #~FLAG_ENPASSANT ;test
+                    ora #FLAG_MOVED                 ; prevents usage in castling (for K/R)
+                    sta fromPiece                   ; MIGHT have castling bit set, which should be handled last
 
+                    ldx fromSquare
+                    ldy X12toBase64,x
+                    sty fromSquare                  ; B64
 
-                ldx fromSquare
-                ldy X12toBase64,x
-                sty fromSquare          ;B64
+                    ldx toSquare
+                    ldy X12toBase64,x
+                    sty toSquare                    ; B64
 
-                ldx toSquare
-                ldy X12toBase64,x
-                sty toSquare            ;B64
-
-halted          rts
+halted              rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -526,6 +516,7 @@ halted          rts
                     bpl .scan
 
 .scanned            lda MovePiece,y
+                    and #PIECE_MASK
                     sta aiPiece
 
 .failed             rts
@@ -597,6 +588,7 @@ halted          rts
 .fail               rts
 
 .found              lda MovePiece,y
+                    ;and #PIECE_MASK        castling fails if enabled
                     sta aiPiece
                     rts
 

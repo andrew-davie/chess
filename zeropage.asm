@@ -13,8 +13,8 @@ lastSquare                      ds 1
 drawCount                       ds 1
 fromX12                         ds 1
 toX12                           ds 1
-highlight_row                   ds 2
-highlight_col                   ds 2
+highlight_row                   ds 1
+highlight_col                   ds 1
 mdelay                          ds 1
 ccur                            ds 1
 savedBank                       ds 1        ; switched-in bank for FIXED returns

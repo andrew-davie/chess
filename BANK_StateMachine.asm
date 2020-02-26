@@ -16,201 +16,78 @@ CURSOR_MOVE_SPEED               = 8
 
 ;---------------------------------------------------------------------------------------------------
 
-STARTSELECTPIECE = 1
 
-AI_BeginSelectMovePhase         = 0
-AI_SelectStartSquare            = 1
-AI_StartSquareSelected          = 2
-AI_DrawMoves                    = 3
-AI_ShowMoveCaptures             = 4
-AI_SlowFlash                    = 5
-AI_DrawTargetSquares            = 6
-AI_SelectDestinationSquare      = 7
-AI_Quiescent                    = 8
-AI_Halt                         = 9
-AI_ReselectDebounce             = 10
-AI_StartMoveGen                 = 11
-AI_StepMoveGen                  = 12
-AI_LookForCheck                 = 13
-AI_StartClearBoard              = 14
-AI_ClearEachRow                 = 15
-AI_DrawEntireBoard              = 16
-AI_DEB2                         = 17
-AI_FlipBuffers                  = 18
-AI_FB0                          = 19
-AI_FB2                          = 20
-AI_FB3                          = 21
-AI_EraseStartPiece              = 22
-AI_WriteStartPieceBlank         = 23
-AI_MarchToTargetA               = 24
-AI_MarchB                       = 25
-AI_MarchToTargetB               = 26
-AI_MarchB2                      = 27
-AI_FinalFlash                   = 28
-AI_SpecialMoveFixup             = 29
-AI_InCheckBackup                = 30
-AI_InCheckDelay                 = 31
-AI_PromotePawnStart             = 32
-AI_RollPromotionPiece           = 33
-AI_ChoosePromotePiece           = 34
-AI_ChooseDebounce               = 35
+P SET 0
+    MAC AIN
+AI_{1} SET P
+P SET P+1
+    ENDM
 
+    MAC LO
+    .byte <ai{1}
+    ENDM
+
+    MAC HI
+    .byte >ai{1}
+    ENDM
+
+    MAC BK
+    .byte BANK_ai{1}
+    ENDM
+
+    MAC TM
+    .byte {2}
+    ENDM
+
+    MAC TABDEF ; {1} = macro to use
+        ; and per-line, {1} = #, {2} = name, {3} = time
+    {1} BeginSelectMovePhase, 40
+    {1} SelectStartSquare, 40
+    {1} StartSquareSelected, 40
+    {1} DrawMoves, 40
+    {1} ShowMoveCaptures, 40
+    {1} SlowFlash, 40
+    {1} DrawTargetSquares, 40
+    {1} SelectDestinationSquare, 40
+    {1} Quiescent, 40
+    {1} Halt, 40
+    {1} ReselectDebounce, 40
+    {1} StartMoveGen, 40
+    {1} StepMoveGen, 40
+    {1} LookForCheck, 40
+    {1} StartClearBoard, 40
+    {1} ClearEachRow, 40
+    {1} DrawEntireBoard, 40
+    {1} DEB2, 40
+    {1} FlipBuffers, 40
+    {1} FB0, 40
+    {1} FB2, 40
+    {1} FB3, 40
+    {1} WriteStartPieceBlank, 40
+    {1} MarchToTargetA, 40
+    {1} MarchB, 40
+    {1} MarchToTargetB, 40
+    {1} MarchB2, 40
+    {1} FinalFlash, 40
+    {1} SpecialMoveFixup, 40
+    {1} InCheckBackup, 40
+    {1} InCheckDelay, 40
+    {1} PromotePawnStart, 40
+    {1} RollPromotionPiece, 40
+    {1} ChoosePromotePiece, 40
+    {1} ChooseDebounce, 40
+    ENDM
+
+    TABDEF AIN
     DEF AiVectorLO
-
-                    .byte <aiBeginSelectMovePhase           ; 0
-                    .byte <aiSelectStartSquare              ; 1
-                    .byte <aiStartSquareSelected            ; 2
-                    .byte <aiDrawMoves                      ; 3
-                    .byte <aiShowMoveCaptures               ; 4
-                    .byte <aiSlowFlash                      ; 5
-                    .byte <aiDrawTargetSquares              ; 6
-                    .byte <aiSelectDestinationSquare        ; 7
-                    .byte <aiQuiescent                      ; 8
-                    .byte <aiHalt                           ; 9
-                    .byte <aiReselectDebounce               ; 10
-                    .byte <aiStartMoveGen                   ; 11
-                    .byte <aiStepMoveGen                    ; 12
-                    .byte <aiLookForCheck                   ; 13
-                    .byte <aiStartClearBoard                ; 14
-                    .byte <aiClearEachRow                   ; 15
-                    .byte <aiDrawEntireBoard                ; 16
-                    .byte <aiDEB2                           ; 17
-                    .byte <aiFlipBuffers                    ; 18
-                    .byte <aiFB0                            ; 19
-                    .byte <aiFB2                            ; 20
-                    .byte <aiFB3                            ; 21
-                    .byte <aiEraseStartPiece                ; 22
-                    .byte <aiWriteStartPieceBlank           ; 23
-                    .byte <aiMarchToTargetA                 ; 24
-                    .byte <aiMarchB                         ; 25
-                    .byte <aiMarchToTargetB                 ; 26
-                    .byte <aiMarchB2                        ; 27
-                    .byte <aiFinalFlash                     ; 28
-                    .byte <aiSpecialMoveFixup               ; 29
-                    .byte <aiInCheckBackup                  ; 30
-                    .byte <aiInCheckDelay                   ; 31
-                    .byte <aiPromotePawnStart               ; 32
-                    .byte <aiRollPromotionPiece             ; 33
-                    .byte <aiChoosePromotePiece             ; 34
-                    .byte <aiChooseDebounce                 ; 35
-
-
+    TABDEF LO
     DEF AiVectorHI
-                    .byte >aiBeginSelectMovePhase           ; 0
-                    .byte >aiSelectStartSquare              ; 1
-                    .byte >aiStartSquareSelected            ; 2
-                    .byte >aiDrawMoves                      ; 3
-                    .byte >aiShowMoveCaptures               ; 4
-                    .byte >aiSlowFlash                      ; 5
-                    .byte >aiDrawTargetSquares              ; 6
-                    .byte >aiSelectDestinationSquare        ; 7
-                    .byte >aiQuiescent                      ; 8
-                    .byte >aiHalt                           ; 9
-                    .byte >aiReselectDebounce               ; 10
-                    .byte >aiStartMoveGen                   ; 11
-                    .byte >aiStepMoveGen                    ; 12
-                    .byte >aiLookForCheck                   ; 13
-                    .byte >aiStartClearBoard                ; 14
-                    .byte >aiClearEachRow                   ; 15
-                    .byte >aiDrawEntireBoard                ; 16
-                    .byte >aiDEB2                           ; 17
-                    .byte >aiFlipBuffers                    ; 18
-                    .byte >aiFB0                            ; 19
-                    .byte >aiFB2                            ; 20
-                    .byte >aiFB3                            ; 21
-                    .byte >aiEraseStartPiece                ; 22
-                    .byte >aiWriteStartPieceBlank           ; 23
-                    .byte >aiMarchToTargetA                 ; 24
-                    .byte >aiMarchB                         ; 25
-                    .byte >aiMarchToTargetB                 ; 26
-                    .byte >aiMarchB2                        ; 27
-                    .byte >aiFinalFlash                     ; 28
-                    .byte >aiSpecialMoveFixup               ; 29
-                    .byte >aiInCheckBackup                  ; 30
-                    .byte >aiInCheckDelay                   ; 31
-                    .byte >aiPromotePawnStart               ; 32
-                    .byte >aiRollPromotionPiece             ; 33
-                    .byte >aiChoosePromotePiece             ; 34
-                    .byte >aiChooseDebounce                 ; 35
-
-
+    TABDEF HI
     DEF AiVectorBANK
-                    .byte BANK_aiBeginSelectMovePhase       ; 0
-                    .byte BANK_aiSelectStartSquare          ; 1
-                    .byte BANK_aiStartSquareSelected        ; 2
-                    .byte BANK_aiDrawMoves                  ; 3
-                    .byte BANK_aiShowMoveCaptures           ; 4
-                    .byte BANK_aiSlowFlash                  ; 5
-                    .byte BANK_aiDrawTargetSquares          ; 6
-                    .byte BANK_aiSelectDestinationSquare    ; 7
-                    .byte BANK_aiQuiescent                  ; 8
-                    .byte BANK_aiHalt                       ; 9
-                    .byte BANK_aiReselectDebounce           ; 10
-                    .byte BANK_aiStartMoveGen               ; 11
-                    .byte BANK_aiStepMoveGen                ; 12
-                    .byte BANK_aiLookForCheck               ; 13
-                    .byte BANK_aiStartClearBoard            ; 14
-                    .byte BANK_aiClearEachRow               ; 15
-                    .byte BANK_aiDrawEntireBoard            ; 16
-                    .byte BANK_aiDEB2                       ; 17
-                    .byte BANK_aiFlipBuffers                ; 18
-                    .byte BANK_aiFB0                        ; 19
-                    .byte BANK_aiFB2                        ; 20
-                    .byte BANK_aiFB3                        ; 21
-                    .byte BANK_aiEraseStartPiece            ; 22
-                    .byte BANK_aiWriteStartPieceBlank       ; 23
-                    .byte BANK_aiMarchToTargetA             ; 24
-                    .byte BANK_aiMarchB                     ; 25
-                    .byte BANK_aiMarchToTargetB             ; 26
-                    .byte BANK_aiMarchB2                    ; 27
-                    .byte BANK_aiFinalFlash                 ; 28
-                    .byte BANK_aiSpecialMoveFixup           ; 29
-                    .byte BANK_aiInCheckBackup              ; 30
-                    .byte BANK_aiInCheckDelay               ; 31
-                    .byte BANK_aiPromotePawnStart           ; 32
-                    .byte BANK_aiRollPromotionPiece         ; 33
-                    .byte BANK_aiChoosePromotePiece         ; 34
-                    .byte BANK_aiChooseDebounce             ; 35
-
-
+    TABDEF BK
     DEF AiTimeRequired
+    TABDEF TM
 
-                    .byte 1                                  ; 0
-                    .byte 40                                 ; 1
-                    .byte 40                                 ; 2
-                    .byte 40                                 ; 3
-                    .byte 40                                 ; 4
-                    .byte 40                                 ; 5
-                    .byte 40                                 ; 6
-                    .byte 40                                 ; 7
-                    .byte 40                                 ; 8
-                    .byte 40                                 ; 9
-                    .byte 40                                 ; 10
-                    .byte 0                                  ; 11
-                    .byte 5                                  ; 12
-                    .byte 40                                 ; 13
-                    .byte 40                                 ; 14
-                    .byte 40                                 ; 15
-                    .byte 0                                  ; 16
-                    .byte 40                                 ; 17
-                    .byte 40                                 ; 18
-                    .byte 40                                 ; 19
-                    .byte 40                                 ; 20
-                    .byte 40                                 ; 21
-                    .byte 40                                 ; 22
-                    .byte 40                                 ; 23
-                    .byte 40                                 ; 24
-                    .byte 40                                 ; 25
-                    .byte 40                                 ; 26
-                    .byte 40                                 ; 27
-                    .byte 40                                 ; 28
-                    .byte 40                                 ; 29
-                    .byte 40                                 ; 30
-                    .byte 40                                 ; 31
-                    .byte 40                                 ; 32
-                    .byte 40                                 ; 33
-                    .byte 40                                 ; 34
-                    .byte 40                                 ; 35
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -234,14 +111,6 @@ AI_ChooseDebounce               = 35
                     clc
 .exit               rts
 
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiNULL
-    SUBROUTINE
-
-    ; Vectored too when not enough processing time
-
-                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -304,8 +173,6 @@ AI_ChooseDebounce               = 35
     DEF aiLookForCheck
     SUBROUTINE
 
-    jsr debug
-
     ; now we've finished generating the opponent moves
     ; See if the square our king is on is an attacked square (that is, it appears as a TO
     ; square in the opponent's movelist)
@@ -359,7 +226,6 @@ AI_ChooseDebounce               = 35
     DEF aiInCheckDelay
     SUBROUTINE
 
-
                     dec mdelay
                     bne .exit
 
@@ -367,11 +233,7 @@ AI_ChooseDebounce               = 35
                     sta COLUBK
 
                     PHASE AI_BeginSelectMovePhase
-
-
-
 .exit               rts
-
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -381,9 +243,7 @@ AI_ChooseDebounce               = 35
 
                     lda #4
                     sta highlight_row
-                    sta highlight_row+1
                     sta highlight_col
-                    sta highlight_col+1
 
                     lda #0
                     sta mdelay              ;?
@@ -407,15 +267,13 @@ AI_ChooseDebounce               = 35
                     dec ccur                        ; pulse colour for valid squares
                     jsr setCursorColours
 
-                    cpy #-1
-                    beq .noButton                   ; illegal square
+                    tya
+                    ora INPT4
+                    bmi .exit                       ; illegal square or no button press
 
-                    lda INPT4
-                    bmi .noButton
                     PHASE AI_StartSquareSelected
-.noButton
 
-                    rts
+.exit               rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -477,6 +335,8 @@ AI_ChooseDebounce               = 35
 ;                      0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111
 JoyMoveX        .byte     0,   0,   0,   0,   0,   1,   1,   1,   0,  -1,  -1,  -1,   0,   0,   0,   0
 JoyMoveY        .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,   0,   0,   1,  -1,   0
+JoyCombined     .byte     0,   0,   0,   0,   0,   1,   1,   1,   0,  -1,  -1,  -1,   0,   1,  -1,   0
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -486,8 +346,6 @@ JoyMoveY        .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,  
     ; Mark all the valid moves for the selected piece on the board
     ; and then start pulsing the piece
     ; AND start choosing for selection of TO square
-
-
 
     ; Iterate the movelist and for all from squares which = drawPieceNumber
     ; then draw a BLANK at that square
@@ -520,8 +378,6 @@ JoyMoveY        .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,  
 
     DEF aiDrawMoves
     SUBROUTINE
-
-
                     dec ccur
                     jsr setCursorColours
 
@@ -568,6 +424,7 @@ JoyMoveY        .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,  
 
 .unsure             rts
 
+
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiDrawTargetSquares
@@ -583,7 +440,6 @@ JoyMoveY        .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,  
 
                     lda aiMoveIndex
                     bpl .valid
-
                     jsr SAFE_getMoveIndex
                     sta aiMoveIndex
 
@@ -595,10 +451,10 @@ JoyMoveY        .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,  
                     ;cmp #10
                     ;bcs .valid
 
-
                     PHASE AI_SelectStartSquare
 
 .exit               rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -619,8 +475,8 @@ CAP_SPEED           = 8
                     bpl .valid                  ; guaranteed -1 on 1st call
                     jsr SAFE_getMoveIndex
                     sta aiMoveIndex
-
 .valid
+
                     jsr SAFE_showMoveCaptures
                     lda aiMoveIndex
                     bpl .exit
@@ -630,6 +486,7 @@ CAP_SPEED           = 8
                     PHASE AI_SlowFlash
 
 .exit               rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -768,11 +625,7 @@ CAP_SPEED           = 8
                     lda aiFlashPhase
                     and #1
                     beq .done
-
-    ; EOR-phase incorrect - force quick fix to allow next-frame button detect
-
-                    lda #1
-                    sta aiFlashDelay
+                    sta aiFlashDelay                 ; EOR-phase incorrect - force quick fix to allow next-frame button detect
                     rts
 
 .cancel
@@ -829,8 +682,17 @@ CAP_SPEED           = 8
 
                     jsr SAFE_GetPiece
 
+                    ldx #0
                     lda aiPiece
-                    and #PIECE_MASK
+                    and #FLAG_ENPASSANT|FLAG_MOVED
+                    cmp #FLAG_ENPASSANT
+                    bne .noep                       ; HAS moved, or not en-passant
+                    ldx toX12                       ; this IS an en-passantable opening, so record the square
+.noep               stx enPassantPawn               ; capturable square for en-passant move
+
+
+                    lda aiPiece
+                    and #PIECE_MASK     ; TODO << crashes stuff
                     sta fromPiece
                     ;ora #FLAG_MOVED                ; for K/R prevents usage in castling
                     ;sta toPiece
@@ -838,16 +700,9 @@ CAP_SPEED           = 8
                     ldy fromX12
                     jsr SAFE_GetPieceFromBoard
 
-                    and #PIECE_MASK
-                    cmp fromPiece
-                    bne .promote
-
-
-                    ldx #0
-                    and #FLAG_ENPASSANT
-                    beq .noep
-                    ldx toX12
-.noep               stx enPassantPawn               ; capturable square for en-passant move
+                    eor fromPiece
+                    and #PIECE_MASK                 ; if not the same piece board/movelist...
+                    bne .promote                    ; promote a pawn
 
                     PHASE AI_FB3
                     rts
@@ -876,10 +731,12 @@ CAP_SPEED           = 8
                     ldy aiToSquare
                     sty drawPieceNumber
 
-                    jsr SAFE_CopySinglePiece            ; remove existing piece if capture
+                    jsr SAFE_PromoteStart
+;                    jsr SAFE_CopySinglePiece            ; remove existing piece if capture
 
+.nopiece
                     PHASE AI_RollPromotionPiece
-.exit               rts
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -915,10 +772,18 @@ CAP_SPEED           = 8
 .exit               rts
 
 .even
-                    lda #0
+                    lda #3                  ; QUEEN
                     sta aiPiece             ; cycles as index to NBRQ
 
-                    PHASE AI_ChoosePromotePiece
+                    lda #0
+                    sta aiFlashDelay
+
+                    inc aiFlashPhase
+
+                    ldx #INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0        ;TODO: fix for colour
+                    jsr SAFE_showPromoteOptions
+
+                    PHASE AI_ChooseDebounce
                     rts
 
 ;---------------------------------------------------------------------------------------------------
@@ -936,14 +801,25 @@ CAP_SPEED           = 8
 
     ; button pressed but make sure phase is correct for exit
 
+                    lda #0
+                    sta aiFlashDelay
+
                     lda aiFlashPhase
                     and #1
                     beq .chosen                     ; button pressed --> selection made
 
-.nobut              lda SWCHA
+.nobut
+
+                    lda SWCHA
                     and #$F0
                     cmp #$F0
                     beq .odd                        ; no direction pressed
+
+                    lsr
+                    lsr
+                    lsr
+                    lsr
+                    tay
 
     ; joystick but make sure phase is correct
 
@@ -959,7 +835,7 @@ CAP_SPEED           = 8
 
                     clc
                     lda aiPiece
-                    adc #1
+                    adc JoyCombined,y
                     and #3
                     sta aiPiece
 
@@ -968,7 +844,7 @@ CAP_SPEED           = 8
 .odd                dec aiFlashDelay
                     bpl .exit
 
-                    lda #10
+.force              lda #10
                     sta aiFlashDelay
 
                     inc aiFlashPhase
@@ -981,11 +857,16 @@ CAP_SPEED           = 8
 
 
 .chosen
-                    ldx aiPiece
+                    lda aiPiece
+                    and #PIECE_MASK
+                    tax
+
                     lda .promoteType,x
                     sta fromPiece
 
-                    jsr SAFE_CopySinglePiece            ; restore existing piece
+    jsr SAFE_PromoteStart
+
+;                    jsr SAFE_CopySinglePiece            ; restore existing piece
 
                     PHASE AI_FB3
                     rts
@@ -1011,12 +892,15 @@ CAP_SPEED           = 8
                     cmp #$F0
                     bne .exit                       ; wait while joystick still pressed
 
+                    lda #50
+                    sta aiFlashDelay
+
                     PHASE AI_ChoosePromotePiece
 .exit               rts
 
 ;---------------------------------------------------------------------------------------------------
 
-;    align 256
+    align 256
     DEF PositionSprites
     SUBROUTINE
 
@@ -1046,7 +930,7 @@ CAP_SPEED           = 8
 ; for a RESP0,x write
 
 
-            align 256
+;            align 256
 
 fineAdjustBegin
 

@@ -193,16 +193,6 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-;    DEF SAFE_PhasedProcessor
-;    SUBROUTINE
-
-;                    jsr PhaseJump
-;                    lda savedBank
-;                    sta SET_BANK
-;                    rts
-
-;---------------------------------------------------------------------------------------------------
-
     DEF CallClear
     SUBROUTINE
 
@@ -263,9 +253,6 @@ _rts                rts
                     sta SET_BANK_RAM
 
                     jsr NewPlyInitialise            ; zap movelist for this ply
-
-                    ;lda enPassantSquare             ; potentially set by move in previous ply
-                    ;sta enPassantPawn               ; grab enPassant flag from PLY for later checking
 
                     PHASE AI_FB0
                     rts
@@ -354,7 +341,7 @@ _rts                rts
                     beq .stop
 
                     lda INTIM
-                    cmp #15
+                    cmp #18
                     bcs aiFB0
                     rts
 
@@ -417,8 +404,8 @@ _rts                rts
 
     ; Start marching towards destination
 
-                    lda drawDelay
-                    beq .progress
+                    ;lda drawDelay
+                    ;beq .progress
                     ;dec drawDelay
                     ;rts
 .progress
@@ -497,11 +484,11 @@ colok
     DEF aiMarchToTargetB
     SUBROUTINE
 
-                    lda drawDelay
-                    beq .mb
+                    ;lda drawDelay
+                    ;beq .mb
                     ;dec drawDelay
                     ;rts
-.mb
+;.mb
 
 
     ; now we want to undraw the piece in the old square
@@ -582,10 +569,15 @@ xhalt
                     and #FLAG_ENPASSANT
                     beq .noEP
 
+    ; get the en-passant square, saved in the ply by the previous made-move
 
-IsEnpassant
+                    lda currentPly
+                    sta SET_BANK_RAM
 
-                    ldy enPassantPawn
+                    ldy enPassantSquare
+    IF ASSERTS
+.eperror            beq .eperror                    ; CANNOT have EP *AND* no capture square!!
+    ENDIF
                     sty fromX12
                     lda X12toBase64,y
                     sta drawPieceNumber
@@ -627,7 +619,6 @@ IsEnpassant
                     lda Board,x
                     sta currentPiece
 
-    ;***********************************************************************************************
     IF ASSERTS
     SUBROUTINE
     ; DEBUG: Make sure we're looking at correct colour
@@ -635,18 +626,15 @@ IsEnpassant
 .lock               bmi .lock
                     lda currentPiece
     ENDIF
-    ;***********************************************************************************************
 
                     and #PIECE_MASK
                     tay
 
-    ;***********************************************************************************************
     IF ASSERTS
     ; DEBUG: Make sure we have an actual piece, not an empty square
     SUBROUTINE
 .lock               beq .lock                       ; catch errors
     ENDIF
-    ;***********************************************************************************************
 
                     lda HandlerVectorLO-1,y
                     sta __vector
@@ -969,11 +957,20 @@ HandlerVectorHI
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SAFE_CopySinglePiece
+    DEF SAFE_PromoteStart
     SUBROUTINE
 
+        lda #RAMBANK_MOVES_RAM
+        sta SET_BANK_RAM
+        lda Board,y
+        ;and #PIECE_MASK
+        ;beq .nopiece
+
+
+    DEF SAFE_CopySinglePiece
+
                     jsr CopySinglePiece
-                    lda savedBank
+.nopiece            lda savedBank
                     sta SET_BANK
                     rts
 
@@ -1005,27 +1002,26 @@ HandlerVectorHI
                     lda PIECE_VECTOR_BANK,y
                     sta SET_BANK
 
-;    DEF BockCopyToRamBuffer
-
                     ldy #PIECE_SHAPE_SIZE-1
 .copy               lda (__ptr),y
                     sta __pieceShapeBuffer,y
                     dey
                     bpl .copy
 
-
                     lda drawPieceNumber
                     lsr
                     lsr
                     lsr
                     eor #7
-                    tax                             ; ROW
+                    sta SET_BANK_RAM
 
-                    lda drawPieceNumber
-                    and #4
-                    cmp #4                          ; cc = left side, cs = right side
+                    ;lda drawPieceNumber
+                    ;and #4
+                    ;cmp #4                          ; cc = left side, cs = right side
 
-                    stx SET_BANK_RAM
+    ; The above code is effectively ALREADY executed, because D2 already rotated onto Carry bit
+
+
                     jmp CopyPieceToRowBitmap
 
 ;---------------------------------------------------------------------------------------------------
@@ -1111,14 +1107,10 @@ HandlerVectorHI
 .next               ldx aiMoveIndex
                     bmi .skip
 
-                    ;lda INTIM
-                    ;cmp #SAFETIME
-                    ;bcc .skip
-
-                    lda #RAMBANK_PLY                ; white
-                    sta SET_BANK_RAM
-
                     dec aiMoveIndex
+
+                    lda #RAMBANK_PLY                ; current player
+                    sta SET_BANK_RAM
 
                     lda MoveFrom,x
                     cmp aiFromSquareX12
@@ -1126,14 +1118,26 @@ HandlerVectorHI
 
                     ldy MoveTo,x
 
+    ; If it's a pawn promote (duplicate "to" AND piece different (TODO) then skip others)
+
+                    tya
+.sk                 dex
+                    bmi .prom
+                    cmp MoveTo,x
+                    bne .prom
+
+                    dec aiMoveIndex
+                    dec aiMoveIndex
+                    dec aiMoveIndex
+.prom
+
+
+
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
 
                     lda Board,y
                     bne .next                       ; don't draw dots on captures - they are flashed later
-
-                    lda drawPieceNumber
-                    pha
 
                     lda X12toBase64,y
                     sta drawPieceNumber
@@ -1141,9 +1145,6 @@ HandlerVectorHI
                     ldx #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
                     jsr CopySetupForMarker
                     jsr InterceptMarkerCopy
-
-                    pla
-                    sta drawPieceNumber
 
 .skip               lda savedBank
                     sta SET_BANK
@@ -1163,8 +1164,8 @@ HandlerVectorHI
 
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
-
                     jsr CopySetupForMarker
+
                     jsr InterceptMarkerCopy
 
                     lda savedBank
@@ -1211,9 +1212,10 @@ HandlerVectorHI
 .next               ldx aiMoveIndex
                     bmi .skip                       ; no moves in list
 
+                    dec aiMoveIndex
+
                     lda #RAMBANK_PLY                ; white
                     sta SET_BANK_RAM
-                    dec aiMoveIndex
 
                     lda MoveFrom,x
                     cmp aiFromSquareX12
@@ -1225,18 +1227,28 @@ HandlerVectorHI
                     sta SET_BANK_RAM
 
                     lda Board,y
+                    and #PIECE_MASK
                     beq .next
 
-                    lda drawPieceNumber
-                    pha
+    lda #RAMBANK_PLY
+    sta SET_BANK_RAM
+    tya
+.sk    dex
+    bmi .prom
+    cmp MoveTo,x
+    bne .prom
+
+    dec aiMoveIndex
+    dec aiMoveIndex
+    dec aiMoveIndex
+
+.prom
 
                     lda X12toBase64,y
                     sta drawPieceNumber
 
                     jsr CopySinglePiece
 
-                    pla
-                    sta drawPieceNumber
 
 .skip               lda savedBank
                     sta SET_BANK

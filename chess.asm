@@ -29,7 +29,7 @@ NO                      = 0
 
 ; assemble diagnostics. Remove for release.
 ASSERTS                 = 1
-TEST_POSITION           = 0                   ; 0=normal, 1 = setup test position
+TEST_POSITION           = 0                  ; 0=normal, 1 = setup test position
 
 ;===================================
 FINAL_VERSION                  = NO           ; this OVERRIDES any selections below and sets everything correct for a final release

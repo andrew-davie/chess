@@ -156,6 +156,7 @@ __colour_table          ds 2
 
     OVERLAY "SAFE_showMoveOptions"
 __moveDotColour          ds 2
+__movePiece              ds 1
     VALIDATE_OVERLAY
 ;---------------------------------------------------------------------------------------------------
 

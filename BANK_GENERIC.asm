@@ -92,16 +92,8 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
                     lda #BLANK
                     sta previousPiece
 
-                    PHASE AI_EraseStartPiece
-                    rts
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiEraseStartPiece
-    SUBROUTINE
-
-                    lda toSquare
-                    cmp fromSquare
+                    ;lda toSquare
+                    ;cmp fromSquare
                     ;beq .idleErase
 
                     lda #6                          ; on/off count
@@ -239,7 +231,7 @@ flashDone2          PHASE AI_SpecialMoveFixup
                     sty fromX12
 
                     lda fromPiece
-                    and #128
+                    and #128                        ; colour bit
                     ora #ROOK                       ; preserve colour
                     sta fromPiece
 
@@ -247,16 +239,11 @@ flashDone2          PHASE AI_SpecialMoveFixup
                     rts
 
 .noCast
-
                     lda sideToMove
                     eor #128
                     sta sideToMove                  ; swap
 
-                    ;bmi .skip                       ; not human's turn?
-
-                    ;PHASE AI_Halt ;tmp SartMoveGen
-
-.skip               rts
+                    rts
 
 
 KSquare             .byte 2,6,58,62
