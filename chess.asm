@@ -18,8 +18,8 @@ ORIGIN_RAM      SET 0
 
 ;FIXED_BANK             = 3 * 2048           ;-->  8K ROM tested OK
 ;FIXED_BANK              = 7 * 2048          ;-->  16K ROM tested OK
-FIXED_BANK             = 15 * 2048           ; ->> 32K
-;FIXED_BANK             = 31 * 2048           ; ->> 64K
+;FIXED_BANK             = 15 * 2048           ; ->> 32K
+FIXED_BANK             = 31 * 2048           ; ->> 64K
 ;FIXED_BANK             = 239 * 2048         ;--> 480K ROM tested OK (KK/CC2 compatibility)
 ;FIXED_BANK             = 127 * 2048         ;--> 256K ROM tested OK
 ;FIXED_BANK             = 255 * 2048         ;--> 512K ROM tested OK (CC2 can't handle this)
@@ -29,7 +29,12 @@ NO                      = 0
 
 ; assemble diagnostics. Remove for release.
 ASSERTS                 = 1
-TEST_POSITION           = 0                  ; 0=normal, 1 = setup test position
+TEST_POSITION           = 0                ; 0=normal, 1 = setup test position
+PVSP                    = 0                 ; player versus player =1
+
+WHITE_PLAYER = 0        ; human
+BLACK_PLAYER = 0        ; human
+
 
 ;===================================
 FINAL_VERSION                  = NO           ; this OVERRIDES any selections below and sets everything correct for a final release
@@ -158,10 +163,10 @@ BANK_{1}        SET _CURRENT_BANK
         IF (>( * + {2} -1 )) > ( >* )
 EARLY_LOCATION  SET *
             ALIGN 256
-            ECHO "PAGE BREAK INSERTED FOR ", {1}
-            ECHO "REQUESTED SIZE = ", {2}
-            ECHO "WASTED SPACE = ", *-EARLY_LOCATION
-            ECHO "PAGEBREAK LOCATION = ", *
+            ECHO "PAGE BREAK INSERTED FOR", {1}
+            ECHO "REQUESTED SIZE =", {2}
+            ECHO "WASTED SPACE =", *-EARLY_LOCATION
+            ECHO "PAGEBREAK LOCATION =", *
         ENDIF
         LIST ON
     ENDM
@@ -198,14 +203,74 @@ EARLY_LOCATION  SET *
         LIST ON
     ENDM
 
+;---------------------------------------------------------------------------------------------------
+
+    ; Defines a variable of the given size, making sure it doesn't cross a page
+    MAC VARIABLE ; {name, size}
+    OPTIONAL_PAGEBREAK "Variable", {2}
+{1} ds {2}
+    ENDM
+
 
 ;---------------------------------------------------------------------------------------------------
 
     MAC DEF               ; name of subroutine
 BANK_{1}        SET _CURRENT_BANK         ; bank in which this subroutine resides
-;    SUBROUTINE      ; doesn't work in a macro!
 {1}                                     ; entry point
+TEMPORARY_VAR SET Overlay
+TEMPORARY_OFFSET SET 0
+    SUBROUTINE
     ENDM
+
+
+;---------------------------------------------------------------------------------------------------
+
+    MAC ALLOCATE
+    OPTIONAL_PAGEBREAK "Table", {2}
+    DEF {1}
+    ENDM
+
+
+;---------------------------------------------------------------------------------------------------
+
+TEMPORARY_OFFSET SET 0
+
+    MAC VARBASE ; {offset}
+TEMPORARY_OFFSET SET {1}
+    ENDM
+
+VAR_LEVEL0 = 0
+VAR_LEVEL1 = 16
+VAR_LEVEL2 = 32
+
+
+    ; Define a temporary variable for use in a subroutine
+    ; Will allocate appropriate bytes, and also check for overflow of the available overlay buffer
+
+    MAC VAR ; { name, size }
+{1} SET TEMPORARY_VAR
+TEMPORARY_VAR SET TEMPORARY_VAR + TEMPORARY_OFFSET + {2}
+
+OVERLAY_DELTA SET TEMPORARY_VAR - Overlay
+        IF OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+MAXIMUM_REQUIRED_OVERLAY_SIZE SET OVERLAY_DELTA
+        ENDIF
+        IF OVERLAY_DELTA > OVERLAY_SIZE
+            ECHO "Temporary Variable", {1}, "overflow!"
+            ERR
+        ENDIF
+        LIST ON
+    ENDM
+
+
+
+
+;---------------------------------------------------------------------------------------------------
+
+    MAC TAG ; {ident/tag}
+; {0}
+    ENDM
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -292,6 +357,39 @@ ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
                 jsr {1}
     ENDM
 
+
+    MAC TIMECHECK ; {ident}, {branch if out of time}
+                    lda INTIM
+                    cmp #SPEEDOF_{1}
+                    bcc {2}
+    ENDM
+
+
+    MAC TIMING ; {label}, {cycles}
+SPEEDOF_{1} = ({2}/64) + 1
+    ENDM
+
+
+;---------------------------------------------------------------------------------------------------
+
+    MAC X12B64TABLE ; {name}
+        ; Use this table to
+        ;   a) Determine if a square is valid (-1 = NO)
+        ;   b) Move pieces without addition.  e.g., "lda ValidSquareTable+10,x" will let you know
+        ;      if a white pawn on square "x" can move "up" the board.
+
+        .byte -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+        .byte -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+        .byte -1, -1,  0,  1,  2,  3,  4,  5,  6,  7
+        .byte -1, -1,  8,  9, 10, 11, 12, 13, 14, 15
+        .byte -1, -1, 16, 17, 18, 19, 20, 21, 22, 23
+        .byte -1, -1, 24, 25, 26, 27, 28, 29, 30, 31
+        .byte -1, -1, 32, 33, 34, 35, 36, 37, 38, 39
+        .byte -1, -1, 40, 41, 42, 43, 44, 45, 46, 47
+        .byte -1, -1, 48, 49, 50, 51, 52, 53, 54, 55
+        .byte -1, -1, 56, 57, 58, 59, 60, 61, 62, 63
+    ENDM
+
 ;---------------------------------------------------------------------------------------------------
 
     #include "zeropage.asm"
@@ -370,10 +468,12 @@ RND_EOR_VAL = $FE ;B4
     include "BANK_TEXT_OVERLAYS.asm"
 
     include "titleScreen.asm"
+    include "BANK_RECON.asm"
 
     ; The handlers for piece move generation
     include "Handler_BANK1.asm"
     include "ply.asm"
+    include "BANK_EVAL.asm"
 
     ; MUST BE LAST...
     include "BANK_FIXED.asm"

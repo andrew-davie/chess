@@ -5,6 +5,18 @@
     NEWRAMBANK MOVES_RAM                ; RAM bank for holding the following ROM shadow
     NEWBANK MOVES                       ; copy the following bank to RAMBANK_MOVES_RAM
 
+    DEF .GetBoard
+                    ds 4                ; dummy to switch here
+                    ldx savedBank
+                    lda Board,y
+                    stx SET_BANK_RAM
+                    ds 1
+    DEF .Get64
+                    ds 4
+                    ldy X12toBase64b,x
+                    lda currentPly
+                    sta SET_BANK_RAM
+                    ds 1
 
 ; Board is a 10 x 12 object which simplifies the generation of moves
 ; The squares marked '░░░' are illegal. The ("X12") index of each square is the left
@@ -53,13 +65,15 @@
     ; and sause "segfaults". 22 is the max offset (a knight move). These spare bytes can
     ; be re-used for something else - we just need to guarantee there are 22 of them there
 
-    ds 22                      ; so indexing of "ValidSquare-22,x" won't fail
+    ALLOCATE Valid, 120 + 80 ;+ 22
+
+    ;ORG Valid+22
+    ;ds 22                      ; so indexing of "ValidSquare-22,x" won't fail
 
     ; Note, we will never index INTO the above bytes - x will always be >= 22
     ; We just need to make sure that the actual indexing will not have an address before
     ; the index of outside the page.
 
-    OPTIONAL_PAGEBREAK "ValidSquare", 120 + 80
     DEF ValidSquare
 
 
@@ -106,7 +120,10 @@
     include "Handler_KING.asm"
 
 
-    OPTIONAL_PAGEBREAK "Base64ToIndex", 64
+;---------------------------------------------------------------------------------------------------
+
+
+    ALLOCATE _Base64ToIndex, 64
     DEF Base64ToIndex
     ; Convert from 0-63 numbering into an index into the Chessboard
 
@@ -122,24 +139,10 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF PutAllPieces
-    SUBROUTINE
-
-    ; Call SAFEly
-
-                    ldy #99
-.zeroBoard          lda Board,y
-                    jsr SAFE_PutPieceToBoard
-
-                    dey
-                    bpl .zeroBoard
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF CopySetupForMarker
     SUBROUTINE
+
+        VAR __pieceColour, 1
 
                     lda drawPieceNumber ;0-63
                     lsr
@@ -237,6 +240,11 @@ PieceToShape
     .byte INDEX_BLACK_KING_on_WHITE_SQUARE_0
 
 
+
+
+
+;    ds 20
+
 ;---------------------------------------------------------------------------------------------------
 
 
@@ -246,6 +254,13 @@ PieceToShape
 ; There is space here (1K) for use as ROM
 ; but NOT when the above bank is switched in as RAM, of course!
 
+
+;---------------------------------------------------------------------------------------------------
+
+    ALLOCATE X12toBase64b, 100
+    X12B64TABLE
+
+            CHECK_BANK_SIZE "HANDLER_BANK_1 -- full 2K"
 
 
 

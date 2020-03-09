@@ -54,7 +54,8 @@ MAXIMUM_REQUIRED_OVERLAY_SIZE       SET 0
 ; FOR SAFETY, DO NOT USE THIS AREA DIRECTLY (ie: NEVER reference 'Overlay' in the code)
 ; ADD AN OVERLAY FOR EACH ROUTINE'S USE, SO CLASHES CAN BE EASILY CHECKED
 
-Overlay         ds OVERLAY_SIZE       ;--> overlay (share) variables
+    DEF Overlay
+    ds OVERLAY_SIZE       ;--> overlay (share) variables
 END_OF_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
@@ -64,101 +65,15 @@ END_OF_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
 
-    OVERLAY "PieceBufferOverlay"
-; used in CopyPieceFromRAMBufferToScreen
-; used in CopyPieceToRAMBuffer
-; used in ClearChessBitmap
-; used in CopyPieceToRowBitmap
-__pieceShapeBuffer      ds PIECE_SHAPE_SIZE
-__ptr                   ds 2                ; pointer to data
-__ptr2                  ds 2                ; pointer to data
-    VALIDATE_OVERLAY
+    ; Some overlays are used across multiple routines/calls, and they will need to be defined
+    ; "globally" in this file.
+
+    VAR __pieceShapeBuffer, PIECE_SHAPE_SIZE
+    VAR __ptr, 2
+    VAR __ptr2, 2
 
 ;---------------------------------------------------------------------------------------------------
 
-    OVERLAY "CopyROMShadowToRAM"
-__CopyCount             ds 1
-__ROM_SourceBank        ds 1
-__index                 ds 1
-    VALIDATE_OVERLAY
-
-;---------------------------------------------------------------------------------------------------
-
-    OVERLAY "DrawTheChessScreen"
-__rows                  ds 1
-    VALIDATE_OVERLAY
-
-;---------------------------------------------------------------------------------------------------
-
-    OVERLAY "SetupShadowRAM"
-__destinationBank       ds 1
-__sourceBank            ds 1
-    VALIDATE_OVERLAY
-
-;---------------------------------------------------------------------------------------------------
-    OVERLAY "DrawPiece"
-__pieceColour           ds 1
-__boardc                ds 1
-
-    VALIDATE_OVERLAY
-
-
-;---------------------------------------------------------------------------------------------------
-    OVERLAY "InitPly"
-__plyBank               ds 1
-    VALIDATE_OVERLAY
-
-;---------------------------------------------------------------------------------------------------
-    OVERLAY "RandomPiece"
-__tempx           ds 1
-    VALIDATE_OVERLAY
-
-    OVERLAY "Overlay000"
-__fromRow                       ds 1
-    VALIDATE_OVERLAY
-;---------------------------------------------------------------------------------------------------
-    OVERLAY "Overlay001"
-__from                       ds 1
-__to                         ds 1
-    VALIDATE_OVERLAY
-;---------------------------------------------------------------------------------------------------
-
-    OVERLAY "Handlers"
-__piece                 ds 1
-__vector                ds 2
-    VALIDATE_OVERLAY
-
-;---------------------------------------------------------------------------------------------------
-    OVERLAY "Movers"
-__fromCol               ds 1
-__toCol                 ds 1
-__temp                  ds 1
-
-    VALIDATE_OVERLAY
-
-;---------------------------------------------------------------------------------------------------
-    OVERLAY "checkPieces"
-__x                     ds 1
-__bank                  ds 1
-
-    VALIDATE_OVERLAY
-
-;---------------------------------------------------------------------------------------------------
-    OVERLAY "aiSelectStartSquare"
-__cursorColour          ds 1
-    VALIDATE_OVERLAY
-
-;---------------------------------------------------------------------------------------------------
-    OVERLAY "TitleScreen"
-__colour_table          ds 2
-    VALIDATE_OVERLAY
-;---------------------------------------------------------------------------------------------------
-
-    OVERLAY "SAFE_showMoveOptions"
-__moveDotColour          ds 2
-__movePiece              ds 1
-    VALIDATE_OVERLAY
-;---------------------------------------------------------------------------------------------------
 
     ORG END_OF_OVERLAY
     ECHO "---- END OF OVERLAYS ----"

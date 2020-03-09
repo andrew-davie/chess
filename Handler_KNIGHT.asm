@@ -6,6 +6,7 @@
 ;---------------------------------------------------------------------------------------------------
 
     DEF Handle_KNIGHT
+    SUBROUTINE
 
     ; x = currentSquare (square the piece is on)
     ; currentPiece (with flags/colour attached)

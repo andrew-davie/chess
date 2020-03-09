@@ -3,12 +3,12 @@
 
     DEFINE_1K_SEGMENT DECODE_LEVEL_SHADOW
 
-    #if 0
+#if 0
     IF PLUSCART = YES
             .byte "ChessAPI.php", #0      //TODO: change!
 	        .byte "pluscart.firmaplus.de", #0
     ENDIF
-    #endif
+#endif
 
 STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
@@ -86,11 +86,52 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiFB3
+    DEF aiPrepForPhysicalMove
     SUBROUTINE
+    TAG MOVE_SELECTED (AI)
+
+
+    ; Both computer and human have now seleted a move, and converge here
+
+
+    ; fromPiece     piece doing the move
+    ; fromSquare    starting square BASE64
+    ; toSquare      ending square BASE64
+    ; fromX12       starting square X12
+    ; toX12         ending square X12
+
+;    -previousPiece
+;    +fromPiece
+
+
 
                     lda #BLANK
                     sta previousPiece
+
+
+    ;TODO: evaluation mods
+
+
+#if 0
+    get piece
+                    eor #128
+                    cmp #128                        ; negate colour --> C
+
+                    and #PIECE_MASK
+                    beq .nopiece
+
+    ;TOD: we're taking a piece - at this point we could adjust the
+    ; we've negated the colour so the captured piece will be negatively-added, so to speak
+
+            tay
+
+            ldx #BANK_AddPieceMaterialValue
+            sta SET_BANK
+            jsr AddPieceMaterialValue
+#endif
+
+
+
 
                     ;lda toSquare
                     ;cmp fromSquare
@@ -139,7 +180,7 @@ flashDone           PHASE AI_MarchToTargetA
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiDEB2
+    DEF aiDrawPart2
     SUBROUTINE
 
                     jsr SAFE_CopySinglePiece
@@ -235,13 +276,19 @@ flashDone2          PHASE AI_SpecialMoveFixup
                     ora #ROOK                       ; preserve colour
                     sta fromPiece
 
-                    PHASE AI_FB3
+                    PHASE AI_PrepForPhysicalMove
+
+    ; in this siutation (castle, rook moving) we do not change sides yet!
+    ; SO we DO change sides so the later change is a no-change...
+
+                    lda sideToMove
+                    eor #128
+                    sta sideToMove
+
                     rts
 
 .noCast
-                    lda sideToMove
-                    eor #128
-                    sta sideToMove                  ; swap
+
 
                     rts
 
@@ -257,6 +304,8 @@ RSquareEnd64        .byte 3,5,59,61
 
     DEF SetupBanks
     SUBROUTINE
+
+        VAR __plyBank, 1
 
     ; SAFE
 

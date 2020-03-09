@@ -1,6 +1,7 @@
 ; Copyright (C)2020 Andrew Davie
 ; andrew@taswegian.com
 
+
 ;---------------------------------------------------------------------------------------------------
 ; Define the RAM banks
 ; A "PLY" bank represents all the data required on any single ply of the search tree.
@@ -11,16 +12,27 @@
 
 
 MAX_PLY  = 6
-    NEWRAMBANK PLY                ; RAM bank for holding the following ROM shadow
+    NEWRAMBANK PLY                                  ; RAM bank for holding the following ROM shadow
     REPEAT MAX_PLY-1
         NEWRAMBANK .DUMMY_PLY
     REPEND
+
 
 ;---------------------------------------------------------------------------------------------------
 ; and now the ROM shadow - this is copied to ALL of the RAM ply banks
 
     NEWBANK BANK_PLY                   ; ROM SHADOW
 
+    DEF XGetBoard
+                    ldx #RAMBANK_MOVES_RAM
+                    stx SET_BANK_RAM                ; now executing in other bank
+                    ds 7
+                    rts
+    DEF XGet64
+                    lda #BANK_X12toBase64b
+                    sta SET_BANK
+                    ds 7
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 ; The piece-lists
@@ -32,20 +44,48 @@ MAX_PLY  = 6
 ; WHITE pieces in bank BANK_PLY
 ; BLACK pieces in bank BANK_PLY+1
 
-    OPTIONAL_PAGEBREAK "PieceLists", 48
 
-SortedPieceList         ds 16           ; indexes into PieceSquare, PieceType.  NEG = no piece
-PieceSquare             ds 16
-PieceType               ds 16
+INFINITY                = 32767
 
-PieceListPtr            ds 1
+
+    VARIABLE SortedPieceList, 16                    ; indexes into PieceSquare, etc. NEG = no piece
+    VARIABLE PieceSquare, 16
+    VARIABLE PieceType, 16
+    VARIABLE PieceMaterialValueLO, 16
+    VARIABLE PieceMaterialValueHI, 16
+    VARIABLE PiecePositionValueLO, 16
+    VARIABLE PiecePositionValueHI, 16
+    VARIABLE PieceListPtr, 1
+    VARIABLE plyValue, 2                            ; 16-bit signed score value from alphabeta
+    VARIABLE bestMove, 1                            ; index of move (-1 = none)
+    VARIABLE SavedEvaluation, 2                     ; THIS node's evaluation - used for reverting moves!
+
 
 ;---------------------------------------------------------------------------------------------------
 
-infinity                = 32767
+MAX_MOVES = 80
 
-plyValue                ds 2            ; 16-bit signed score value
-bestMove                ds 1            ; index of move (-1 = none)
+    VARIABLE MoveFrom, MAX_MOVES
+    VARIABLE MoveTo, MAX_MOVES
+    VARIABLE MovePiece, MAX_MOVES
+
+
+;---------------------------------------------------------------------------------------------------
+
+; The X12 square at which a pawn CAN be taken en-passant. Normally 0.
+; This is set/cleared whenever a move is made. The flag is indicated in the move description.
+
+    VARIABLE enPassantSquare, 1
+
+
+;---------------------------------------------------------------------------------------------------
+; Move tables hold piece moves for this current ply
+
+    VARIABLE moveIndex, 1                           ; points to first available 'slot' for move storage
+
+
+;---------------------------------------------------------------------------------------------------
+
 
 #if 0
 ; reverting a move
@@ -105,40 +145,6 @@ value = -new_piece + orig_piece - captured_piece
 
 
 
-
-
-
-
-
-
-
-;---------------------------------------------------------------------------------------------------
-
-; The X12 square at which a pawn CAN be taken en-passant. Normally 0.
-; This is set/cleared whenever a move is made. The flag is indicated in the move description.
-
-enPassantSquare         ds 1
-
-;---------------------------------------------------------------------------------------------------
-; Move tables hold piece moves for this current ply
-
-moveIndex       ds 1                ; points to first available 'slot' for move storage
-
-
-MAX_MOVES = 128
-
-    OPTIONAL_PAGEBREAK "MoveFrom", MAX_MOVES
-    DEF MoveFrom
-    ds MAX_MOVES
-
-    OPTIONAL_PAGEBREAK "MoveTo", MAX_MOVES
-    DEF MoveTo
-    ds MAX_MOVES
-
-    OPTIONAL_PAGEBREAK "MovePiece", MAX_MOVES
-    DEF MovePiece
-    ds MAX_MOVES
-
 ;---------------------------------------------------------------------------------------------------
 
     DEF InitPieceLists
@@ -153,6 +159,13 @@ MAX_MOVES = 128
                 sta PieceType+RAM_WRITE,x
                 dex
                 bpl .clearLists
+
+
+    ; TODO: move the following as they're called 2x due to double-call of InitPiecLists
+
+                sta Evaluation
+                sta Evaluation+1                    ; tracks CURRENT value of everything (signed 16-bit)
+
 
     ; General inits that are moved out of FIXED....
 
@@ -178,6 +191,11 @@ MAX_MOVES = 128
 #if ASSERTS
 
     DEF checkPiecesBank
+    SUBROUTINE
+
+        VAR __x, 1
+        VAR __bank, 1
+
     ; odd usage - switches between concurrent bank code
 
                 ldx #15
@@ -188,7 +206,7 @@ MAX_MOVES = 128
 
                 stx __x
 
-                jsr SAFE_GetPieceFromBoard
+                jsr XGetBoard
 .fail           beq .fail
                 cmp #-1
 .fail2          beq .fail2
@@ -200,7 +218,11 @@ MAX_MOVES = 128
                 rts
 
 
+;---------------------------------------------------------------------------------------------------
+
     DEF DIAGNOSTIC_checkPieces
+    SUBROUTINE
+
     ; SAFE call
     ; DIAGNOSTIC ONLY
     ; Scan the piecelist and the board square it points to and make sure non blank, non -1
@@ -214,62 +236,12 @@ MAX_MOVES = 128
 
 #endif
 
+
 ;---------------------------------------------------------------------------------------------------
 
 InitPieceList
 
-#if !TEST_POSITION
-
-    .byte WHITE|Q, 25
-    .byte WHITE|B, 24
-    .byte WHITE|B, 27
-    .byte WHITE|R, 22
-    .byte WHITE|R, 29
-    .byte WHITE|N, 23
-    .byte WHITE|N, 28
-
-    .byte WHITE|WP, 35
-    .byte WHITE|WP, 36
-    .byte WHITE|WP, 34
-    .byte WHITE|WP, 37
-    .byte WHITE|WP, 33
-    .byte WHITE|WP, 38
-    .byte WHITE|WP, 32
-    .byte WHITE|WP, 39
-
-    .byte WHITE|K, 26
-
-    .byte BLACK|Q, 95
-    .byte BLACK|B, 94
-    .byte BLACK|B, 97
-    .byte BLACK|R, 92
-    .byte BLACK|R, 99
-    .byte BLACK|N, 93
-    .byte BLACK|N, 98
-
-    .byte BLACK|BP, 85
-    .byte BLACK|BP, 86
-    .byte BLACK|BP, 84
-    .byte BLACK|BP, 87
-    .byte BLACK|BP, 83
-    .byte BLACK|BP, 88
-    .byte BLACK|BP, 82
-    .byte BLACK|BP, 89
-
-    .byte BLACK|K, 96
-
-    .byte 0 ;end
-
-#else ; test position...
-
-    .byte WHITE|WP, 85
-    .byte WHITE|WP, 82
-    .byte BLACK|BP, 86
-        .byte BLACK|K, 96
-        .byte BLACK|Q, 94
-    .byte 0
-
-#endif
+    include "setup_board.asm"
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -285,21 +257,30 @@ InitPieceList
                 sta bestMove+RAM_WRITE
 
                 lda enPassantPawn                   ; flag/square from last actual move made
-                sta enPassantSquare+RAM_WRITE       ; no enPassant available
-
+                sta enPassantSquare+RAM_WRITE       ; used for backtracking, to reset the flag
 
     ; The evaluation of the current position is a signed 16-bit number
     ; +ve is good for the current side.
     ; This is used during the alpha-beta search for finding best position
+    ; Note, this is not the same as the 'Evaluation' which is the current value at ply -- it is the
+    ; alphabeta best/worst value of the node!!
 
-                lda #<(-infinity)
+                lda #<(-INFINITY)
                 sta plyValue+RAM_WRITE
-                lda #>(-infinity)
+                lda #>(-INFINITY)
                 sta plyValue+RAM_WRITE+1
 
+    ; The value of the material (signed, 16-bit) is restored to the saved value at the reversion
+    ; of a move. It's quicker to restore than to re-sum. So we save the current evaluation at the
+    ; start of each new ply.
+
+                lda Evaluation
+                sta SavedEvaluation+RAM_WRITE
+                lda Evaluation+1
+                sta SavedEvaluation+RAM_WRITE+1
 
                 lda #0
-                sta piecelistIndex
+                sta piecelistIndex                  ; move traversing
 
                 rts
 
@@ -322,19 +303,62 @@ InitPieceList
                 beq .noPieceHere                ; piece deleted
                 sta currentSquare
 
-                lda enPassantSquare             ; saved from previous side's move...
-                sta enPassantPawn               ; used for move generation
+                ;lda enPassantSquare             ; saved from previous side's move...
+                ;sta enPassantPawn               ; used for move generation
 
                 jsr MoveForSinglePiece
 
 .noPieceHere    inc piecelistIndex
+
+
+                    lda piecelistIndex
+                    and #15
+                    cmp #0
+                    beq .stop
+
+                    lda INTIM
+                    cmp #22
+                    bcs GenerateMovesForNextPiece
+
+
+.stop            rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF GetMaterialValue
+    SUBROUTINE
+
+        VAR __material, 2
+
+#if 0
+                lda #0
+                sta __material
+                sta __material+1
+
+                ldx #15
+.sum            lda PieceSquare,x
+                beq .dead
+
+                clc
+                lda __material
+                adc PieceMaterialValueLO,x
+                sta __material
+                lda __material+1
+                adc PieceMaterialValueHI,x
+                sta __material+1
+
+.dead           dex
+                bpl .sum
+#endif
                 rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF FixPieceList
+    SUBROUTINE
 
-    ; uses OVERLAY Overlay001
     ; fromX12            X12 square piece moved from
     ; toX12              X12 square piece moved to (0 to erase piece from list)
 
@@ -357,9 +381,28 @@ InitPieceList
                 sta PieceSquare+RAM_WRITE,x
                 rts
 
+
 ;---------------------------------------------------------------------------------------------------
 
     DEF alphaBeta
+    SUBROUTINE
+
+
+#if 0
+
+1. create movelist
+2. init score
+
+
+
+
+
+
+
+#endif
+
+
+
 
  rts
                 inc currentPly
@@ -414,15 +457,26 @@ iterPieces      jsr GenerateMovesForNextPiece
 ;---------------------------------------------------------------------------------------------------
 
     DEF RevertMove
+    SUBROUTINE
 
     ; backtrack after a move, restoring things to the way they were
 
 
+    ; piecelist
+        ; piece1, piece2
+    ; board
+    ; enpassantpawn
+    ; materialvalue
+    ; positionvalue
+    ; score?
 
 
+    ; restore the board evaluation to what it was at the start of this ply
 
-
-
+                lda SavedEvaluation
+                sta Evaluation
+                lda SavedEvaluation+1
+                sta Evaluation+1
 
                 rts
 
@@ -461,7 +515,7 @@ iterPieces      jsr GenerateMovesForNextPiece
 ; fall through...
 ;---------------------------------------------------------------------------------------------------
 
-    DEF PhysicallyMovePiece
+    ;DEF PhysicallyMovePiece
 
 .foundMove
                     lda MoveFrom,x
@@ -471,29 +525,18 @@ iterPieces      jsr GenerateMovesForNextPiece
                     sta toSquare
                     sta toX12
 
-
-    ; If en-passant flag set (pawn doing opening double-move) then record its square as the
-    ; en-passant square for the ply.
-
-                    ldy #0
                     lda MovePiece,x
-                    and #FLAG_ENPASSANT
-                    beq .notEP
-                    ldy toSquare
-.notEP              ;sty enPassantPawn
-
-
-                    lda MovePiece,x
-                    and #~FLAG_ENPASSANT ;test
-                    ora #FLAG_MOVED                 ; prevents usage in castling (for K/R)
+                    ;ora #FLAG_MOVED                ; prevents usage in castling (for K/R)
                     sta fromPiece                   ; MIGHT have castling bit set, which should be handled last
 
                     ldx fromSquare
-                    ldy X12toBase64,x
+                    jsr XGet64
+;                    ldy X12toBase64,x
                     sty fromSquare                  ; B64
 
                     ldx toSquare
-                    ldy X12toBase64,x
+                    jsr XGet64
+                    ;ldy X12toBase64,x
                     sty toSquare                    ; B64
 
 halted              rts
@@ -516,10 +559,11 @@ halted              rts
                     bpl .scan
 
 .scanned            lda MovePiece,y
-                    and #PIECE_MASK
+                    ;and #PIECE_MASK
                     sta aiPiece
 
 .failed             rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -620,6 +664,8 @@ halted              rts
 .scanned            pla
 .sout               rts
 
+
+;---------------------------------------------------------------------------------------------------
 
     CHECK_HALF_BANK_SIZE "PLY -- 1K"
 

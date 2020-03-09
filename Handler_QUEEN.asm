@@ -5,6 +5,7 @@
 ;---------------------------------------------------------------------------------------------------
 
     DEF Handle_QUEEN
+    SUBROUTINE
 
     ; Pass...
     ; x = currentSquare (square the piece is on)

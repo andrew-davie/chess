@@ -10,7 +10,7 @@
 ;---------------------------------------------------------------------------------------------------
 
 COLOUR_LINE_1 = $a4
-COLOUR_LINE_2 = $4A
+COLOUR_LINE_2 = $48
 COLOUR_LINE_3 = $2A
 BACKGCOL      = $00
 
@@ -26,9 +26,8 @@ BACKGCOL      = $00
 
 ROW_BITMAP_SIZE = 6 * 24            ; PF0/PF1/PF2/(PF0)/(PF1)/(PF2) x 8 ICC pixels
 
-    OPTIONAL_PAGEBREAK ChessBitmap, ROW_BITMAP_SIZE
 
-ChessBitmap
+    ALLOCATE ChessBitmap, ROW_BITMAP_SIZE
 ChessBitmap0    ds 24
 ChessBitmap1    ds 24
 ChessBitmap2    ds 24
@@ -36,53 +35,17 @@ ChessBitmap3    ds 24
 ChessBitmap4    ds 24
 ChessBitmap5    ds 24
 
+    ALLOCATE BlankSprite, 8
+    ds 8, 0
 
-BlankSprite
-    ds 8,0
-
-SpriteBuffer
-    REPEAT 24
-    .byte %11111000 ;%00011111
-    REPEND
-
+    ALLOCATE SpriteBuffer, 24
 SpriteBuffer2
     REPEAT 24
-    .byte %11111000 ;%00011111
+        .byte %11111000
     REPEND
-#if 0
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
 
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-    .byte %00011111
-#endif
-
-testxxx ds 32,5
-
-    OPTIONAL_PAGEBREAK BackupBitmap, ROW_BITMAP_SIZE
-
-BackupBitmap    ds ROW_BITMAP_SIZE
+    ALLOCATE BackupBitmap, ROW_BITMAP_SIZE
+    ds ROW_BITMAP_SIZE, 0
 
 ;---------------------------------------------------------------------------------------------------
 

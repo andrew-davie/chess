@@ -10,7 +10,10 @@ colvec
 
 VBlankTime  .byte 50,50
 
-  DEF TitleScreen
+    DEF TitleScreen
+    SUBROUTINE
+
+        VAR __colour_table, 2
 
   ; Start of new frame
 
@@ -32,14 +35,14 @@ TitleSequence
 ;                sta rnd
 
 
-    #if 0
+#if 0
                 lda #0
                 sta digit
                 lda #$10
                 sta digit+1
                 lda #$20
                 sta digit+2
-    #endif
+#endif
 
 
 

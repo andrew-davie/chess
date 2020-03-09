@@ -1,48 +1,30 @@
-------- FILE ./test.asm LEVEL 1 PASS 2
-      1  1008					      processor	6502
+------- FILE ./test.asm LEVEL 1 PASS 1
+      1  0000					      processor	6502
       2  1000					      org	$1000
       3  1000
-      4  1000					      MAC	lo
-      5  1000					      .byte	<{1}
+      4  1000					      MAC	test3
+      5  1000					      lda	#0
       6  1000					      ENDM
       7  1000
-      8  1000					      MAC	hi
-      9  1000					      .byte	>{1}
+      8  1000					      MAC	test2
+      9  1000					      TEST3
      10  1000					      ENDM
      11  1000
      12  1000
-     13  1000					      MAC	tabdef
-     14  1000							; and per-line, {1} = function
-     15  1000					      {1}	Func1
-     16  1000					      {1}	Func2
-     17  1000					      {1}	Func3
-     18  1000					      ENDM		; {1} = macro to use
-     19  1000
-     20  1000				   LO_Table
-      0  1000					      TABDEF	LO
-      1  1000
-      0  1000					      LO	Func1
-      1  1000		       06		      .byte.b	<Func1
-      0  1001					      LO	Func2
-      1  1001		       07		      .byte.b	<Func2
-      0  1002					      LO	Func3
-      1  1002		       08		      .byte.b	<Func3
-     22  1003				   HI_Table
-      0  1003					      TABDEF	HI
-      1  1003
-      0  1003					      HI	Func1
-      1  1003		       10		      .byte.b	>Func1
-      0  1004					      HI	Func2
-      1  1004		       10		      .byte.b	>Func2
-      0  1005					      HI	Func3
-      1  1005		       10		      .byte.b	>Func3
-     24  1006
-     25  1006
-     26  1006				   Func1
-     27  1006		       60		      rts
-     28  1007
-     29  1007				   Func2
-     30  1007		       60		      rts
-     31  1008
-     32  1008				   Func3
-     33  1008		       60		      rts
+     13  1000					      MAC	test1
+     14  1000					      TEST2
+     15  1000					      ENDM
+     16  1000
+     17  1000
+     18  1000					      MAC	test0
+     19  1000					      TEST1
+     20  1000					      ENDM
+     21  1000
+     22  1000
+      0  1000					      TEST0
+      0  1000					      TEST1
+      0  1000					      TEST2
+      0  1000					      TEST3
+      1  1000		       a9 00		      lda	#0
+     24  1002
+     25  1002							;eof

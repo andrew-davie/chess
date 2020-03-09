@@ -6,6 +6,7 @@
 ;---------------------------------------------------------------------------------------------------
 
     DEF Handle_ROOK
+    SUBROUTINE
 
     ; Pass...
     ; x = currentSquare (square the piece is on)

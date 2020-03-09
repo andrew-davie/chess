@@ -8,6 +8,7 @@
 
     MAC MOVE_TOWARDS
     SUBROUTINE
+
     ; = 76 for single square (empty/take)
 
                 ldx currentSquare               ; 3
@@ -25,6 +26,7 @@
 .invalid
     ENDM
 
+
 ;---------------------------------------------------------------------------------------------------
 
     MAC MOVE_TO
@@ -39,6 +41,8 @@
 .invalid
     ENDM
 
+
+;---------------------------------------------------------------------------------------------------
 
     MAC MOVE_TO_X
                 ldx currentSquare

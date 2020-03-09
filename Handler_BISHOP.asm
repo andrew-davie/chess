@@ -5,6 +5,7 @@
 ;---------------------------------------------------------------------------------------------------
 
     DEF Handle_BISHOP
+    SUBROUTINE
 
     ; x = currentSquare (square the piece is on)
     ; currentPiece (with flags/colour attached)

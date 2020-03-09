@@ -29,7 +29,10 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
 
     MAC PROMOTE_PAwN
     SUBROUTINE
+
     ;{1} = BLACK or WHITE
+
+        VAR __temp, 1
 
                     lda currentPiece
                     pha
