@@ -11,12 +11,7 @@
                     lda Board,y
                     stx SET_BANK_RAM
                     ds 1
-    DEF .Get64
-                    ds 4
-                    ldy X12toBase64b,x
-                    lda currentPly
-                    sta SET_BANK_RAM
-                    ds 1
+
 
 ; Board is a 10 x 12 object which simplifies the generation of moves
 ; The squares marked '░░░' are illegal. The ("X12") index of each square is the left
@@ -122,34 +117,18 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-
-    ALLOCATE _Base64ToIndex, 64
-    DEF Base64ToIndex
-    ; Convert from 0-63 numbering into an index into the Chessboard
-
-    .byte 22,23,24,25,26,27,28,29
-    .byte 32,33,34,35,36,37,38,39
-    .byte 42,43,44,45,46,47,48,49
-    .byte 52,53,54,55,56,57,58,59
-    .byte 62,63,64,65,66,67,68,69
-    .byte 72,73,74,75,76,77,78,79
-    .byte 82,83,84,85,86,87,88,89
-    .byte 92,93,94,95,96,97,98,99
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF CopySetupForMarker
     SUBROUTINE
 
         VAR __pieceColour, 1
 
-                    lda drawPieceNumber ;0-63
-                    lsr
-                    lsr
-                    lsr
-                    clc
-                    adc drawPieceNumber
+                    lda drawPieceNumberX12
+                    sec
+.sub10              sbc #10
+                    bcs .sub10
+                    adc #7
+                    adc drawPieceNumberX12
+
                     and #1
                     eor #1
                     beq .white
@@ -162,45 +141,54 @@
                     adc __pieceColour
                     sta __pieceColour
 
+                    lda drawPieceNumberX12
+                    sec
+.sub10b             sbc #10
+                    bcs .sub10b
+                    adc #8
+                    and #3
 
-                    lda drawPieceNumber
-                    and #3                          ; shift position in PF
                     clc
                     adc __pieceColour
                     tay
                     rts
 
 
-#endif
-
 ;---------------------------------------------------------------------------------------------------
-
 
     DEF CopySetup
     SUBROUTINE
 
+        VAR __tmp, 1
+        VAR __shiftx, 1
+
+
     ; figure colouration of square
 
-                    lda drawPieceNumber ;0-63
-                    lsr
-                    lsr
-                    lsr
-                    clc
-                    adc drawPieceNumber
+                    lda drawPieceNumberX12
+                    ldx #10
+                    sec
+.sub10              sbc #10
+                    dex
+                    bcs .sub10
+                    adc #8
+                    sta __shiftx
+                    stx __tmp
+                    adc __tmp
+
+
                     and #1
                     eor #1
                     beq .white
                     lda #36
 .white              sta __pieceColour               ; actually SQUARE black/white
 
-    ; PieceColour = 0 for white square, 28 for black square
+    ; PieceColour = 0 for white square, 36 for black square
 
                     ;lda #RAMBANK_MOVES_RAM
                     ;sta SET_BANK_RAM
 
-                    ldy drawPieceNumber             ; 0-63
-                    ldx Base64ToIndex,y
-
+                    ldx drawPieceNumberX12
                     lda Board,x
                     asl
                     bcc .blackAdjust
@@ -209,8 +197,8 @@
                     and #%1111
                     tax
 
-                    tya
-                    and #3                          ; shift position in PF
+                    lda __shiftx
+                    and #3                          ; shift position in P
 
                     clc
                     adc PieceToShape,x
@@ -257,12 +245,7 @@ PieceToShape
 
 ;---------------------------------------------------------------------------------------------------
 
-    ALLOCATE X12toBase64b, 100
-    X12B64TABLE
-
-            CHECK_BANK_SIZE "HANDLER_BANK_1 -- full 2K"
-
-
+    CHECK_BANK_SIZE "HANDLER_BANK_1 -- full 2K"
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

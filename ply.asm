@@ -28,11 +28,6 @@ MAX_PLY  = 6
                     stx SET_BANK_RAM                ; now executing in other bank
                     ds 7
                     rts
-    DEF XGet64
-                    lda #BANK_X12toBase64b
-                    sta SET_BANK
-                    ds 7
-                    rts
 
 ;---------------------------------------------------------------------------------------------------
 ; The piece-lists
@@ -63,7 +58,7 @@ INFINITY                = 32767
 
 ;---------------------------------------------------------------------------------------------------
 
-MAX_MOVES = 80
+MAX_MOVES = 100
 
     VARIABLE MoveFrom, MAX_MOVES
     VARIABLE MoveTo, MAX_MOVES
@@ -149,41 +144,37 @@ value = -new_piece + orig_piece - captured_piece
 
     DEF InitPieceLists
 
-                lda #-1
-                sta PieceListPtr+RAM_WRITE
+                    lda #-1
+                    sta PieceListPtr+RAM_WRITE
 
-                ldx #15
-                lda #0
-.clearLists     sta SortedPieceList+RAM_WRITE,x
-                sta PieceSquare+RAM_WRITE,x
-                sta PieceType+RAM_WRITE,x
-                dex
-                bpl .clearLists
+                    ldx #15
+                    lda #0
+.clearLists         sta SortedPieceList+RAM_WRITE,x
+                    sta PieceSquare+RAM_WRITE,x
+                    sta PieceType+RAM_WRITE,x
+                    dex
+                    bpl .clearLists
 
 
     ; TODO: move the following as they're called 2x due to double-call of InitPiecLists
 
-                sta Evaluation
-                sta Evaluation+1                    ; tracks CURRENT value of everything (signed 16-bit)
+                    sta Evaluation
+                    sta Evaluation+1                ; tracks CURRENT value of everything (signed 16-bit)
 
 
     ; General inits that are moved out of FIXED....
 
+                    lda #%111  ; 111= quad
+                    sta NUSIZ0
+                    sta NUSIZ1              ; quad-width
 
-                lda #%111  ; 111= quad
-                sta NUSIZ0
-                sta NUSIZ1              ; quad-width
+                    lda #%00000100
+                    sta CTRLPF
+                    lda #BACKGCOL
+                    sta COLUBK
 
-
-
-
-                lda #%00000100
-                sta CTRLPF
-                lda #BACKGCOL
-                sta COLUBK
-
-                PHASE AI_StartClearBoard
-                rts
+                    PHASE AI_StartClearBoard
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -217,8 +208,12 @@ value = -new_piece + orig_piece - captured_piece
                 bpl .check
                 rts
 
+#endif
+
 
 ;---------------------------------------------------------------------------------------------------
+
+#if ASSERTS
 
     DEF DIAGNOSTIC_checkPieces
     SUBROUTINE
@@ -227,12 +222,12 @@ value = -new_piece + orig_piece - captured_piece
     ; DIAGNOSTIC ONLY
     ; Scan the piecelist and the board square it points to and make sure non blank, non -1
 
-                lda #RAMBANK_PLY
-                sta __bank
-                jsr checkPiecesBank
-                inc __bank
-                jsr checkPiecesBank
-                rts
+                    lda #RAMBANK_PLY
+                    sta __bank
+                    jsr checkPiecesBank
+                    inc __bank
+                    jsr checkPiecesBank
+                    rts
 
 #endif
 
@@ -246,18 +241,17 @@ InitPieceList
 
 ;---------------------------------------------------------------------------------------------------
 
-
     DEF NewPlyInitialise
 
     ; This MUST be called at the start of a new ply
     ; It initialises the movelist to empty
 
-                ldx #-1
-                stx moveIndex+RAM_WRITE             ; no valid moves
-                sta bestMove+RAM_WRITE
+                    ldx #-1
+                    stx moveIndex+RAM_WRITE         ; no valid moves
+                    sta bestMove+RAM_WRITE
 
-                lda enPassantPawn                   ; flag/square from last actual move made
-                sta enPassantSquare+RAM_WRITE       ; used for backtracking, to reset the flag
+                    lda enPassantPawn               ; flag/square from last actual move made
+                    sta enPassantSquare+RAM_WRITE   ; used for backtracking, to reset the flag
 
     ; The evaluation of the current position is a signed 16-bit number
     ; +ve is good for the current side.
@@ -265,51 +259,50 @@ InitPieceList
     ; Note, this is not the same as the 'Evaluation' which is the current value at ply -- it is the
     ; alphabeta best/worst value of the node!!
 
-                lda #<(-INFINITY)
-                sta plyValue+RAM_WRITE
-                lda #>(-INFINITY)
-                sta plyValue+RAM_WRITE+1
+                    lda #<(-INFINITY)
+                    sta plyValue+RAM_WRITE
+                    lda #>(-INFINITY)
+                    sta plyValue+RAM_WRITE+1
 
     ; The value of the material (signed, 16-bit) is restored to the saved value at the reversion
     ; of a move. It's quicker to restore than to re-sum. So we save the current evaluation at the
     ; start of each new ply.
 
-                lda Evaluation
-                sta SavedEvaluation+RAM_WRITE
-                lda Evaluation+1
-                sta SavedEvaluation+RAM_WRITE+1
+                    lda Evaluation
+                    sta SavedEvaluation+RAM_WRITE
+                    lda Evaluation+1
+                    sta SavedEvaluation+RAM_WRITE+1
 
-                lda #0
-                sta piecelistIndex                  ; move traversing
+                    lda #0
+                    sta piecelistIndex                  ; move traversing
 
-                rts
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF GenerateMovesForNextPiece
 
-                lda piecelistIndex
-                and #15
-                tax
+                    lda piecelistIndex
+                    and #15
+                    tax
 
-                lda sideToMove
-                asl
-                lda #RAMBANK_PLY                ; W piecelist in "PLY0" bank, and B in "PLY1"
-                adc #0
-                sta SET_BANK_RAM                ; ooh! self-switching bank
+                    lda sideToMove
+                    asl
+                    lda #RAMBANK_PLY            ; W piecelist in "PLY0" bank, and B in "PLY1"
+                    adc #0
+                    sta SET_BANK_RAM            ; ooh! self-switching bank
 
-                lda PieceSquare,x
-                beq .noPieceHere                ; piece deleted
-                sta currentSquare
+                    lda PieceSquare,x
+                    beq .noPieceHere            ; piece deleted
+                    sta currentSquare
 
-                ;lda enPassantSquare             ; saved from previous side's move...
-                ;sta enPassantPawn               ; used for move generation
+                    ;lda enPassantSquare        ; saved from previous side's move...
+                    ;sta enPassantPawn          ; used for move generation
 
-                jsr MoveForSinglePiece
+                    jsr MoveForSinglePiece
 
-.noPieceHere    inc piecelistIndex
-
+.noPieceHere        inc piecelistIndex
 
                     lda piecelistIndex
                     and #15
@@ -321,7 +314,7 @@ InitPieceList
                     bcs GenerateMovesForNextPiece
 
 
-.stop            rts
+.stop               rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -332,26 +325,26 @@ InitPieceList
         VAR __material, 2
 
 #if 0
-                lda #0
-                sta __material
-                sta __material+1
+                    lda #0
+                    sta __material
+                    sta __material+1
 
-                ldx #15
-.sum            lda PieceSquare,x
-                beq .dead
+                    ldx #15
+.sum                lda PieceSquare,x
+                    beq .dead
 
-                clc
-                lda __material
-                adc PieceMaterialValueLO,x
-                sta __material
-                lda __material+1
-                adc PieceMaterialValueHI,x
-                sta __material+1
+                    clc
+                    lda __material
+                    adc PieceMaterialValueLO,x
+                    sta __material
+                    lda __material+1
+                    adc PieceMaterialValueHI,x
+                    sta __material+1
 
-.dead           dex
-                bpl .sum
+.dead               dex
+                    bpl .sum
 #endif
-                rts
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -369,17 +362,17 @@ InitPieceList
     ; TODO: this is slow and should use a pointer to pieces instead
 
 
-                ldx #15
-                lda fromX12
-.pieceCheck     cmp PieceSquare,x
-                beq .adjustPiece
-                dex
-                bpl .pieceCheck
-                rts
+                    ldx #15
+                    lda originX12
+.pieceCheck         cmp PieceSquare,x
+                    beq .adjustPiece
+                    dex
+                    bpl .pieceCheck
+                    rts
 
-.adjustPiece    lda toX12
-                sta PieceSquare+RAM_WRITE,x
-                rts
+.adjustPiece        lda toX12
+                    sta PieceSquare+RAM_WRITE,x
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -404,37 +397,38 @@ InitPieceList
 
 
 
- rts
-                inc currentPly
-                lda currentPly
+                    rts
 
-                cmp #MAX_PLY+RAMBANK_PLY
-                beq .bottomOut                      ; at a leaf node of the search?
-                sta SET_BANK_RAM                    ; self-referential weirdness!
+                    inc currentPly
+                    lda currentPly
 
-                lda sideToMove
-                eor #128
-                sta sideToMove
+                    cmp #MAX_PLY+RAMBANK_PLY
+                    beq .bottomOut                  ; at a leaf node of the search?
+                    sta SET_BANK_RAM                ; self-referential weirdness!
 
-                jsr NewPlyInitialise
+                    lda sideToMove
+                    eor #128
+                    sta sideToMove
 
-                lda currentPly
-                sta SET_BANK_RAM
+                    jsr NewPlyInitialise
 
-                lda #0
-                sta piecelistIndex
-iterPieces      jsr GenerateMovesForNextPiece
-                lda piecelistIndex
-                cmp #15
-                bne iterPieces
+                    lda currentPly
+                    sta SET_BANK_RAM
+
+                    lda #0
+                    sta piecelistIndex
+iterPieces          jsr GenerateMovesForNextPiece
+                    lda piecelistIndex
+                    cmp #15
+                    bne iterPieces
 
         ; Perform a recursive search
         ; simulate alpha-beta cull to just 7 moves per node
 
     REPEAT 7
-            ;jsr PhysicallyMovePiece
-            ;jsr FinaliseMove
-            jsr alphaBeta
+                    ;jsr PhysicallyMovePiece
+                    ;jsr FinaliseMove
+                    jsr alphaBeta
     REPEND
 
 .bottomOut
@@ -444,15 +438,15 @@ iterPieces      jsr GenerateMovesForNextPiece
         ; check the results, update scores and move pointers
         ; and return vars to expected
 
-                lda sideToMove
-                eor #128
-                sta sideToMove
+                    lda sideToMove
+                    eor #128
+                    sta sideToMove
 
-                dec currentPly
-                lda currentPly
-                sta SET_BANK_RAM                    ; self-referential weirdness!
+                    dec currentPly
+                    lda currentPly
+                    sta SET_BANK_RAM                ; self-referential weirdness!
 
-                rts
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -473,12 +467,12 @@ iterPieces      jsr GenerateMovesForNextPiece
 
     ; restore the board evaluation to what it was at the start of this ply
 
-                lda SavedEvaluation
-                sta Evaluation
-                lda SavedEvaluation+1
-                sta Evaluation+1
+                    lda SavedEvaluation
+                    sta Evaluation
+                    lda SavedEvaluation+1
+                    sta Evaluation+1
 
-                rts
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -519,25 +513,15 @@ iterPieces      jsr GenerateMovesForNextPiece
 
 .foundMove
                     lda MoveFrom,x
-                    sta fromSquare
                     sta fromX12
+                    sta originX12
+
                     lda MoveTo,x
-                    sta toSquare
                     sta toX12
 
                     lda MovePiece,x
                     ;ora #FLAG_MOVED                ; prevents usage in castling (for K/R)
                     sta fromPiece                   ; MIGHT have castling bit set, which should be handled last
-
-                    ldx fromSquare
-                    jsr XGet64
-;                    ldy X12toBase64,x
-                    sty fromSquare                  ; B64
-
-                    ldx toSquare
-                    jsr XGet64
-                    ;ldy X12toBase64,x
-                    sty toSquare                    ; B64
 
 halted              rts
 

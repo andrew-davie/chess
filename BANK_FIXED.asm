@@ -30,15 +30,13 @@ ORIGIN              SET FIXED_BANK
                     ldy #$9A
 .toR                sty rnd
 
-                    ;lda #BANK_TitleScreen
-                    ;sta SET_BANK
-                    ;jsr TitleScreen
+                    ;JSROM TitleScreen
 
 
     ; Move a copy of the row bank template to the first 8 banks of RAM
     ; and then terminate the draw subroutine by substituting in a RTS on the last one
 
-                    JSRAM_SAFE SetupBanks
+                    JSROM_SAFE SetupBanks
 
     ; Patch the final row's "loop" to a RTS
 
@@ -52,9 +50,7 @@ ORIGIN              SET FIXED_BANK
                     sta SET_BANK_RAM
                     jsr NewPlyInitialise            ; must be called at the start of every new ply
 
-                    lda #RAMBANK_PLY
-                    sta SET_BANK_RAM
-                    jsr InitialisePieceSquares
+                    JSROM InitialisePieceSquares
 
                     lda #WHITE
                     sta sideToMove
@@ -148,7 +144,7 @@ ORIGIN              SET FIXED_BANK
 
                     ;jsr AiStateMachine
 
-                    JSRAM PositionSprites
+                    JSROM PositionSprites
 
 
 
@@ -175,20 +171,14 @@ _rts                rts
 ;---------------------------------------------------------------------------------------------------
 
     DEF AiStateMachine
-    ;SUBROUTINE
+    SUBROUTINE
 
-                    lda #BANK_AiVectorLO
-                    sta SET_BANK                ; to access vectors
-                    jsr AiSetupVectors
+                    JSROM AiSetupVectors
                     bcs .exit
                     sta SET_BANK
-
-                    jsr .ind
-                    rts ;tmp jmp AiStateMachine
-
+                    jmp (__ptr)                 ; TODO: OR branch back to squeeze cycles
 
 .exit               rts
-.ind                jmp (__ptr)
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -202,27 +192,17 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SAFE_Get64toX12Board
-    SUBROUTINE
-
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    ldy Base64ToIndex,x
-                    lda Board,y
-                    ldy savedBank
-                    sty SET_BANK
-                    rts
-
-;---------------------------------------------------------------------------------------------------
 
     DEF aiDrawEntireBoard
     SUBROUTINE
 
+
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
+                    ldy drawPieceNumberX12
+                    lda ValidSquare,y
+                    bmi .isablank2
 
-                    ldx drawPieceNumber
-                    ldy Base64ToIndex,x
                     lda Board,y
                     beq .isablank
                     pha
@@ -233,14 +213,16 @@ _rts                rts
 
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
-                    ldx drawPieceNumber
-                    ldy Base64ToIndex,x
+
+                    ldy drawPieceNumberX12
                     pla
                     sta Board+RAM_WRITE,y
 
 .isablank           PHASE AI_DrawPart2
                     rts
 
+.isablank2          PHASE AI_DrawPart3
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -260,7 +242,7 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SAFE_InitialiseMoveGeneration
+    DEF InitialiseMoveGeneration
     SUBROUTINE
 
                     lda currentPly
@@ -275,8 +257,7 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    ;TODO...
-    DEF SAFE_GenerateOneMove
+    DEF GenerateOneMove
     SUBROUTINE
 
                     lda currentPly
@@ -317,35 +298,6 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiGenerateMoves
-    SUBROUTINE
-
-                    jsr SAFE_GenerateOneMove
-                    bcc .wait
-
-                    ;lda currentPly
-                    ;sta SET_BANK_RAM
-                    ;jsr alphaBeta
-
-            ;lda #WHITE_PLAYER
-            ;bne .computer
-
-                    ldx sideToMove
-                    bpl .player
-    #if PVSP
-    jmp .player ;tmp
-    #endif
-
-.computer           PHASE AI_ComputerMove               ; computer select move
-                    rts
-
-
-.player             PHASE AI_StartMoveGen
-.wait               rts
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF aiComputerMove
     SUBROUTINE
 
@@ -358,8 +310,9 @@ _rts                rts
                     cmp moveIndex
                     beq .halted                     ; no valid moves
 
-                    sta fromSquare
-                    sta toSquare
+                    sta fromX12
+                    sta originX12
+                    sta toX12
 
                     lda sideToMove
                     bpl .notComputer
@@ -384,125 +337,12 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiMarchToTargetA
-    SUBROUTINE
-
-                    lda #BANK_RECON_MarchToTargetA
-                    sta SET_BANK
-                    jsr RECON_MarchToTargetA
-                    bcs .unmoved
-
-    ; erase object in new sqare --> blank
-
-                    ldx fromSquare
-                    stx drawPieceNumber
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    ldy Base64ToIndex,x
-                    lda Board,y
-                    beq .skipbl
-                    jsr CopySinglePiece             ; erase next square along --> blank
-
-.skipbl             lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    ldx fromSquare
-                    ldy Base64ToIndex,x
-
-                    lda Board,y
-                    sta lastPiece                   ; what we are overwriting
-                    lda fromPiece
-                    ;ora #FLAG_MOVED                 ; prevents usage in castling for K/R
-                    and #~FLAG_ENPASSANT
-                    sta Board+RAM_WRITE,y           ; and what's actually moving there
-
-                    PHASE AI_MarchB
-
-.unmoved            rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiMarchToTargetB
-    SUBROUTINE
-
-                    ;lda drawDelay
-                    ;beq .mb
-                    ;dec drawDelay
-                    ;rts
-;.mb
-
-
-    ; now we want to undraw the piece in the old square
-
-                    lda lastSquare
-                    sta drawPieceNumber
-                    jsr CopySinglePiece             ; erase whatever was on the previous square (completely blank)
-
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    lda previousPiece
-
-                    ldx lastSquare
-                    ldy Base64ToIndex,x
-                    sta Board+RAM_WRITE,y
-
-                    lda lastPiece
-                    sta previousPiece
-
-                    PHASE AI_MarchB2
-
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-
-    DEF aiMarchB2
-    SUBROUTINE
-
-                    ldx lastSquare
-                    stx drawPieceNumber
-
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    ldy Base64ToIndex,x
-                    lda Board,y
-                    beq .skipbl2
-
-                    jsr CopySinglePiece             ; draw previous piece back in old position
-.skipbl2
-                    lda fromSquare
-                    cmp toSquare
-                    beq xhalt
-
-                    lda #0                          ; inter-move segment speed (can be 0)
-                    sta drawDelay
-                    PHASE AI_MarchToTargetA
-
-                    rts
-
-xhalt
-
-                    jsr FinaliseMove
-
-
-                    lda #4                          ; on/off count
-                    sta drawCount                   ; flashing for piece about to move
-                    lda #0
-                    sta drawDelay
-
-                    PHASE AI_FinalFlash
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF aiSpecialMoveFixup
     SUBROUTINE
 
                     PHASE AI_FlipBuffers
 
-                    JSRAM_SAFE CastleFixup
+                    JSROM_SAFE CastleFixup
 
 
     ; Handle en-passant captures
@@ -555,13 +395,10 @@ capture
             eor #128
             sta sideToMove
 
-                    lda #BANK_X12toBase64b
-                    sta SET_BANK
 
 
                     sty fromX12
-                    lda X12toBase64b,y
-                    sta drawPieceNumber
+                    sty drawPieceNumberX12
 
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
@@ -601,7 +438,7 @@ capture
 
 
 #if ASSERTS
-                    JSRAM_SAFE DIAGNOSTIC_checkPieces
+                    JSROM_SAFE DIAGNOSTIC_checkPieces
 #endif
 
 
@@ -781,9 +618,7 @@ HandlerVectorHI     HANDLEVEC >
                     and #PIECE_MASK
                     tay
 
-                    lda #BANK_AddPieceMaterialValue
-                    sta SET_BANK
-                    jsr AddPieceMaterialValue
+                    JSROM AddPieceMaterialValue
 
                     txa
                     pha
@@ -899,6 +734,16 @@ HandlerVectorHI     HANDLEVEC >
 
 ;---------------------------------------------------------------------------------------------------
 
+    DEF GetValid
+                    lda #RAMBANK_MOVES_RAM
+                    sta SET_BANK_RAM
+                    lda ValidSquare,y
+                    ldy savedBank
+                    sty SET_BANK
+                    rts
+
+
+
     DEF GetBoard
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
@@ -907,26 +752,12 @@ HandlerVectorHI     HANDLEVEC >
                     sty SET_BANK
                     rts
 
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF calculateBase64Square
-    SUBROUTINE
-
-    ; Convert row/column into Base64 index
-
-                    lda highlight_row
-    IF ASSERTS
-.ERROR bmi .ERROR
-    ENDIF
-
-                    and #7
-                    eor #7
-                    asl
-                    asl
-                    asl
-                    ora highlight_col
-                    tax
+    DEF PutBoard
+                    ldx #RAMBANK_MOVES_RAM
+                    stx SET_BANK_RAM
+                    sta Board+RAM_WRITE,y           ; and what's actually moving there
+                    ldx savedBank
+                    stx SET_BANK
                     rts
 
 ;---------------------------------------------------------------------------------------------------
@@ -936,15 +767,9 @@ HandlerVectorHI     HANDLEVEC >
 
     ; Does the square exist in the movelist?
 
-                    jsr calculateBase64Square
-                    stx aiFromSquare
-
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    ldy Base64ToIndex,x
-                    sty aiFromSquareX12
-
-                    tya
+                    ldx cursorX12
+                    stx aiFromSquareX12
+                    txa
 
                     ldy currentPly
                     sty SET_BANK_RAM
@@ -979,13 +804,9 @@ HandlerVectorHI     HANDLEVEC >
 
     ; Does the square exist in the movelist?
 
-                    jsr calculateBase64Square
-                    stx aiToSquare
-
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    lda Base64ToIndex,x
-                    sta aiToSquareX12
+                    ldy cursorX12
+                    sty aiToSquareX12
+                    tya
 
                     ldy currentPly
                     sty SET_BANK_RAM
@@ -1053,13 +874,12 @@ HandlerVectorHI     HANDLEVEC >
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SAFE_PromoteStart
+    DEF PromoteStart
     SUBROUTINE
 
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
+        ; Remove any piece on the promotion square while we do the promotion selection
 
-                    lda Board,y
+                    jsr GetBoard
                     and #PIECE_MASK
                     beq .nopiece
 
@@ -1077,6 +897,7 @@ HandlerVectorHI     HANDLEVEC >
     TIMING COPYSINGLEPIECE, 2150
 
     ; WARNING: CANNOT USE VAR/OVERLAY IN ANY ROUTINE CALLING THIS!!
+    ; ALSO CAN'T USE IN THIS ROUTINE
     ; This routine will STOMP on those vars due to __pieceShapeBuffer occupying whole overlay
 
 
@@ -1090,6 +911,8 @@ HandlerVectorHI     HANDLEVEC >
 
 
     DEF InterceptMarkerCopy
+    SUBROUTINE
+
 
     ; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
     ; y = piece index
@@ -1110,53 +933,19 @@ HandlerVectorHI     HANDLEVEC >
                     dey
                     bpl .copy
 
-                    lda drawPieceNumber
-                    lsr
-                    lsr
-                    lsr                             ; and D2-> carry (cc = left, cs = right)
-                    eor #7
-                    sta SET_BANK_RAM
+                    lda drawPieceNumberX12
+                    sec
+                    ldx #10
+.sub10              sbc #10
+                    dex
+                    bcs .sub10
+
+                    stx SET_BANK_RAM
+
+                    adc #8
+                    cmp #4
 
                     jmp CopyPieceToRowBitmap
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF FinaliseMove
-    SUBROUTINE
-
-    ; Now the visible movement on the board has happened, fix up the pointers to the pieces
-    ; for both sides.
-
-
-                    lda sideToMove
-                    asl
-                    lda #RAMBANK_PLY
-                    adc #0
-                    sta SET_BANK_RAM
-
-                    jsr FixPieceList
-
-                    lda toX12
-                    sta fromX12                     ; there MAY be no other-side piece at this square - that is OK!
-                    lda #0
-                    sta toX12                       ; --> deleted (square=0)
-
-
-
-                    lda lastPiece
-                    beq .notake
-
-                    lda sideToMove
-                    eor #128
-                    asl
-                    lda #RAMBANK_PLY
-                    adc #0
-                    sta SET_BANK_RAM
-
-                    jsr FixPieceList                ; REMOVE any captured object
-
-.notake             rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -1171,6 +960,13 @@ HandlerVectorHI     HANDLEVEC >
                     stx SET_BANK
                     rts
 
+
+    DEF GoFixPieceList
+                    sta SET_BANK_RAM
+                    jsr FixPieceList
+                    lda savedBank
+                    sta SET_BANK
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -1220,12 +1016,7 @@ HandlerVectorHI     HANDLEVEC >
                     lda Board,y
                     bne .next                       ; don't draw dots on captures - they are flashed later
 
-
-                    lda #BANK_X12toBase64b
-                    sta SET_BANK
-
-                    lda X12toBase64b,y
-                    sta drawPieceNumber
+                    sty drawPieceNumberX12
 
                     ldx #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
                     jsr CopySetupForMarker
@@ -1244,12 +1035,7 @@ HandlerVectorHI     HANDLEVEC >
     ; Pass          X = character shape # (?/N/B/R/Q)
 
                     ldy toX12
-
-                    lda #BANK_X12toBase64b
-                    sta SET_BANK
-
-                    lda X12toBase64b,y
-                    sta drawPieceNumber
+                    sty drawPieceNumberX12
 
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
@@ -1293,9 +1079,7 @@ HandlerVectorHI     HANDLEVEC >
     DEF SAFE_showMoveCaptures
     SUBROUTINE
 
-                    lda #BANK_UNSAFE_showMoveCaptures
-                    sta SET_BANK
-                    jsr UNSAFE_showMoveCaptures
+                    JSROM UNSAFE_showMoveCaptures
                     lda savedBank
                     sta SET_BANK
                     rts
@@ -1319,6 +1103,13 @@ HandlerVectorHI     HANDLEVEC >
                     sty SET_BANK
                     rts
 
+    DEF GetMovePiece
+                    lda #RAMBANK_PLY
+                    sta SET_BANK_RAM
+                    ldy savedBank
+                    lda MovePiece,x
+                    sty SET_BANK
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------

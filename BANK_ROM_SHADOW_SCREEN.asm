@@ -9,10 +9,17 @@
 ; we effectively have 1K
 ;---------------------------------------------------------------------------------------------------
 
-COLOUR_LINE_1 = $a4
-COLOUR_LINE_2 = $48
+COLOUR_LINE_1 = $a6
+COLOUR_LINE_2 = $4a
 COLOUR_LINE_3 = $2A
 BACKGCOL      = $00
+
+
+
+; good/contrast
+;COLOUR_LINE_1 = $a6
+;COLOUR_LINE_2 = $4a
+;COLOUR_LINE_3 = $2A
 
 ;COLOUR_LINE_1 = $94 ; square col
 ;COLOUR_LINE_2 = $C6
@@ -270,8 +277,13 @@ SMSPRITE8_1         lda SpriteBuffer2+8,y       ; 4
     DEF WriteCursor
     SUBROUTINE
 
-                    ldx highlight_row
+                    sec
+                    lda cursorX12
                     bmi .exit
+                    ldx #10
+.sub10              sbc #10
+                    dex
+                    bcs .sub10
 
                     stx SET_BANK_RAM
                     lda #<SpriteBuffer

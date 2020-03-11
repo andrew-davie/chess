@@ -31,6 +31,7 @@ NO                      = 0
 ASSERTS                 = 1
 TEST_POSITION           = 0                ; 0=normal, 1 = setup test position
 PVSP                    = 0                 ; player versus player =1
+DPN                     = 1                 ; draw piece number X12 or B64
 
 WHITE_PLAYER = 0        ; human
 BLACK_PLAYER = 0        ; human
@@ -106,8 +107,8 @@ SCANLINES_NTSC      = 262                       ; NTSC 262
 SCANLINES_PAL       = 312
 
 
-TIME_PART_2         = 38
-TIME_PART_1         = 55
+TIME_PART_2         = 46
+TIME_PART_1         = 47
 
 
 ;------------------------------------------------------------------------------
@@ -339,7 +340,7 @@ ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
 
 ;---------------------------------------------------------------------------------------------------
 
-    MAC JSRAM_SAFE ; {routine}
+    MAC JSROM_SAFE ; {routine}
     ; Saves bank of routine to variable for later restore.
     ; Switches to the bank and does a JSR to the routine.
 
@@ -350,7 +351,7 @@ ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
     ENDM
 
 
-    MAC JSRAM ; {routine}
+    MAC JSROM ; {routine}
 
                 lda #BANK_{1}
                 sta SET_BANK
@@ -369,26 +370,6 @@ ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
 SPEEDOF_{1} = ({2}/64) + 1
     ENDM
 
-
-;---------------------------------------------------------------------------------------------------
-
-    MAC X12B64TABLE ; {name}
-        ; Use this table to
-        ;   a) Determine if a square is valid (-1 = NO)
-        ;   b) Move pieces without addition.  e.g., "lda ValidSquareTable+10,x" will let you know
-        ;      if a white pawn on square "x" can move "up" the board.
-
-        .byte -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-        .byte -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-        .byte -1, -1,  0,  1,  2,  3,  4,  5,  6,  7
-        .byte -1, -1,  8,  9, 10, 11, 12, 13, 14, 15
-        .byte -1, -1, 16, 17, 18, 19, 20, 21, 22, 23
-        .byte -1, -1, 24, 25, 26, 27, 28, 29, 30, 31
-        .byte -1, -1, 32, 33, 34, 35, 36, 37, 38, 39
-        .byte -1, -1, 40, 41, 42, 43, 44, 45, 46, 47
-        .byte -1, -1, 48, 49, 50, 51, 52, 53, 54, 55
-        .byte -1, -1, 56, 57, 58, 59, 60, 61, 62, 63
-    ENDM
 
 ;---------------------------------------------------------------------------------------------------
 

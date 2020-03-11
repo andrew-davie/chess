@@ -46,7 +46,7 @@ ONCEPERFRAME = 40
     {1} DrawMoves,                  ONCEPERFRAME
     {1} ShowMoveCaptures,           ONCEPERFRAME
     {1} SlowFlash,                  ONCEPERFRAME
-    {1} DrawTargetSquares,          ONCEPERFRAME
+    {1} UnDrawTargetSquares,        ONCEPERFRAME
     {1} SelectDestinationSquare,    ONCEPERFRAME
     {1} Quiescent,                  ONCEPERFRAME
     {1} ReselectDebounce,           ONCEPERFRAME
@@ -57,6 +57,7 @@ ONCEPERFRAME = 40
     {1} ClearEachRow,               ONCEPERFRAME
     {1} DrawEntireBoard,            ONCEPERFRAME
     {1} DrawPart2,                  ONCEPERFRAME
+    {1} DrawPart3,                  ONCEPERFRAME
     {1} FlipBuffers,                ONCEPERFRAME
     {1} GenerateMoves,              ONCEPERFRAME
     {1} ComputerMove,               ONCEPERFRAME
@@ -127,7 +128,7 @@ ONCEPERFRAME = 40
 
                     lda #OPPONENT
                     sta currentPly
-                    jsr SAFE_InitialiseMoveGeneration
+                    jsr InitialiseMoveGeneration
 
                     lda sideToMove
                     eor #128
@@ -146,7 +147,7 @@ ONCEPERFRAME = 40
     ; we generate the opponent moves piece by piece. Time isn't really an isssue here, so
     ; this happens over multiple frames.
 
-                    jsr SAFE_GenerateOneMove
+                    jsr GenerateOneMove
                     bcc .wait
 
                     lda sideToMove
@@ -230,17 +231,17 @@ ONCEPERFRAME = 40
     DEF aiBeginSelectMovePhase
     SUBROUTINE
 
-                    lda #4
-                    sta highlight_row
-                    sta highlight_col
+
+                    lda #$38
+                    sta cursorX12
 
                     lda #0
                     sta mdelay              ;?
                     sta aiFlashPhase        ;?
 
                     lda #-1
-                    sta aiFromSquare
-                    sta aiToSquare
+                    sta aiFromSquareX12
+                    sta aiToSquareX12
 
                     PHASE AI_SelectStartSquare
                     rts
@@ -274,18 +275,9 @@ ONCEPERFRAME = 40
 
                     ldx #%100
 
-                    lda highlight_row
+                    ldy cursorX12
                     bmi .under
-
-                    eor #7
-                    asl
-                    asl
-                    asl
-                    ora highlight_col
-                    tax
-
-                    jsr SAFE_Get64toX12Board
-                    ldx #%100
+                    jsr GetBoard
                     cmp #0
                     bne .under
                     ldx #0
@@ -323,13 +315,11 @@ ONCEPERFRAME = 40
 ;          RLDU RLD  RL U RL   R DU R D  R  U R     LDU  LD   L U  L     DU   D     U
  ;         0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111
 
-    ALLOCATE JoyMoveX, 16
-    .byte     0,   0,   0,   0,   0,   1,   1,   1,   0,  -1,  -1,  -1,   0,   0,   0,   0
-    ALLOCATE JoyMoveY, 16
-    .byte     0,   0,   0,   0,   0,   1,  -1,   0,   0,   1,  -1,   0,   0,   1,  -1,   0
     ALLOCATE JoyCombined, 16
     .byte     0,   0,   0,   0,   0,   1,   1,   1,   0,  -1,  -1,  -1,   0,   1,  -1,   0
 
+    ALLOCATE JoyMoveCursor, 16
+    .byte     0,   0,   0,   0,   0,  -9,  11,   1,   0, -11,  9,  -1,   0,  -10,  10,   0
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -344,18 +334,14 @@ ONCEPERFRAME = 40
     ; then draw a BLANK at that square
     ; do 1 by one, when none found then increment state
 
-                    lda highlight_row
-                    eor #7
-                    asl
-                    asl
-                    asl
-                    ora highlight_col
-                    sta drawPieceNumber
+                    lda cursorX12
+                    sta drawPieceNumberX12
 
                     lda #10
                     sta aiFlashDelay
+
                     lda #0
-                    sta aiToSquare
+                    sta aiToSquareX12
                     sta aiFlashPhase                ; for debounce exit timing
 
                     lda #-1
@@ -420,7 +406,7 @@ ONCEPERFRAME = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiDrawTargetSquares
+    DEF aiUnDrawTargetSquares
     SUBROUTINE
 
                     dec ccur
@@ -513,7 +499,7 @@ ONCEPERFRAME = 40
 .butpress           lda #1
                     sta mdelay
 
-                    PHASE AI_DrawTargetSquares
+                    PHASE AI_UnDrawTargetSquares
                     rts
 
 
@@ -521,6 +507,8 @@ ONCEPERFRAME = 40
 
     DEF moveCursor
     SUBROUTINE
+
+        VAR __newCursor, 1
 
     ; Part (a) move cursor around the board waiting for joystick press
 
@@ -538,21 +526,17 @@ ONCEPERFRAME = 40
                     dec mdelay
                     bpl .delaym
 
-
                     clc
-                    lda highlight_row
-                    adc JoyMoveY,y
-                    cmp #$8
-                    bcs .abandon
-                    sta highlight_row
-.abandon
-                    clc
-                    lda highlight_col
-                    adc JoyMoveX,y
-                    cmp #$8
-                    bcs .abandon2
-                    sta highlight_col
-.abandon2
+                    lda cursorX12
+                    adc JoyMoveCursor,y
+                    sta __newCursor
+                    tay
+                    jsr GetValid
+                    cmp #-1
+                    beq .invalid
+                    lda __newCursor
+                    sta cursorX12
+.invalid
 
                     lda #CURSOR_MOVE_SPEED
                     sta mdelay
@@ -604,8 +588,8 @@ ONCEPERFRAME = 40
                     lda INPT4
                     bmi .noButton
 
-                    lda aiToSquare
-                    cmp aiFromSquare                ; is to==from?  that's a cancelllation
+                    lda aiToSquareX12
+                    cmp aiFromSquareX12
                     beq .cancel
 
                     cpy #-1
@@ -658,15 +642,11 @@ ONCEPERFRAME = 40
     TAG MOVE_SELECTED
 
                     lda #-1
-                    sta highlight_row               ; turn off cursor
-
-                    lda aiFromSquare
-                    sta fromSquare
-                    lda aiToSquare
-                    sta toSquare
+                    sta cursorX12
 
                     lda aiFromSquareX12
                     sta fromX12
+                    sta originX12
                     lda aiToSquareX12
                     sta toX12
 
@@ -725,11 +705,9 @@ ONCEPERFRAME = 40
                     sta aiFlashPhase
                     sta aiFlashDelay
 
-                    ldy aiToSquare
-                    sty drawPieceNumber
-
                     ldy aiToSquareX12
-                    jsr SAFE_PromoteStart           ; remove any capturable piece for display purposes
+                    sty drawPieceNumberX12
+                    jsr PromoteStart                ; remove any capturable piece for display purposes
 
                     PHASE AI_RollPromotionPiece
                     rts
@@ -816,13 +794,13 @@ ONCEPERFRAME = 40
     ; joystick but make sure phase is correct
 
                     lda aiFlashPhase
-                    and #1
-                    bne .odd                        ; must wait until piece undrawn
+                    lsr
+                    bcs .odd                        ; must wait until piece undrawn
 
     ; cycle to the next promotable piece (N/B/R/Q)
     ; TODO; use joy table for mod instead of just incrementing all the time
 
-                    clc
+                    ;clc
                     lda aiPiece
                     adc JoyCombined,y
                     and #3
@@ -854,7 +832,7 @@ ONCEPERFRAME = 40
                     sta fromPiece
 
                     ldy aiToSquareX12
-                    jsr SAFE_PromoteStart
+                    jsr PromoteStart
 
                     PHASE AI_PrepForPhysicalMove
                     rts
@@ -893,7 +871,12 @@ ONCEPERFRAME = 40
     DEF PositionSprites
     SUBROUTINE
 
-                    ldy highlight_col
+                    lda cursorX12
+                    sec
+.sub10              sbc #10
+                    bcs .sub10
+                    adc #8
+                    tay
 
                     sta WSYNC                ; 00     Sync to start of scanline.
 

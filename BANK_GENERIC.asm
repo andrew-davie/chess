@@ -60,7 +60,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
                     stx drawCount                   ; = bank
 
                     lda #-1
-                    sta highlight_row
+                    sta cursorX12
 
                     PHASE AI_ClearEachRow
                     rts
@@ -77,8 +77,8 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
 .bitmapCleared
 
-                    lda #63
-                    sta drawPieceNumber
+                    lda #99
+                    sta drawPieceNumberX12
 
                     PHASE AI_DrawEntireBoard
                     rts
@@ -97,7 +97,8 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
     ; fromPiece     piece doing the move
     ; fromSquare    starting square BASE64
     ; toSquare      ending square BASE64
-    ; fromX12       starting square X12
+    ; fromX12       current square X12
+    ; originX12     starting square X12
     ; toX12         ending square X12
 
 ;    -previousPiece
@@ -169,8 +170,9 @@ deCount
                     lda #4
                     sta drawDelay                   ; "getting ready to move" flash
 
-                    lda fromSquare
-                    sta drawPieceNumber
+                    lda fromX12
+                    sta drawPieceNumberX12
+
                     jsr SAFE_CopySinglePiece        ; EOR-draw = flash
                     rts
 
@@ -184,14 +186,21 @@ flashDone           PHASE AI_MarchToTargetA
     SUBROUTINE
 
                     jsr SAFE_CopySinglePiece
-                    dec drawPieceNumber
-                    bmi .comp
+
+    DEF aiDrawPart3
+    SUBROUTINE
+
+                    dec drawPieceNumberX12
+                    lda drawPieceNumberX12
+                    cmp #22
+                    bcc .comp
 
                     PHASE AI_DrawEntireBoard
                     rts
 
 .comp               PHASE AI_FlipBuffers
                     rts
+
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -201,8 +210,9 @@ flashDone           PHASE AI_MarchToTargetA
 
     ; Draw the piece in the new square
 
-                    lda fromSquare
-                    sta drawPieceNumber
+                    lda fromX12
+                    sta drawPieceNumberX12
+
                     jsr SAFE_CopySinglePiece        ; draw the moving piece into the new square
 
                     lda #6                          ; snail trail delay
@@ -229,8 +239,9 @@ flashDone           PHASE AI_MarchToTargetA
                     lda #10
                     sta drawDelay               ; "getting ready to move" flash
 
-                    lda fromSquare
-                    sta drawPieceNumber
+                    lda fromX12
+                    sta drawPieceNumberX12
+
                     jsr SAFE_CopySinglePiece
                     rts
 
@@ -254,22 +265,19 @@ flashDone2          PHASE AI_SpecialMoveFixup
                     beq .noCast                     ; NOT involved in castle!
 
                     ldx #4
-                    lda toSquare
+                    lda fromX12
 .findCast           dex
                     bmi .noCast
                     cmp KSquare,x
                     bne .findCast
 
+    jsr debug
 
                     lda RSquareEnd,x
                     sta toX12
-                    lda RSquareStart64,x
-                    sta fromSquare
-                    lda RSquareEnd64,x
-                    sta toSquare
-
                     ldy RSquareStart,x
                     sty fromX12
+                    sty originX12
 
                     lda fromPiece
                     and #128                        ; colour bit
@@ -293,11 +301,9 @@ flashDone2          PHASE AI_SpecialMoveFixup
                     rts
 
 
-KSquare             .byte 2,6,58,62
+KSquare             .byte 24,28,94,98
 RSquareStart        .byte 22,29,92,99
 RSquareEnd          .byte 25,27,95,97
-RSquareStart64      .byte 0,7,56,63
-RSquareEnd64        .byte 3,5,59,61
 
 
 ;---------------------------------------------------------------------------------------------------
