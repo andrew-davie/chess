@@ -1622,7 +1622,7 @@
     171  0082		       a5 85		      lda	fromX12
     172  0084		       85 80		      sta	squareToDraw
     173  0086
-    174  0086		       20 92 fc 	      jsr	CopySinglePiece	; EOR-draw = flash
+    174  0086		       20 a1 fc 	      jsr	CopySinglePiece	; EOR-draw = flash
     175  0089		       60		      rts
     176  008a
       0  008a				   flashDone  PHASE	AI_MarchToTargetA
@@ -1641,7 +1641,7 @@
       5  008f					      SUBROUTINE
     184  008f					      SUBROUTINE
     185  008f
-    186  008f		       20 92 fc 	      jsr	CopySinglePiece
+    186  008f		       20 a1 fc 	      jsr	CopySinglePiece
     187  0092
       0  0092					      DEF	aiDrawPart3
       1  0092				   BANK_aiDrawPart3 SET	_CURRENT_BANK
@@ -1683,7 +1683,7 @@
     211  00a4		       a5 85		      lda	fromX12
     212  00a6		       85 80		      sta	squareToDraw
     213  00a8
-    214  00a8		       20 92 fc 	      jsr	CopySinglePiece	; draw the moving piece into the new square
+    214  00a8		       20 a1 fc 	      jsr	CopySinglePiece	; draw the moving piece into the new square
     215  00ab
     216  00ab		       a9 06		      lda	#6	; snail trail delay
     217  00ad		       85 82		      sta	drawDelay
@@ -1719,7 +1719,7 @@
     240  00c5		       a5 85		      lda	fromX12
     241  00c7		       85 80		      sta	squareToDraw
     242  00c9
-    243  00c9		       20 92 fc 	      jsr	CopySinglePiece
+    243  00c9		       20 a1 fc 	      jsr	CopySinglePiece
     244  00cc		       60		      rts
     245  00cd
       0  00cd				   flashDone2 PHASE	AI_SpecialMoveFixup
@@ -1820,7 +1820,7 @@
     315  0113
     316  0113		       a0 07		      ldy	#7
     317  0115		       a2 01	   .copyRowBanks ldx	#BANK_ROM_SHADOW_OF_CHESS_BITMAP
-    318  0117		       20 62 fc 	      jsr	CopyShadowROMtoRAM
+    318  0117		       20 71 fc 	      jsr	CopyShadowROMtoRAM
     319  011a		       88		      dey
     320  011b		       10 f8		      bpl	.copyRowBanks
     321  011d
@@ -1828,7 +1828,7 @@
     323  011d
     324  011d		       a0 08		      ldy	#RAMBANK_MOVES_RAM
     325  011f		       a2 0a		      ldx	#MOVES
-    326  0121		       20 62 fc 	      jsr	CopyShadowROMtoRAM	; this auto-initialises Board too
+    326  0121		       20 71 fc 	      jsr	CopyShadowROMtoRAM	; this auto-initialises Board too
     327  0124
     328  0124							; copy the PLY banks
     329  0124
@@ -1837,7 +1837,7 @@
     332  0128		       a0 09		      ldy	#RAMBANK_PLY
     333  012a		       84 95		      sty	currentPly
     334  012c		       a2 0b	   .copyPlyBanks ldx	#BANK_PLY
-    335  012e		       20 62 fc 	      jsr	CopyShadowROMtoRAM
+    335  012e		       20 71 fc 	      jsr	CopyShadowROMtoRAM
     336  0131		       c8		      iny
     337  0132		       c6 9c		      dec	__plyBank
     338  0134		       d0 f6		      bne	.copyPlyBanks
@@ -5496,10 +5496,10 @@
     163  309f
     164  309f		       a9 09		      lda	#PLAYER
     165  30a1		       85 95		      sta	currentPly
-    166  30a3		       20 17 fc 	      jsr	SAFE_GetKingSquare	; king's current X12 square
+    166  30a3		       20 26 fc 	      jsr	SAFE_GetKingSquare	; king's current X12 square
     167  30a6
     168  30a6		       e6 95		      inc	currentPly
-    169  30a8		       20 08 fd 	      jsr	SAFE_IsSquareUnderAttack
+    169  30a8		       20 17 fd 	      jsr	SAFE_IsSquareUnderAttack
     170  30ab		       c6 95		      dec	currentPly
     171  30ad		       90 11		      bcc	.exit
     172  30af
@@ -5541,7 +5541,7 @@
     199  30c5		       c6 84		      dec	drawCount
     200  30c7		       30 05		      bmi	.exit	; done all rows
     201  30c9		       a4 84		      ldy	drawCount
-    202  30cb		       4c fe fc 	      jmp	SAFE_BackupBitmaps
+    202  30cb		       4c 0d fd 	      jmp	SAFE_BackupBitmaps
     203  30ce
       0  30ce				   .exit      PHASE	AI_InCheckDelay
       1  30ce		       a9 1e		      lda	#AI_InCheckDelay
@@ -5609,7 +5609,7 @@
     246  30f5					      SUBROUTINE
     247  30f5
     248  30f5		       20 5c f2 	      jsr	moveCursor
-    249  30f8		       20 45 fc 	      jsr	SAFE_IsValidMoveFromSquare
+    249  30f8		       20 54 fc 	      jsr	SAFE_IsValidMoveFromSquare
     250  30fb
     251  30fb		       c6 8a		      dec	ccur	; pulse colour for valid squares
     252  30fd		       20 20 f1 	      jsr	setCursorColours
@@ -5641,7 +5641,7 @@
     271  310e
     272  310e		       a4 88		      ldy	cursorX12
     273  3110		       30 09		      bmi	.under
-    274  3112		       20 2d fc 	      jsr	GetBoard
+    274  3112		       20 3c fc 	      jsr	GetBoard
     275  3115		       c9 00		      cmp	#0
     276  3117		       d0 02		      bne	.under
     277  3119		       a2 00		      ldx	#0
@@ -5769,7 +5769,7 @@
     366  317b
     367  317b		       a5 8e		      lda	aiMoveIndex
     368  317d		       10 05		      bpl	.valid
-    369  317f		       20 ce fc 	      jsr	SAFE_getMoveIndex
+    369  317f		       20 dd fc 	      jsr	SAFE_getMoveIndex
     370  3182		       85 8e		      sta	aiMoveIndex
     371  3184				   .valid
     372  3184
@@ -5859,24 +5859,24 @@
     423  31b2
     424  31b2		       c6 8e		      dec	aiMoveIndex
     425  31b4
-    426  31b4		       20 20 fd 	      jsr	GetMoveFrom
+    426  31b4		       20 2f fd 	      jsr	GetMoveFrom
     427  31b7		       c5 85		      cmp	fromX12
     428  31b9		       d0 ea		      bne	.next
     429  31bb
-    430  31bb		       20 2c fd 	      jsr	GetMoveTo
+    430  31bb		       20 3b fd 	      jsr	GetMoveTo
     431  31be		       85 80		      sta	squareToDraw
     432  31c0
-    433  31c0		       20 38 fd 	      jsr	GetMovePiece
+    433  31c0		       20 47 fd 	      jsr	GetMovePiece
     434  31c3		       85 9d		      sta	__piece
     435  31c5
     436  31c5							; If it's a pawn promote (duplicate "to" AND piece different (TODO) then skip others)
     437  31c5
     438  31c5		       ca	   .sk	      dex
     439  31c6		       30 16		      bmi	.prom
-    440  31c8		       20 2c fd 	      jsr	GetMoveTo
+    440  31c8		       20 3b fd 	      jsr	GetMoveTo
     441  31cb		       c5 80		      cmp	squareToDraw
     442  31cd		       d0 0f		      bne	.prom
-    443  31cf		       20 38 fd 	      jsr	GetMovePiece
+    443  31cf		       20 47 fd 	      jsr	GetMovePiece
     444  31d2		       45 9d		      eor	__piece
     445  31d4		       29 0f		      and	#PIECE_MASK
     446  31d6		       f0 06		      beq	.prom	; same piece type so not a promote
@@ -5887,7 +5887,7 @@
     451  31de				   .prom
     452  31de
     453  31de		       a4 80		      ldy	squareToDraw
-    454  31e0		       20 2d fc 	      jsr	GetBoard
+    454  31e0		       20 3c fc 	      jsr	GetBoard
     455  31e3		       29 0f		      and	#PIECE_MASK
     456  31e5		       d0 be		      bne	.next	; don't draw dots on captures - they are flashed later
     457  31e7
@@ -5899,7 +5899,7 @@
     463  31ee							;lda aiMoveIndex
     464  31ee							;sta __saveIdx
     465  31ee
-    466  31ee		       20 e4 fc 	      jsr	markerDraw
+    466  31ee		       20 f3 fc 	      jsr	markerDraw
     467  31f1		       60		      rts
     468  31f2
     469  31f2		       a5 9c	   .skip      lda	__saveIdx
@@ -5927,7 +5927,7 @@
     486  3204
     487  3204		       a5 8e		      lda	aiMoveIndex
     488  3206		       10 05		      bpl	.valid
-    489  3208		       20 ce fc 	      jsr	SAFE_getMoveIndex
+    489  3208		       20 dd fc 	      jsr	SAFE_getMoveIndex
     490  320b		       85 8e		      sta	aiMoveIndex
     491  320d				   .valid
     492  320d
@@ -5963,11 +5963,11 @@
     515  3220
     516  3220		       a5 8e		      lda	aiMoveIndex
     517  3222		       10 05		      bpl	.valid	; guaranteed -1 on 1st call
-    518  3224		       20 ce fc 	      jsr	SAFE_getMoveIndex
+    518  3224		       20 dd fc 	      jsr	SAFE_getMoveIndex
     519  3227		       85 8e		      sta	aiMoveIndex
     520  3229				   .valid
     521  3229
-    522  3229		       20 14 fd 	      jsr	SAFE_showMoveCaptures
+    522  3229		       20 23 fd 	      jsr	SAFE_showMoveCaptures
     523  322c		       a5 8e		      lda	aiMoveIndex
     524  322e		       10 06		      bpl	.exit
     525  3230
@@ -6074,7 +6074,7 @@
     598  326f		       79 43 f1 	      adc	JoyMoveCursor,y
     599  3272		       85 9c		      sta	__newCursor
     600  3274		       a8		      tay
-    601  3275		       20 21 fc 	      jsr	GetValid
+    601  3275		       20 30 fc 	      jsr	GetValid
     602  3278		       c9 ff		      cmp	#-1
     603  327a		       f0 04		      beq	.invalid
     604  327c		       a5 9c		      lda	__newCursor
@@ -6113,7 +6113,7 @@
     632  3298
     633  3298		       e6 8f		      inc	aiFlashPhase
     634  329a
-    635  329a		       20 92 fc 	      jsr	CopySinglePiece
+    635  329a		       20 a1 fc 	      jsr	CopySinglePiece
     636  329d
     637  329d		       60	   .exit      rts
     638  329e
@@ -6142,7 +6142,7 @@
     656  32ab		       a4 88		      ldy	cursorX12
     657  32ad		       84 86		      sty	toX12
     658  32af
-    659  32af		       20 56 fc 	      jsr	GetPiece
+    659  32af		       20 65 fc 	      jsr	GetPiece
     660  32b2		       20 20 f1 	      jsr	setCursorColours
     661  32b5
     662  32b5
@@ -6227,10 +6227,10 @@
     725  32ee
     726  32ee		       a5 85		      lda	fromX12
     727  32f0		       85 87		      sta	originX12
-    728  32f2		       20 56 fc 	      jsr	GetPiece	; from the movelist
+    728  32f2		       20 65 fc 	      jsr	GetPiece	; from the movelist
     729  32f5
     730  32f5		       a4 85		      ldy	fromX12
-    731  32f7		       20 2d fc 	      jsr	GetBoard	; get the piece from the board itself
+    731  32f7		       20 3c fc 	      jsr	GetBoard	; get the piece from the board itself
     732  32fa
     733  32fa		       45 98		      eor	fromPiece
     734  32fc		       29 0f		      and	#PIECE_MASK	; if not the same piece board/movelist...
@@ -6268,11 +6268,11 @@
     757  3317		       a4 86		      ldy	toX12
     758  3319		       84 80		      sty	squareToDraw
     759  331b
-    760  331b		       20 2d fc 	      jsr	GetBoard
+    760  331b		       20 3c fc 	      jsr	GetBoard
     761  331e		       29 0f		      and	#PIECE_MASK
     762  3320		       f0 03		      beq	.empty
     763  3322
-    764  3322		       20 92 fc 	      jsr	CopySinglePiece	; remove any capturable piece for display purposes
+    764  3322		       20 a1 fc 	      jsr	CopySinglePiece	; remove any capturable piece for display purposes
     765  3325
       0  3325				   .empty     PHASE	AI_RollPromotionPiece
       1  3325		       a9 20		      lda	#AI_RollPromotionPiece
@@ -6319,7 +6319,7 @@
     801  3350		       10 02		      bpl	.wtm
     802  3352		       a2 68		      ldx	#INDEX_BLACK_PROMOTE_on_WHITE_SQUARE_0
     803  3354				   .wtm
-    804  3354		       20 f0 fc 	      jsr	showPromoteOptions
+    804  3354		       20 ff fc 	      jsr	showPromoteOptions
     805  3357
     806  3357		       e6 8f		      inc	aiFlashPhase
     807  3359
@@ -6338,7 +6338,7 @@
     820  3366		       a2 5c		      ldx	#INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
     821  3368				   .whiteToMove
     822  3368
-    823  3368		       20 f0 fc 	      jsr	showPromoteOptions
+    823  3368		       20 ff fc 	      jsr	showPromoteOptions
     824  336b
       0  336b					      PHASE	AI_ChooseDebounce
       1  336b		       a9 22		      lda	#AI_ChooseDebounce
@@ -6416,7 +6416,7 @@
     889  33af
     890  33af		       a4 98		      ldy	fromPiece
     891  33b1		       be d3 f3 	      ldx	promotePiece,y
-    892  33b4		       20 f0 fc 	      jsr	showPromoteOptions
+    892  33b4		       20 ff fc 	      jsr	showPromoteOptions
     893  33b7
     894  33b7		       60	   .exit      rts
     895  33b8
@@ -6430,11 +6430,11 @@
     903  33c0		       85 98		      sta	fromPiece
     904  33c2
     905  33c2		       a4 86		      ldy	toX12
-    906  33c4		       20 2d fc 	      jsr	GetBoard
+    906  33c4		       20 3c fc 	      jsr	GetBoard
     907  33c7		       29 0f		      and	#PIECE_MASK
     908  33c9		       f0 03		      beq	.nothing
     909  33cb
-    910  33cb		       20 92 fc 	      jsr	CopySinglePiece	; put back whatever was there to start
+    910  33cb		       20 a1 fc 	      jsr	CopySinglePiece	; put back whatever was there to start
     911  33ce
       0  33ce				   .nothing   PHASE	AI_PrepForPhysicalMove
       1  33ce		       a9 15		      lda	#AI_PrepForPhysicalMove
@@ -10234,15 +10234,15 @@
      30  4814
      31  4814		       c6 8e		      dec	aiMoveIndex
      32  4816
-     33  4816		       20 20 fd 	      jsr	GetMoveFrom
+     33  4816		       20 2f fd 	      jsr	GetMoveFrom
      34  4819		       c5 85		      cmp	fromX12
      35  481b		       d0 ea		      bne	.next
      36  481d
      37  481d
-     38  481d		       20 2c fd 	      jsr	GetMoveTo
+     38  481d		       20 3b fd 	      jsr	GetMoveTo
      39  4820		       85 9c		      sta	__toSquareX12
      40  4822		       a8		      tay
-     41  4823		       20 2d fc 	      jsr	GetBoard
+     41  4823		       20 3c fc 	      jsr	GetBoard
      42  4826		       29 0f		      and	#PIECE_MASK
      43  4828		       f0 dd		      beq	.next
      44  482a
@@ -10250,10 +10250,10 @@
      46  482a							; Let's see if we are doing a pawn promote...
      47  482a
      48  482a		       a4 85		      ldy	fromX12
-     49  482c		       20 2d fc 	      jsr	GetBoard
+     49  482c		       20 3c fc 	      jsr	GetBoard
      50  482f		       85 9d		      sta	__fromPiece
      51  4831
-     52  4831		       20 38 fd 	      jsr	GetMovePiece
+     52  4831		       20 47 fd 	      jsr	GetMovePiece
      53  4834		       45 9d		      eor	__fromPiece
      54  4836		       29 0f		      and	#PIECE_MASK
      55  4838		       f0 06		      beq	.legit	; from == to, so not a promote
@@ -10274,7 +10274,7 @@
      67  4847		       a5 9c		      lda	__toSquareX12
      68  4849		       85 80		      sta	squareToDraw
      69  484b
-     70  484b		       20 92 fc 	      jsr	CopySinglePiece
+     70  484b		       20 a1 fc 	      jsr	CopySinglePiece
      71  484e
      72  484e		       68	   .skip      pla
      73  484f		       85 8b		      sta	savedBank
@@ -10413,22 +10413,22 @@
     153  48a3		       a4 85		      ldy	fromX12
     154  48a5		       84 80		      sty	squareToDraw
     155  48a7
-    156  48a7		       20 2d fc 	      jsr	GetBoard
+    156  48a7		       20 3c fc 	      jsr	GetBoard
     157  48aa		       c9 00		      cmp	#0
     158  48ac		       f0 03		      beq	.skipbl
-    159  48ae		       20 92 fc 	      jsr	CopySinglePiece	; erase next square along --> blank
+    159  48ae		       20 a1 fc 	      jsr	CopySinglePiece	; erase next square along --> blank
     160  48b1
     161  48b1				   .skipbl
     162  48b1		       a4 85		      ldy	fromX12
     163  48b3		       84 9d		      sty	__boardIndex
     164  48b5
-    165  48b5		       20 2d fc 	      jsr	GetBoard
+    165  48b5		       20 3c fc 	      jsr	GetBoard
     166  48b8		       85 99		      sta	lastPiece	; what we are overwriting
     167  48ba		       a5 98		      lda	fromPiece
     168  48bc							;ora #FLAG_MOVED		 ; prevents usage in castling for K/R
     169  48bc		       29 df		      and	#~FLAG_ENPASSANT
     170  48be		       a4 9d		      ldy	__boardIndex
-    171  48c0		       20 39 fc 	      jsr	PutBoard
+    171  48c0		       20 48 fc 	      jsr	PutBoard
     172  48c3
       0  48c3					      PHASE	AI_MarchB
       1  48c3		       a9 18		      lda	#AI_MarchB
@@ -10451,11 +10451,11 @@
     184  48c8		       a4 83		      ldy	lastSquareX12
     185  48ca		       84 80		      sty	squareToDraw
     186  48cc
-    187  48cc		       20 2d fc 	      jsr	GetBoard
+    187  48cc		       20 3c fc 	      jsr	GetBoard
     188  48cf		       c9 00		      cmp	#0
     189  48d1		       f0 03		      beq	.skipbl2
     190  48d3
-    191  48d3		       20 92 fc 	      jsr	CopySinglePiece	; draw previous piece back in old position
+    191  48d3		       20 a1 fc 	      jsr	CopySinglePiece	; draw previous piece back in old position
     192  48d6				   .skipbl2
     193  48d6
     194  48d6		       a5 85		      lda	fromX12
@@ -10505,7 +10505,7 @@
     229  48fb		       0a		      asl
     230  48fc		       a9 09		      lda	#RAMBANK_PLY
     231  48fe		       69 00		      adc	#0
-    232  4900		       20 da fc 	      jsr	GoFixPieceList
+    232  4900		       20 e9 fc 	      jsr	GoFixPieceList
     233  4903
     234  4903		       a5 86		      lda	toX12
     235  4905		       85 85		      sta	fromX12	; there MAY be no other-side piece at this square - that is OK!
@@ -10522,7 +10522,7 @@
     246  4915		       0a		      asl
     247  4916		       a9 09		      lda	#RAMBANK_PLY
     248  4918		       69 00		      adc	#0
-    249  491a		       20 da fc 	      jsr	GoFixPieceList	; REMOVE any captured object
+    249  491a		       20 e9 fc 	      jsr	GoFixPieceList	; REMOVE any captured object
     250  491d
     251  491d		       60	   .notake    rts
     252  491e
@@ -10542,11 +10542,11 @@
     261  491e		       a5 83		      lda	lastSquareX12
     262  4920		       85 80		      sta	squareToDraw
     263  4922
-    264  4922		       20 92 fc 	      jsr	CopySinglePiece	; erase whatever was on the previous square (completely blank)
+    264  4922		       20 a1 fc 	      jsr	CopySinglePiece	; erase whatever was on the previous square (completely blank)
     265  4925
     266  4925		       a4 83		      ldy	lastSquareX12
     267  4927		       a5 9a		      lda	previousPiece
-    268  4929		       20 39 fc 	      jsr	PutBoard
+    268  4929		       20 48 fc 	      jsr	PutBoard
     269  492c
     270  492c		       a5 99		      lda	lastPiece
     271  492e		       85 9a		      sta	previousPiece
@@ -10744,7 +10744,7 @@
     382  4998							;sta SET_BANK_RAM
     383  4998
     384  4998		       a4 80		      ldy	squareToDraw
-    385  499a		       20 2d fc 	      jsr	GetBoard	;lda Board,x
+    385  499a		       20 3c fc 	      jsr	GetBoard	;lda Board,x
     386  499d		       0a		      asl
     387  499e		       90 02		      bcc	.blackAdjust
     388  49a0		       09 10		      ora	#16
@@ -11069,51 +11069,50 @@
       7  5000
       8  5000							; Board is a 10 x 12 object which simplifies the generation of moves
       9  5000							; The squares marked '░░░' are illegal. The ("X12") index of each square is the left
-     10  5000							; number + the bottom number. The "BASE64" square numbering is used to simplify movement code.
-     11  5000							; Bottom left legal square (AS VISIBLE ON SCREEN) is #22
-     12  5000
-     13  5000							;     X12 numbering
-     14  5000							;    ┏━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┓
-     15  5000							;110 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃	      BASE64 numbering
-     16  5000							;100 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃	      ┏━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┓
-     17  5000							; 90 ┃░░░┊░░░┊ 92┊ 93┊ 94┊ 95┊ 96┊ 97┊ 98┊ 99┃  BLACK    8 ┃ 56┊ 57┊ 58┊ 59┊ 60┊ 61┊ 62┊ 63┃
-     18  5000							; 80 ┃░░░┊░░░┊ 82┊ 83┊ 84┊ 85┊ 86┊ 87┊ 88┊ 89┃  BLACK    7 ┃ 48┊ 49┊ 50┊ 51┊ 52┊ 53┊ 54┊ 55┃
-     19  5000							; 70 ┃░░░┊░░░┊ 72┊ 73┊ 74┊ 75┊ 76┊ 77┊ 78┊ 79┃	    6 ┃ 40┊ 41┊ 42┊ 43┊ 44┊ 45┊ 46┊ 47┃
-     20  5000							; 60 ┃░░░┊░░░┊ 62┊ 63┊ 64┊ 65┊ 66┊ 67┊ 68┊ 69┃	    5 ┃ 32┊ 33┊ 34┊ 35┊ 36┊ 37┊ 38┊ 39┃
-     21  5000							; 50 ┃░░░┊░░░┊ 52┊ 53┊ 54┊ 55┊ 56┊ 57┊ 58┊ 59┃	    4 ┃ 24┊ 25┊ 26┊ 27┊ 28┊ 29┊ 30┊ 31┃
-     22  5000							; 40 ┃░░░┊░░░┊ 42┊ 43┊ 44┊ 45┊ 46┊ 47┊ 48┊ 49┃	    3 ┃ 16┊ 17┊ 18┊ 19┊ 20┊ 21┊ 22┊ 23┃
-     23  5000							; 30 ┃░░░┊░░░┊ 32┊ 33┊ 34┊ 35┊ 36┊ 37┊ 38┊ 39┃  WHITE    2 ┃  8┊  9┊ 10┊ 11┊ 12┊ 13┊ 14┊ 15┃
-     24  5000							; 20 ┃░░░┊░░░┊ 22┊ 23┊ 24┊ 25┊ 26┊ 27┊ 28┊ 29┃  WHITE    1 ┃  0┊  1┊  2┊  3┊  4┊  5┊  6┊  7┃
-     25  5000							; 10 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃	      ┗━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┛
-     26  5000							;  0 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃		A   B	C   D	E   F	G   H
-     27  5000							;    ┗━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┛
-     28  5000							;	0   1	2   3	4   5	6   7	8   9
-     29  5000							;		A   B	C   D	E   F	G   H
-     30  5000
-     31  5000							;     HEX X12
-     32  5000							;    ┏━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┓
-     33  5000							;110 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     34  5000							;100 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     35  5000							; 90 ┃░░░┊░░░┊$5C┊$5D┊$5E┊$5F┊$60┊$61┊$62┊$63┃
-     36  5000							; 80 ┃░░░┊░░░┊$52┊$53┊$54┊$55┊$56┊$57┊$58┊$59┃
-     37  5000							; 70 ┃░░░┊░░░┊$48┊$49┊$4A┊$4B┊$4C┊$4D┊$4E┊$4F┃
-     38  5000							; 60 ┃░░░┊░░░┊$3E┊$3F┊$40┊$41┊$42┊$43┊$44┊$45┃
-     39  5000							; 50 ┃░░░┊░░░┊$34┊$35┊$36┊$37┊$38┊$39┊$3A┊$3B┃
-     40  5000							; 40 ┃░░░┊░░░┊$2A┊$2B┊$2C┊$2D┊$2E┊$2F┊$30┊$31┃
-     41  5000							; 30 ┃░░░┊░░░┊$20┊$21┊$22┊$23┊$24┊$25┊$26|$27┃
-     42  5000							; 20 ┃░░░┊░░░┊$16┊$17┊$18┊$19┊$1A┊$1B┊$1C┊$1D┃
-     43  5000							; 10 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     44  5000							;  0 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     45  5000							;    ┗━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┛
-     46  5000							;	0   1	2   3	4   5	6   7	8   9
-     47  5000							;		A   B	C   D	E   F	G   H
+     10  5000							; number + the bottom number. Bottom left legal square (AS VISIBLE ON SCREEN) is #22
+     11  5000
+     12  5000							;     X12 numbering
+     13  5000							;    ┏━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┓
+     14  5000							;110 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     15  5000							;100 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     16  5000							; 90 ┃░░░┊░░░┊ 92┊ 93┊ 94┊ 95┊ 96┊ 97┊ 98┊ 99┃ 8 BLACK
+     17  5000							; 80 ┃░░░┊░░░┊ 82┊ 83┊ 84┊ 85┊ 86┊ 87┊ 88┊ 89┃ 7 BLACK
+     18  5000							; 70 ┃░░░┊░░░┊ 72┊ 73┊ 74┊ 75┊ 76┊ 77┊ 78┊ 79┃ 6
+     19  5000							; 60 ┃░░░┊░░░┊ 62┊ 63┊ 64┊ 65┊ 66┊ 67┊ 68┊ 69┃ 5
+     20  5000							; 50 ┃░░░┊░░░┊ 52┊ 53┊ 54┊ 55┊ 56┊ 57┊ 58┊ 59┃ 4
+     21  5000							; 40 ┃░░░┊░░░┊ 42┊ 43┊ 44┊ 45┊ 46┊ 47┊ 48┊ 49┃ 3
+     22  5000							; 30 ┃░░░┊░░░┊ 32┊ 33┊ 34┊ 35┊ 36┊ 37┊ 38┊ 39┃ 2 WHITE
+     23  5000							; 20 ┃░░░┊░░░┊ 22┊ 23┊ 24┊ 25┊ 26┊ 27┊ 28┊ 29┃ 1 WHITE
+     24  5000							; 10 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     25  5000							;  0 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     26  5000							;    ┗━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┛
+     27  5000							;	0   1	2   3	4   5	6   7	8   9
+     28  5000							;		A   B	C   D	E   F	G   H
+     29  5000
+     30  5000							;     HEX X12
+     31  5000							;    ┏━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┓
+     32  5000							;110 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     33  5000							;100 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     34  5000							; 90 ┃░░░┊░░░┊$5C┊$5D┊$5E┊$5F┊$60┊$61┊$62┊$63┃ 8
+     35  5000							; 80 ┃░░░┊░░░┊$52┊$53┊$54┊$55┊$56┊$57┊$58┊$59┃ 7
+     36  5000							; 70 ┃░░░┊░░░┊$48┊$49┊$4A┊$4B┊$4C┊$4D┊$4E┊$4F┃ 6
+     37  5000							; 60 ┃░░░┊░░░┊$3E┊$3F┊$40┊$41┊$42┊$43┊$44┊$45┃ 5
+     38  5000							; 50 ┃░░░┊░░░┊$34┊$35┊$36┊$37┊$38┊$39┊$3A┊$3B┃ 4
+     39  5000							; 40 ┃░░░┊░░░┊$2A┊$2B┊$2C┊$2D┊$2E┊$2F┊$30┊$31┃ 3
+     40  5000							; 30 ┃░░░┊░░░┊$20┊$21┊$22┊$23┊$24┊$25┊$26|$27┃ 2
+     41  5000							; 20 ┃░░░┊░░░┊$16┊$17┊$18┊$19┊$1A┊$1B┊$1C┊$1D┃ 1
+     42  5000							; 10 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     43  5000							;  0 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     44  5000							;    ┗━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┛
+     45  5000							;	0   1	2   3	4   5	6   7	8   9
+     46  5000							;		A   B	C   D	E   F	G   H
+     47  5000
      48  5000
-     49  5000
-     50  5000							; We put a short buffer before 'ValidSquare' when it is at the start of the bank, so that
-     51  5000							; the move indexing (ie., "ValidSquare+{1},x" won't drop off the beginning of the bank
-     52  5000							; and sause "segfaults". 22 is the max offset (a knight move). These spare bytes can
-     53  5000							; be re-used for something else - we just need to guarantee there are 21 of them there
-     54  5000
+     49  5000							; We put a short buffer before 'ValidSquare' when it is at the start of the bank, so that
+     50  5000							; the move indexing (ie., "ValidSquare+{1},x" won't drop off the beginning of the bank
+     51  5000							; and sause "segfaults". 21 is the max offset (a knight move). These spare bytes can
+     52  5000							; be re-used for something else - we just need to guarantee there are 21 of them there
+     53  5000
       0  5000					      ALLOCATE	Valid, 120 + 80 + 21
       0  5000					      OPTIONAL_PAGEBREAK	"Table", 120 + 80 + 21
      12  5000					      LIST	ON
@@ -11123,76 +11122,73 @@
       3  5000				   TEMPORARY_VAR SET	Overlay
       4  5000				   TEMPORARY_OFFSET SET	0
       5  5000					      SUBROUTINE
-     56  5000		       00 00 00 00*	      ds	21	; so indexing of "ValidSquare-21,x" won't fail
-     57  5015
-     58  5015							; Note, we will never index INTO the above bytes - x will always be >= 22
-     59  5015							; We just need to make sure that the actual indexing will not have an address before
-     60  5015							; the index of outside the page.
-     61  5015
+     55  5000		       00 00 00 00*	      ds	21	; so indexing of "ValidSquare-21,x" won't fail
+     56  5015
+     57  5015							; Note, we will never index INTO the above bytes - x will always be >= 22
+     58  5015							; We just need to make sure that the actual indexing will not have an address before
+     59  5015							; the index of outside the page.
+     60  5015
       0  5015					      DEF	ValidSquare
       1  5015				   BANK_ValidSquare SET	_CURRENT_BANK
       2  5015				   ValidSquare
       3  5015				   TEMPORARY_VAR SET	Overlay
       4  5015				   TEMPORARY_OFFSET SET	0
       5  5015					      SUBROUTINE
+     62  5015
      63  5015
-     64  5015
-     65  5015							; Use this table to
-     66  5015							;   a) Determine if a square is valid (-1 = NO)
-     67  5015							;   b) Move pieces without addition.  e.g., "lda ValidSquareTable+10,x" will let you know
-     68  5015							;	if a white pawn on square "x" can move "up" the board.
-     69  5015
-     70  5015		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-     71  501f		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-     72  5029		       ff ff 16 17*	      .byte.b	-1, -1, 22, 23, 24, 25, 26, 27, 28, 29
-     73  5033		       ff ff 20 21*	      .byte.b	-1, -1, 32, 33, 34, 35, 36, 37, 38, 39
-     74  503d		       ff ff 2a 2b*	      .byte.b	-1, -1, 42, 43, 44, 45, 46, 47, 48, 49
-     75  5047		       ff ff 34 35*	      .byte.b	-1, -1, 52, 53, 54, 55, 56, 57, 58, 59
-     76  5051		       ff ff 3e 3f*	      .byte.b	-1, -1, 62, 63, 64, 65, 66, 67, 68, 69
-     77  505b		       ff ff 48 49*	      .byte.b	-1, -1, 72, 73, 74, 75, 76, 77, 78, 79
-     78  5065		       ff ff 52 53*	      .byte.b	-1, -1, 82, 83, 84, 85, 86, 87, 88, 89
-     79  506f		       ff ff 5c 5d*	      .byte.b	-1, -1, 92, 93, 94, 95, 96, 97, 98, 99	; CONTINUES...
-     80  5079
+     64  5015							; Use this table to
+     65  5015							;   a) Determine if a square is valid (-1 = NO)
+     66  5015							;   b) Move pieces without addition.  e.g., "lda ValidSquareTable+10,x" will let you know
+     67  5015							;	if a white pawn on square "x" can move "up" the board.
+     68  5015
+     69  5015		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+     70  501f		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+     71  5029		       ff ff 16 17*	      .byte.b	-1, -1, 22, 23, 24, 25, 26, 27, 28, 29
+     72  5033		       ff ff 20 21*	      .byte.b	-1, -1, 32, 33, 34, 35, 36, 37, 38, 39
+     73  503d		       ff ff 2a 2b*	      .byte.b	-1, -1, 42, 43, 44, 45, 46, 47, 48, 49
+     74  5047		       ff ff 34 35*	      .byte.b	-1, -1, 52, 53, 54, 55, 56, 57, 58, 59
+     75  5051		       ff ff 3e 3f*	      .byte.b	-1, -1, 62, 63, 64, 65, 66, 67, 68, 69
+     76  505b		       ff ff 48 49*	      .byte.b	-1, -1, 72, 73, 74, 75, 76, 77, 78, 79
+     77  5065		       ff ff 52 53*	      .byte.b	-1, -1, 82, 83, 84, 85, 86, 87, 88, 89
+     78  506f		       ff ff 5c 5d*	      .byte.b	-1, -1, 92, 93, 94, 95, 96, 97, 98, 99	; CONTINUES...
+     79  5079
       0  5079					      DEF	Board
       1  5079				   BANK_Board SET	_CURRENT_BANK
       2  5079				   Board
       3  5079				   TEMPORARY_VAR SET	Overlay
       4  5079				   TEMPORARY_OFFSET SET	0
       5  5079					      SUBROUTINE
-     82  5079
-     83  5079							; A 10X10... we should never write using invalid square
-     84  5079							; ON COPY TO RAM BANK, 'BOARD' SELF-INITIALISES TO THE FOLLOWING VALUES
-     85  5079							; FROM THEN ON IT'S WRITEABLE (REMEMBER TO +RAM_WRITE) FOR MODIFICATIONS
-     86  5079
-     87  5079		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1	; shared with above table
-     88  5083		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1	; shared with above table
-     89  508d
-     90  508d					      REPEAT	8
-     91  508d		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-     90  508d					      REPEND
-     91  5097		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-     90  5097					      REPEND
-     91  50a1		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-     90  50a1					      REPEND
-     91  50ab		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-     90  50ab					      REPEND
-     91  50b5		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-     90  50b5					      REPEND
-     91  50bf		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-     90  50bf					      REPEND
-     91  50c9		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-     90  50c9					      REPEND
-     91  50d3		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-     92  50dd					      REPEND
-     93  50dd
-     94  50dd							; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 99
+     81  5079
+     82  5079							; A 10X10... we should never write using invalid square
+     83  5079							; ON COPY TO RAM BANK, 'BOARD' SELF-INITIALISES TO THE FOLLOWING VALUES
+     84  5079							; FROM THEN ON IT'S WRITEABLE (REMEMBER TO +RAM_WRITE) FOR MODIFICATIONS
+     85  5079
+     86  5079		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1	; shared with above table
+     87  5083		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1	; shared with above table
+     88  508d
+     89  508d					      REPEAT	8
+     90  508d		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+     89  508d					      REPEND
+     90  5097		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+     89  5097					      REPEND
+     90  50a1		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+     89  50a1					      REPEND
+     90  50ab		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+     89  50ab					      REPEND
+     90  50b5		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+     89  50b5					      REPEND
+     90  50bf		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+     89  50bf					      REPEND
+     90  50c9		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+     89  50c9					      REPEND
+     90  50d3		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+     91  50dd					      REPEND
+     92  50dd
+     93  50dd							; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 99
+     94  50dd
      95  50dd
-     96  50dd							; PARANOIA... following not used, but there in case above violated
-     97  50dd							;.byte -1, -1, -1, -1, -1, -1, -1, -1, -1, -1	      ; shared with above table
-     98  50dd							;.byte -1, -1, -1, -1, -1, -1, -1, -1, -1, -1	      ; shared with above table
-     99  50dd
-    100  50dd							;---------------------------------------------------------------------------------------------------
-    101  50dd
+     96  50dd							;---------------------------------------------------------------------------------------------------
+     97  50dd
 ------- FILE Handler_QUEEN.asm LEVEL 3 PASS 2
       0  50dd					      include	"Handler_QUEEN.asm"
       1  50dd							; Copyright (C)2020 Andrew Davie
@@ -11221,14 +11217,14 @@
       5  50dd		       a6 93		      ldx	currentSquare
       6  50df		       d0 03		      bne	.project
       7  50e1
-      8  50e1		       20 69 fb    .empty     jsr	AddMove
+      8  50e1		       20 78 fb    .empty     jsr	AddMove
       9  50e4		       bc 0a f0    .project   ldy	ValidSquare+_DOWN+_LEFT,x
      10  50e7		       30 0c		      bmi	.invalid
      11  50e9		       b9 79 f0 	      lda	Board,y
      12  50ec		       f0 f3		      beq	.empty
      13  50ee		       45 92		      eor	currentPiece
      14  50f0		       10 03		      bpl	.invalid
-     15  50f2		       20 69 fb 	      jsr	AddMove
+     15  50f2		       20 78 fb 	      jsr	AddMove
      16  50f5
      17  50f5				   .invalid
       0  50f5					      MOVE_TOWARDS	_DOWN
@@ -11239,14 +11235,14 @@
       5  50f5		       a6 93		      ldx	currentSquare
       6  50f7		       d0 03		      bne	.project
       7  50f9
-      8  50f9		       20 69 fb    .empty     jsr	AddMove
+      8  50f9		       20 78 fb    .empty     jsr	AddMove
       9  50fc		       bc 0b f0    .project   ldy	ValidSquare+_DOWN,x
      10  50ff		       30 0c		      bmi	.invalid
      11  5101		       b9 79 f0 	      lda	Board,y
      12  5104		       f0 f3		      beq	.empty
      13  5106		       45 92		      eor	currentPiece
      14  5108		       10 03		      bpl	.invalid
-     15  510a		       20 69 fb 	      jsr	AddMove
+     15  510a		       20 78 fb 	      jsr	AddMove
      16  510d
      17  510d				   .invalid
       0  510d					      MOVE_TOWARDS	_DOWN+_RIGHT
@@ -11257,14 +11253,14 @@
       5  510d		       a6 93		      ldx	currentSquare
       6  510f		       d0 03		      bne	.project
       7  5111
-      8  5111		       20 69 fb    .empty     jsr	AddMove
+      8  5111		       20 78 fb    .empty     jsr	AddMove
       9  5114		       bc 0c f0    .project   ldy	ValidSquare+_DOWN+_RIGHT,x
      10  5117		       30 0c		      bmi	.invalid
      11  5119		       b9 79 f0 	      lda	Board,y
      12  511c		       f0 f3		      beq	.empty
      13  511e		       45 92		      eor	currentPiece
      14  5120		       10 03		      bpl	.invalid
-     15  5122		       20 69 fb 	      jsr	AddMove
+     15  5122		       20 78 fb 	      jsr	AddMove
      16  5125
      17  5125				   .invalid
       0  5125					      MOVE_TOWARDS	_RIGHT
@@ -11275,14 +11271,14 @@
       5  5125		       a6 93		      ldx	currentSquare
       6  5127		       d0 03		      bne	.project
       7  5129
-      8  5129		       20 69 fb    .empty     jsr	AddMove
+      8  5129		       20 78 fb    .empty     jsr	AddMove
       9  512c		       bc 16 f0    .project   ldy	ValidSquare+_RIGHT,x
      10  512f		       30 0c		      bmi	.invalid
      11  5131		       b9 79 f0 	      lda	Board,y
      12  5134		       f0 f3		      beq	.empty
      13  5136		       45 92		      eor	currentPiece
      14  5138		       10 03		      bpl	.invalid
-     15  513a		       20 69 fb 	      jsr	AddMove
+     15  513a		       20 78 fb 	      jsr	AddMove
      16  513d
      17  513d				   .invalid
       0  513d					      MOVE_TOWARDS	_UP+_RIGHT
@@ -11293,14 +11289,14 @@
       5  513d		       a6 93		      ldx	currentSquare
       6  513f		       d0 03		      bne	.project
       7  5141
-      8  5141		       20 69 fb    .empty     jsr	AddMove
+      8  5141		       20 78 fb    .empty     jsr	AddMove
       9  5144		       bc 20 f0    .project   ldy	ValidSquare+_UP+_RIGHT,x
      10  5147		       30 0c		      bmi	.invalid
      11  5149		       b9 79 f0 	      lda	Board,y
      12  514c		       f0 f3		      beq	.empty
      13  514e		       45 92		      eor	currentPiece
      14  5150		       10 03		      bpl	.invalid
-     15  5152		       20 69 fb 	      jsr	AddMove
+     15  5152		       20 78 fb 	      jsr	AddMove
      16  5155
      17  5155				   .invalid
       0  5155					      MOVE_TOWARDS	_UP
@@ -11311,14 +11307,14 @@
       5  5155		       a6 93		      ldx	currentSquare
       6  5157		       d0 03		      bne	.project
       7  5159
-      8  5159		       20 69 fb    .empty     jsr	AddMove
+      8  5159		       20 78 fb    .empty     jsr	AddMove
       9  515c		       bc 1f f0    .project   ldy	ValidSquare+_UP,x
      10  515f		       30 0c		      bmi	.invalid
      11  5161		       b9 79 f0 	      lda	Board,y
      12  5164		       f0 f3		      beq	.empty
      13  5166		       45 92		      eor	currentPiece
      14  5168		       10 03		      bpl	.invalid
-     15  516a		       20 69 fb 	      jsr	AddMove
+     15  516a		       20 78 fb 	      jsr	AddMove
      16  516d
      17  516d				   .invalid
       0  516d					      MOVE_TOWARDS	_UP+_LEFT
@@ -11329,14 +11325,14 @@
       5  516d		       a6 93		      ldx	currentSquare
       6  516f		       d0 03		      bne	.project
       7  5171
-      8  5171		       20 69 fb    .empty     jsr	AddMove
+      8  5171		       20 78 fb    .empty     jsr	AddMove
       9  5174		       bc 1e f0    .project   ldy	ValidSquare+_UP+_LEFT,x
      10  5177		       30 0c		      bmi	.invalid
      11  5179		       b9 79 f0 	      lda	Board,y
      12  517c		       f0 f3		      beq	.empty
      13  517e		       45 92		      eor	currentPiece
      14  5180		       10 03		      bpl	.invalid
-     15  5182		       20 69 fb 	      jsr	AddMove
+     15  5182		       20 78 fb 	      jsr	AddMove
      16  5185
      17  5185				   .invalid
       0  5185					      MOVE_TOWARDS	_LEFT
@@ -11347,18 +11343,18 @@
       5  5185		       a6 93		      ldx	currentSquare
       6  5187		       d0 03		      bne	.project
       7  5189
-      8  5189		       20 69 fb    .empty     jsr	AddMove
+      8  5189		       20 78 fb    .empty     jsr	AddMove
       9  518c		       bc 14 f0    .project   ldy	ValidSquare+_LEFT,x
      10  518f		       30 0c		      bmi	.invalid
      11  5191		       b9 79 f0 	      lda	Board,y
      12  5194		       f0 f3		      beq	.empty
      13  5196		       45 92		      eor	currentPiece
      14  5198		       10 03		      bpl	.invalid
-     15  519a		       20 69 fb 	      jsr	AddMove
+     15  519a		       20 78 fb 	      jsr	AddMove
      16  519d
      17  519d				   .invalid
      22  519d
-     23  519d		       4c c9 f9 	      jmp	MoveReturn
+     23  519d		       4c d8 f9 	      jmp	MoveReturn
      24  51a0
      25  51a0							; EOF
 ------- FILE Handler_BANK1.asm
@@ -11389,14 +11385,14 @@
       5  51a0		       a6 93		      ldx	currentSquare
       6  51a2		       d0 03		      bne	.project
       7  51a4
-      8  51a4		       20 69 fb    .empty     jsr	AddMove
+      8  51a4		       20 78 fb    .empty     jsr	AddMove
       9  51a7		       bc 0a f0    .project   ldy	ValidSquare+_DOWN+_LEFT,x
      10  51aa		       30 0c		      bmi	.invalid
      11  51ac		       b9 79 f0 	      lda	Board,y
      12  51af		       f0 f3		      beq	.empty
      13  51b1		       45 92		      eor	currentPiece
      14  51b3		       10 03		      bpl	.invalid
-     15  51b5		       20 69 fb 	      jsr	AddMove
+     15  51b5		       20 78 fb 	      jsr	AddMove
      16  51b8
      17  51b8				   .invalid
       0  51b8					      MOVE_TOWARDS	_DOWN+_RIGHT
@@ -11407,14 +11403,14 @@
       5  51b8		       a6 93		      ldx	currentSquare
       6  51ba		       d0 03		      bne	.project
       7  51bc
-      8  51bc		       20 69 fb    .empty     jsr	AddMove
+      8  51bc		       20 78 fb    .empty     jsr	AddMove
       9  51bf		       bc 0c f0    .project   ldy	ValidSquare+_DOWN+_RIGHT,x
      10  51c2		       30 0c		      bmi	.invalid
      11  51c4		       b9 79 f0 	      lda	Board,y
      12  51c7		       f0 f3		      beq	.empty
      13  51c9		       45 92		      eor	currentPiece
      14  51cb		       10 03		      bpl	.invalid
-     15  51cd		       20 69 fb 	      jsr	AddMove
+     15  51cd		       20 78 fb 	      jsr	AddMove
      16  51d0
      17  51d0				   .invalid
       0  51d0					      MOVE_TOWARDS	_UP+_LEFT
@@ -11425,14 +11421,14 @@
       5  51d0		       a6 93		      ldx	currentSquare
       6  51d2		       d0 03		      bne	.project
       7  51d4
-      8  51d4		       20 69 fb    .empty     jsr	AddMove
+      8  51d4		       20 78 fb    .empty     jsr	AddMove
       9  51d7		       bc 1e f0    .project   ldy	ValidSquare+_UP+_LEFT,x
      10  51da		       30 0c		      bmi	.invalid
      11  51dc		       b9 79 f0 	      lda	Board,y
      12  51df		       f0 f3		      beq	.empty
      13  51e1		       45 92		      eor	currentPiece
      14  51e3		       10 03		      bpl	.invalid
-     15  51e5		       20 69 fb 	      jsr	AddMove
+     15  51e5		       20 78 fb 	      jsr	AddMove
      16  51e8
      17  51e8				   .invalid
       0  51e8					      MOVE_TOWARDS	_UP+_RIGHT
@@ -11443,18 +11439,18 @@
       5  51e8		       a6 93		      ldx	currentSquare
       6  51ea		       d0 03		      bne	.project
       7  51ec
-      8  51ec		       20 69 fb    .empty     jsr	AddMove
+      8  51ec		       20 78 fb    .empty     jsr	AddMove
       9  51ef		       bc 20 f0    .project   ldy	ValidSquare+_UP+_RIGHT,x
      10  51f2		       30 0c		      bmi	.invalid
      11  51f4		       b9 79 f0 	      lda	Board,y
      12  51f7		       f0 f3		      beq	.empty
      13  51f9		       45 92		      eor	currentPiece
      14  51fb		       10 03		      bpl	.invalid
-     15  51fd		       20 69 fb 	      jsr	AddMove
+     15  51fd		       20 78 fb 	      jsr	AddMove
      16  5200
      17  5200				   .invalid
      17  5200
-     18  5200		       4c c9 f9 	      jmp	MoveReturn
+     18  5200		       4c d8 f9 	      jmp	MoveReturn
      19  5203
      20  5203							;---------------------------------------------------------------------------------------------------
      21  5203							; EOF
@@ -11488,14 +11484,14 @@
       5  5203		       a6 93		      ldx	currentSquare
       6  5205		       d0 03		      bne	.project
       7  5207
-      8  5207		       20 69 fb    .empty     jsr	AddMove
+      8  5207		       20 78 fb    .empty     jsr	AddMove
       9  520a		       bc 0b f0    .project   ldy	ValidSquare+_DOWN,x
      10  520d		       30 0c		      bmi	.invalid
      11  520f		       b9 79 f0 	      lda	Board,y
      12  5212		       f0 f3		      beq	.empty
      13  5214		       45 92		      eor	currentPiece
      14  5216		       10 03		      bpl	.invalid
-     15  5218		       20 69 fb 	      jsr	AddMove
+     15  5218		       20 78 fb 	      jsr	AddMove
      16  521b
      17  521b				   .invalid
       0  521b					      MOVE_TOWARDS	_RIGHT
@@ -11506,14 +11502,14 @@
       5  521b		       a6 93		      ldx	currentSquare
       6  521d		       d0 03		      bne	.project
       7  521f
-      8  521f		       20 69 fb    .empty     jsr	AddMove
+      8  521f		       20 78 fb    .empty     jsr	AddMove
       9  5222		       bc 16 f0    .project   ldy	ValidSquare+_RIGHT,x
      10  5225		       30 0c		      bmi	.invalid
      11  5227		       b9 79 f0 	      lda	Board,y
      12  522a		       f0 f3		      beq	.empty
      13  522c		       45 92		      eor	currentPiece
      14  522e		       10 03		      bpl	.invalid
-     15  5230		       20 69 fb 	      jsr	AddMove
+     15  5230		       20 78 fb 	      jsr	AddMove
      16  5233
      17  5233				   .invalid
       0  5233					      MOVE_TOWARDS	_UP
@@ -11524,14 +11520,14 @@
       5  5233		       a6 93		      ldx	currentSquare
       6  5235		       d0 03		      bne	.project
       7  5237
-      8  5237		       20 69 fb    .empty     jsr	AddMove
+      8  5237		       20 78 fb    .empty     jsr	AddMove
       9  523a		       bc 1f f0    .project   ldy	ValidSquare+_UP,x
      10  523d		       30 0c		      bmi	.invalid
      11  523f		       b9 79 f0 	      lda	Board,y
      12  5242		       f0 f3		      beq	.empty
      13  5244		       45 92		      eor	currentPiece
      14  5246		       10 03		      bpl	.invalid
-     15  5248		       20 69 fb 	      jsr	AddMove
+     15  5248		       20 78 fb 	      jsr	AddMove
      16  524b
      17  524b				   .invalid
       0  524b					      MOVE_TOWARDS	_LEFT
@@ -11542,18 +11538,18 @@
       5  524b		       a6 93		      ldx	currentSquare
       6  524d		       d0 03		      bne	.project
       7  524f
-      8  524f		       20 69 fb    .empty     jsr	AddMove
+      8  524f		       20 78 fb    .empty     jsr	AddMove
       9  5252		       bc 14 f0    .project   ldy	ValidSquare+_LEFT,x
      10  5255		       30 0c		      bmi	.invalid
      11  5257		       b9 79 f0 	      lda	Board,y
      12  525a		       f0 f3		      beq	.empty
      13  525c		       45 92		      eor	currentPiece
      14  525e		       10 03		      bpl	.invalid
-     15  5260		       20 69 fb 	      jsr	AddMove
+     15  5260		       20 78 fb 	      jsr	AddMove
      16  5263
      17  5263				   .invalid
      19  5263
-     20  5263		       4c c9 f9 	      jmp	MoveReturn
+     20  5263		       4c d8 f9 	      jmp	MoveReturn
      21  5266
      22  5266							;---------------------------------------------------------------------------------------------------
      23  5266							; EOF
@@ -11650,7 +11646,7 @@
       5  526e		       f0 04		      beq	.squareEmpty
       6  5270		       45 92		      eor	currentPiece
       7  5272		       10 03		      bpl	.invalid
-      8  5274		       20 69 fb    .squareEmpty jsr	AddMove
+      8  5274		       20 78 fb    .squareEmpty jsr	AddMove
       9  5277				   .invalid
       0  5277					      MOVE_TO_X	_DOWN
       1  5277		       a6 93		      ldx	currentSquare
@@ -11662,7 +11658,7 @@
       5  5281		       f0 04		      beq	.squareEmpty
       6  5283		       45 92		      eor	currentPiece
       7  5285		       10 03		      bpl	.invalid
-      8  5287		       20 69 fb    .squareEmpty jsr	AddMove
+      8  5287		       20 78 fb    .squareEmpty jsr	AddMove
       9  528a				   .invalid
       0  528a					      MOVE_TO_X	_DOWN+_RIGHT
       1  528a		       a6 93		      ldx	currentSquare
@@ -11674,7 +11670,7 @@
       5  5294		       f0 04		      beq	.squareEmpty
       6  5296		       45 92		      eor	currentPiece
       7  5298		       10 03		      bpl	.invalid
-      8  529a		       20 69 fb    .squareEmpty jsr	AddMove
+      8  529a		       20 78 fb    .squareEmpty jsr	AddMove
       9  529d				   .invalid
       0  529d					      MOVE_TO_X	_RIGHT
       1  529d		       a6 93		      ldx	currentSquare
@@ -11686,7 +11682,7 @@
       5  52a7		       f0 04		      beq	.squareEmpty
       6  52a9		       45 92		      eor	currentPiece
       7  52ab		       10 03		      bpl	.invalid
-      8  52ad		       20 69 fb    .squareEmpty jsr	AddMove
+      8  52ad		       20 78 fb    .squareEmpty jsr	AddMove
       9  52b0				   .invalid
       0  52b0					      MOVE_TO_X	_UP+_RIGHT
       1  52b0		       a6 93		      ldx	currentSquare
@@ -11698,7 +11694,7 @@
       5  52ba		       f0 04		      beq	.squareEmpty
       6  52bc		       45 92		      eor	currentPiece
       7  52be		       10 03		      bpl	.invalid
-      8  52c0		       20 69 fb    .squareEmpty jsr	AddMove
+      8  52c0		       20 78 fb    .squareEmpty jsr	AddMove
       9  52c3				   .invalid
       0  52c3					      MOVE_TO_X	_UP
       1  52c3		       a6 93		      ldx	currentSquare
@@ -11710,7 +11706,7 @@
       5  52cd		       f0 04		      beq	.squareEmpty
       6  52cf		       45 92		      eor	currentPiece
       7  52d1		       10 03		      bpl	.invalid
-      8  52d3		       20 69 fb    .squareEmpty jsr	AddMove
+      8  52d3		       20 78 fb    .squareEmpty jsr	AddMove
       9  52d6				   .invalid
       0  52d6					      MOVE_TO_X	_UP+_LEFT
       1  52d6		       a6 93		      ldx	currentSquare
@@ -11722,7 +11718,7 @@
       5  52e0		       f0 04		      beq	.squareEmpty
       6  52e2		       45 92		      eor	currentPiece
       7  52e4		       10 03		      bpl	.invalid
-      8  52e6		       20 69 fb    .squareEmpty jsr	AddMove
+      8  52e6		       20 78 fb    .squareEmpty jsr	AddMove
       9  52e9				   .invalid
       0  52e9					      MOVE_TO_X	_LEFT
       1  52e9		       a6 93		      ldx	currentSquare
@@ -11734,7 +11730,7 @@
       5  52f3		       f0 04		      beq	.squareEmpty
       6  52f5		       45 92		      eor	currentPiece
       7  52f7		       10 03		      bpl	.invalid
-      8  52f9		       20 69 fb    .squareEmpty jsr	AddMove
+      8  52f9		       20 78 fb    .squareEmpty jsr	AddMove
       9  52fc				   .invalid
      86  52fc
      87  52fc		       24 92		      bit	currentPiece
@@ -11788,7 +11784,7 @@
      45  531e				  -	      ldy	ValidSquare-2,x
      46  531e					      ENDIF
      47  531e
-     48  531e		       20 69 fb 	      jsr	AddMove
+     48  531e		       20 78 fb 	      jsr	AddMove
      49  5321
      50  5321				   .noCastle
       0  5321					      CASTLE	QUEENSIDE
@@ -11839,11 +11835,11 @@
      45  5341		       bc 13 f0 	      ldy	ValidSquare-2,x
      46  5344					      ENDIF
      47  5344
-     48  5344		       20 69 fb 	      jsr	AddMove
+     48  5344		       20 78 fb 	      jsr	AddMove
      49  5347
      50  5347				   .noCastle
      92  5347
-     93  5347		       4c c9 f9    .exit      jmp	MoveReturn
+     93  5347		       4c d8 f9    .exit      jmp	MoveReturn
      94  534a
      95  534a							;---------------------------------------------------------------------------------------------------
      96  534a							; EOF
@@ -11876,7 +11872,7 @@
       5  5352		       f0 04		      beq	.squareEmpty
       6  5354		       45 92		      eor	currentPiece
       7  5356		       10 03		      bpl	.invalid
-      8  5358		       20 69 fb    .squareEmpty jsr	AddMove
+      8  5358		       20 78 fb    .squareEmpty jsr	AddMove
       9  535b				   .invalid
       0  535b					      MOVE_TO_X	_DOWN+_DOWN+_RIGHT
       1  535b		       a6 93		      ldx	currentSquare
@@ -11888,7 +11884,7 @@
       5  5365		       f0 04		      beq	.squareEmpty
       6  5367		       45 92		      eor	currentPiece
       7  5369		       10 03		      bpl	.invalid
-      8  536b		       20 69 fb    .squareEmpty jsr	AddMove
+      8  536b		       20 78 fb    .squareEmpty jsr	AddMove
       9  536e				   .invalid
       0  536e					      MOVE_TO_X	_UP+_UP+_LEFT
       1  536e		       a6 93		      ldx	currentSquare
@@ -11900,7 +11896,7 @@
       5  5378		       f0 04		      beq	.squareEmpty
       6  537a		       45 92		      eor	currentPiece
       7  537c		       10 03		      bpl	.invalid
-      8  537e		       20 69 fb    .squareEmpty jsr	AddMove
+      8  537e		       20 78 fb    .squareEmpty jsr	AddMove
       9  5381				   .invalid
       0  5381					      MOVE_TO_X	_UP+_UP+_RIGHT
       1  5381		       a6 93		      ldx	currentSquare
@@ -11912,7 +11908,7 @@
       5  538b		       f0 04		      beq	.squareEmpty
       6  538d		       45 92		      eor	currentPiece
       7  538f		       10 03		      bpl	.invalid
-      8  5391		       20 69 fb    .squareEmpty jsr	AddMove
+      8  5391		       20 78 fb    .squareEmpty jsr	AddMove
       9  5394				   .invalid
      18  5394
       0  5394					      MOVE_TO_X	_DOWN+_LEFT+_LEFT
@@ -11925,7 +11921,7 @@
       5  539e		       f0 04		      beq	.squareEmpty
       6  53a0		       45 92		      eor	currentPiece
       7  53a2		       10 03		      bpl	.invalid
-      8  53a4		       20 69 fb    .squareEmpty jsr	AddMove
+      8  53a4		       20 78 fb    .squareEmpty jsr	AddMove
       9  53a7				   .invalid
       0  53a7					      MOVE_TO_X	_DOWN+_RIGHT+_RIGHT
       1  53a7		       a6 93		      ldx	currentSquare
@@ -11937,7 +11933,7 @@
       5  53b1		       f0 04		      beq	.squareEmpty
       6  53b3		       45 92		      eor	currentPiece
       7  53b5		       10 03		      bpl	.invalid
-      8  53b7		       20 69 fb    .squareEmpty jsr	AddMove
+      8  53b7		       20 78 fb    .squareEmpty jsr	AddMove
       9  53ba				   .invalid
       0  53ba					      MOVE_TO_X	_UP+_LEFT+_LEFT
       1  53ba		       a6 93		      ldx	currentSquare
@@ -11949,7 +11945,7 @@
       5  53c4		       f0 04		      beq	.squareEmpty
       6  53c6		       45 92		      eor	currentPiece
       7  53c8		       10 03		      bpl	.invalid
-      8  53ca		       20 69 fb    .squareEmpty jsr	AddMove
+      8  53ca		       20 78 fb    .squareEmpty jsr	AddMove
       9  53cd				   .invalid
       0  53cd					      MOVE_TO_X	_UP+_RIGHT+_RIGHT
       1  53cd		       a6 93		      ldx	currentSquare
@@ -11961,17 +11957,17 @@
       5  53d7		       f0 04		      beq	.squareEmpty
       6  53d9		       45 92		      eor	currentPiece
       7  53db		       10 03		      bpl	.invalid
-      8  53dd		       20 69 fb    .squareEmpty jsr	AddMove
+      8  53dd		       20 78 fb    .squareEmpty jsr	AddMove
       9  53e0				   .invalid
      23  53e0
-     24  53e0		       4c c9 f9 	      jmp	MoveReturn
+     24  53e0		       4c d8 f9 	      jmp	MoveReturn
      25  53e3
      26  53e3							; EOF
 ------- FILE Handler_BANK1.asm
-    107  53e3
-    108  53e3
-    109  53e3							;---------------------------------------------------------------------------------------------------
-    110  53e3
+    103  53e3
+    104  53e3
+    105  53e3							;---------------------------------------------------------------------------------------------------
+    106  53e3
       0  53e3					      CHECK_HALF_BANK_SIZE	"HANDLER_BANK1 -- 1K"
       1  53e3
       2  53e3
@@ -11982,12 +11978,12 @@
       6  53e3				  -	      ECHO	"HALF-BANK OVERFLOW @ ", * - ORIGIN
       7  53e3				  -	      ERR
       8  53e3					      endif
+    108  53e3
+    109  53e3
+    110  53e3							; There is space here (1K) for use as ROM
+    111  53e3							; but NOT when the above bank is switched in as RAM, of course!
     112  53e3
     113  53e3
-    114  53e3							; There is space here (1K) for use as ROM
-    115  53e3							; but NOT when the above bank is switched in as RAM, of course!
-    116  53e3
-    117  53e3
 ------- FILE gfx/WHITE_PROMOTE_on_BLACK_SQUARE_0.asm LEVEL 3 PASS 2
       0  53e3					      include	"gfx/WHITE_PROMOTE_on_BLACK_SQUARE_0.asm"
       0  53e3					      OPTIONAL_PAGEBREAK	"WHITE_PROMOTE_on_BLACK_SQUARE_0", 72
@@ -12100,9 +12096,9 @@
       4  5660		       00 00 00 00*	      .byte.b	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00	;PF1
       5  5678		       20 00 20 60*	      .byte.b	$20,$00,$20,$60,$40,$50,$70,$20,$20,$00,$20,$60,$40,$50,$70,$20,$00,$00,$00,$00,$00,$00,$00,$00	;PF2
 ------- FILE Handler_BANK1.asm
-    126  5690
-    127  5690							;---------------------------------------------------------------------------------------------------
-    128  5690
+    122  5690
+    123  5690							;---------------------------------------------------------------------------------------------------
+    124  5690
       0  5690					      CHECK_BANK_SIZE	"HANDLER_BANK_1 -- full 2K"
       1  5690		       06 90	   .TEMP      =	* - BANK_START
  HANDLER_BANK_1 -- full 2K (2K) SIZE =  $690 , FREE= $170
@@ -12111,9 +12107,9 @@
       4  5690				  -	      ECHO	"BANK OVERFLOW @ ", * - ORIGIN
       5  5690				  -	      ERR
       6  5690					      endif
-    130  5690
-    131  5690							;---------------------------------------------------------------------------------------------------
-    132  5690							; EOF
+    126  5690
+    127  5690							;---------------------------------------------------------------------------------------------------
+    128  5690							; EOF
 ------- FILE ./chess.asm
 ------- FILE ply.asm LEVEL 2 PASS 2
       0  5690					      include	"ply.asm"
@@ -12470,7 +12466,7 @@
     192  5a29
     193  5a29		       86 9c		      stx	__x
     194  5a2b
-    195  5a2b		       20 2d fc 	      jsr	GetBoard
+    195  5a2b		       20 3c fc 	      jsr	GetBoard
     196  5a2e		       f0 fe	   .fail      beq	.fail
     197  5a30		       c9 ff		      cmp	#-1
     198  5a32		       f0 fe	   .fail2     beq	.fail2
@@ -12561,9 +12557,9 @@
      43  5a88				  -	      else		; test position...
      44  5a88				  -
      45  5a88				  -	      .byte	WHITE|WP, 57
-     46  5a88				  -			;.byte BLACK|BP, 88
+     46  5a88				  -	      .byte	BLACK|BP, 88
      47  5a88				  -	      .byte	BLACK|BP, 86
-     48  5a88				  -
+     48  5a88				  -	      .byte	WHITE|Q, 65
      49  5a88				  -
      50  5a88				  -	      .byte	0	;end
      51  5a88				  -
@@ -12623,7 +12619,7 @@
     281  5aae
     282  5aae		       86 96	   GenerateNextPiece stx	piecelistIndex
     283  5ab0		       85 93		      sta	currentSquare
-    284  5ab2		       20 a6 f9 	      jsr	MoveForSinglePiece
+    284  5ab2		       20 b5 f9 	      jsr	MoveForSinglePiece
     285  5ab5
     286  5ab5		       c6 96		      dec	piecelistIndex
     287  5ab7		       30 1e		      bmi	.exit
@@ -13930,7 +13926,7 @@
      10  67c8				   ORIGIN     SET	FIXED_BANK
      11  67c8
       0  67c8					      NEWBANK	THE_FIXED_BANK
-      1  7d44 ????				      SEG	THE_FIXED_BANK
+      1  7d53 ????				      SEG	THE_FIXED_BANK
       2  7800					      ORG	ORIGIN
       3  7800					      RORG	$F000
       4  7800				   BANK_START SET	*
@@ -13993,7 +13989,7 @@
       1  7827
       2  7827		       a9 0f		      lda	#BANK_InitialisePieceSquares
       3  7829		       85 3f		      sta	SET_BANK
-      4  782b		       20 88 fb 	      jsr	InitialisePieceSquares
+      4  782b		       20 97 fb 	      jsr	InitialisePieceSquares
      54  782e
      55  782e		       a9 00		      lda	#WHITE
      56  7830		       85 97		      sta	sideToMove
@@ -14198,7 +14194,7 @@
     213  78c8		       a9 00		      lda	#BLANK
     214  78ca		       99 79 f4 	      sta	Board+RAM_WRITE,y
     215  78cd
-    216  78cd		       20 92 fc 	      jsr	CopySinglePiece
+    216  78cd		       20 a1 fc 	      jsr	CopySinglePiece
     217  78d0
     218  78d0		       a9 08		      lda	#RAMBANK_MOVES_RAM
     219  78d2		       85 3e		      sta	SET_BANK_RAM
@@ -14374,7 +14370,7 @@
     346  7942
     347  7942		       ad 84 02 	      lda	INTIM
     348  7945		       c9 2d		      cmp	#SPEEDOF_COPYSINGLEPIECE+4
-    349  7947		       90 5c		      bcc	.exit
+    349  7947		       90 6b		      bcc	.exit
     350  7949
       0  7949					      PHASE	AI_FlipBuffers
       1  7949		       a9 12		      lda	#AI_FlipBuffers
@@ -14415,1371 +14411,1384 @@
     385  7963
     386  7963		       a5 98		      lda	fromPiece
     387  7965		       29 20		      and	#FLAG_ENPASSANT
-    388  7967		       f0 1d		      beq	.noEP	; not an en-passant, or it's enpassant by a MOVED piece
+    388  7967		       f0 2c		      beq	.noEP	; not an en-passant, or it's enpassant by a MOVED piece
     389  7969
     390  7969							; Here we are the aggressor and we need to take the pawn 'en passant' fashion
     391  7969							; y = the square containing the pawn to capture (i.e., previous value of 'enPassantPawn')
     392  7969
-    393  7969		       a5 97		      lda	sideToMove
-    394  796b		       48		      pha
-    395  796c		       49 80		      eor	#128
-    396  796e		       85 97		      sta	sideToMove
-    397  7970
-    398  7970		       84 87		      sty	originX12
-    399  7972		       84 80		      sty	squareToDraw
-    400  7974		       20 92 fc 	      jsr	CopySinglePiece	; ERASE pawn being en-passant captured
-    401  7977
-    402  7977		       a5 97		      lda	sideToMove
-    403  7979		       0a		      asl
-    404  797a		       a9 09		      lda	#RAMBANK_PLY
-    405  797c		       69 00		      adc	#0
-    406  797e		       85 3e		      sta	SET_BANK_RAM
-    407  7980
-    408  7980		       20 d8 f2 	      jsr	FixPieceList	; REMOVE any captured object
-    409  7983
-    410  7983		       68		      pla
-    411  7984		       85 97		      sta	sideToMove
-    412  7986				   .noEP
-    413  7986
-    414  7986							; }
-    415  7986
-    416  7986
-    417  7986
-    418  7986
-      0  7986					      JSROM_SAFE	CastleFixup
-      1  7986
-      2  7986
-      3  7986
-      4  7986		       a9 00		      lda	#BANK_CastleFixup
-      5  7988		       85 8b		      sta	savedBank
-      6  798a		       85 3f		      sta	SET_BANK
-      7  798c		       20 d2 f0 	      jsr	CastleFixup
-    420  798f
-    421  798f
-    422  798f
-    423  798f							; Mark the piece as MOVED
-    424  798f
-    425  798f		       a9 08		      lda	#RAMBANK_MOVES_RAM
-    426  7991		       85 3e		      sta	SET_BANK_RAM
-    427  7993		       a4 85		      ldy	fromX12	; final square
-    428  7995		       b9 79 f0 	      lda	Board,y
-    429  7998		       29 df		      and	#~FLAG_ENPASSANT
-    430  799a		       09 40		      ora	#FLAG_MOVED
-    431  799c		       99 79 f4 	      sta	Board+RAM_WRITE,y
-    432  799f
-    433  799f
-    434  799f
-    435  799f
-    436  799f					      if	ASSERTS
-    437  799f							;		      JSROM_SAFE DIAGNOSTIC_checkPieces
-    438  799f					      endif
-    439  799f
-    440  799f
-    441  799f		       a5 97		      lda	sideToMove
-    442  79a1		       49 80		      eor	#128
-    443  79a3		       85 97		      sta	sideToMove
-    444  79a5
-    445  79a5		       60	   .exit      rts
-    446  79a6
-    447  79a6
-    448  79a6							;---------------------------------------------------------------------------------------------------
-    449  79a6
-      0  79a6					      DEF	MoveForSinglePiece
-      1  79a6				   BANK_MoveForSinglePiece SET	_CURRENT_BANK
-      2  79a6				   MoveForSinglePiece
-      3  79a6				   TEMPORARY_VAR SET	Overlay
-      4  79a6				   TEMPORARY_OFFSET SET	0
-      5  79a6					      SUBROUTINE
-    451  79a6					      SUBROUTINE
-    452  79a6
-    453  79a6
-    454  79a6		       a9 08		      lda	#RAMBANK_MOVES_RAM
-    455  79a8		       85 3e		      sta	SET_BANK_RAM
-    456  79aa
-    457  79aa		       a6 93		      ldx	currentSquare	; used in move handlers
-    458  79ac		       bd 79 f0 	      lda	Board,x
-    459  79af		       85 92		      sta	currentPiece
-    460  79b1
-    461  79b1					      IF	ASSERTS
-    462  79b1					      SUBROUTINE
-    463  79b1							; DEBUG: Make sure we're looking at correct colour
-    464  79b1		       45 97		      eor	sideToMove
-    465  79b3		       30 fe	   .lock      bmi	.lock
-    466  79b5		       a5 92		      lda	currentPiece
-    467  79b7					      ENDIF
-    468  79b7
-    469  79b7		       29 0f		      and	#PIECE_MASK
-    470  79b9		       a8		      tay
-    471  79ba
-    472  79ba					      IF	ASSERTS
-    473  79ba							; DEBUG: Make sure we have an actual piece, not an empty square
-    474  79ba					      SUBROUTINE
-    475  79ba		       f0 fe	   .lock      beq	.lock	; catch errors
-    476  79bc					      ENDIF
-    477  79bc
-      0  79bc					      VAR	__vector, 2
-      1  79bc				   __vector   SET	TEMPORARY_VAR
-      2  79bc				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 2
-      3  79bc
-      4  79bc				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  79bc				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  79bc				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  79bc					      ENDIF
-      8  79bc				  -	      IF	OVERLAY_DELTA > OVERLAY_SIZE
-      9  79bc				  -	      ECHO	"Temporary Variable", __vector, "overflow!"
-     10  79bc				  -	      ERR
-     11  79bc					      ENDIF
-     12  79bc					      LIST	ON
-    479  79bc
-    480  79bc		       b9 ce f9 	      lda	HandlerVectorLO-1,y
-    481  79bf		       85 9c		      sta	__vector
-    482  79c1		       b9 d5 f9 	      lda	HandlerVectorHI-1,y
-    483  79c4		       85 9d		      sta	__vector+1
-    484  79c6		       6c 9c 00 	      jmp	(__vector)
-    485  79c9
-    486  79c9		       a5 95	   MoveReturn lda	currentPly
-    487  79cb		       85 3e		      sta	SET_BANK_RAM
-    488  79cd
-    489  79cd		       60		      rts
-    490  79ce
-    491  79ce					      MAC	handlevec
-    492  79ce					      .byte	{1}Handle_WHITE_PAWN	; 1
-    493  79ce					      .byte	{1}Handle_BLACK_PAWN	; 2
-    494  79ce					      .byte	{1}Handle_KNIGHT	; 3
-    495  79ce					      .byte	{1}Handle_BISHOP	; 4
-    496  79ce					      .byte	{1}Handle_ROOK	; 5
-    497  79ce					      .byte	{1}Handle_QUEEN	; 6
-    498  79ce					      .byte	{1}Handle_KING	; 7
-    499  79ce					      ENDM
-    500  79ce
-    501  79ce
-      0  79ce					      ALLOCATE	Handlers, 15
-      0  79ce					      OPTIONAL_PAGEBREAK	"Table", 15
-     12  79ce					      LIST	ON
-      0  79ce					      DEF	Handlers
-      1  79ce				   BANK_Handlers SET	_CURRENT_BANK
-      2  79ce				   Handlers
-      3  79ce				   TEMPORARY_VAR SET	Overlay
-      4  79ce				   TEMPORARY_OFFSET SET	0
-      5  79ce					      SUBROUTINE
-    503  79ce
-    504  79ce		       00		      .byte.b	0	; dummy to prevent page cross access on index 0
-    505  79cf
-      0  79cf				   HandlerVectorLO HANDLEVEC	<
-      1  79cf		       08		      .byte.b	<Handle_WHITE_PAWN
-      2  79d0		       ce		      .byte.b	<Handle_BLACK_PAWN
-      3  79d1		       4a		      .byte.b	<Handle_KNIGHT
-      4  79d2		       a0		      .byte.b	<Handle_BISHOP
-      5  79d3		       03		      .byte.b	<Handle_ROOK
-      6  79d4		       dd		      .byte.b	<Handle_QUEEN
-      7  79d5		       66		      .byte.b	<Handle_KING
-      0  79d6				   HandlerVectorHI HANDLEVEC	>
-      1  79d6		       fa		      .byte.b	>Handle_WHITE_PAWN
-      2  79d7		       fa		      .byte.b	>Handle_BLACK_PAWN
-      3  79d8		       f3		      .byte.b	>Handle_KNIGHT
-      4  79d9		       f1		      .byte.b	>Handle_BISHOP
-      5  79da		       f2		      .byte.b	>Handle_ROOK
-      6  79db		       f0		      .byte.b	>Handle_QUEEN
-      7  79dc		       f2		      .byte.b	>Handle_KING
-    508  79dd
-    509  79dd							;---------------------------------------------------------------------------------------------------
-    510  79dd
-------- FILE Handler_PAWN.asm LEVEL 3 PASS 2
-      0  79dd					      include	"Handler_PAWN.asm"
-      1  79dd							; Copyright (C)2020 Andrew Davie
-      2  79dd							; Pawn move handlers
-      3  79dd
-      4  79dd							;---------------------------------------------------------------------------------------------------
-      5  79dd							; WHITE PAWN
-      6  79dd							;---------------------------------------------------------------------------------------------------
-      7  79dd
-      8  79dd		       00 28	   WHITE_HOME_ROW =	40	; < this, on home row
-      9  79dd		       00 52	   BLACK_HOME_ROW =	82	; >= this, on home row
-     10  79dd
-     11  79dd							;---------------------------------------------------------------------------------------------------
-     12  79dd
-     13  79dd					      MAC	en_passant
-     14  79dd					      SUBROUTINE
-     15  79dd							; {1} = _LEFT or _RIGHT
-     16  79dd
-     17  79dd					      ldx	currentSquare
-     18  79dd					      ldy	ValidSquare+{1},x
-     19  79dd					      cpy	enPassantPawn
-     20  79dd					      bne	.invalid
-     21  79dd					      ldy	ValidSquare+{1}+{2},x	; en-passant endpoint must be blank
-     22  79dd					      lda	Board,y
-     23  79dd					      bne	.invalid
-     24  79dd					      jsr	AddMove	; the MOVE will need to deal with the details of en-passant??
-     25  79dd				   .invalid
-     26  79dd					      ENDM
-     27  79dd
-     28  79dd							;---------------------------------------------------------------------------------------------------
-     29  79dd
-     30  79dd					      MAC	promote_pawn
-     31  79dd							;SUBROUTINE
-     32  79dd
-     33  79dd							;{1} = BLACK or WHITE
-     34  79dd
-     35  79dd					      VAR	__temp, 1
-     36  79dd
-     37  79dd					      lda	currentPiece
-     38  79dd					      pha
-     39  79dd
-     40  79dd					      sty	__temp
-     41  79dd					      lda	#{1}|QUEEN
-     42  79dd					      sta	currentPiece
-     43  79dd					      jsr	AddMove
-     44  79dd
-     45  79dd					      lda	#{1}|ROOK
-     46  79dd					      sta	currentPiece
-     47  79dd					      ldy	__temp
-     48  79dd					      jsr	AddMove
-     49  79dd
-     50  79dd					      lda	#{1}|BISHOP
-     51  79dd					      sta	currentPiece
-     52  79dd					      ldy	__temp
-     53  79dd					      jsr	AddMove
-     54  79dd
-     55  79dd					      lda	#{1}|KNIGHT
-     56  79dd					      sta	currentPiece
-     57  79dd					      ldy	__temp
-     58  79dd					      jsr	AddMove
-     59  79dd
-     60  79dd					      pla
-     61  79dd					      sta	currentPiece
-     62  79dd					      ENDM
-     63  79dd
-     64  79dd							;---------------------------------------------------------------------------------------------------
-     65  79dd
-     66  79dd					      MAC	move_or_promote_pawn
-     67  79dd							;SUBROUTINE
-     68  79dd							; {1} = BLACK or WHITE
-     69  79dd
-     70  79dd					      IF	{1} = WHITE
-     71  79dd					      cpy	#90	; last rank?
-     72  79dd					      bcc	.standard
-     73  79dd					      jsr	PromoteWhitePawn
-     74  79dd					      jmp	.pMoved
-     75  79dd					      ENDIF
-     76  79dd
-     77  79dd					      IF	{1} = BLACK
-     78  79dd					      cpy	#30	; last rank?
-     79  79dd					      bcs	.standard
-     80  79dd					      jsr	PromoteBlackPawn
-     81  79dd					      jmp	.pMoved
-     82  79dd					      ENDIF
-     83  79dd
-     84  79dd				   .standard  jsr	AddMove	; add +1UP move
-     85  79dd				   .pMoved
-     86  79dd
-     87  79dd					      ENDM
-     88  79dd
-     89  79dd							;---------------------------------------------------------------------------------------------------
-     90  79dd
-     91  79dd					      MAC	take
-     92  79dd							;SUBROUTINE
-     93  79dd							; {1} = capture square offset
-     94  79dd
-     95  79dd					      ldx	currentSquare
-     96  79dd					      ldy	ValidSquare+{1},x
-     97  79dd					      bmi	.invalid
-     98  79dd					      lda	Board,y
-     99  79dd					      beq	.invalid	; square empty
-    100  79dd					      eor	currentPiece
-    101  79dd					      bpl	.invalid	; same colour
-    102  79dd
-    103  79dd					      MOVE_OR_PROMOTE_PAWN	{2}
-    104  79dd				   .invalid
-    105  79dd					      ENDM
-    106  79dd
-    107  79dd							;---------------------------------------------------------------------------------------------------
-    108  79dd
-      0  79dd					      DEF	PromoteWhitePawn
-      1  79dd				   BANK_PromoteWhitePawn SET	_CURRENT_BANK
-      2  79dd				   PromoteWhitePawn
+    393  7969							; Remove the pawn from the board and piecelist, and undraw
+    394  7969
+    395  7969		       a5 97		      lda	sideToMove
+    396  796b		       48		      pha
+    397  796c		       49 80		      eor	#128
+    398  796e		       85 97		      sta	sideToMove
+    399  7970
+    400  7970		       84 87		      sty	originX12
+    401  7972		       84 80		      sty	squareToDraw
+    402  7974
+    403  7974		       20 a1 fc 	      jsr	CopySinglePiece	; undraw captured pawn
+    404  7977
+    405  7977		       a9 08		      lda	#RAMBANK_MOVES_RAM
+    406  7979		       85 3e		      sta	SET_BANK_RAM
+    407  797b		       a4 87		      ldy	originX12
+    408  797d		       a9 00		      lda	#0
+    409  797f		       99 79 f4 	      sta	Board+RAM_WRITE,y	; zap board
+    410  7982
+    411  7982
+    412  7982		       a5 97		      lda	sideToMove
+    413  7984		       0a		      asl
+    414  7985		       a9 00		      lda	#0
+    415  7987		       69 09		      adc	#RAMBANK_PLY
+    416  7989		       85 3e		      sta	SET_BANK_RAM
+    417  798b
+    418  798b		       a9 00		      lda	#0
+    419  798d		       85 86		      sta	toX12	; to remove piece
+    420  798f		       20 d8 f2 	      jsr	FixPieceList	; from the piecelist
+    421  7992
+    422  7992		       68		      pla
+    423  7993		       85 97		      sta	sideToMove
+    424  7995				   .noEP
+    425  7995
+    426  7995							; }
+    427  7995
+    428  7995
+    429  7995
+    430  7995
+      0  7995					      JSROM_SAFE	CastleFixup
+      1  7995
+      2  7995
+      3  7995
+      4  7995		       a9 00		      lda	#BANK_CastleFixup
+      5  7997		       85 8b		      sta	savedBank
+      6  7999		       85 3f		      sta	SET_BANK
+      7  799b		       20 d2 f0 	      jsr	CastleFixup
+    432  799e
+    433  799e
+    434  799e
+    435  799e							; Mark the piece as MOVED
+    436  799e
+    437  799e		       a9 08		      lda	#RAMBANK_MOVES_RAM
+    438  79a0		       85 3e		      sta	SET_BANK_RAM
+    439  79a2		       a4 85		      ldy	fromX12	; final square
+    440  79a4		       b9 79 f0 	      lda	Board,y
+    441  79a7		       29 df		      and	#~FLAG_ENPASSANT
+    442  79a9		       09 40		      ora	#FLAG_MOVED
+    443  79ab		       99 79 f4 	      sta	Board+RAM_WRITE,y
+    444  79ae
+    445  79ae
+    446  79ae
+    447  79ae
+    448  79ae					      if	ASSERTS
+    449  79ae							;		      JSROM_SAFE DIAGNOSTIC_checkPieces
+    450  79ae					      endif
+    451  79ae
+    452  79ae
+    453  79ae		       a5 97		      lda	sideToMove
+    454  79b0		       49 80		      eor	#128
+    455  79b2		       85 97		      sta	sideToMove
+    456  79b4
+    457  79b4		       60	   .exit      rts
+    458  79b5
+    459  79b5
+    460  79b5							;---------------------------------------------------------------------------------------------------
+    461  79b5
+      0  79b5					      DEF	MoveForSinglePiece
+      1  79b5				   BANK_MoveForSinglePiece SET	_CURRENT_BANK
+      2  79b5				   MoveForSinglePiece
+      3  79b5				   TEMPORARY_VAR SET	Overlay
+      4  79b5				   TEMPORARY_OFFSET SET	0
+      5  79b5					      SUBROUTINE
+    463  79b5					      SUBROUTINE
+    464  79b5
+    465  79b5
+    466  79b5		       a9 08		      lda	#RAMBANK_MOVES_RAM
+    467  79b7		       85 3e		      sta	SET_BANK_RAM
+    468  79b9
+    469  79b9		       a6 93		      ldx	currentSquare	; used in move handlers
+    470  79bb		       bd 79 f0 	      lda	Board,x
+    471  79be		       85 92		      sta	currentPiece
+    472  79c0
+    473  79c0					      IF	ASSERTS
+    474  79c0					      SUBROUTINE
+    475  79c0							; DEBUG: Make sure we're looking at correct colour
+    476  79c0		       45 97		      eor	sideToMove
+    477  79c2		       30 fe	   .lock      bmi	.lock
+    478  79c4		       a5 92		      lda	currentPiece
+    479  79c6					      ENDIF
+    480  79c6
+    481  79c6		       29 0f		      and	#PIECE_MASK
+    482  79c8		       a8		      tay
+    483  79c9
+    484  79c9					      IF	ASSERTS
+    485  79c9							; DEBUG: Make sure we have an actual piece, not an empty square
+    486  79c9					      SUBROUTINE
+    487  79c9		       f0 fe	   .lock      beq	.lock	; catch errors
+    488  79cb					      ENDIF
+    489  79cb
+      0  79cb					      VAR	__vector, 2
+      1  79cb				   __vector   SET	TEMPORARY_VAR
+      2  79cb				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 2
+      3  79cb
+      4  79cb				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  79cb				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  79cb				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  79cb					      ENDIF
+      8  79cb				  -	      IF	OVERLAY_DELTA > OVERLAY_SIZE
+      9  79cb				  -	      ECHO	"Temporary Variable", __vector, "overflow!"
+     10  79cb				  -	      ERR
+     11  79cb					      ENDIF
+     12  79cb					      LIST	ON
+    491  79cb
+    492  79cb		       b9 dd f9 	      lda	HandlerVectorLO-1,y
+    493  79ce		       85 9c		      sta	__vector
+    494  79d0		       b9 e4 f9 	      lda	HandlerVectorHI-1,y
+    495  79d3		       85 9d		      sta	__vector+1
+    496  79d5		       6c 9c 00 	      jmp	(__vector)
+    497  79d8
+    498  79d8		       a5 95	   MoveReturn lda	currentPly
+    499  79da		       85 3e		      sta	SET_BANK_RAM
+    500  79dc
+    501  79dc		       60		      rts
+    502  79dd
+    503  79dd					      MAC	handlevec
+    504  79dd					      .byte	{1}Handle_WHITE_PAWN	; 1
+    505  79dd					      .byte	{1}Handle_BLACK_PAWN	; 2
+    506  79dd					      .byte	{1}Handle_KNIGHT	; 3
+    507  79dd					      .byte	{1}Handle_BISHOP	; 4
+    508  79dd					      .byte	{1}Handle_ROOK	; 5
+    509  79dd					      .byte	{1}Handle_QUEEN	; 6
+    510  79dd					      .byte	{1}Handle_KING	; 7
+    511  79dd					      ENDM
+    512  79dd
+    513  79dd
+      0  79dd					      ALLOCATE	Handlers, 15
+      0  79dd					      OPTIONAL_PAGEBREAK	"Table", 15
+     12  79dd					      LIST	ON
+      0  79dd					      DEF	Handlers
+      1  79dd				   BANK_Handlers SET	_CURRENT_BANK
+      2  79dd				   Handlers
       3  79dd				   TEMPORARY_VAR SET	Overlay
       4  79dd				   TEMPORARY_OFFSET SET	0
       5  79dd					      SUBROUTINE
-    110  79dd					      SUBROUTINE
-    111  79dd
-      0  79dd					      PROMOTE_PAWN	WHITE
-      1  79dd
-      2  79dd
-      3  79dd
-      4  79dd
-      0  79dd					      VAR	__temp, 1
-      1  79dd				   __temp     SET	TEMPORARY_VAR
-      2  79dd				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  79dd
-      4  79dd				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  79dd				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  79dd				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  79dd					      ENDIF
-      8  79dd				  -	      IF	OVERLAY_DELTA > OVERLAY_SIZE
-      9  79dd				  -	      ECHO	"Temporary Variable", __temp, "overflow!"
-     10  79dd				  -	      ERR
-     11  79dd					      ENDIF
-     12  79dd					      LIST	ON
-      6  79dd
-      7  79dd		       a5 92		      lda	currentPiece
-      8  79df		       48		      pha
-      9  79e0
-     10  79e0		       84 9c		      sty	__temp
-     11  79e2		       a9 06		      lda	#WHITE|QUEEN
-     12  79e4		       85 92		      sta	currentPiece
-     13  79e6		       20 69 fb 	      jsr	AddMove
-     14  79e9
-     15  79e9		       a9 05		      lda	#WHITE|ROOK
-     16  79eb		       85 92		      sta	currentPiece
-     17  79ed		       a4 9c		      ldy	__temp
-     18  79ef		       20 69 fb 	      jsr	AddMove
-     19  79f2
-     20  79f2		       a9 04		      lda	#WHITE|BISHOP
-     21  79f4		       85 92		      sta	currentPiece
-     22  79f6		       a4 9c		      ldy	__temp
-     23  79f8		       20 69 fb 	      jsr	AddMove
-     24  79fb
-     25  79fb		       a9 03		      lda	#WHITE|KNIGHT
-     26  79fd		       85 92		      sta	currentPiece
-     27  79ff		       a4 9c		      ldy	__temp
-     28  7a01		       20 69 fb 	      jsr	AddMove
-     29  7a04
-     30  7a04		       68		      pla
-     31  7a05		       85 92		      sta	currentPiece
-    113  7a07		       60		      rts
-    114  7a08
-    115  7a08							;---------------------------------------------------------------------------------------------------
-    116  7a08
-      0  7a08					      DEF	Handle_WHITE_PAWN
-      1  7a08				   BANK_Handle_WHITE_PAWN SET	_CURRENT_BANK
-      2  7a08				   Handle_WHITE_PAWN
-      3  7a08				   TEMPORARY_VAR SET	Overlay
-      4  7a08				   TEMPORARY_OFFSET SET	0
-      5  7a08					      SUBROUTINE
-    118  7a08					      SUBROUTINE
-    119  7a08
-    120  7a08		       bc 1f f0 	      ldy	ValidSquare+_UP,x	; square above must be blank (WILL NOT EVER be off-board!)
-    121  7a0b		       b9 79 f0 	      lda	Board,y
-    122  7a0e		       d0 24		      bne	.pMoved	; occupied
-    123  7a10
-    124  7a10							; we may need to promote the pawn
-    125  7a10							; All possibilites (Q/R/B/N) are added as individual moves
-    126  7a10
-      0  7a10					      MOVE_OR_PROMOTE_PAWN	WHITE
-      1  7a10
-      2  7a10
-      3  7a10
-      4  7a10					      IF	WHITE = WHITE
-      5  7a10		       c0 5a		      cpy	#90
-      6  7a12		       90 06		      bcc	.standard
-      7  7a14		       20 dd f9 	      jsr	PromoteWhitePawn
-      8  7a17		       4c 1d fa 	      jmp	.pMoved
-      9  7a1a					      ENDIF
-     10  7a1a
-     11  7a1a				  -	      IF	WHITE = BLACK
-     12  7a1a				  -	      cpy	#30
-     13  7a1a				  -	      bcs	.standard
-     14  7a1a				  -	      jsr	PromoteBlackPawn
-     15  7a1a				  -	      jmp	.pMoved
-     16  7a1a					      ENDIF
-     17  7a1a
-     18  7a1a		       20 69 fb    .standard  jsr	AddMove
-     19  7a1d				   .pMoved
-     20  7a1d
-    128  7a1d
-    129  7a1d							; the +2 move off the home rank...
-    130  7a1d
-    131  7a1d		       a6 93		      ldx	currentSquare
-    132  7a1f		       e0 28		      cpx	#WHITE_HOME_ROW
-    133  7a21		       b0 11		      bcs	.pMoved	; pawn has moved so can't do +2
-    134  7a23		       bc 29 f0 	      ldy	ValidSquare+_UP+_UP,x	; WILL be a valid square
-    135  7a26		       b9 79 f0 	      lda	Board,y
-    136  7a29		       d0 09		      bne	.pMoved	; destination square occupied
-    137  7a2b
-    138  7a2b		       a5 92		      lda	currentPiece
-    139  7a2d		       09 20		      ora	#FLAG_ENPASSANT
-    140  7a2f		       85 92		      sta	currentPiece	; GENERATE en-passant opportunity
-    141  7a31
-    142  7a31		       20 69 fb 	      jsr	AddMove	; add the +2UP move off home row
-    143  7a34
-    144  7a34				   .pMoved
-    145  7a34
-    146  7a34							; regular captures...
-    147  7a34
-      0  7a34					      TAKE	_UP+_LEFT, WHITE
-      1  7a34
-      2  7a34
-      3  7a34
-      4  7a34		       a6 93		      ldx	currentSquare
-      5  7a36		       bc 1e f0 	      ldy	ValidSquare+_UP+_LEFT,x
-      6  7a39		       30 16		      bmi	.invalid
-      7  7a3b		       b9 79 f0 	      lda	Board,y
-      8  7a3e		       f0 11		      beq	.invalid
-      9  7a40		       45 92		      eor	currentPiece
-     10  7a42		       10 0d		      bpl	.invalid
-     11  7a44
-      0  7a44					      MOVE_OR_PROMOTE_PAWN	WHITE
-      1  7a44
-      2  7a44
-      3  7a44
-      4  7a44					      IF	WHITE = WHITE
-      5  7a44		       c0 5a		      cpy	#90
-      6  7a46		       90 06		      bcc	.standard
-      7  7a48		       20 dd f9 	      jsr	PromoteWhitePawn
-      8  7a4b		       4c 51 fa 	      jmp	.pMoved
-      9  7a4e					      ENDIF
-     10  7a4e
-     11  7a4e				  -	      IF	WHITE = BLACK
-     12  7a4e				  -	      cpy	#30
-     13  7a4e				  -	      bcs	.standard
-     14  7a4e				  -	      jsr	PromoteBlackPawn
-     15  7a4e				  -	      jmp	.pMoved
-     16  7a4e					      ENDIF
-     17  7a4e
-     18  7a4e		       20 69 fb    .standard  jsr	AddMove
-     19  7a51				   .pMoved
-     20  7a51
-     13  7a51				   .invalid
-      0  7a51					      TAKE	_UP+_RIGHT, WHITE
-      1  7a51
-      2  7a51
-      3  7a51
-      4  7a51		       a6 93		      ldx	currentSquare
-      5  7a53		       bc 20 f0 	      ldy	ValidSquare+_UP+_RIGHT,x
-      6  7a56		       30 16		      bmi	.invalid
-      7  7a58		       b9 79 f0 	      lda	Board,y
-      8  7a5b		       f0 11		      beq	.invalid
-      9  7a5d		       45 92		      eor	currentPiece
-     10  7a5f		       10 0d		      bpl	.invalid
-     11  7a61
-      0  7a61					      MOVE_OR_PROMOTE_PAWN	WHITE
-      1  7a61
-      2  7a61
-      3  7a61
-      4  7a61					      IF	WHITE = WHITE
-      5  7a61		       c0 5a		      cpy	#90
-      6  7a63		       90 06		      bcc	.standard
-      7  7a65		       20 dd f9 	      jsr	PromoteWhitePawn
-      8  7a68		       4c 6e fa 	      jmp	.pMoved
-      9  7a6b					      ENDIF
-     10  7a6b
-     11  7a6b				  -	      IF	WHITE = BLACK
-     12  7a6b				  -	      cpy	#30
-     13  7a6b				  -	      bcs	.standard
-     14  7a6b				  -	      jsr	PromoteBlackPawn
-     15  7a6b				  -	      jmp	.pMoved
-     16  7a6b					      ENDIF
-     17  7a6b
-     18  7a6b		       20 69 fb    .standard  jsr	AddMove
-     19  7a6e				   .pMoved
-     20  7a6e
-     13  7a6e				   .invalid
-    150  7a6e
-    151  7a6e
-    152  7a6e							; en-passant captures...
-    153  7a6e
-    154  7a6e		       a5 94		      lda	enPassantPawn
-    155  7a70		       f0 2e		      beq	.noEnPassant	; previous move (opponent) enpassant square?
-    156  7a72
-    157  7a72		       a5 92		      lda	currentPiece
-    158  7a74		       09 20		      ora	#FLAG_ENPASSANT
-    159  7a76		       85 92		      sta	currentPiece	; CONSUME en-passant opportunity
-    160  7a78
-      0  7a78					      EN_PASSANT	_LEFT, _UP
-      1  7a78					      SUBROUTINE
-      2  7a78
-      3  7a78
-      4  7a78		       a6 93		      ldx	currentSquare
-      5  7a7a		       bc 14 f0 	      ldy	ValidSquare+_LEFT,x
-      6  7a7d		       c4 94		      cpy	enPassantPawn
-      7  7a7f		       d0 0b		      bne	.invalid
-      8  7a81		       bc 1e f0 	      ldy	ValidSquare+_LEFT+_UP,x
-      9  7a84		       b9 79 f0 	      lda	Board,y
-     10  7a87		       d0 03		      bne	.invalid
-     11  7a89		       20 69 fb 	      jsr	AddMove
-     12  7a8c				   .invalid
-      0  7a8c					      EN_PASSANT	_RIGHT, _UP
-      1  7a8c					      SUBROUTINE
-      2  7a8c
-      3  7a8c
-      4  7a8c		       a6 93		      ldx	currentSquare
-      5  7a8e		       bc 16 f0 	      ldy	ValidSquare+_RIGHT,x
-      6  7a91		       c4 94		      cpy	enPassantPawn
-      7  7a93		       d0 0b		      bne	.invalid
-      8  7a95		       bc 20 f0 	      ldy	ValidSquare+_RIGHT+_UP,x
-      9  7a98		       b9 79 f0 	      lda	Board,y
-     10  7a9b		       d0 03		      bne	.invalid
-     11  7a9d		       20 69 fb 	      jsr	AddMove
-     12  7aa0				   .invalid
-    163  7aa0
-    164  7aa0		       4c c9 f9    .noEnPassant jmp	MoveReturn
-    165  7aa3
-    166  7aa3
-    167  7aa3							;---------------------------------------------------------------------------------------------------
-    168  7aa3							; BLACK PAWN
-    169  7aa3							;---------------------------------------------------------------------------------------------------
-    170  7aa3
-      0  7aa3					      DEF	PromoteBlackPawn
-      1  7aa3				   BANK_PromoteBlackPawn SET	_CURRENT_BANK
-      2  7aa3				   PromoteBlackPawn
-      3  7aa3				   TEMPORARY_VAR SET	Overlay
-      4  7aa3				   TEMPORARY_OFFSET SET	0
-      5  7aa3					      SUBROUTINE
-    172  7aa3					      SUBROUTINE
-    173  7aa3
-      0  7aa3					      PROMOTE_PAWN	BLACK
-      1  7aa3
-      2  7aa3
-      3  7aa3
-      4  7aa3
-      0  7aa3					      VAR	__temp, 1
-      1  7aa3				   __temp     SET	TEMPORARY_VAR
-      2  7aa3				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  7aa3
-      4  7aa3				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  7aa3				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  7aa3				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  7aa3					      ENDIF
-      8  7aa3				  -	      IF	OVERLAY_DELTA > OVERLAY_SIZE
-      9  7aa3				  -	      ECHO	"Temporary Variable", __temp, "overflow!"
-     10  7aa3				  -	      ERR
-     11  7aa3					      ENDIF
-     12  7aa3					      LIST	ON
-      6  7aa3
-      7  7aa3		       a5 92		      lda	currentPiece
-      8  7aa5		       48		      pha
-      9  7aa6
-     10  7aa6		       84 9c		      sty	__temp
-     11  7aa8		       a9 86		      lda	#BLACK|QUEEN
-     12  7aaa		       85 92		      sta	currentPiece
-     13  7aac		       20 69 fb 	      jsr	AddMove
-     14  7aaf
-     15  7aaf		       a9 85		      lda	#BLACK|ROOK
-     16  7ab1		       85 92		      sta	currentPiece
-     17  7ab3		       a4 9c		      ldy	__temp
-     18  7ab5		       20 69 fb 	      jsr	AddMove
-     19  7ab8
-     20  7ab8		       a9 84		      lda	#BLACK|BISHOP
-     21  7aba		       85 92		      sta	currentPiece
-     22  7abc		       a4 9c		      ldy	__temp
-     23  7abe		       20 69 fb 	      jsr	AddMove
-     24  7ac1
-     25  7ac1		       a9 83		      lda	#BLACK|KNIGHT
-     26  7ac3		       85 92		      sta	currentPiece
-     27  7ac5		       a4 9c		      ldy	__temp
-     28  7ac7		       20 69 fb 	      jsr	AddMove
-     29  7aca
-     30  7aca		       68		      pla
-     31  7acb		       85 92		      sta	currentPiece
-    175  7acd		       60		      rts
-    176  7ace
-      0  7ace					      DEF	Handle_BLACK_PAWN
-      1  7ace				   BANK_Handle_BLACK_PAWN SET	_CURRENT_BANK
-      2  7ace				   Handle_BLACK_PAWN
-      3  7ace				   TEMPORARY_VAR SET	Overlay
-      4  7ace				   TEMPORARY_OFFSET SET	0
-      5  7ace					      SUBROUTINE
-    178  7ace					      SUBROUTINE
-    179  7ace
-    180  7ace		       bc 0b f0 	      ldy	ValidSquare+_DOWN,x	; square below must be blank (WILL NOT EVER be off-board!)
-    181  7ad1		       b9 79 f0 	      lda	Board,y
-    182  7ad4		       d0 24		      bne	.pMoved	; occupied
-    183  7ad6
-    184  7ad6
-    185  7ad6							; we may need to promote the pawn
-    186  7ad6							; All possibilites (Q/R/B/N) are added as individual moves
-    187  7ad6
-      0  7ad6					      MOVE_OR_PROMOTE_PAWN	BLACK
-      1  7ad6
-      2  7ad6
-      3  7ad6
-      4  7ad6				  -	      IF	BLACK = WHITE
-      5  7ad6				  -	      cpy	#90
-      6  7ad6				  -	      bcc	.standard
-      7  7ad6				  -	      jsr	PromoteWhitePawn
-      8  7ad6				  -	      jmp	.pMoved
-      9  7ad6					      ENDIF
-     10  7ad6
-     11  7ad6					      IF	BLACK = BLACK
-     12  7ad6		       c0 1e		      cpy	#30
-     13  7ad8		       b0 06		      bcs	.standard
-     14  7ada		       20 a3 fa 	      jsr	PromoteBlackPawn
-     15  7add		       4c e3 fa 	      jmp	.pMoved
-     16  7ae0					      ENDIF
-     17  7ae0
-     18  7ae0		       20 69 fb    .standard  jsr	AddMove
-     19  7ae3				   .pMoved
-     20  7ae3
-    189  7ae3
-    190  7ae3							; the +2 move off the home rank...
-    191  7ae3
-    192  7ae3		       a6 93		      ldx	currentSquare
-    193  7ae5		       e0 52		      cpx	#BLACK_HOME_ROW
-    194  7ae7		       90 11		      bcc	.pMoved	; pawn has moved so can't do +2
-    195  7ae9
-    196  7ae9
-    197  7ae9		       bc 01 f0 	      ldy	ValidSquare+_DOWN+_DOWN,x	; WILL be a valid square
-    198  7aec		       b9 79 f0 	      lda	Board,y
-    199  7aef		       d0 09		      bne	.pMoved	; destination square occupied
-    200  7af1
-    201  7af1		       a5 92		      lda	currentPiece
-    202  7af3		       09 20		      ora	#FLAG_ENPASSANT
-    203  7af5		       85 92		      sta	currentPiece	; CAN en-passant
-    204  7af7
-    205  7af7		       20 69 fb 	      jsr	AddMove	; add the +2DOWN move off home row
-    206  7afa
-    207  7afa				   .pMoved
-    208  7afa
-    209  7afa							; regular captures... (with promotion)
-    210  7afa
-      0  7afa					      TAKE	_DOWN+_LEFT, BLACK
-      1  7afa
-      2  7afa
-      3  7afa
-      4  7afa		       a6 93		      ldx	currentSquare
-      5  7afc		       bc 0a f0 	      ldy	ValidSquare+_DOWN+_LEFT,x
-      6  7aff		       30 16		      bmi	.invalid
-      7  7b01		       b9 79 f0 	      lda	Board,y
-      8  7b04		       f0 11		      beq	.invalid
-      9  7b06		       45 92		      eor	currentPiece
-     10  7b08		       10 0d		      bpl	.invalid
-     11  7b0a
-      0  7b0a					      MOVE_OR_PROMOTE_PAWN	BLACK
-      1  7b0a
-      2  7b0a
-      3  7b0a
-      4  7b0a				  -	      IF	BLACK = WHITE
-      5  7b0a				  -	      cpy	#90
-      6  7b0a				  -	      bcc	.standard
-      7  7b0a				  -	      jsr	PromoteWhitePawn
-      8  7b0a				  -	      jmp	.pMoved
-      9  7b0a					      ENDIF
-     10  7b0a
-     11  7b0a					      IF	BLACK = BLACK
-     12  7b0a		       c0 1e		      cpy	#30
-     13  7b0c		       b0 06		      bcs	.standard
-     14  7b0e		       20 a3 fa 	      jsr	PromoteBlackPawn
-     15  7b11		       4c 17 fb 	      jmp	.pMoved
-     16  7b14					      ENDIF
-     17  7b14
-     18  7b14		       20 69 fb    .standard  jsr	AddMove
-     19  7b17				   .pMoved
-     20  7b17
-     13  7b17				   .invalid
-      0  7b17					      TAKE	_DOWN+_RIGHT, BLACK
-      1  7b17
-      2  7b17
-      3  7b17
-      4  7b17		       a6 93		      ldx	currentSquare
-      5  7b19		       bc 0c f0 	      ldy	ValidSquare+_DOWN+_RIGHT,x
-      6  7b1c		       30 16		      bmi	.invalid
-      7  7b1e		       b9 79 f0 	      lda	Board,y
-      8  7b21		       f0 11		      beq	.invalid
-      9  7b23		       45 92		      eor	currentPiece
-     10  7b25		       10 0d		      bpl	.invalid
-     11  7b27
-      0  7b27					      MOVE_OR_PROMOTE_PAWN	BLACK
-      1  7b27
-      2  7b27
-      3  7b27
-      4  7b27				  -	      IF	BLACK = WHITE
-      5  7b27				  -	      cpy	#90
-      6  7b27				  -	      bcc	.standard
-      7  7b27				  -	      jsr	PromoteWhitePawn
-      8  7b27				  -	      jmp	.pMoved
-      9  7b27					      ENDIF
-     10  7b27
-     11  7b27					      IF	BLACK = BLACK
-     12  7b27		       c0 1e		      cpy	#30
-     13  7b29		       b0 06		      bcs	.standard
-     14  7b2b		       20 a3 fa 	      jsr	PromoteBlackPawn
-     15  7b2e		       4c 34 fb 	      jmp	.pMoved
-     16  7b31					      ENDIF
-     17  7b31
-     18  7b31		       20 69 fb    .standard  jsr	AddMove
-     19  7b34				   .pMoved
-     20  7b34
-     13  7b34				   .invalid
-    213  7b34
-    214  7b34							; en-passant captures...
-    215  7b34
-    216  7b34		       a5 94		      lda	enPassantPawn
-    217  7b36		       f0 2e		      beq	.noEnPassant	; was last move en-passantable?
-    218  7b38
-    219  7b38		       a5 92		      lda	currentPiece
-    220  7b3a		       09 20		      ora	#FLAG_ENPASSANT
-    221  7b3c		       85 92		      sta	currentPiece	; any en-passant move added will have flag set
-    222  7b3e
-      0  7b3e					      EN_PASSANT	_LEFT, _DOWN
-      1  7b3e					      SUBROUTINE
-      2  7b3e
-      3  7b3e
-      4  7b3e		       a6 93		      ldx	currentSquare
-      5  7b40		       bc 14 f0 	      ldy	ValidSquare+_LEFT,x
-      6  7b43		       c4 94		      cpy	enPassantPawn
-      7  7b45		       d0 0b		      bne	.invalid
-      8  7b47		       bc 0a f0 	      ldy	ValidSquare+_LEFT+_DOWN,x
-      9  7b4a		       b9 79 f0 	      lda	Board,y
-     10  7b4d		       d0 03		      bne	.invalid
-     11  7b4f		       20 69 fb 	      jsr	AddMove
-     12  7b52				   .invalid
-      0  7b52					      EN_PASSANT	_RIGHT, _DOWN
-      1  7b52					      SUBROUTINE
-      2  7b52
-      3  7b52
-      4  7b52		       a6 93		      ldx	currentSquare
-      5  7b54		       bc 16 f0 	      ldy	ValidSquare+_RIGHT,x
-      6  7b57		       c4 94		      cpy	enPassantPawn
-      7  7b59		       d0 0b		      bne	.invalid
-      8  7b5b		       bc 0c f0 	      ldy	ValidSquare+_RIGHT+_DOWN,x
-      9  7b5e		       b9 79 f0 	      lda	Board,y
-     10  7b61		       d0 03		      bne	.invalid
-     11  7b63		       20 69 fb 	      jsr	AddMove
-     12  7b66				   .invalid
-    225  7b66
-    226  7b66				   .noEnPassant
-    227  7b66		       4c c9 f9 	      jmp	MoveReturn
-    228  7b69
-    229  7b69							; EOF
+    515  79dd
+    516  79dd		       00		      .byte.b	0	; dummy to prevent page cross access on index 0
+    517  79de
+      0  79de				   HandlerVectorLO HANDLEVEC	<
+      1  79de		       17		      .byte.b	<Handle_WHITE_PAWN
+      2  79df		       dd		      .byte.b	<Handle_BLACK_PAWN
+      3  79e0		       4a		      .byte.b	<Handle_KNIGHT
+      4  79e1		       a0		      .byte.b	<Handle_BISHOP
+      5  79e2		       03		      .byte.b	<Handle_ROOK
+      6  79e3		       dd		      .byte.b	<Handle_QUEEN
+      7  79e4		       66		      .byte.b	<Handle_KING
+      0  79e5				   HandlerVectorHI HANDLEVEC	>
+      1  79e5		       fa		      .byte.b	>Handle_WHITE_PAWN
+      2  79e6		       fa		      .byte.b	>Handle_BLACK_PAWN
+      3  79e7		       f3		      .byte.b	>Handle_KNIGHT
+      4  79e8		       f1		      .byte.b	>Handle_BISHOP
+      5  79e9		       f2		      .byte.b	>Handle_ROOK
+      6  79ea		       f0		      .byte.b	>Handle_QUEEN
+      7  79eb		       f2		      .byte.b	>Handle_KING
+    520  79ec
+    521  79ec							;---------------------------------------------------------------------------------------------------
+    522  79ec
+------- FILE Handler_PAWN.asm LEVEL 3 PASS 2
+      0  79ec					      include	"Handler_PAWN.asm"
+      1  79ec							; Copyright (C)2020 Andrew Davie
+      2  79ec							; Pawn move handlers
+      3  79ec
+      4  79ec							;---------------------------------------------------------------------------------------------------
+      5  79ec							; WHITE PAWN
+      6  79ec							;---------------------------------------------------------------------------------------------------
+      7  79ec
+      8  79ec		       00 28	   WHITE_HOME_ROW =	40	; < this, on home row
+      9  79ec		       00 52	   BLACK_HOME_ROW =	82	; >= this, on home row
+     10  79ec
+     11  79ec							;---------------------------------------------------------------------------------------------------
+     12  79ec
+     13  79ec					      MAC	en_passant
+     14  79ec					      SUBROUTINE
+     15  79ec							; {1} = _LEFT or _RIGHT
+     16  79ec
+     17  79ec					      ldx	currentSquare
+     18  79ec					      ldy	ValidSquare+{1},x
+     19  79ec					      cpy	enPassantPawn
+     20  79ec					      bne	.invalid
+     21  79ec					      ldy	ValidSquare+{1}+{2},x	; en-passant endpoint must be blank
+     22  79ec					      lda	Board,y
+     23  79ec					      bne	.invalid
+     24  79ec					      jsr	AddMove	; the MOVE will need to deal with the details of en-passant??
+     25  79ec				   .invalid
+     26  79ec					      ENDM
+     27  79ec
+     28  79ec							;---------------------------------------------------------------------------------------------------
+     29  79ec
+     30  79ec					      MAC	promote_pawn
+     31  79ec							;SUBROUTINE
+     32  79ec
+     33  79ec							;{1} = BLACK or WHITE
+     34  79ec
+     35  79ec					      VAR	__temp, 1
+     36  79ec
+     37  79ec					      lda	currentPiece
+     38  79ec					      pha
+     39  79ec
+     40  79ec					      sty	__temp
+     41  79ec					      lda	#{1}|QUEEN
+     42  79ec					      sta	currentPiece
+     43  79ec					      jsr	AddMove
+     44  79ec
+     45  79ec					      lda	#{1}|ROOK
+     46  79ec					      sta	currentPiece
+     47  79ec					      ldy	__temp
+     48  79ec					      jsr	AddMove
+     49  79ec
+     50  79ec					      lda	#{1}|BISHOP
+     51  79ec					      sta	currentPiece
+     52  79ec					      ldy	__temp
+     53  79ec					      jsr	AddMove
+     54  79ec
+     55  79ec					      lda	#{1}|KNIGHT
+     56  79ec					      sta	currentPiece
+     57  79ec					      ldy	__temp
+     58  79ec					      jsr	AddMove
+     59  79ec
+     60  79ec					      pla
+     61  79ec					      sta	currentPiece
+     62  79ec					      ENDM
+     63  79ec
+     64  79ec							;---------------------------------------------------------------------------------------------------
+     65  79ec
+     66  79ec					      MAC	move_or_promote_pawn
+     67  79ec							;SUBROUTINE
+     68  79ec							; {1} = BLACK or WHITE
+     69  79ec
+     70  79ec					      IF	{1} = WHITE
+     71  79ec					      cpy	#90	; last rank?
+     72  79ec					      bcc	.standard
+     73  79ec					      jsr	PromoteWhitePawn
+     74  79ec					      jmp	.pMoved
+     75  79ec					      ENDIF
+     76  79ec
+     77  79ec					      IF	{1} = BLACK
+     78  79ec					      cpy	#30	; last rank?
+     79  79ec					      bcs	.standard
+     80  79ec					      jsr	PromoteBlackPawn
+     81  79ec					      jmp	.pMoved
+     82  79ec					      ENDIF
+     83  79ec
+     84  79ec				   .standard  jsr	AddMove	; add +1UP move
+     85  79ec				   .pMoved
+     86  79ec
+     87  79ec					      ENDM
+     88  79ec
+     89  79ec							;---------------------------------------------------------------------------------------------------
+     90  79ec
+     91  79ec					      MAC	take
+     92  79ec							;SUBROUTINE
+     93  79ec							; {1} = capture square offset
+     94  79ec
+     95  79ec					      ldx	currentSquare
+     96  79ec					      ldy	ValidSquare+{1},x
+     97  79ec					      bmi	.invalid
+     98  79ec					      lda	Board,y
+     99  79ec					      beq	.invalid	; square empty
+    100  79ec					      eor	currentPiece
+    101  79ec					      bpl	.invalid	; same colour
+    102  79ec
+    103  79ec					      MOVE_OR_PROMOTE_PAWN	{2}
+    104  79ec				   .invalid
+    105  79ec					      ENDM
+    106  79ec
+    107  79ec							;---------------------------------------------------------------------------------------------------
+    108  79ec
+      0  79ec					      DEF	PromoteWhitePawn
+      1  79ec				   BANK_PromoteWhitePawn SET	_CURRENT_BANK
+      2  79ec				   PromoteWhitePawn
+      3  79ec				   TEMPORARY_VAR SET	Overlay
+      4  79ec				   TEMPORARY_OFFSET SET	0
+      5  79ec					      SUBROUTINE
+    110  79ec					      SUBROUTINE
+    111  79ec
+      0  79ec					      PROMOTE_PAWN	WHITE
+      1  79ec
+      2  79ec
+      3  79ec
+      4  79ec
+      0  79ec					      VAR	__temp, 1
+      1  79ec				   __temp     SET	TEMPORARY_VAR
+      2  79ec				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  79ec
+      4  79ec				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  79ec				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  79ec				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  79ec					      ENDIF
+      8  79ec				  -	      IF	OVERLAY_DELTA > OVERLAY_SIZE
+      9  79ec				  -	      ECHO	"Temporary Variable", __temp, "overflow!"
+     10  79ec				  -	      ERR
+     11  79ec					      ENDIF
+     12  79ec					      LIST	ON
+      6  79ec
+      7  79ec		       a5 92		      lda	currentPiece
+      8  79ee		       48		      pha
+      9  79ef
+     10  79ef		       84 9c		      sty	__temp
+     11  79f1		       a9 06		      lda	#WHITE|QUEEN
+     12  79f3		       85 92		      sta	currentPiece
+     13  79f5		       20 78 fb 	      jsr	AddMove
+     14  79f8
+     15  79f8		       a9 05		      lda	#WHITE|ROOK
+     16  79fa		       85 92		      sta	currentPiece
+     17  79fc		       a4 9c		      ldy	__temp
+     18  79fe		       20 78 fb 	      jsr	AddMove
+     19  7a01
+     20  7a01		       a9 04		      lda	#WHITE|BISHOP
+     21  7a03		       85 92		      sta	currentPiece
+     22  7a05		       a4 9c		      ldy	__temp
+     23  7a07		       20 78 fb 	      jsr	AddMove
+     24  7a0a
+     25  7a0a		       a9 03		      lda	#WHITE|KNIGHT
+     26  7a0c		       85 92		      sta	currentPiece
+     27  7a0e		       a4 9c		      ldy	__temp
+     28  7a10		       20 78 fb 	      jsr	AddMove
+     29  7a13
+     30  7a13		       68		      pla
+     31  7a14		       85 92		      sta	currentPiece
+    113  7a16		       60		      rts
+    114  7a17
+    115  7a17							;---------------------------------------------------------------------------------------------------
+    116  7a17
+      0  7a17					      DEF	Handle_WHITE_PAWN
+      1  7a17				   BANK_Handle_WHITE_PAWN SET	_CURRENT_BANK
+      2  7a17				   Handle_WHITE_PAWN
+      3  7a17				   TEMPORARY_VAR SET	Overlay
+      4  7a17				   TEMPORARY_OFFSET SET	0
+      5  7a17					      SUBROUTINE
+    118  7a17					      SUBROUTINE
+    119  7a17
+    120  7a17		       bc 1f f0 	      ldy	ValidSquare+_UP,x	; square above must be blank (WILL NOT EVER be off-board!)
+    121  7a1a		       b9 79 f0 	      lda	Board,y
+    122  7a1d		       d0 24		      bne	.pMoved	; occupied
+    123  7a1f
+    124  7a1f							; we may need to promote the pawn
+    125  7a1f							; All possibilites (Q/R/B/N) are added as individual moves
+    126  7a1f
+      0  7a1f					      MOVE_OR_PROMOTE_PAWN	WHITE
+      1  7a1f
+      2  7a1f
+      3  7a1f
+      4  7a1f					      IF	WHITE = WHITE
+      5  7a1f		       c0 5a		      cpy	#90
+      6  7a21		       90 06		      bcc	.standard
+      7  7a23		       20 ec f9 	      jsr	PromoteWhitePawn
+      8  7a26		       4c 2c fa 	      jmp	.pMoved
+      9  7a29					      ENDIF
+     10  7a29
+     11  7a29				  -	      IF	WHITE = BLACK
+     12  7a29				  -	      cpy	#30
+     13  7a29				  -	      bcs	.standard
+     14  7a29				  -	      jsr	PromoteBlackPawn
+     15  7a29				  -	      jmp	.pMoved
+     16  7a29					      ENDIF
+     17  7a29
+     18  7a29		       20 78 fb    .standard  jsr	AddMove
+     19  7a2c				   .pMoved
+     20  7a2c
+    128  7a2c
+    129  7a2c							; the +2 move off the home rank...
+    130  7a2c
+    131  7a2c		       a6 93		      ldx	currentSquare
+    132  7a2e		       e0 28		      cpx	#WHITE_HOME_ROW
+    133  7a30		       b0 11		      bcs	.pMoved	; pawn has moved so can't do +2
+    134  7a32		       bc 29 f0 	      ldy	ValidSquare+_UP+_UP,x	; WILL be a valid square
+    135  7a35		       b9 79 f0 	      lda	Board,y
+    136  7a38		       d0 09		      bne	.pMoved	; destination square occupied
+    137  7a3a
+    138  7a3a		       a5 92		      lda	currentPiece
+    139  7a3c		       09 20		      ora	#FLAG_ENPASSANT
+    140  7a3e		       85 92		      sta	currentPiece	; GENERATE en-passant opportunity
+    141  7a40
+    142  7a40		       20 78 fb 	      jsr	AddMove	; add the +2UP move off home row
+    143  7a43
+    144  7a43				   .pMoved
+    145  7a43
+    146  7a43							; regular captures...
+    147  7a43
+      0  7a43					      TAKE	_UP+_LEFT, WHITE
+      1  7a43
+      2  7a43
+      3  7a43
+      4  7a43		       a6 93		      ldx	currentSquare
+      5  7a45		       bc 1e f0 	      ldy	ValidSquare+_UP+_LEFT,x
+      6  7a48		       30 16		      bmi	.invalid
+      7  7a4a		       b9 79 f0 	      lda	Board,y
+      8  7a4d		       f0 11		      beq	.invalid
+      9  7a4f		       45 92		      eor	currentPiece
+     10  7a51		       10 0d		      bpl	.invalid
+     11  7a53
+      0  7a53					      MOVE_OR_PROMOTE_PAWN	WHITE
+      1  7a53
+      2  7a53
+      3  7a53
+      4  7a53					      IF	WHITE = WHITE
+      5  7a53		       c0 5a		      cpy	#90
+      6  7a55		       90 06		      bcc	.standard
+      7  7a57		       20 ec f9 	      jsr	PromoteWhitePawn
+      8  7a5a		       4c 60 fa 	      jmp	.pMoved
+      9  7a5d					      ENDIF
+     10  7a5d
+     11  7a5d				  -	      IF	WHITE = BLACK
+     12  7a5d				  -	      cpy	#30
+     13  7a5d				  -	      bcs	.standard
+     14  7a5d				  -	      jsr	PromoteBlackPawn
+     15  7a5d				  -	      jmp	.pMoved
+     16  7a5d					      ENDIF
+     17  7a5d
+     18  7a5d		       20 78 fb    .standard  jsr	AddMove
+     19  7a60				   .pMoved
+     20  7a60
+     13  7a60				   .invalid
+      0  7a60					      TAKE	_UP+_RIGHT, WHITE
+      1  7a60
+      2  7a60
+      3  7a60
+      4  7a60		       a6 93		      ldx	currentSquare
+      5  7a62		       bc 20 f0 	      ldy	ValidSquare+_UP+_RIGHT,x
+      6  7a65		       30 16		      bmi	.invalid
+      7  7a67		       b9 79 f0 	      lda	Board,y
+      8  7a6a		       f0 11		      beq	.invalid
+      9  7a6c		       45 92		      eor	currentPiece
+     10  7a6e		       10 0d		      bpl	.invalid
+     11  7a70
+      0  7a70					      MOVE_OR_PROMOTE_PAWN	WHITE
+      1  7a70
+      2  7a70
+      3  7a70
+      4  7a70					      IF	WHITE = WHITE
+      5  7a70		       c0 5a		      cpy	#90
+      6  7a72		       90 06		      bcc	.standard
+      7  7a74		       20 ec f9 	      jsr	PromoteWhitePawn
+      8  7a77		       4c 7d fa 	      jmp	.pMoved
+      9  7a7a					      ENDIF
+     10  7a7a
+     11  7a7a				  -	      IF	WHITE = BLACK
+     12  7a7a				  -	      cpy	#30
+     13  7a7a				  -	      bcs	.standard
+     14  7a7a				  -	      jsr	PromoteBlackPawn
+     15  7a7a				  -	      jmp	.pMoved
+     16  7a7a					      ENDIF
+     17  7a7a
+     18  7a7a		       20 78 fb    .standard  jsr	AddMove
+     19  7a7d				   .pMoved
+     20  7a7d
+     13  7a7d				   .invalid
+    150  7a7d
+    151  7a7d
+    152  7a7d							; en-passant captures...
+    153  7a7d
+    154  7a7d		       a5 94		      lda	enPassantPawn
+    155  7a7f		       f0 2e		      beq	.noEnPassant	; previous move (opponent) enpassant square?
+    156  7a81
+    157  7a81		       a5 92		      lda	currentPiece
+    158  7a83		       09 20		      ora	#FLAG_ENPASSANT
+    159  7a85		       85 92		      sta	currentPiece	; CONSUME en-passant opportunity
+    160  7a87
+      0  7a87					      EN_PASSANT	_LEFT, _UP
+      1  7a87					      SUBROUTINE
+      2  7a87
+      3  7a87
+      4  7a87		       a6 93		      ldx	currentSquare
+      5  7a89		       bc 14 f0 	      ldy	ValidSquare+_LEFT,x
+      6  7a8c		       c4 94		      cpy	enPassantPawn
+      7  7a8e		       d0 0b		      bne	.invalid
+      8  7a90		       bc 1e f0 	      ldy	ValidSquare+_LEFT+_UP,x
+      9  7a93		       b9 79 f0 	      lda	Board,y
+     10  7a96		       d0 03		      bne	.invalid
+     11  7a98		       20 78 fb 	      jsr	AddMove
+     12  7a9b				   .invalid
+      0  7a9b					      EN_PASSANT	_RIGHT, _UP
+      1  7a9b					      SUBROUTINE
+      2  7a9b
+      3  7a9b
+      4  7a9b		       a6 93		      ldx	currentSquare
+      5  7a9d		       bc 16 f0 	      ldy	ValidSquare+_RIGHT,x
+      6  7aa0		       c4 94		      cpy	enPassantPawn
+      7  7aa2		       d0 0b		      bne	.invalid
+      8  7aa4		       bc 20 f0 	      ldy	ValidSquare+_RIGHT+_UP,x
+      9  7aa7		       b9 79 f0 	      lda	Board,y
+     10  7aaa		       d0 03		      bne	.invalid
+     11  7aac		       20 78 fb 	      jsr	AddMove
+     12  7aaf				   .invalid
+    163  7aaf
+    164  7aaf		       4c d8 f9    .noEnPassant jmp	MoveReturn
+    165  7ab2
+    166  7ab2
+    167  7ab2							;---------------------------------------------------------------------------------------------------
+    168  7ab2							; BLACK PAWN
+    169  7ab2							;---------------------------------------------------------------------------------------------------
+    170  7ab2
+      0  7ab2					      DEF	PromoteBlackPawn
+      1  7ab2				   BANK_PromoteBlackPawn SET	_CURRENT_BANK
+      2  7ab2				   PromoteBlackPawn
+      3  7ab2				   TEMPORARY_VAR SET	Overlay
+      4  7ab2				   TEMPORARY_OFFSET SET	0
+      5  7ab2					      SUBROUTINE
+    172  7ab2					      SUBROUTINE
+    173  7ab2
+      0  7ab2					      PROMOTE_PAWN	BLACK
+      1  7ab2
+      2  7ab2
+      3  7ab2
+      4  7ab2
+      0  7ab2					      VAR	__temp, 1
+      1  7ab2				   __temp     SET	TEMPORARY_VAR
+      2  7ab2				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  7ab2
+      4  7ab2				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  7ab2				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  7ab2				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  7ab2					      ENDIF
+      8  7ab2				  -	      IF	OVERLAY_DELTA > OVERLAY_SIZE
+      9  7ab2				  -	      ECHO	"Temporary Variable", __temp, "overflow!"
+     10  7ab2				  -	      ERR
+     11  7ab2					      ENDIF
+     12  7ab2					      LIST	ON
+      6  7ab2
+      7  7ab2		       a5 92		      lda	currentPiece
+      8  7ab4		       48		      pha
+      9  7ab5
+     10  7ab5		       84 9c		      sty	__temp
+     11  7ab7		       a9 86		      lda	#BLACK|QUEEN
+     12  7ab9		       85 92		      sta	currentPiece
+     13  7abb		       20 78 fb 	      jsr	AddMove
+     14  7abe
+     15  7abe		       a9 85		      lda	#BLACK|ROOK
+     16  7ac0		       85 92		      sta	currentPiece
+     17  7ac2		       a4 9c		      ldy	__temp
+     18  7ac4		       20 78 fb 	      jsr	AddMove
+     19  7ac7
+     20  7ac7		       a9 84		      lda	#BLACK|BISHOP
+     21  7ac9		       85 92		      sta	currentPiece
+     22  7acb		       a4 9c		      ldy	__temp
+     23  7acd		       20 78 fb 	      jsr	AddMove
+     24  7ad0
+     25  7ad0		       a9 83		      lda	#BLACK|KNIGHT
+     26  7ad2		       85 92		      sta	currentPiece
+     27  7ad4		       a4 9c		      ldy	__temp
+     28  7ad6		       20 78 fb 	      jsr	AddMove
+     29  7ad9
+     30  7ad9		       68		      pla
+     31  7ada		       85 92		      sta	currentPiece
+    175  7adc		       60		      rts
+    176  7add
+      0  7add					      DEF	Handle_BLACK_PAWN
+      1  7add				   BANK_Handle_BLACK_PAWN SET	_CURRENT_BANK
+      2  7add				   Handle_BLACK_PAWN
+      3  7add				   TEMPORARY_VAR SET	Overlay
+      4  7add				   TEMPORARY_OFFSET SET	0
+      5  7add					      SUBROUTINE
+    178  7add					      SUBROUTINE
+    179  7add
+    180  7add		       bc 0b f0 	      ldy	ValidSquare+_DOWN,x	; square below must be blank (WILL NOT EVER be off-board!)
+    181  7ae0		       b9 79 f0 	      lda	Board,y
+    182  7ae3		       d0 24		      bne	.pMoved	; occupied
+    183  7ae5
+    184  7ae5
+    185  7ae5							; we may need to promote the pawn
+    186  7ae5							; All possibilites (Q/R/B/N) are added as individual moves
+    187  7ae5
+      0  7ae5					      MOVE_OR_PROMOTE_PAWN	BLACK
+      1  7ae5
+      2  7ae5
+      3  7ae5
+      4  7ae5				  -	      IF	BLACK = WHITE
+      5  7ae5				  -	      cpy	#90
+      6  7ae5				  -	      bcc	.standard
+      7  7ae5				  -	      jsr	PromoteWhitePawn
+      8  7ae5				  -	      jmp	.pMoved
+      9  7ae5					      ENDIF
+     10  7ae5
+     11  7ae5					      IF	BLACK = BLACK
+     12  7ae5		       c0 1e		      cpy	#30
+     13  7ae7		       b0 06		      bcs	.standard
+     14  7ae9		       20 b2 fa 	      jsr	PromoteBlackPawn
+     15  7aec		       4c f2 fa 	      jmp	.pMoved
+     16  7aef					      ENDIF
+     17  7aef
+     18  7aef		       20 78 fb    .standard  jsr	AddMove
+     19  7af2				   .pMoved
+     20  7af2
+    189  7af2
+    190  7af2							; the +2 move off the home rank...
+    191  7af2
+    192  7af2		       a6 93		      ldx	currentSquare
+    193  7af4		       e0 52		      cpx	#BLACK_HOME_ROW
+    194  7af6		       90 11		      bcc	.pMoved	; pawn has moved so can't do +2
+    195  7af8
+    196  7af8
+    197  7af8		       bc 01 f0 	      ldy	ValidSquare+_DOWN+_DOWN,x	; WILL be a valid square
+    198  7afb		       b9 79 f0 	      lda	Board,y
+    199  7afe		       d0 09		      bne	.pMoved	; destination square occupied
+    200  7b00
+    201  7b00		       a5 92		      lda	currentPiece
+    202  7b02		       09 20		      ora	#FLAG_ENPASSANT
+    203  7b04		       85 92		      sta	currentPiece	; CAN en-passant
+    204  7b06
+    205  7b06		       20 78 fb 	      jsr	AddMove	; add the +2DOWN move off home row
+    206  7b09
+    207  7b09				   .pMoved
+    208  7b09
+    209  7b09							; regular captures... (with promotion)
+    210  7b09
+      0  7b09					      TAKE	_DOWN+_LEFT, BLACK
+      1  7b09
+      2  7b09
+      3  7b09
+      4  7b09		       a6 93		      ldx	currentSquare
+      5  7b0b		       bc 0a f0 	      ldy	ValidSquare+_DOWN+_LEFT,x
+      6  7b0e		       30 16		      bmi	.invalid
+      7  7b10		       b9 79 f0 	      lda	Board,y
+      8  7b13		       f0 11		      beq	.invalid
+      9  7b15		       45 92		      eor	currentPiece
+     10  7b17		       10 0d		      bpl	.invalid
+     11  7b19
+      0  7b19					      MOVE_OR_PROMOTE_PAWN	BLACK
+      1  7b19
+      2  7b19
+      3  7b19
+      4  7b19				  -	      IF	BLACK = WHITE
+      5  7b19				  -	      cpy	#90
+      6  7b19				  -	      bcc	.standard
+      7  7b19				  -	      jsr	PromoteWhitePawn
+      8  7b19				  -	      jmp	.pMoved
+      9  7b19					      ENDIF
+     10  7b19
+     11  7b19					      IF	BLACK = BLACK
+     12  7b19		       c0 1e		      cpy	#30
+     13  7b1b		       b0 06		      bcs	.standard
+     14  7b1d		       20 b2 fa 	      jsr	PromoteBlackPawn
+     15  7b20		       4c 26 fb 	      jmp	.pMoved
+     16  7b23					      ENDIF
+     17  7b23
+     18  7b23		       20 78 fb    .standard  jsr	AddMove
+     19  7b26				   .pMoved
+     20  7b26
+     13  7b26				   .invalid
+      0  7b26					      TAKE	_DOWN+_RIGHT, BLACK
+      1  7b26
+      2  7b26
+      3  7b26
+      4  7b26		       a6 93		      ldx	currentSquare
+      5  7b28		       bc 0c f0 	      ldy	ValidSquare+_DOWN+_RIGHT,x
+      6  7b2b		       30 16		      bmi	.invalid
+      7  7b2d		       b9 79 f0 	      lda	Board,y
+      8  7b30		       f0 11		      beq	.invalid
+      9  7b32		       45 92		      eor	currentPiece
+     10  7b34		       10 0d		      bpl	.invalid
+     11  7b36
+      0  7b36					      MOVE_OR_PROMOTE_PAWN	BLACK
+      1  7b36
+      2  7b36
+      3  7b36
+      4  7b36				  -	      IF	BLACK = WHITE
+      5  7b36				  -	      cpy	#90
+      6  7b36				  -	      bcc	.standard
+      7  7b36				  -	      jsr	PromoteWhitePawn
+      8  7b36				  -	      jmp	.pMoved
+      9  7b36					      ENDIF
+     10  7b36
+     11  7b36					      IF	BLACK = BLACK
+     12  7b36		       c0 1e		      cpy	#30
+     13  7b38		       b0 06		      bcs	.standard
+     14  7b3a		       20 b2 fa 	      jsr	PromoteBlackPawn
+     15  7b3d		       4c 43 fb 	      jmp	.pMoved
+     16  7b40					      ENDIF
+     17  7b40
+     18  7b40		       20 78 fb    .standard  jsr	AddMove
+     19  7b43				   .pMoved
+     20  7b43
+     13  7b43				   .invalid
+    213  7b43
+    214  7b43							; en-passant captures...
+    215  7b43
+    216  7b43		       a5 94		      lda	enPassantPawn
+    217  7b45		       f0 2e		      beq	.noEnPassant	; was last move en-passantable?
+    218  7b47
+    219  7b47		       a5 92		      lda	currentPiece
+    220  7b49		       09 20		      ora	#FLAG_ENPASSANT
+    221  7b4b		       85 92		      sta	currentPiece	; any en-passant move added will have flag set
+    222  7b4d
+      0  7b4d					      EN_PASSANT	_LEFT, _DOWN
+      1  7b4d					      SUBROUTINE
+      2  7b4d
+      3  7b4d
+      4  7b4d		       a6 93		      ldx	currentSquare
+      5  7b4f		       bc 14 f0 	      ldy	ValidSquare+_LEFT,x
+      6  7b52		       c4 94		      cpy	enPassantPawn
+      7  7b54		       d0 0b		      bne	.invalid
+      8  7b56		       bc 0a f0 	      ldy	ValidSquare+_LEFT+_DOWN,x
+      9  7b59		       b9 79 f0 	      lda	Board,y
+     10  7b5c		       d0 03		      bne	.invalid
+     11  7b5e		       20 78 fb 	      jsr	AddMove
+     12  7b61				   .invalid
+      0  7b61					      EN_PASSANT	_RIGHT, _DOWN
+      1  7b61					      SUBROUTINE
+      2  7b61
+      3  7b61
+      4  7b61		       a6 93		      ldx	currentSquare
+      5  7b63		       bc 16 f0 	      ldy	ValidSquare+_RIGHT,x
+      6  7b66		       c4 94		      cpy	enPassantPawn
+      7  7b68		       d0 0b		      bne	.invalid
+      8  7b6a		       bc 0c f0 	      ldy	ValidSquare+_RIGHT+_DOWN,x
+      9  7b6d		       b9 79 f0 	      lda	Board,y
+     10  7b70		       d0 03		      bne	.invalid
+     11  7b72		       20 78 fb 	      jsr	AddMove
+     12  7b75				   .invalid
+    225  7b75
+    226  7b75				   .noEnPassant
+    227  7b75		       4c d8 f9 	      jmp	MoveReturn
+    228  7b78
+    229  7b78							; EOF
 ------- FILE BANK_FIXED.asm
-    512  7b69
-    513  7b69							;---------------------------------------------------------------------------------------------------
-    514  7b69
-      0  7b69					      DEF	AddMove
-      1  7b69				   BANK_AddMove SET	_CURRENT_BANK
-      2  7b69				   AddMove
-      3  7b69				   TEMPORARY_VAR SET	Overlay
-      4  7b69				   TEMPORARY_OFFSET SET	0
-      5  7b69					      SUBROUTINE
-    516  7b69					      SUBROUTINE
-    517  7b69							; =57 including call
-    518  7b69
-    519  7b69							; add square in y register to movelist as destination (X12 format)
-    520  7b69							; currentPiece = piece moving
-    521  7b69							; currentSquare = start square (X12)
-    522  7b69							; ??do not modify y
-    523  7b69
-    524  7b69		       a5 95		      lda	currentPly	; 3
-    525  7b6b		       85 3e		      sta	SET_BANK_RAM	; 3
-    526  7b6d
-    527  7b6d							; [y]		     to square (X12)
-    528  7b6d							; currentSquare     from square (X12)
-    529  7b6d							; currentPiece      piece. ENPASSANT flag set if pawn double-moving off opening rank
-    530  7b6d							; do not modify [Y]
-    531  7b6d
-    532  7b6d							; add a move to the movelist
-    533  7b6d
-    534  7b6d		       98		      tya		; 2
-    535  7b6e
-    536  7b6e		       ac f1 f1 	      ldy	moveIndex	; 3
-    537  7b71		       c8		      iny		; 2
-    538  7b72		       8c f1 f5 	      sty	moveIndex+RAM_WRITE	; 4
-    539  7b75
-    540  7b75		       99 00 f5 	      sta	MoveTo+RAM_WRITE,y	; 5
-    541  7b78		       aa		      tax		; 2   new square (for projections)
-    542  7b79
-    543  7b79		       a5 93		      lda	currentSquare	; 3
-    544  7b7b		       99 76 f4 	      sta	MoveFrom+RAM_WRITE,y	; 5
-    545  7b7e		       a5 92		      lda	currentPiece	; 3
-    546  7b80		       99 78 f5 	      sta	MovePiece+RAM_WRITE,y	; 5
-    547  7b83
-    548  7b83		       a9 08		      lda	#RAMBANK_MOVES_RAM	; 2	     ; TODO: NOT NEEDED IF FIXED BANK CALLED THIS
-    549  7b85		       85 3e		      sta	SET_BANK_RAM	; 3
-    550  7b87		       60		      rts		; 6
-    551  7b88
-    552  7b88
-    553  7b88							;---------------------------------------------------------------------------------------------------
+    524  7b78
+    525  7b78							;---------------------------------------------------------------------------------------------------
+    526  7b78
+      0  7b78					      DEF	AddMove
+      1  7b78				   BANK_AddMove SET	_CURRENT_BANK
+      2  7b78				   AddMove
+      3  7b78				   TEMPORARY_VAR SET	Overlay
+      4  7b78				   TEMPORARY_OFFSET SET	0
+      5  7b78					      SUBROUTINE
+    528  7b78					      SUBROUTINE
+    529  7b78							; =57 including call
+    530  7b78
+    531  7b78							; add square in y register to movelist as destination (X12 format)
+    532  7b78							; currentPiece = piece moving
+    533  7b78							; currentSquare = start square (X12)
+    534  7b78							; ??do not modify y
+    535  7b78
+    536  7b78		       a5 95		      lda	currentPly	; 3
+    537  7b7a		       85 3e		      sta	SET_BANK_RAM	; 3
+    538  7b7c
+    539  7b7c							; [y]		     to square (X12)
+    540  7b7c							; currentSquare     from square (X12)
+    541  7b7c							; currentPiece      piece. ENPASSANT flag set if pawn double-moving off opening rank
+    542  7b7c							; do not modify [Y]
+    543  7b7c
+    544  7b7c							; add a move to the movelist
+    545  7b7c
+    546  7b7c		       98		      tya		; 2
+    547  7b7d
+    548  7b7d		       ac f1 f1 	      ldy	moveIndex	; 3
+    549  7b80		       c8		      iny		; 2
+    550  7b81		       8c f1 f5 	      sty	moveIndex+RAM_WRITE	; 4
+    551  7b84
+    552  7b84		       99 00 f5 	      sta	MoveTo+RAM_WRITE,y	; 5
+    553  7b87		       aa		      tax		; 2   new square (for projections)
     554  7b88
-      0  7b88					      DEF	InitialisePieceSquares
-      1  7b88				   BANK_InitialisePieceSquares SET	_CURRENT_BANK
-      2  7b88				   InitialisePieceSquares
-      3  7b88				   TEMPORARY_VAR SET	Overlay
-      4  7b88				   TEMPORARY_OFFSET SET	0
-      5  7b88					      SUBROUTINE
-    556  7b88					      SUBROUTINE
-    557  7b88
-    558  7b88							; Initialise the piecelists and the board for the two piecelist banks (BLACK/WHITE)
-    559  7b88
-    560  7b88		       a9 09		      lda	#RAMBANK_PLY
-    561  7b8a		       85 3e		      sta	SET_BANK_RAM
-    562  7b8c		       20 f2 f1 	      jsr	InitPieceLists	; for white
-    563  7b8f		       a9 0a		      lda	#RAMBANK_PLY+1
-    564  7b91		       85 3e		      sta	SET_BANK_RAM
-    565  7b93		       20 f2 f1 	      jsr	InitPieceLists	; for black
-    566  7b96
-    567  7b96
-    568  7b96
-    569  7b96		       a9 00		      lda	#0
-    570  7b98		       85 94		      sta	enPassantPawn	; no en-passant
-    571  7b9a
-    572  7b9a
-    573  7b9a
-    574  7b9a
-    575  7b9a
-    576  7b9a							; Now setup the board/piecelists
-    577  7b9a
-    578  7b9a		       a2 00		      ldx	#0
-    579  7b9c				   .fillPieceLists
-    580  7b9c
-    581  7b9c		       a9 09		      lda	#RAMBANK_PLY
-    582  7b9e		       85 3e		      sta	SET_BANK_RAM
-    583  7ba0
-    584  7ba0		       bd 47 f2 	      lda	InitPieceList,x	; colour/-1
-    585  7ba3		       f0 71		      beq	.finish
-    586  7ba5
-    587  7ba5		       0a		      asl
-    588  7ba6		       a9 09		      lda	#RAMBANK_PLY
-    589  7ba8		       69 00		      adc	#0
-    590  7baa		       85 3e		      sta	SET_BANK_RAM	; BLACK/WHITE
-    591  7bac
-    592  7bac		       ac 70 f0 	      ldy	PieceListPtr	; init'd in InitPieceLists
-    593  7baf		       c8		      iny
-    594  7bb0
-    595  7bb0		       bd 48 f2 	      lda	InitPieceList+1,x	; square
-    596  7bb3		       99 10 f4 	      sta	PieceSquare+RAM_WRITE,y
-    597  7bb6		       98		      tya
-    598  7bb7		       99 00 f4 	      sta	SortedPieceList+RAM_WRITE,y
-    599  7bba
-    600  7bba		       bd 47 f2 	      lda	InitPieceList,x	; piece type
-    601  7bbd		       99 20 f4 	      sta	PieceType+RAM_WRITE,y
-    602  7bc0		       48		      pha
-    603  7bc1
-    604  7bc1		       8c 70 f4 	      sty	PieceListPtr+RAM_WRITE
-    605  7bc4
-    606  7bc4
-    607  7bc4		       bc 48 f2 	      ldy	InitPieceList+1,x	; square
-    608  7bc7
-    609  7bc7		       a9 08		      lda	#RAMBANK_MOVES_RAM
-    610  7bc9		       85 3e		      sta	SET_BANK_RAM
-    611  7bcb		       68		      pla
-    612  7bcc		       99 79 f4 	      sta	Board+RAM_WRITE,y
-    613  7bcf
-    614  7bcf
-    615  7bcf							; Add the material value of the piece to the evaluation
-    616  7bcf
-    617  7bcf		       c9 80		      cmp	#128	; CC=white, CS=black
-    618  7bd1		       29 0f		      and	#PIECE_MASK
-    619  7bd3		       a8		      tay
-    620  7bd4
-      0  7bd4					      JSROM	AddPieceMaterialValue
-      1  7bd4
-      2  7bd4		       a9 0c		      lda	#BANK_AddPieceMaterialValue
-      3  7bd6		       85 3f		      sta	SET_BANK
-      4  7bd8		       20 10 f0 	      jsr	AddPieceMaterialValue
-    622  7bdb
-    623  7bdb
-    624  7bdb							;#region add positional value
-    625  7bdb
-    626  7bdb		       8a		      txa
-    627  7bdc		       48		      pha
-    628  7bdd
-    629  7bdd		       a9 09		      lda	#RAMBANK_PLY
-    630  7bdf		       85 3e		      sta	SET_BANK_RAM
-    631  7be1
-    632  7be1							; add the positional value of the piece to the evaluation
-    633  7be1
-    634  7be1		       bc 48 f2 	      ldy	InitPieceList+1,x	; square
-    635  7be4		       bd 47 f2 	      lda	InitPieceList,x	; type
-    636  7be7
-    637  7be7		       a2 0c		      ldx	#BANK_AddPiecePositionValue
-    638  7be9		       86 3f		      stx	SET_BANK
-    639  7beb		       20 30 f0 	      jsr	AddPiecePositionValue
-    640  7bee
-    641  7bee		       68		      pla
-    642  7bef		       aa		      tax
-    643  7bf0							;#endregion
-    644  7bf0
+    555  7b88		       a5 93		      lda	currentSquare	; 3
+    556  7b8a		       99 76 f4 	      sta	MoveFrom+RAM_WRITE,y	; 5
+    557  7b8d		       a5 92		      lda	currentPiece	; 3
+    558  7b8f		       99 78 f5 	      sta	MovePiece+RAM_WRITE,y	; 5
+    559  7b92
+    560  7b92		       a9 08		      lda	#RAMBANK_MOVES_RAM	; 2	     ; TODO: NOT NEEDED IF FIXED BANK CALLED THIS
+    561  7b94		       85 3e		      sta	SET_BANK_RAM	; 3
+    562  7b96		       60		      rts		; 6
+    563  7b97
+    564  7b97
+    565  7b97							;---------------------------------------------------------------------------------------------------
+    566  7b97
+      0  7b97					      DEF	InitialisePieceSquares
+      1  7b97				   BANK_InitialisePieceSquares SET	_CURRENT_BANK
+      2  7b97				   InitialisePieceSquares
+      3  7b97				   TEMPORARY_VAR SET	Overlay
+      4  7b97				   TEMPORARY_OFFSET SET	0
+      5  7b97					      SUBROUTINE
+    568  7b97					      SUBROUTINE
+    569  7b97
+    570  7b97							; Initialise the piecelists and the board for the two piecelist banks (BLACK/WHITE)
+    571  7b97
+    572  7b97		       a9 09		      lda	#RAMBANK_PLY
+    573  7b99		       85 3e		      sta	SET_BANK_RAM
+    574  7b9b		       20 f2 f1 	      jsr	InitPieceLists	; for white
+    575  7b9e		       a9 0a		      lda	#RAMBANK_PLY+1
+    576  7ba0		       85 3e		      sta	SET_BANK_RAM
+    577  7ba2		       20 f2 f1 	      jsr	InitPieceLists	; for black
+    578  7ba5
+    579  7ba5
+    580  7ba5
+    581  7ba5		       a9 00		      lda	#0
+    582  7ba7		       85 94		      sta	enPassantPawn	; no en-passant
+    583  7ba9
+    584  7ba9
+    585  7ba9
+    586  7ba9
+    587  7ba9
+    588  7ba9							; Now setup the board/piecelists
+    589  7ba9
+    590  7ba9		       a2 00		      ldx	#0
+    591  7bab				   .fillPieceLists
+    592  7bab
+    593  7bab		       a9 09		      lda	#RAMBANK_PLY
+    594  7bad		       85 3e		      sta	SET_BANK_RAM
+    595  7baf
+    596  7baf		       bd 47 f2 	      lda	InitPieceList,x	; colour/-1
+    597  7bb2		       f0 71		      beq	.finish
+    598  7bb4
+    599  7bb4		       0a		      asl
+    600  7bb5		       a9 09		      lda	#RAMBANK_PLY
+    601  7bb7		       69 00		      adc	#0
+    602  7bb9		       85 3e		      sta	SET_BANK_RAM	; BLACK/WHITE
+    603  7bbb
+    604  7bbb		       ac 70 f0 	      ldy	PieceListPtr	; init'd in InitPieceLists
+    605  7bbe		       c8		      iny
+    606  7bbf
+    607  7bbf		       bd 48 f2 	      lda	InitPieceList+1,x	; square
+    608  7bc2		       99 10 f4 	      sta	PieceSquare+RAM_WRITE,y
+    609  7bc5		       98		      tya
+    610  7bc6		       99 00 f4 	      sta	SortedPieceList+RAM_WRITE,y
+    611  7bc9
+    612  7bc9		       bd 47 f2 	      lda	InitPieceList,x	; piece type
+    613  7bcc		       99 20 f4 	      sta	PieceType+RAM_WRITE,y
+    614  7bcf		       48		      pha
+    615  7bd0
+    616  7bd0		       8c 70 f4 	      sty	PieceListPtr+RAM_WRITE
+    617  7bd3
+    618  7bd3
+    619  7bd3		       bc 48 f2 	      ldy	InitPieceList+1,x	; square
+    620  7bd6
+    621  7bd6		       a9 08		      lda	#RAMBANK_MOVES_RAM
+    622  7bd8		       85 3e		      sta	SET_BANK_RAM
+    623  7bda		       68		      pla
+    624  7bdb		       99 79 f4 	      sta	Board+RAM_WRITE,y
+    625  7bde
+    626  7bde
+    627  7bde							; Add the material value of the piece to the evaluation
+    628  7bde
+    629  7bde		       c9 80		      cmp	#128	; CC=white, CS=black
+    630  7be0		       29 0f		      and	#PIECE_MASK
+    631  7be2		       a8		      tay
+    632  7be3
+      0  7be3					      JSROM	AddPieceMaterialValue
+      1  7be3
+      2  7be3		       a9 0c		      lda	#BANK_AddPieceMaterialValue
+      3  7be5		       85 3f		      sta	SET_BANK
+      4  7be7		       20 10 f0 	      jsr	AddPieceMaterialValue
+    634  7bea
+    635  7bea
+    636  7bea							;#region add positional value
+    637  7bea
+    638  7bea		       8a		      txa
+    639  7beb		       48		      pha
+    640  7bec
+    641  7bec		       a9 09		      lda	#RAMBANK_PLY
+    642  7bee		       85 3e		      sta	SET_BANK_RAM
+    643  7bf0
+    644  7bf0							; add the positional value of the piece to the evaluation
     645  7bf0
-    646  7bf0							;#region store piece value
-    647  7bf0
-    648  7bf0							; Store the piece's value with the piece itself, so it doesn't have to
-    649  7bf0							; be looked-up everytime it's added/removed
-    650  7bf0							; this may be overkill and more effort than it's worth...
-    651  7bf0
-    652  7bf0		       a9 0c		      lda	#BANK_PieceValueLO
-    653  7bf2		       85 3f		      sta	SET_BANK
-    654  7bf4
-    655  7bf4		       b9 08 f0 	      lda	PieceValueHI,y
-    656  7bf7		       48		      pha
-    657  7bf8		       b9 00 f0 	      lda	PieceValueLO,y
-    658  7bfb		       48		      pha
-    659  7bfc
-    660  7bfc		       bd 47 f2 	      lda	InitPieceList,x	; colour/-1
-    661  7bff		       0a		      asl
-    662  7c00		       a9 09		      lda	#RAMBANK_PLY
-    663  7c02		       69 00		      adc	#0
-    664  7c04		       85 3e		      sta	SET_BANK_RAM	; BLACK/WHITE
-    665  7c06
-    666  7c06		       ac 70 f0 	      ldy	PieceListPtr
-    667  7c09		       c8		      iny
-    668  7c0a
-    669  7c0a
-    670  7c0a		       68		      pla
-    671  7c0b		       99 30 f4 	      sta	PieceMaterialValueLO+RAM_WRITE,y
-    672  7c0e		       68		      pla
-    673  7c0f		       99 40 f4 	      sta	PieceMaterialValueHI+RAM_WRITE,y
-    674  7c12
-    675  7c12							;#endregion
-    676  7c12
-    677  7c12		       e8		      inx
-    678  7c13		       e8		      inx
-    679  7c14		       10 86		      bpl	.fillPieceLists
-    680  7c16
-    681  7c16				   .finish
-    682  7c16
-    683  7c16		       60		      rts
-    684  7c17
-    685  7c17
-    686  7c17							;---------------------------------------------------------------------------------------------------
-    687  7c17
-      0  7c17					      DEF	SAFE_GetKingSquare
-      1  7c17				   BANK_SAFE_GetKingSquare SET	_CURRENT_BANK
-      2  7c17				   SAFE_GetKingSquare
-      3  7c17				   TEMPORARY_VAR SET	Overlay
-      4  7c17				   TEMPORARY_OFFSET SET	0
-      5  7c17					      SUBROUTINE
-    689  7c17					      SUBROUTINE
-    690  7c17
-    691  7c17							; Pass:	 A = correct bank for current side (RAMBANK_PLY/+1)
-    692  7c17							; Return:	 A = square king is on (or -1)
-    693  7c17
-    694  7c17		       85 3e		      sta	SET_BANK_RAM
-    695  7c19		       20 8b f3 	      jsr	GetKingSquare
-    696  7c1c		       a4 8b		      ldy	savedBank
-    697  7c1e		       84 3f		      sty	SET_BANK
-    698  7c20		       60		      rts
-    699  7c21
-    700  7c21							;---------------------------------------------------------------------------------------------------
-    701  7c21
-      0  7c21					      DEF	GetValid
-      1  7c21				   BANK_GetValid SET	_CURRENT_BANK
-      2  7c21				   GetValid
-      3  7c21				   TEMPORARY_VAR SET	Overlay
-      4  7c21				   TEMPORARY_OFFSET SET	0
-      5  7c21					      SUBROUTINE
-    703  7c21		       a9 08		      lda	#RAMBANK_MOVES_RAM
-    704  7c23		       85 3e		      sta	SET_BANK_RAM
-    705  7c25		       b9 15 f0 	      lda	ValidSquare,y
-    706  7c28		       a4 8b		      ldy	savedBank
-    707  7c2a		       84 3f		      sty	SET_BANK
-    708  7c2c		       60		      rts
-    709  7c2d
-    710  7c2d
-    711  7c2d
-      0  7c2d					      DEF	GetBoard
-      1  7c2d				   BANK_GetBoard SET	_CURRENT_BANK
-      2  7c2d				   GetBoard
-      3  7c2d				   TEMPORARY_VAR SET	Overlay
-      4  7c2d				   TEMPORARY_OFFSET SET	0
-      5  7c2d					      SUBROUTINE
-    713  7c2d		       a9 08		      lda	#RAMBANK_MOVES_RAM
-    714  7c2f		       85 3e		      sta	SET_BANK_RAM
-    715  7c31		       b9 79 f0 	      lda	Board,y
-    716  7c34		       a4 8b		      ldy	savedBank
-    717  7c36		       84 3f		      sty	SET_BANK
-    718  7c38		       60		      rts
-    719  7c39
-      0  7c39					      DEF	PutBoard
-      1  7c39				   BANK_PutBoard SET	_CURRENT_BANK
-      2  7c39				   PutBoard
-      3  7c39				   TEMPORARY_VAR SET	Overlay
-      4  7c39				   TEMPORARY_OFFSET SET	0
-      5  7c39					      SUBROUTINE
-    721  7c39		       a2 08		      ldx	#RAMBANK_MOVES_RAM
-    722  7c3b		       86 3e		      stx	SET_BANK_RAM
-    723  7c3d		       99 79 f4 	      sta	Board+RAM_WRITE,y	; and what's actually moving there
-    724  7c40		       a6 8b		      ldx	savedBank
-    725  7c42		       86 3f		      stx	SET_BANK
-    726  7c44		       60		      rts
-    727  7c45
-    728  7c45							;---------------------------------------------------------------------------------------------------
-    729  7c45
-      0  7c45					      DEF	SAFE_IsValidMoveFromSquare
-      1  7c45				   BANK_SAFE_IsValidMoveFromSquare SET	_CURRENT_BANK
-      2  7c45				   SAFE_IsValidMoveFromSquare
-      3  7c45				   TEMPORARY_VAR SET	Overlay
-      4  7c45				   TEMPORARY_OFFSET SET	0
-      5  7c45					      SUBROUTINE
-    731  7c45					      SUBROUTINE
-    732  7c45
-    733  7c45							; Does the square exist in the movelist?
-    734  7c45
-    735  7c45		       a6 88		      ldx	cursorX12
-    736  7c47		       86 85		      stx	fromX12
-    737  7c49		       8a		      txa
-    738  7c4a
-    739  7c4a		       a4 95		      ldy	currentPly
-    740  7c4c		       84 3e		      sty	SET_BANK_RAM
-    741  7c4e		       20 68 f3 	      jsr	CheckMoveListFromSquare
-    742  7c51
-    743  7c51		       a5 8b		      lda	savedBank
-    744  7c53		       85 3f		      sta	SET_BANK
-    745  7c55		       60		      rts
-    746  7c56
-    747  7c56
-    748  7c56							;---------------------------------------------------------------------------------------------------
-    749  7c56
-      0  7c56					      DEF	GetPiece
-      1  7c56				   BANK_GetPiece SET	_CURRENT_BANK
-      2  7c56				   GetPiece
-      3  7c56				   TEMPORARY_VAR SET	Overlay
-      4  7c56				   TEMPORARY_OFFSET SET	0
-      5  7c56					      SUBROUTINE
-    751  7c56					      SUBROUTINE
-    752  7c56
-    753  7c56							; Retrieve the piece+flags from the movelist, given from/to squares
-    754  7c56							; Required as moves have different flags but same origin squares (e.g., castling)
-    755  7c56
-    756  7c56		       a5 95		      lda	currentPly
-    757  7c58		       85 3e		      sta	SET_BANK_RAM
-    758  7c5a
-    759  7c5a		       20 a6 f3 	      jsr	GetPieceGivenFromToSquares
-    760  7c5d
-    761  7c5d		       a5 8b		      lda	savedBank
-    762  7c5f		       85 3f		      sta	SET_BANK
-    763  7c61		       60		      rts
-    764  7c62
-    765  7c62							;---------------------------------------------------------------------------------------------------
-    766  7c62
-    767  7c62
-      0  7c62					      DEF	CopyShadowROMtoRAM
-      1  7c62				   BANK_CopyShadowROMtoRAM SET	_CURRENT_BANK
-      2  7c62				   CopyShadowROMtoRAM
-      3  7c62				   TEMPORARY_VAR SET	Overlay
-      4  7c62				   TEMPORARY_OFFSET SET	0
-      5  7c62					      SUBROUTINE
-    769  7c62					      SUBROUTINE
-    770  7c62
-      0  7c62					      VAR	__destinationBank, 1
-      1  7c62				   __destinationBank SET	TEMPORARY_VAR
-      2  7c62				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  7c62
-      4  7c62				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  7c62				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  7c62				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  7c62					      ENDIF
-      8  7c62				  -	      IF	OVERLAY_DELTA > OVERLAY_SIZE
-      9  7c62				  -	      ECHO	"Temporary Variable", __destinationBank, "overflow!"
-     10  7c62				  -	      ERR
-     11  7c62					      ENDIF
-     12  7c62					      LIST	ON
-      0  7c62					      VAR	__sourceBank, 1
-      1  7c62				   __sourceBank SET	TEMPORARY_VAR
-      2  7c62				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  7c62
-      4  7c62				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  7c62				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  7c62				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  7c62					      ENDIF
-      8  7c62				  -	      IF	OVERLAY_DELTA > OVERLAY_SIZE
-      9  7c62				  -	      ECHO	"Temporary Variable", __sourceBank, "overflow!"
-     10  7c62				  -	      ERR
-     11  7c62					      ENDIF
-     12  7c62					      LIST	ON
-    773  7c62
-    774  7c62
-    775  7c62							; Copy a whole 1K ROM SHADOW into a destination RAM 1K bank
-    776  7c62							; used to setup callable RAM code from ROM templates
-    777  7c62
-    778  7c62							; x = source ROM bank
-    779  7c62							; y = destination RAM bank (preserved)
-    780  7c62
-    781  7c62		       86 9d		      stx	__sourceBank
-    782  7c64
-    783  7c64		       a2 00		      ldx	#0
-    784  7c66		       a5 9d	   .copyPage  lda	__sourceBank
-    785  7c68		       85 3f		      sta	SET_BANK
-    786  7c6a
-    787  7c6a		       bd 00 f0 	      lda	$F000,x
-    788  7c6d		       48		      pha
-    789  7c6e		       bd 00 f1 	      lda	$F100,x
-    790  7c71		       48		      pha
-    791  7c72		       bd 00 f2 	      lda	$F200,x
-    792  7c75		       48		      pha
-    793  7c76		       bd 00 f3 	      lda	$F300,x
-    794  7c79
-    795  7c79		       84 3e		      sty	SET_BANK_RAM
-    796  7c7b
-    797  7c7b		       9d 00 f7 	      sta	$F300+RAM_WRITE,x
-    798  7c7e		       68		      pla
-    799  7c7f		       9d 00 f6 	      sta	$F200+RAM_WRITE,x
-    800  7c82		       68		      pla
-    801  7c83		       9d 00 f5 	      sta	$F100+RAM_WRITE,x
-    802  7c86		       68		      pla
-    803  7c87		       9d 00 f4 	      sta	$F000+RAM_WRITE,x
-    804  7c8a
-    805  7c8a		       ca		      dex
-    806  7c8b		       d0 d9		      bne	.copyPage
-    807  7c8d
-    808  7c8d		       a5 8b		      lda	savedBank
-    809  7c8f		       85 3f		      sta	SET_BANK
-    810  7c91		       60		      rts
-    811  7c92
-    812  7c92
-    813  7c92							;---------------------------------------------------------------------------------------------------
-    814  7c92
-      0  7c92					      DEF	CopySinglePiece
-      1  7c92				   BANK_CopySinglePiece SET	_CURRENT_BANK
-      2  7c92				   CopySinglePiece
-      3  7c92				   TEMPORARY_VAR SET	Overlay
-      4  7c92				   TEMPORARY_OFFSET SET	0
-      5  7c92					      SUBROUTINE
-    816  7c92					      SUBROUTINE
-      0  7c92					      TIMING	COPYSINGLEPIECE, (2600)
-      1  7c92		       00 29	   SPEEDOF_COPYSINGLEPIECE =	((2600)/64) + 1
-    818  7c92
-    819  7c92							; WARNING: CANNOT USE VAR/OVERLAY IN ANY ROUTINE CALLING THIS!!
-    820  7c92							; ALSO CAN'T USE IN THIS ROUTINE
-    821  7c92							; This routine will STOMP on those vars due to __pieceShapeBuffer occupying whole overlay
-    822  7c92							; @2150 max
-    823  7c92							; = 33 TIM64T
-    824  7c92
-      0  7c92					      JSROM	CopySetup
-      1  7c92
-      2  7c92		       a9 09		      lda	#BANK_CopySetup
-      3  7c94		       85 3f		      sta	SET_BANK
-      4  7c96		       20 75 f1 	      jsr	CopySetup
-    826  7c99
-      0  7c99					      DEF	InterceptMarkerCopy
-      1  7c99				   BANK_InterceptMarkerCopy SET	_CURRENT_BANK
-      2  7c99				   InterceptMarkerCopy
-      3  7c99				   TEMPORARY_VAR SET	Overlay
-      4  7c99				   TEMPORARY_OFFSET SET	0
-      5  7c99					      SUBROUTINE
-    828  7c99					      SUBROUTINE
-    829  7c99
-    830  7c99
-    831  7c99							; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
-    832  7c99							; y = piece index
-    833  7c99
-    834  7c99		       a9 00		      lda	#BANK_PIECE_VECTOR_BANK
-    835  7c9b		       85 3f		      sta	SET_BANK
-    836  7c9d
-    837  7c9d		       b9 37 f1 	      lda	PIECE_VECTOR_LO,y
-    838  7ca0		       85 e4		      sta	__ptr
-    839  7ca2		       b9 c7 f1 	      lda	PIECE_VECTOR_HI,y
-    840  7ca5		       85 e5		      sta	__ptr+1
-    841  7ca7		       b9 57 f2 	      lda	PIECE_VECTOR_BANK,y
-    842  7caa		       85 3f		      sta	SET_BANK
-    843  7cac
-    844  7cac		       a0 47		      ldy	#PIECE_SHAPE_SIZE-1
-    845  7cae		       b1 e4	   .copy      lda	(__ptr),y
-    846  7cb0		       99 9c 00 	      sta	__pieceShapeBuffer,y
-    847  7cb3		       88		      dey
-    848  7cb4		       10 f8		      bpl	.copy
-    849  7cb6
-    850  7cb6		       a5 80		      lda	squareToDraw
-    851  7cb8		       38		      sec
-    852  7cb9		       a2 0a		      ldx	#10
-    853  7cbb		       e9 0a	   .sub10     sbc	#10
-    854  7cbd		       ca		      dex
-    855  7cbe		       b0 fb		      bcs	.sub10
-    856  7cc0
-    857  7cc0		       86 3e		      stx	SET_BANK_RAM	; row
-    858  7cc2
-    859  7cc2		       69 08		      adc	#8
-    860  7cc4		       c9 04		      cmp	#4	; CS = right side of screen
-    861  7cc6
-    862  7cc6		       20 9b f1 	      jsr	CopyPieceToRowBitmap
-    863  7cc9
-    864  7cc9		       a5 8b		      lda	savedBank
-    865  7ccb		       85 3f		      sta	SET_BANK
-    866  7ccd		       60		      rts
-    867  7cce
-    868  7cce							;---------------------------------------------------------------------------------------------------
-    869  7cce
-      0  7cce					      DEF	SAFE_getMoveIndex
-      1  7cce				   BANK_SAFE_getMoveIndex SET	_CURRENT_BANK
-      2  7cce				   SAFE_getMoveIndex
-      3  7cce				   TEMPORARY_VAR SET	Overlay
-      4  7cce				   TEMPORARY_OFFSET SET	0
-      5  7cce					      SUBROUTINE
-    871  7cce					      SUBROUTINE
-    872  7cce
-    873  7cce		       a9 09		      lda	#RAMBANK_PLY
-    874  7cd0		       85 3e		      sta	SET_BANK_RAM
-    875  7cd2		       ad f1 f1 	      lda	moveIndex
-    876  7cd5		       a6 8b		      ldx	savedBank
-    877  7cd7		       86 3f		      stx	SET_BANK
-    878  7cd9		       60		      rts
-    879  7cda
-    880  7cda
-    881  7cda							;---------------------------------------------------------------------------------------------------
-    882  7cda
-      0  7cda					      DEF	GoFixPieceList
-      1  7cda				   BANK_GoFixPieceList SET	_CURRENT_BANK
-      2  7cda				   GoFixPieceList
-      3  7cda				   TEMPORARY_VAR SET	Overlay
-      4  7cda				   TEMPORARY_OFFSET SET	0
-      5  7cda					      SUBROUTINE
-    884  7cda
-    885  7cda		       85 3e		      sta	SET_BANK_RAM
-    886  7cdc		       20 d8 f2 	      jsr	FixPieceList
-    887  7cdf		       a5 8b		      lda	savedBank
-    888  7ce1		       85 3f		      sta	SET_BANK
-    889  7ce3		       60		      rts
-    890  7ce4
-    891  7ce4							;---------------------------------------------------------------------------------------------------
-    892  7ce4
-      0  7ce4					      DEF	markerDraw
-      1  7ce4				   BANK_markerDraw SET	_CURRENT_BANK
-      2  7ce4				   markerDraw
-      3  7ce4				   TEMPORARY_VAR SET	Overlay
-      4  7ce4				   TEMPORARY_OFFSET SET	0
-      5  7ce4					      SUBROUTINE
-    894  7ce4
-    895  7ce4		       a2 1c		      ldx	#INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
-      0  7ce6					      JSROM	CopySetupForMarker
-      1  7ce6
-      2  7ce6		       a9 09		      lda	#BANK_CopySetupForMarker
-      3  7ce8		       85 3f		      sta	SET_BANK
-      4  7cea		       20 4a f1 	      jsr	CopySetupForMarker
-    897  7ced		       4c 99 fc 	      jmp	InterceptMarkerCopy
-    898  7cf0
-    899  7cf0							;---------------------------------------------------------------------------------------------------
-    900  7cf0
-      0  7cf0					      DEF	showPromoteOptions
-      1  7cf0				   BANK_showPromoteOptions SET	_CURRENT_BANK
-      2  7cf0				   showPromoteOptions
-      3  7cf0				   TEMPORARY_VAR SET	Overlay
-      4  7cf0				   TEMPORARY_OFFSET SET	0
-      5  7cf0					      SUBROUTINE
-    902  7cf0					      SUBROUTINE
-    903  7cf0
-    904  7cf0							; X = character shape # (?/N/B/R/Q)
-    905  7cf0
-    906  7cf0		       a4 86		      ldy	toX12
-    907  7cf2		       84 80		      sty	squareToDraw
-    908  7cf4
-      0  7cf4					      JSROM	CopySetupForMarker
-      1  7cf4
-      2  7cf4		       a9 09		      lda	#BANK_CopySetupForMarker
-      3  7cf6		       85 3f		      sta	SET_BANK
-      4  7cf8		       20 4a f1 	      jsr	CopySetupForMarker
-    910  7cfb		       4c 99 fc 	      jmp	InterceptMarkerCopy
-    911  7cfe
-    912  7cfe							;		      lda savedBank
-    913  7cfe							;		      sta SET_BANK
-    914  7cfe							;		      rts
-    915  7cfe
-    916  7cfe							;---------------------------------------------------------------------------------------------------
-    917  7cfe
-      0  7cfe					      DEF	SAFE_BackupBitmaps
-      1  7cfe				   BANK_SAFE_BackupBitmaps SET	_CURRENT_BANK
-      2  7cfe				   SAFE_BackupBitmaps
-      3  7cfe				   TEMPORARY_VAR SET	Overlay
-      4  7cfe				   TEMPORARY_OFFSET SET	0
-      5  7cfe					      SUBROUTINE
-    919  7cfe
-    920  7cfe		       84 3e		      sty	SET_BANK_RAM
-    921  7d00		       20 f4 f2 	      jsr	SaveBitmap
-    922  7d03		       a5 8b		      lda	savedBank
-    923  7d05		       85 3f		      sta	SET_BANK
-    924  7d07		       60		      rts
-    925  7d08
-    926  7d08							;---------------------------------------------------------------------------------------------------
-    927  7d08
-      0  7d08					      DEF	SAFE_IsSquareUnderAttack
-      1  7d08				   BANK_SAFE_IsSquareUnderAttack SET	_CURRENT_BANK
-      2  7d08				   SAFE_IsSquareUnderAttack
-      3  7d08				   TEMPORARY_VAR SET	Overlay
-      4  7d08				   TEMPORARY_OFFSET SET	0
-      5  7d08					      SUBROUTINE
-    929  7d08
-    930  7d08							; Check if passed X12 square is in the "TO" squares in the movelist (and thus under attack)
-    931  7d08
-    932  7d08							; Pass:	 currentPly = which movelist to check
-    933  7d08							;		 A = X12 square to check
-    934  7d08							; Return:	 CC = No, CS = Yes
-    935  7d08
-    936  7d08		       a6 95		      ldx	currentPly
-    937  7d0a		       86 3e		      stx	SET_BANK_RAM
-    938  7d0c		       20 7c f3 	      jsr	IsSquareUnderAttack
-    939  7d0f		       a5 8b		      lda	savedBank
-    940  7d11		       85 3f		      sta	SET_BANK
-    941  7d13		       60		      rts
-    942  7d14
-    943  7d14							;---------------------------------------------------------------------------------------------------
-    944  7d14
-      0  7d14					      DEF	SAFE_showMoveCaptures
-      1  7d14				   BANK_SAFE_showMoveCaptures SET	_CURRENT_BANK
-      2  7d14				   SAFE_showMoveCaptures
-      3  7d14				   TEMPORARY_VAR SET	Overlay
-      4  7d14				   TEMPORARY_OFFSET SET	0
-      5  7d14					      SUBROUTINE
-    946  7d14					      SUBROUTINE
-    947  7d14
-      0  7d14					      JSROM	UNSAFE_showMoveCaptures
-      1  7d14
-      2  7d14		       a9 09		      lda	#BANK_UNSAFE_showMoveCaptures
-      3  7d16		       85 3f		      sta	SET_BANK
-      4  7d18		       20 00 f0 	      jsr	UNSAFE_showMoveCaptures
-    949  7d1b		       a5 8b		      lda	savedBank
-    950  7d1d		       85 3f		      sta	SET_BANK
-    951  7d1f		       60		      rts
-    952  7d20
-    953  7d20
-    954  7d20							;---------------------------------------------------------------------------------------------------
-    955  7d20
-      0  7d20					      DEF	GetMoveFrom
-      1  7d20				   BANK_GetMoveFrom SET	_CURRENT_BANK
-      2  7d20				   GetMoveFrom
-      3  7d20				   TEMPORARY_VAR SET	Overlay
-      4  7d20				   TEMPORARY_OFFSET SET	0
-      5  7d20					      SUBROUTINE
-    957  7d20		       a9 09		      lda	#RAMBANK_PLY
-    958  7d22		       85 3e		      sta	SET_BANK_RAM
-    959  7d24		       a4 8b		      ldy	savedBank
-    960  7d26		       bd 76 f0 	      lda	MoveFrom,x
-    961  7d29		       84 3f		      sty	SET_BANK
-    962  7d2b		       60		      rts
-    963  7d2c
-      0  7d2c					      DEF	GetMoveTo
-      1  7d2c				   BANK_GetMoveTo SET	_CURRENT_BANK
-      2  7d2c				   GetMoveTo
-      3  7d2c				   TEMPORARY_VAR SET	Overlay
-      4  7d2c				   TEMPORARY_OFFSET SET	0
-      5  7d2c					      SUBROUTINE
-    965  7d2c		       a9 09		      lda	#RAMBANK_PLY
-    966  7d2e		       85 3e		      sta	SET_BANK_RAM
-    967  7d30		       a4 8b		      ldy	savedBank
-    968  7d32		       bd 00 f1 	      lda	MoveTo,x
-    969  7d35		       84 3f		      sty	SET_BANK
-    970  7d37		       60		      rts
-    971  7d38
-      0  7d38					      DEF	GetMovePiece
-      1  7d38				   BANK_GetMovePiece SET	_CURRENT_BANK
-      2  7d38				   GetMovePiece
-      3  7d38				   TEMPORARY_VAR SET	Overlay
-      4  7d38				   TEMPORARY_OFFSET SET	0
-      5  7d38					      SUBROUTINE
-    973  7d38		       a9 09		      lda	#RAMBANK_PLY
-    974  7d3a		       85 3e		      sta	SET_BANK_RAM
-    975  7d3c		       a4 8b		      ldy	savedBank
-    976  7d3e		       bd 78 f1 	      lda	MovePiece,x
-    977  7d41		       84 3f		      sty	SET_BANK
-    978  7d43		       60		      rts
-    979  7d44
-    980  7d44
-    981  7d44							;---------------------------------------------------------------------------------------------------
-    982  7d44
- FREE BYTES IN FIXED BANK =  $2b8
-    983  7d44					      ECHO	"FREE BYTES IN FIXED BANK = ", $FFFC - *
-    984  7d44
-    985  7d44
-    986  7d44							;---------------------------------------------------------------------------------------------------
-    987  7d44							; The reset vectors
-    988  7d44							; these must live in the fixed bank (last 2K of any ROM image in "3E" scheme)
-    989  7d44
-    990  8000 ????				      SEG	InterruptVectors
-    991  7ffc					      ORG	FIXED_BANK + $7FC
-    992  7ffc					      RORG	$7ffC
-    993  7ffc
-    994  7ffc		       00 f8		      .word.w	Reset	; RESET
-    995  7ffe		       00 f8		      .word.w	Reset	; IRQ	      (not used)
-    996  8000
-    997  8000							;---------------------------------------------------------------------------------------------------
-    998  8000							; EOF
+    646  7bf0		       bc 48 f2 	      ldy	InitPieceList+1,x	; square
+    647  7bf3		       bd 47 f2 	      lda	InitPieceList,x	; type
+    648  7bf6
+    649  7bf6		       a2 0c		      ldx	#BANK_AddPiecePositionValue
+    650  7bf8		       86 3f		      stx	SET_BANK
+    651  7bfa		       20 30 f0 	      jsr	AddPiecePositionValue
+    652  7bfd
+    653  7bfd		       68		      pla
+    654  7bfe		       aa		      tax
+    655  7bff							;#endregion
+    656  7bff
+    657  7bff
+    658  7bff							;#region store piece value
+    659  7bff
+    660  7bff							; Store the piece's value with the piece itself, so it doesn't have to
+    661  7bff							; be looked-up everytime it's added/removed
+    662  7bff							; this may be overkill and more effort than it's worth...
+    663  7bff
+    664  7bff		       a9 0c		      lda	#BANK_PieceValueLO
+    665  7c01		       85 3f		      sta	SET_BANK
+    666  7c03
+    667  7c03		       b9 08 f0 	      lda	PieceValueHI,y
+    668  7c06		       48		      pha
+    669  7c07		       b9 00 f0 	      lda	PieceValueLO,y
+    670  7c0a		       48		      pha
+    671  7c0b
+    672  7c0b		       bd 47 f2 	      lda	InitPieceList,x	; colour/-1
+    673  7c0e		       0a		      asl
+    674  7c0f		       a9 09		      lda	#RAMBANK_PLY
+    675  7c11		       69 00		      adc	#0
+    676  7c13		       85 3e		      sta	SET_BANK_RAM	; BLACK/WHITE
+    677  7c15
+    678  7c15		       ac 70 f0 	      ldy	PieceListPtr
+    679  7c18		       c8		      iny
+    680  7c19
+    681  7c19
+    682  7c19		       68		      pla
+    683  7c1a		       99 30 f4 	      sta	PieceMaterialValueLO+RAM_WRITE,y
+    684  7c1d		       68		      pla
+    685  7c1e		       99 40 f4 	      sta	PieceMaterialValueHI+RAM_WRITE,y
+    686  7c21
+    687  7c21							;#endregion
+    688  7c21
+    689  7c21		       e8		      inx
+    690  7c22		       e8		      inx
+    691  7c23		       10 86		      bpl	.fillPieceLists
+    692  7c25
+    693  7c25				   .finish
+    694  7c25
+    695  7c25		       60		      rts
+    696  7c26
+    697  7c26
+    698  7c26							;---------------------------------------------------------------------------------------------------
+    699  7c26
+      0  7c26					      DEF	SAFE_GetKingSquare
+      1  7c26				   BANK_SAFE_GetKingSquare SET	_CURRENT_BANK
+      2  7c26				   SAFE_GetKingSquare
+      3  7c26				   TEMPORARY_VAR SET	Overlay
+      4  7c26				   TEMPORARY_OFFSET SET	0
+      5  7c26					      SUBROUTINE
+    701  7c26					      SUBROUTINE
+    702  7c26
+    703  7c26							; Pass:	 A = correct bank for current side (RAMBANK_PLY/+1)
+    704  7c26							; Return:	 A = square king is on (or -1)
+    705  7c26
+    706  7c26		       85 3e		      sta	SET_BANK_RAM
+    707  7c28		       20 8b f3 	      jsr	GetKingSquare
+    708  7c2b		       a4 8b		      ldy	savedBank
+    709  7c2d		       84 3f		      sty	SET_BANK
+    710  7c2f		       60		      rts
+    711  7c30
+    712  7c30							;---------------------------------------------------------------------------------------------------
+    713  7c30
+      0  7c30					      DEF	GetValid
+      1  7c30				   BANK_GetValid SET	_CURRENT_BANK
+      2  7c30				   GetValid
+      3  7c30				   TEMPORARY_VAR SET	Overlay
+      4  7c30				   TEMPORARY_OFFSET SET	0
+      5  7c30					      SUBROUTINE
+    715  7c30		       a9 08		      lda	#RAMBANK_MOVES_RAM
+    716  7c32		       85 3e		      sta	SET_BANK_RAM
+    717  7c34		       b9 15 f0 	      lda	ValidSquare,y
+    718  7c37		       a4 8b		      ldy	savedBank
+    719  7c39		       84 3f		      sty	SET_BANK
+    720  7c3b		       60		      rts
+    721  7c3c
+    722  7c3c
+    723  7c3c
+      0  7c3c					      DEF	GetBoard
+      1  7c3c				   BANK_GetBoard SET	_CURRENT_BANK
+      2  7c3c				   GetBoard
+      3  7c3c				   TEMPORARY_VAR SET	Overlay
+      4  7c3c				   TEMPORARY_OFFSET SET	0
+      5  7c3c					      SUBROUTINE
+    725  7c3c		       a9 08		      lda	#RAMBANK_MOVES_RAM
+    726  7c3e		       85 3e		      sta	SET_BANK_RAM
+    727  7c40		       b9 79 f0 	      lda	Board,y
+    728  7c43		       a4 8b		      ldy	savedBank
+    729  7c45		       84 3f		      sty	SET_BANK
+    730  7c47		       60		      rts
+    731  7c48
+      0  7c48					      DEF	PutBoard
+      1  7c48				   BANK_PutBoard SET	_CURRENT_BANK
+      2  7c48				   PutBoard
+      3  7c48				   TEMPORARY_VAR SET	Overlay
+      4  7c48				   TEMPORARY_OFFSET SET	0
+      5  7c48					      SUBROUTINE
+    733  7c48		       a2 08		      ldx	#RAMBANK_MOVES_RAM
+    734  7c4a		       86 3e		      stx	SET_BANK_RAM
+    735  7c4c		       99 79 f4 	      sta	Board+RAM_WRITE,y	; and what's actually moving there
+    736  7c4f		       a6 8b		      ldx	savedBank
+    737  7c51		       86 3f		      stx	SET_BANK
+    738  7c53		       60		      rts
+    739  7c54
+    740  7c54							;---------------------------------------------------------------------------------------------------
+    741  7c54
+      0  7c54					      DEF	SAFE_IsValidMoveFromSquare
+      1  7c54				   BANK_SAFE_IsValidMoveFromSquare SET	_CURRENT_BANK
+      2  7c54				   SAFE_IsValidMoveFromSquare
+      3  7c54				   TEMPORARY_VAR SET	Overlay
+      4  7c54				   TEMPORARY_OFFSET SET	0
+      5  7c54					      SUBROUTINE
+    743  7c54					      SUBROUTINE
+    744  7c54
+    745  7c54							; Does the square exist in the movelist?
+    746  7c54
+    747  7c54		       a6 88		      ldx	cursorX12
+    748  7c56		       86 85		      stx	fromX12
+    749  7c58		       8a		      txa
+    750  7c59
+    751  7c59		       a4 95		      ldy	currentPly
+    752  7c5b		       84 3e		      sty	SET_BANK_RAM
+    753  7c5d		       20 68 f3 	      jsr	CheckMoveListFromSquare
+    754  7c60
+    755  7c60		       a5 8b		      lda	savedBank
+    756  7c62		       85 3f		      sta	SET_BANK
+    757  7c64		       60		      rts
+    758  7c65
+    759  7c65
+    760  7c65							;---------------------------------------------------------------------------------------------------
+    761  7c65
+      0  7c65					      DEF	GetPiece
+      1  7c65				   BANK_GetPiece SET	_CURRENT_BANK
+      2  7c65				   GetPiece
+      3  7c65				   TEMPORARY_VAR SET	Overlay
+      4  7c65				   TEMPORARY_OFFSET SET	0
+      5  7c65					      SUBROUTINE
+    763  7c65					      SUBROUTINE
+    764  7c65
+    765  7c65							; Retrieve the piece+flags from the movelist, given from/to squares
+    766  7c65							; Required as moves have different flags but same origin squares (e.g., castling)
+    767  7c65
+    768  7c65		       a5 95		      lda	currentPly
+    769  7c67		       85 3e		      sta	SET_BANK_RAM
+    770  7c69
+    771  7c69		       20 a6 f3 	      jsr	GetPieceGivenFromToSquares
+    772  7c6c
+    773  7c6c		       a5 8b		      lda	savedBank
+    774  7c6e		       85 3f		      sta	SET_BANK
+    775  7c70		       60		      rts
+    776  7c71
+    777  7c71							;---------------------------------------------------------------------------------------------------
+    778  7c71
+    779  7c71
+      0  7c71					      DEF	CopyShadowROMtoRAM
+      1  7c71				   BANK_CopyShadowROMtoRAM SET	_CURRENT_BANK
+      2  7c71				   CopyShadowROMtoRAM
+      3  7c71				   TEMPORARY_VAR SET	Overlay
+      4  7c71				   TEMPORARY_OFFSET SET	0
+      5  7c71					      SUBROUTINE
+    781  7c71					      SUBROUTINE
+    782  7c71
+      0  7c71					      VAR	__destinationBank, 1
+      1  7c71				   __destinationBank SET	TEMPORARY_VAR
+      2  7c71				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  7c71
+      4  7c71				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  7c71				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  7c71				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  7c71					      ENDIF
+      8  7c71				  -	      IF	OVERLAY_DELTA > OVERLAY_SIZE
+      9  7c71				  -	      ECHO	"Temporary Variable", __destinationBank, "overflow!"
+     10  7c71				  -	      ERR
+     11  7c71					      ENDIF
+     12  7c71					      LIST	ON
+      0  7c71					      VAR	__sourceBank, 1
+      1  7c71				   __sourceBank SET	TEMPORARY_VAR
+      2  7c71				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  7c71
+      4  7c71				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  7c71				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  7c71				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  7c71					      ENDIF
+      8  7c71				  -	      IF	OVERLAY_DELTA > OVERLAY_SIZE
+      9  7c71				  -	      ECHO	"Temporary Variable", __sourceBank, "overflow!"
+     10  7c71				  -	      ERR
+     11  7c71					      ENDIF
+     12  7c71					      LIST	ON
+    785  7c71
+    786  7c71
+    787  7c71							; Copy a whole 1K ROM SHADOW into a destination RAM 1K bank
+    788  7c71							; used to setup callable RAM code from ROM templates
+    789  7c71
+    790  7c71							; x = source ROM bank
+    791  7c71							; y = destination RAM bank (preserved)
+    792  7c71
+    793  7c71		       86 9d		      stx	__sourceBank
+    794  7c73
+    795  7c73		       a2 00		      ldx	#0
+    796  7c75		       a5 9d	   .copyPage  lda	__sourceBank
+    797  7c77		       85 3f		      sta	SET_BANK
+    798  7c79
+    799  7c79		       bd 00 f0 	      lda	$F000,x
+    800  7c7c		       48		      pha
+    801  7c7d		       bd 00 f1 	      lda	$F100,x
+    802  7c80		       48		      pha
+    803  7c81		       bd 00 f2 	      lda	$F200,x
+    804  7c84		       48		      pha
+    805  7c85		       bd 00 f3 	      lda	$F300,x
+    806  7c88
+    807  7c88		       84 3e		      sty	SET_BANK_RAM
+    808  7c8a
+    809  7c8a		       9d 00 f7 	      sta	$F300+RAM_WRITE,x
+    810  7c8d		       68		      pla
+    811  7c8e		       9d 00 f6 	      sta	$F200+RAM_WRITE,x
+    812  7c91		       68		      pla
+    813  7c92		       9d 00 f5 	      sta	$F100+RAM_WRITE,x
+    814  7c95		       68		      pla
+    815  7c96		       9d 00 f4 	      sta	$F000+RAM_WRITE,x
+    816  7c99
+    817  7c99		       ca		      dex
+    818  7c9a		       d0 d9		      bne	.copyPage
+    819  7c9c
+    820  7c9c		       a5 8b		      lda	savedBank
+    821  7c9e		       85 3f		      sta	SET_BANK
+    822  7ca0		       60		      rts
+    823  7ca1
+    824  7ca1
+    825  7ca1							;---------------------------------------------------------------------------------------------------
+    826  7ca1
+      0  7ca1					      DEF	CopySinglePiece
+      1  7ca1				   BANK_CopySinglePiece SET	_CURRENT_BANK
+      2  7ca1				   CopySinglePiece
+      3  7ca1				   TEMPORARY_VAR SET	Overlay
+      4  7ca1				   TEMPORARY_OFFSET SET	0
+      5  7ca1					      SUBROUTINE
+    828  7ca1					      SUBROUTINE
+      0  7ca1					      TIMING	COPYSINGLEPIECE, (2600)
+      1  7ca1		       00 29	   SPEEDOF_COPYSINGLEPIECE =	((2600)/64) + 1
+    830  7ca1
+    831  7ca1							; WARNING: CANNOT USE VAR/OVERLAY IN ANY ROUTINE CALLING THIS!!
+    832  7ca1							; ALSO CAN'T USE IN THIS ROUTINE
+    833  7ca1							; This routine will STOMP on those vars due to __pieceShapeBuffer occupying whole overlay
+    834  7ca1							; @2150 max
+    835  7ca1							; = 33 TIM64T
+    836  7ca1
+      0  7ca1					      JSROM	CopySetup
+      1  7ca1
+      2  7ca1		       a9 09		      lda	#BANK_CopySetup
+      3  7ca3		       85 3f		      sta	SET_BANK
+      4  7ca5		       20 75 f1 	      jsr	CopySetup
+    838  7ca8
+      0  7ca8					      DEF	InterceptMarkerCopy
+      1  7ca8				   BANK_InterceptMarkerCopy SET	_CURRENT_BANK
+      2  7ca8				   InterceptMarkerCopy
+      3  7ca8				   TEMPORARY_VAR SET	Overlay
+      4  7ca8				   TEMPORARY_OFFSET SET	0
+      5  7ca8					      SUBROUTINE
+    840  7ca8					      SUBROUTINE
+    841  7ca8
+    842  7ca8
+    843  7ca8							; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
+    844  7ca8							; y = piece index
+    845  7ca8
+    846  7ca8		       a9 00		      lda	#BANK_PIECE_VECTOR_BANK
+    847  7caa		       85 3f		      sta	SET_BANK
+    848  7cac
+    849  7cac		       b9 37 f1 	      lda	PIECE_VECTOR_LO,y
+    850  7caf		       85 e4		      sta	__ptr
+    851  7cb1		       b9 c7 f1 	      lda	PIECE_VECTOR_HI,y
+    852  7cb4		       85 e5		      sta	__ptr+1
+    853  7cb6		       b9 57 f2 	      lda	PIECE_VECTOR_BANK,y
+    854  7cb9		       85 3f		      sta	SET_BANK
+    855  7cbb
+    856  7cbb		       a0 47		      ldy	#PIECE_SHAPE_SIZE-1
+    857  7cbd		       b1 e4	   .copy      lda	(__ptr),y
+    858  7cbf		       99 9c 00 	      sta	__pieceShapeBuffer,y
+    859  7cc2		       88		      dey
+    860  7cc3		       10 f8		      bpl	.copy
+    861  7cc5
+    862  7cc5		       a5 80		      lda	squareToDraw
+    863  7cc7		       38		      sec
+    864  7cc8		       a2 0a		      ldx	#10
+    865  7cca		       e9 0a	   .sub10     sbc	#10
+    866  7ccc		       ca		      dex
+    867  7ccd		       b0 fb		      bcs	.sub10
+    868  7ccf
+    869  7ccf		       86 3e		      stx	SET_BANK_RAM	; row
+    870  7cd1
+    871  7cd1		       69 08		      adc	#8
+    872  7cd3		       c9 04		      cmp	#4	; CS = right side of screen
+    873  7cd5
+    874  7cd5		       20 9b f1 	      jsr	CopyPieceToRowBitmap
+    875  7cd8
+    876  7cd8		       a5 8b		      lda	savedBank
+    877  7cda		       85 3f		      sta	SET_BANK
+    878  7cdc		       60		      rts
+    879  7cdd
+    880  7cdd							;---------------------------------------------------------------------------------------------------
+    881  7cdd
+      0  7cdd					      DEF	SAFE_getMoveIndex
+      1  7cdd				   BANK_SAFE_getMoveIndex SET	_CURRENT_BANK
+      2  7cdd				   SAFE_getMoveIndex
+      3  7cdd				   TEMPORARY_VAR SET	Overlay
+      4  7cdd				   TEMPORARY_OFFSET SET	0
+      5  7cdd					      SUBROUTINE
+    883  7cdd					      SUBROUTINE
+    884  7cdd
+    885  7cdd		       a9 09		      lda	#RAMBANK_PLY
+    886  7cdf		       85 3e		      sta	SET_BANK_RAM
+    887  7ce1		       ad f1 f1 	      lda	moveIndex
+    888  7ce4		       a6 8b		      ldx	savedBank
+    889  7ce6		       86 3f		      stx	SET_BANK
+    890  7ce8		       60		      rts
+    891  7ce9
+    892  7ce9
+    893  7ce9							;---------------------------------------------------------------------------------------------------
+    894  7ce9
+      0  7ce9					      DEF	GoFixPieceList
+      1  7ce9				   BANK_GoFixPieceList SET	_CURRENT_BANK
+      2  7ce9				   GoFixPieceList
+      3  7ce9				   TEMPORARY_VAR SET	Overlay
+      4  7ce9				   TEMPORARY_OFFSET SET	0
+      5  7ce9					      SUBROUTINE
+    896  7ce9
+    897  7ce9		       85 3e		      sta	SET_BANK_RAM
+    898  7ceb		       20 d8 f2 	      jsr	FixPieceList
+    899  7cee		       a5 8b		      lda	savedBank
+    900  7cf0		       85 3f		      sta	SET_BANK
+    901  7cf2		       60		      rts
+    902  7cf3
+    903  7cf3
+    904  7cf3							;---------------------------------------------------------------------------------------------------
+    905  7cf3
+      0  7cf3					      DEF	markerDraw
+      1  7cf3				   BANK_markerDraw SET	_CURRENT_BANK
+      2  7cf3				   markerDraw
+      3  7cf3				   TEMPORARY_VAR SET	Overlay
+      4  7cf3				   TEMPORARY_OFFSET SET	0
+      5  7cf3					      SUBROUTINE
+    907  7cf3
+    908  7cf3		       a2 1c		      ldx	#INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
+      0  7cf5					      JSROM	CopySetupForMarker
+      1  7cf5
+      2  7cf5		       a9 09		      lda	#BANK_CopySetupForMarker
+      3  7cf7		       85 3f		      sta	SET_BANK
+      4  7cf9		       20 4a f1 	      jsr	CopySetupForMarker
+    910  7cfc		       4c a8 fc 	      jmp	InterceptMarkerCopy
+    911  7cff
+    912  7cff
+    913  7cff							;---------------------------------------------------------------------------------------------------
+    914  7cff
+      0  7cff					      DEF	showPromoteOptions
+      1  7cff				   BANK_showPromoteOptions SET	_CURRENT_BANK
+      2  7cff				   showPromoteOptions
+      3  7cff				   TEMPORARY_VAR SET	Overlay
+      4  7cff				   TEMPORARY_OFFSET SET	0
+      5  7cff					      SUBROUTINE
+    916  7cff					      SUBROUTINE
+    917  7cff
+    918  7cff							; X = character shape # (?/N/B/R/Q)
+    919  7cff
+    920  7cff		       a4 86		      ldy	toX12
+    921  7d01		       84 80		      sty	squareToDraw
+    922  7d03
+      0  7d03					      JSROM	CopySetupForMarker
+      1  7d03
+      2  7d03		       a9 09		      lda	#BANK_CopySetupForMarker
+      3  7d05		       85 3f		      sta	SET_BANK
+      4  7d07		       20 4a f1 	      jsr	CopySetupForMarker
+    924  7d0a		       4c a8 fc 	      jmp	InterceptMarkerCopy
+    925  7d0d
+    926  7d0d
+    927  7d0d							;---------------------------------------------------------------------------------------------------
+    928  7d0d
+      0  7d0d					      DEF	SAFE_BackupBitmaps
+      1  7d0d				   BANK_SAFE_BackupBitmaps SET	_CURRENT_BANK
+      2  7d0d				   SAFE_BackupBitmaps
+      3  7d0d				   TEMPORARY_VAR SET	Overlay
+      4  7d0d				   TEMPORARY_OFFSET SET	0
+      5  7d0d					      SUBROUTINE
+    930  7d0d
+    931  7d0d		       84 3e		      sty	SET_BANK_RAM
+    932  7d0f		       20 f4 f2 	      jsr	SaveBitmap
+    933  7d12		       a5 8b		      lda	savedBank
+    934  7d14		       85 3f		      sta	SET_BANK
+    935  7d16		       60		      rts
+    936  7d17
+    937  7d17
+    938  7d17							;---------------------------------------------------------------------------------------------------
+    939  7d17
+      0  7d17					      DEF	SAFE_IsSquareUnderAttack
+      1  7d17				   BANK_SAFE_IsSquareUnderAttack SET	_CURRENT_BANK
+      2  7d17				   SAFE_IsSquareUnderAttack
+      3  7d17				   TEMPORARY_VAR SET	Overlay
+      4  7d17				   TEMPORARY_OFFSET SET	0
+      5  7d17					      SUBROUTINE
+    941  7d17
+    942  7d17							; Check if passed X12 square is in the "TO" squares in the movelist (and thus under attack)
+    943  7d17
+    944  7d17							; Pass:	 currentPly = which movelist to check
+    945  7d17							;		 A = X12 square to check
+    946  7d17							; Return:	 CC = No, CS = Yes
+    947  7d17
+    948  7d17		       a6 95		      ldx	currentPly
+    949  7d19		       86 3e		      stx	SET_BANK_RAM
+    950  7d1b		       20 7c f3 	      jsr	IsSquareUnderAttack
+    951  7d1e		       a5 8b		      lda	savedBank
+    952  7d20		       85 3f		      sta	SET_BANK
+    953  7d22		       60		      rts
+    954  7d23
+    955  7d23
+    956  7d23							;---------------------------------------------------------------------------------------------------
+    957  7d23
+      0  7d23					      DEF	SAFE_showMoveCaptures
+      1  7d23				   BANK_SAFE_showMoveCaptures SET	_CURRENT_BANK
+      2  7d23				   SAFE_showMoveCaptures
+      3  7d23				   TEMPORARY_VAR SET	Overlay
+      4  7d23				   TEMPORARY_OFFSET SET	0
+      5  7d23					      SUBROUTINE
+    959  7d23					      SUBROUTINE
+    960  7d23
+      0  7d23					      JSROM	UNSAFE_showMoveCaptures
+      1  7d23
+      2  7d23		       a9 09		      lda	#BANK_UNSAFE_showMoveCaptures
+      3  7d25		       85 3f		      sta	SET_BANK
+      4  7d27		       20 00 f0 	      jsr	UNSAFE_showMoveCaptures
+    962  7d2a		       a5 8b		      lda	savedBank
+    963  7d2c		       85 3f		      sta	SET_BANK
+    964  7d2e		       60		      rts
+    965  7d2f
+    966  7d2f
+    967  7d2f							;---------------------------------------------------------------------------------------------------
+    968  7d2f
+      0  7d2f					      DEF	GetMoveFrom
+      1  7d2f				   BANK_GetMoveFrom SET	_CURRENT_BANK
+      2  7d2f				   GetMoveFrom
+      3  7d2f				   TEMPORARY_VAR SET	Overlay
+      4  7d2f				   TEMPORARY_OFFSET SET	0
+      5  7d2f					      SUBROUTINE
+    970  7d2f		       a9 09		      lda	#RAMBANK_PLY
+    971  7d31		       85 3e		      sta	SET_BANK_RAM
+    972  7d33		       a4 8b		      ldy	savedBank
+    973  7d35		       bd 76 f0 	      lda	MoveFrom,x
+    974  7d38		       84 3f		      sty	SET_BANK
+    975  7d3a		       60		      rts
+    976  7d3b
+      0  7d3b					      DEF	GetMoveTo
+      1  7d3b				   BANK_GetMoveTo SET	_CURRENT_BANK
+      2  7d3b				   GetMoveTo
+      3  7d3b				   TEMPORARY_VAR SET	Overlay
+      4  7d3b				   TEMPORARY_OFFSET SET	0
+      5  7d3b					      SUBROUTINE
+    978  7d3b		       a9 09		      lda	#RAMBANK_PLY
+    979  7d3d		       85 3e		      sta	SET_BANK_RAM
+    980  7d3f		       a4 8b		      ldy	savedBank
+    981  7d41		       bd 00 f1 	      lda	MoveTo,x
+    982  7d44		       84 3f		      sty	SET_BANK
+    983  7d46		       60		      rts
+    984  7d47
+      0  7d47					      DEF	GetMovePiece
+      1  7d47				   BANK_GetMovePiece SET	_CURRENT_BANK
+      2  7d47				   GetMovePiece
+      3  7d47				   TEMPORARY_VAR SET	Overlay
+      4  7d47				   TEMPORARY_OFFSET SET	0
+      5  7d47					      SUBROUTINE
+    986  7d47		       a9 09		      lda	#RAMBANK_PLY
+    987  7d49		       85 3e		      sta	SET_BANK_RAM
+    988  7d4b		       a4 8b		      ldy	savedBank
+    989  7d4d		       bd 78 f1 	      lda	MovePiece,x
+    990  7d50		       84 3f		      sty	SET_BANK
+    991  7d52		       60		      rts
+    992  7d53
+    993  7d53
+    994  7d53							;---------------------------------------------------------------------------------------------------
+    995  7d53
+ FREE BYTES IN FIXED BANK =  $2a9
+    996  7d53					      ECHO	"FREE BYTES IN FIXED BANK = ", $FFFC - *
+    997  7d53
+    998  7d53
+    999  7d53							;---------------------------------------------------------------------------------------------------
+   1000  7d53							; The reset vectors
+   1001  7d53							; these must live in the fixed bank (last 2K of any ROM image in "3E" scheme)
+   1002  7d53
+   1003  8000 ????				      SEG	InterruptVectors
+   1004  7ffc					      ORG	FIXED_BANK + $7FC
+   1005  7ffc					      RORG	$7ffC
+   1006  7ffc
+   1007  7ffc		       00 f8		      .word.w	Reset	; RESET
+   1008  7ffe		       00 f8		      .word.w	Reset	; IRQ	      (not used)
+   1009  8000
+   1010  8000							;---------------------------------------------------------------------------------------------------
+   1011  8000							; EOF
 ------- FILE ./chess.asm
     475  8000
     476  8000							;END

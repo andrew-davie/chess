@@ -390,6 +390,8 @@ _rts                rts
     ; Here we are the aggressor and we need to take the pawn 'en passant' fashion
     ; y = the square containing the pawn to capture (i.e., previous value of 'enPassantPawn')
 
+    ; Remove the pawn from the board and piecelist, and undraw
+
                     lda sideToMove
                     pha
                     eor #128
@@ -397,15 +399,25 @@ _rts                rts
 
                     sty originX12
                     sty squareToDraw
-                    jsr CopySinglePiece             ; ERASE pawn being en-passant captured
+
+                    jsr CopySinglePiece             ; undraw captured pawn
+                    
+                    lda #RAMBANK_MOVES_RAM
+                    sta SET_BANK_RAM
+                    ldy originX12
+                    lda #0
+                    sta Board+RAM_WRITE,y           ; zap board
+
 
                     lda sideToMove
                     asl
-                    lda #RAMBANK_PLY
-                    adc #0
+                    lda #0
+                    adc #RAMBANK_PLY
                     sta SET_BANK_RAM
 
-                    jsr FixPieceList                ; REMOVE any captured object
+                    lda #0
+                    sta toX12                       ; to remove piece
+                    jsr FixPieceList                ; from the piecelist
 
                     pla
                     sta sideToMove
@@ -888,6 +900,7 @@ HandlerVectorHI     HANDLEVEC >
                     sta SET_BANK
                     rts
 
+
 ;---------------------------------------------------------------------------------------------------
 
     DEF markerDraw
@@ -895,6 +908,7 @@ HandlerVectorHI     HANDLEVEC >
                     ldx #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
                     JSROM CopySetupForMarker
                     jmp InterceptMarkerCopy
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -909,9 +923,6 @@ HandlerVectorHI     HANDLEVEC >
                     JSROM CopySetupForMarker
                     jmp InterceptMarkerCopy
 
-;                    lda savedBank
-;                    sta SET_BANK
-;                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -922,6 +933,7 @@ HandlerVectorHI     HANDLEVEC >
                     lda savedBank
                     sta SET_BANK
                     rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -939,6 +951,7 @@ HandlerVectorHI     HANDLEVEC >
                     lda savedBank
                     sta SET_BANK
                     rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
