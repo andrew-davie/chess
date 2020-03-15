@@ -7,6 +7,7 @@ characters:
 #	cd charset && python icc.py
 
 chess.bin: *.asm Makefile FORCE
+		python clearTerminal.py
 		(cd gfx && python ConvertChessPieces.py)
 #		python tools/grid.py
 		../dasm/bin/dasm ./chess.asm -l./chess.lst -f3 -s./chess.sym -o./chess.bin || (echo "mycommand failed $$?"; exit 1)

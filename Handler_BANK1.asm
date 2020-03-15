@@ -5,14 +5,6 @@
     NEWRAMBANK MOVES_RAM                ; RAM bank for holding the following ROM shadow
     NEWBANK MOVES                       ; copy the following bank to RAMBANK_MOVES_RAM
 
-    DEF .GetBoard
-                    ds 4                ; dummy to switch here
-                    ldx savedBank
-                    lda Board,y
-                    stx SET_BANK_RAM
-                    ds 1
-
-
 ; Board is a 10 x 12 object which simplifies the generation of moves
 ; The squares marked '░░░' are illegal. The ("X12") index of each square is the left
 ; number + the bottom number. The "BASE64" square numbering is used to simplify movement code.
@@ -58,12 +50,10 @@
     ; We put a short buffer before 'ValidSquare' when it is at the start of the bank, so that
     ; the move indexing (ie., "ValidSquare+{1},x" won't drop off the beginning of the bank
     ; and sause "segfaults". 22 is the max offset (a knight move). These spare bytes can
-    ; be re-used for something else - we just need to guarantee there are 22 of them there
+    ; be re-used for something else - we just need to guarantee there are 21 of them there
 
-    ALLOCATE Valid, 120 + 80 ;+ 22
-
-    ;ORG Valid+22
-    ;ds 22                      ; so indexing of "ValidSquare-22,x" won't fail
+    ALLOCATE Valid, 120 + 80 + 21
+    ds 21                      ; so indexing of "ValidSquare-21,x" won't fail
 
     ; Note, we will never index INTO the above bytes - x will always be >= 22
     ; We just need to make sure that the actual indexing will not have an address before
@@ -113,128 +103,10 @@
     include "Handler_BISHOP.asm"
     include "Handler_ROOK.asm"
     include "Handler_KING.asm"
+    include "Handler_KNIGHT.asm"
 
 
 ;---------------------------------------------------------------------------------------------------
-
-    DEF CopySetupForMarker
-    SUBROUTINE
-
-        VAR __pieceColour, 1
-
-                    lda drawPieceNumberX12
-                    sec
-.sub10              sbc #10
-                    bcs .sub10
-                    adc #7
-                    adc drawPieceNumberX12
-
-                    and #1
-                    eor #1
-                    beq .white
-                    lda #36
-.white
-                    sta __pieceColour               ; actually SQUARE black/white
-
-                    txa
-                    clc
-                    adc __pieceColour
-                    sta __pieceColour
-
-                    lda drawPieceNumberX12
-                    sec
-.sub10b             sbc #10
-                    bcs .sub10b
-                    adc #8
-                    and #3
-
-                    clc
-                    adc __pieceColour
-                    tay
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF CopySetup
-    SUBROUTINE
-
-        VAR __tmp, 1
-        VAR __shiftx, 1
-
-
-    ; figure colouration of square
-
-                    lda drawPieceNumberX12
-                    ldx #10
-                    sec
-.sub10              sbc #10
-                    dex
-                    bcs .sub10
-                    adc #8
-                    sta __shiftx
-                    stx __tmp
-                    adc __tmp
-
-
-                    and #1
-                    eor #1
-                    beq .white
-                    lda #36
-.white              sta __pieceColour               ; actually SQUARE black/white
-
-    ; PieceColour = 0 for white square, 36 for black square
-
-                    ;lda #RAMBANK_MOVES_RAM
-                    ;sta SET_BANK_RAM
-
-                    ldx drawPieceNumberX12
-                    lda Board,x
-                    asl
-                    bcc .blackAdjust
-                    ora #16
-.blackAdjust        lsr
-                    and #%1111
-                    tax
-
-                    lda __shiftx
-                    and #3                          ; shift position in P
-
-                    clc
-                    adc PieceToShape,x
-                    clc
-                    adc __pieceColour
-                    tay
-                    rts
-
-PieceToShape
-
-    .byte INDEX_WHITE_BLANK_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_ROOK_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_KING_on_WHITE_SQUARE_0
-
-    .byte INDEX_BLACK_BLANK_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_BISHOP_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_ROOK_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_KING_on_WHITE_SQUARE_0
-
-
-
-
-
-;    ds 20
-
-;---------------------------------------------------------------------------------------------------
-
 
     CHECK_HALF_BANK_SIZE "HANDLER_BANK1 -- 1K"
 
@@ -242,6 +114,15 @@ PieceToShape
 ; There is space here (1K) for use as ROM
 ; but NOT when the above bank is switched in as RAM, of course!
 
+
+ include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_0.asm"
+ include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_1.asm"
+ include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_2.asm"
+ include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_3.asm"
+ include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_0.asm"
+ include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_1.asm"
+ include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_2.asm"
+ include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_3.asm"
 
 ;---------------------------------------------------------------------------------------------------
 

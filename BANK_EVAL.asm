@@ -25,7 +25,7 @@ VALUE_{1} = {2}
     ENDM
 
 
-    MAC VALUEOF
+    MAC VALUETABLE
     {1} BLANK, 0
     {1} PAWN, 100 ; white
     {1} PAWN, 100 ; black
@@ -37,23 +37,29 @@ VALUE_{1} = {2}
     ENDM
 
 
-    VALUEOF VEQU
+    VALUETABLE VEQU
+
     DEF PieceValueLO
-    VALUEOF LOBYTE
+        VALUETABLE LOBYTE
+
     DEF PieceValueHI
-    VALUEOF HIBYTE
+        VALUETABLE HIBYTE
 
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF AddPieceMaterialValue
     SUBROUTINE
+
     ; Adjust the material score based on the piece
     ; to REMOVE a piece, negate the piece colour!
     ; y = piece type
     ; carry C = white, S = black
 
+        VAR __temp2,2
+
                     bcs .black
+
 
                     lda PieceValueLO,y
                     adc Evaluation
@@ -61,7 +67,6 @@ VALUE_{1} = {2}
                     lda PieceValueHI,y
                     adc Evaluation+1
                     sta Evaluation+1
-
                     rts
 
 .black              lda Evaluation
@@ -96,7 +101,7 @@ VALUE_{1} = {2}
 
                     tya
                     asl
-                    tay
+                    tay                             ; 16 bit values
 
                     clc
                     lda Evaluation
@@ -110,13 +115,9 @@ VALUE_{1} = {2}
 
 .black
 
-
-    ; negate the index
-    ; converts
-
                     tya
                     tax
-                    ldy FlipSquareIndex,x
+                    ldy FlipSquareIndex,x           ; flip the index so we can use the same tables
 
                     sec
                     lda Evaluation

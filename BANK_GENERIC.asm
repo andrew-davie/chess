@@ -12,7 +12,6 @@
 
 STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
-            CHECK_HALF_BANK_SIZE "GENERIC_BANK_1 (DECODE_LEVEL)"
 
 ;---------------------------------------------------------------------------------------------------
 ; ... the above is a (potentially) RAM-copied section -- the following is ROM-only.  Note that
@@ -78,7 +77,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 .bitmapCleared
 
                     lda #99
-                    sta drawPieceNumberX12
+                    sta squareToDraw
 
                     PHASE AI_DrawEntireBoard
                     rts
@@ -160,20 +159,19 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
                     beq deCount
                     dec drawDelay
                     rts
-
 deCount
 
                     lda drawCount
                     beq flashDone
                     dec drawCount
 
-                    lda #4
+                    lda #READY_TO_MOVE_FLASH
                     sta drawDelay                   ; "getting ready to move" flash
 
                     lda fromX12
-                    sta drawPieceNumberX12
+                    sta squareToDraw
 
-                    jsr SAFE_CopySinglePiece        ; EOR-draw = flash
+                    jsr CopySinglePiece             ; EOR-draw = flash
                     rts
 
 flashDone           PHASE AI_MarchToTargetA
@@ -185,13 +183,13 @@ flashDone           PHASE AI_MarchToTargetA
     DEF aiDrawPart2
     SUBROUTINE
 
-                    jsr SAFE_CopySinglePiece
+                    jsr CopySinglePiece
 
     DEF aiDrawPart3
     SUBROUTINE
 
-                    dec drawPieceNumberX12
-                    lda drawPieceNumberX12
+                    dec squareToDraw
+                    lda squareToDraw
                     cmp #22
                     bcc .comp
 
@@ -211,9 +209,9 @@ flashDone           PHASE AI_MarchToTargetA
     ; Draw the piece in the new square
 
                     lda fromX12
-                    sta drawPieceNumberX12
+                    sta squareToDraw
 
-                    jsr SAFE_CopySinglePiece        ; draw the moving piece into the new square
+                    jsr CopySinglePiece             ; draw the moving piece into the new square
 
                     lda #6                          ; snail trail delay
                     sta drawDelay
@@ -240,9 +238,9 @@ flashDone           PHASE AI_MarchToTargetA
                     sta drawDelay               ; "getting ready to move" flash
 
                     lda fromX12
-                    sta drawPieceNumberX12
+                    sta squareToDraw
 
-                    jsr SAFE_CopySinglePiece
+                    jsr CopySinglePiece
                     rts
 
 flashDone2          PHASE AI_SpecialMoveFixup
@@ -317,7 +315,7 @@ RSquareEnd          .byte 25,27,95,97
 
                     ldy #7
 .copyRowBanks       ldx #BANK_ROM_SHADOW_OF_CHESS_BITMAP
-                    jsr SAFE_CopyShadowROMtoRAM
+                    jsr CopyShadowROMtoRAM
                     dey
                     bpl .copyRowBanks
 
@@ -325,7 +323,7 @@ RSquareEnd          .byte 25,27,95,97
 
                     ldy #RAMBANK_MOVES_RAM
                     ldx #MOVES
-                    jsr SAFE_CopyShadowROMtoRAM     ; this auto-initialises Board too
+                    jsr CopyShadowROMtoRAM     ; this auto-initialises Board too
 
     ; copy the PLY banks
 
@@ -334,7 +332,7 @@ RSquareEnd          .byte 25,27,95,97
                     ldy #RAMBANK_PLY
                     sty currentPly
 .copyPlyBanks       ldx #BANK_PLY
-                    jsr SAFE_CopyShadowROMtoRAM
+                    jsr CopyShadowROMtoRAM
                     iny
                     dec __plyBank
                     bne .copyPlyBanks
@@ -343,5 +341,47 @@ RSquareEnd          .byte 25,27,95,97
 
 
 ;---------------------------------------------------------------------------------------------------
+
+    CHECK_HALF_BANK_SIZE "GENERIC_BANK_1"
+
+
+;---------------------------------------------------------------------------------------------------
+
+    include "piece_vectors.asm"
+
+; include "gfx/BLACK_MARKER_on_BLACK_SQUARE_0.asm"
+; include "gfx/BLACK_MARKER_on_BLACK_SQUARE_1.asm"
+; include "gfx/BLACK_MARKER_on_BLACK_SQUARE_2.asm"
+; include "gfx/BLACK_MARKER_on_BLACK_SQUARE_3.asm"
+; include "gfx/BLACK_MARKER_on_WHITE_SQUARE_0.asm"
+; include "gfx/BLACK_MARKER_on_WHITE_SQUARE_1.asm"
+; include "gfx/BLACK_MARKER_on_WHITE_SQUARE_2.asm"
+; include "gfx/BLACK_MARKER_on_WHITE_SQUARE_3.asm"
+
+; include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_0.asm"
+; include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_1.asm"
+; include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_2.asm"
+; include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_3.asm"
+; include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_0.asm"
+; include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_1.asm"
+; include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_2.asm"
+; include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_3.asm"
+
+ include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_0.asm"
+ include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_1.asm"
+ include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_2.asm"
+ include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_3.asm"
+ include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_0.asm"
+ include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_1.asm"
+ include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_2.asm"
+ include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_3.asm"
+
+ include "gfx/WHITE_MARKER_on_BLACK_SQUARE_0.asm"
+ include "gfx/WHITE_MARKER_on_BLACK_SQUARE_1.asm"
+ include "gfx/WHITE_MARKER_on_BLACK_SQUARE_2.asm"
+ include "gfx/WHITE_MARKER_on_BLACK_SQUARE_3.asm"
+ include "gfx/WHITE_MARKER_on_WHITE_SQUARE_0.asm"
+ include "gfx/WHITE_MARKER_on_WHITE_SQUARE_1.asm"
+ include "gfx/WHITE_MARKER_on_WHITE_SQUARE_2.asm"
 
             CHECK_BANK_SIZE "GENERIC_BANK_1 -- full 2K"

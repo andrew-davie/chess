@@ -24,10 +24,14 @@
                     stx __aiMoveIndex
                     bmi .skip                       ; no moves in list
 
+                    lda INTIM
+                    cmp #20
+                    bcc .skip
+
                     dec aiMoveIndex
 
                     jsr GetMoveFrom
-                    cmp aiFromSquareX12
+                    cmp fromX12
                     bne .next
 
 
@@ -41,7 +45,7 @@
     ; There's something on the board at destination, so it's a capture
     ; Let's see if we are doing a pawn promote...
 
-                    ldy aiFromSquareX12
+                    ldy fromX12
                     jsr GetBoard
                     sta __fromPiece
 
@@ -61,9 +65,9 @@
         TIMECHECK COPYSINGLEPIECE, restoreIndex     ; not enough time to draw
 
                     lda __toSquareX12
-                    sta drawPieceNumberX12
+                    sta squareToDraw
 
-                    jsr SAFE_CopySinglePiece
+                    jsr CopySinglePiece
 
 .skip               pla
                     sta savedBank
@@ -147,12 +151,12 @@ restoreIndex        lda __aiMoveIndex
     ; erase object in new sqare --> blank
 
                     ldy fromX12
-                    sty drawPieceNumberX12
+                    sty squareToDraw
 
                     jsr GetBoard
                     cmp #0
                     beq .skipbl
-                    jsr SAFE_CopySinglePiece             ; erase next square along --> blank
+                    jsr CopySinglePiece             ; erase next square along --> blank
 
 .skipbl
                     ldy fromX12
@@ -161,7 +165,7 @@ restoreIndex        lda __aiMoveIndex
                     jsr GetBoard
                     sta lastPiece                   ; what we are overwriting
                     lda fromPiece
-                    ;ora #FLAG_MOVED                 ; prevents usage in castling for K/R
+                    ;ora #FLAG_MOVED                ; prevents usage in castling for K/R
                     and #~FLAG_ENPASSANT
                     ldy __boardIndex
                     jsr PutBoard
@@ -178,13 +182,13 @@ restoreIndex        lda __aiMoveIndex
     SUBROUTINE
 
                     ldy lastSquareX12
-                    sty drawPieceNumberX12
+                    sty squareToDraw
 
                     jsr GetBoard
                     cmp #0
                     beq .skipbl2
 
-                    jsr SAFE_CopySinglePiece             ; draw previous piece back in old position
+                    jsr CopySinglePiece             ; draw previous piece back in old position
 .skipbl2
 
                     lda fromX12
@@ -255,9 +259,9 @@ xhalt
     ; now we want to undraw the piece in the old square
 
                     lda lastSquareX12
-                    sta drawPieceNumberX12
+                    sta squareToDraw
 
-                    jsr SAFE_CopySinglePiece        ; erase whatever was on the previous square (completely blank)
+                    jsr CopySinglePiece             ; erase whatever was on the previous square (completely blank)
 
                     ldy lastSquareX12
                     lda previousPiece
@@ -276,7 +280,8 @@ xhalt
     SUBROUTINE
 
                     jsr GenerateOneMove
-                    bcc .wait
+                    lda piecelistIndex
+                    bpl .wait
 
                     ;lda currentPly
                     ;sta SET_BANK_RAM
@@ -300,9 +305,145 @@ xhalt
 
 ;---------------------------------------------------------------------------------------------------
 
+    DEF CopySetupForMarker
+    SUBROUTINE
 
+        VAR __pieceColour, 1
+        VAR __oddeven, 1
+        VAR __pmcol, 1
+
+                    lda squareToDraw
+                    sec
+                    ldy #10
+.sub10              sbc #10
+                    dey
+                    bcs .sub10
+                    sty __oddeven
+                    adc #8
+                    sta __pmcol
+                    adc __oddeven
+
+                    and #1
+                    eor #1
+                    beq .white
+                    lda #36
+.white
+                    sta __pieceColour               ; actually SQUARE black/white
+
+                    txa
+                    clc
+                    adc __pieceColour
+                    sta __pieceColour
+
+                    lda __pmcol
+                    and #3
+
+                    clc
+                    adc __pieceColour
+                    tay
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
+
+    DEF CopySetup
+    SUBROUTINE
+
+        VAR __tmp, 1
+        VAR __shiftx, 1
+
+                    lda savedBank
+                    pha
+                    lda #BANK_CopySetup
+                    sta savedBank
+
+    ; figure colouration of square
+
+                    lda squareToDraw
+                    ldx #10
+                    sec
+.sub10              sbc #10
+                    dex
+                    bcs .sub10
+                    adc #8
+                    sta __shiftx
+                    stx __tmp
+                    adc __tmp
+
+
+                    and #1
+                    eor #1
+                    beq .white
+                    lda #36
+.white              sta __pieceColour               ; actually SQUARE black/white
+
+    ; PieceColour = 0 for white square, 36 for black square
+
+                    ;lda #RAMBANK_MOVES_RAM
+                    ;sta SET_BANK_RAM
+
+                    ldy squareToDraw
+                    jsr GetBoard ;lda Board,x
+                    asl
+                    bcc .blackAdjust
+                    ora #16
+.blackAdjust        lsr
+                    and #%1111
+                    tax
+
+                    lda __shiftx
+                    and #3                          ; shift position in P
+
+                    clc
+                    adc PieceToShape,x
+                    clc
+                    adc __pieceColour
+                    tay
+
+                    pla
+                    sta savedBank
+                    rts
+
+PieceToShape
+
+    .byte INDEX_WHITE_BLANK_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_ROOK_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_KING_on_WHITE_SQUARE_0
+
+    .byte INDEX_BLACK_BLANK_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_BISHOP_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_ROOK_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
+    .byte INDEX_BLACK_KING_on_WHITE_SQUARE_0
+
+;---------------------------------------------------------------------------------------------------
+
+ include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_0.asm"
+ include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_1.asm"
+ include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_2.asm"
+ include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_3.asm"
+ include "gfx/BLACK_ROOK_on_BLACK_SQUARE_0.asm"
+ include "gfx/BLACK_ROOK_on_BLACK_SQUARE_1.asm"
+ include "gfx/BLACK_ROOK_on_BLACK_SQUARE_2.asm"
+ include "gfx/BLACK_ROOK_on_BLACK_SQUARE_3.asm"
+ include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_0.asm"
+ include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_1.asm"
+ include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_2.asm"
+ include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_3.asm"
+ include "gfx/BLACK_KING_on_BLACK_SQUARE_0.asm"
+ include "gfx/BLACK_KING_on_BLACK_SQUARE_1.asm"
+ include "gfx/BLACK_KING_on_BLACK_SQUARE_2.asm"
+ include "gfx/BLACK_KING_on_BLACK_SQUARE_3.asm"
+
+
+ include "gfx/WHITE_MARKER_on_WHITE_SQUARE_3.asm"
 
     CHECK_BANK_SIZE "BANK_RECON"
 

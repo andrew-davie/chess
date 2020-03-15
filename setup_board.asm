@@ -42,10 +42,9 @@
 
 #else ; test position...
 
-    .byte WHITE|WP, 88
-    .byte BLACK|BISHOP, 97
-
-    .byte BLACK|BP, 82
+    .byte WHITE|WP, 57
+    ;.byte BLACK|BP, 88
+    .byte BLACK|BP, 86
 
 
     .byte 0 ;end

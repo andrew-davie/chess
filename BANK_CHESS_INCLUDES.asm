@@ -1,5 +1,3 @@
-; Chess
-; Atari 2600 Chess display system
 ; Copyright (c) 2019-2020 Andrew Davie
 ; andrew@taswegian.com
 
@@ -36,10 +34,8 @@
 ; the piece (could) overlay. In this case, on square 0 (leftmost), it doesn't
 ; actually have any data in PF1 or PF2.
 
-
-
     include "piece_graphics.asm"
 
-    NEWBANK PIECE_VECTORS
-    include "piece_vectors.asm"
-    CHECK_BANK_SIZE "PIECE_VECTORS (2K)"
+;    NEWBANK PIECE_VECTORS
+;    include "piece_vectors.asm"
+;    CHECK_BANK_SIZE "PIECE_VECTORS (2K)"

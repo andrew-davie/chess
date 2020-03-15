@@ -28,7 +28,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
 ;---------------------------------------------------------------------------------------------------
 
     MAC PROMOTE_PAwN
-    SUBROUTINE
+    ;SUBROUTINE
 
     ;{1} = BLACK or WHITE
 
@@ -64,7 +64,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
 ;---------------------------------------------------------------------------------------------------
 
     MAC MOVE_OR_PROMOTE_PAWN
-    SUBROUTINE
+    ;SUBROUTINE
     ; {1} = BLACK or WHITE
 
         IF {1} = WHITE
@@ -89,7 +89,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
 ;---------------------------------------------------------------------------------------------------
 
     MAC TAKE
-    SUBROUTINE
+    ;SUBROUTINE
     ; {1} = capture square offset
 
                     ldx currentSquare
@@ -107,6 +107,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
 ;---------------------------------------------------------------------------------------------------
 
     DEF PromoteWhitePawn
+    SUBROUTINE
 
                     PROMOTE_PAWN WHITE
                     rts
@@ -114,6 +115,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
 ;---------------------------------------------------------------------------------------------------
 
     DEF Handle_WHITE_PAWN
+    SUBROUTINE
 
                     ldy ValidSquare+_UP,x           ; square above must be blank (WILL NOT EVER be off-board!)
                     lda Board,y
@@ -167,6 +169,8 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
 ;---------------------------------------------------------------------------------------------------
 
     DEF PromoteBlackPawn
+    SUBROUTINE
+    
                 PROMOTE_PAWN BLACK
                 rts
 

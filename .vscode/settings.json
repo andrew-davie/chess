@@ -1,0 +1,10 @@
+{
+"editor.rulers": [
+  {
+    "column": 100,
+    "color": "#303030"
+  }
+],
+"editor.fontSize": 13,
+"editor.lineHeight": 13
+}

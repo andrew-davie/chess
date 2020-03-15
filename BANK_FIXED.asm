@@ -142,7 +142,7 @@ ORIGIN              SET FIXED_BANK
                     lda #TIME_PART_2
                     sta TIM64T
 
-                    ;jsr AiStateMachine
+                    jsr AiStateMachine
 
                     JSROM PositionSprites
 
@@ -174,7 +174,7 @@ _rts                rts
     SUBROUTINE
 
                     JSROM AiSetupVectors
-                    bcs .exit
+                    ;bcs .exit                   ; not enough time
                     sta SET_BANK
                     jmp (__ptr)                 ; TODO: OR branch back to squeeze cycles
 
@@ -197,9 +197,13 @@ _rts                rts
     SUBROUTINE
 
 
+                    lda INTIM
+                    cmp #SPEEDOF_COPYSINGLEPIECE+4
+                    bcc .exit
+
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
-                    ldy drawPieceNumberX12
+                    ldy squareToDraw
                     lda ValidSquare,y
                     bmi .isablank2
 
@@ -214,7 +218,7 @@ _rts                rts
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
 
-                    ldy drawPieceNumberX12
+                    ldy squareToDraw
                     pla
                     sta Board+RAM_WRITE,y
 
@@ -222,7 +226,7 @@ _rts                rts
                     rts
 
 .isablank2          PHASE AI_DrawPart3
-                    rts
+.exit               rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -310,7 +314,7 @@ _rts                rts
                     cmp moveIndex
                     beq .halted                     ; no valid moves
 
-                    sta fromX12
+                    ;sta fromX12
                     sta originX12
                     sta toX12
 
@@ -340,10 +344,11 @@ _rts                rts
     DEF aiSpecialMoveFixup
     SUBROUTINE
 
+                    lda INTIM
+                    cmp #SPEEDOF_COPYSINGLEPIECE+4
+                    bcc .exit
+
                     PHASE AI_FlipBuffers
-
-                    JSROM_SAFE CastleFixup
-
 
     ; Handle en-passant captures
     ; The (dual-use) FLAG_ENPASSANT will have been cleared if it was set for a home-rank move
@@ -351,14 +356,15 @@ _rts                rts
     ; need to do the appropriate things...
 
 
+  ; {
     ; With en-passant flag, it is essentially dual-use.
     ; First, it marks if the move is *involved* somehow in an en-passant
     ; if the piece has MOVED already, then it's an en-passant capture
     ; if it has NOT moved, then it's a pawn leaving home rank, and sets the en-passant square
 
-                    ldy enPassantPawn               ; save
+                    ldy enPassantPawn               ; save from previous side move
 
-                    ldx #0
+                    ldx #0                          ; (probably) NO en-passant this time
                     lda fromPiece
                     and #FLAG_ENPASSANT|FLAG_MOVED
                     cmp #FLAG_ENPASSANT
@@ -368,43 +374,30 @@ _rts                rts
                     and #~FLAG_ENPASSANT            ; clear flag as it's been handled
                     sta fromPiece
 
-                    ldx fromX12                       ; this IS an en-passantable opening, so record the square
-.noep               stx enPassantPawn               ; capturable square for en-passant move
+                    ldx fromX12                     ; this IS an en-passantable opening, so record the square
+.noep               stx enPassantPawn               ; capturable square for en-passant move (or none)
+
+  ; }
 
 
-    ; ^
-
-
+  ; {
     ; Check to see if we are doing an actual en-passant capture...
 
                     lda fromPiece
                     and #FLAG_ENPASSANT
-                    beq .noEP
+                    beq .noEP                       ; not an en-passant, or it's enpassant by a MOVED piece
 
+    ; Here we are the aggressor and we need to take the pawn 'en passant' fashion
+    ; y = the square containing the pawn to capture (i.e., previous value of 'enPassantPawn')
 
-#if 1
+                    lda sideToMove
+                    pha
+                    eor #128
+                    sta sideToMove
 
-capture
-
-    IF ASSERTS
-                    cpy #0
-.eperror            beq .eperror                    ; CANNOT have EP *AND* no capture square!!
-    ENDIF
-
-            lda sideToMove
-            eor #128
-            sta sideToMove
-
-
-
-                    sty fromX12
-                    sty drawPieceNumberX12
-
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    lda Board,y
-                    jsr CopySinglePiece             ; ERASE pawn
-
+                    sty originX12
+                    sty squareToDraw
+                    jsr CopySinglePiece             ; ERASE pawn being en-passant captured
 
                     lda sideToMove
                     asl
@@ -414,15 +407,18 @@ capture
 
                     jsr FixPieceList                ; REMOVE any captured object
 
-            lda sideToMove
-            eor #128
-            sta sideToMove
-
-    #endif
-
-
-
+                    pla
+                    sta sideToMove
 .noEP
+
+  ; }
+
+
+
+
+                    JSROM_SAFE CastleFixup
+
+
 
     ; Mark the piece as MOVED
 
@@ -438,7 +434,7 @@ capture
 
 
 #if ASSERTS
-                    JSROM_SAFE DIAGNOSTIC_checkPieces
+;                    JSROM_SAFE DIAGNOSTIC_checkPieces
 #endif
 
 
@@ -446,7 +442,7 @@ capture
                     eor #128
                     sta sideToMove
 
-                    rts
+.exit               rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -454,7 +450,6 @@ capture
     DEF MoveForSinglePiece
     SUBROUTINE
 
-        VAR __vector, 2
 
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
@@ -479,6 +474,8 @@ capture
     SUBROUTINE
 .lock               beq .lock                       ; catch errors
     ENDIF
+
+        VAR __vector, 2
 
                     lda HandlerVectorLO-1,y
                     sta __vector
@@ -512,7 +509,6 @@ HandlerVectorHI     HANDLEVEC >
 ;---------------------------------------------------------------------------------------------------
 
     include "Handler_PAWN.asm"
-    include "Handler_KNIGHT.asm"
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -569,8 +565,12 @@ HandlerVectorHI     HANDLEVEC >
                     jsr InitPieceLists              ; for black
 
 
+
                     lda #0
                     sta enPassantPawn               ; no en-passant
+
+
+
 
 
     ; Now setup the board/piecelists
@@ -589,7 +589,7 @@ HandlerVectorHI     HANDLEVEC >
                     adc #0
                     sta SET_BANK_RAM                ; BLACK/WHITE
 
-                    ldy PieceListPtr
+                    ldy PieceListPtr                ; init'd in InitPieceLists
                     iny
 
                     lda InitPieceList+1,x           ; square
@@ -611,8 +611,8 @@ HandlerVectorHI     HANDLEVEC >
                     pla
                     sta Board+RAM_WRITE,y
 
-#if 0
-    ; Add the material value of the piece to the material score
+
+    ; Add the material value of the piece to the evaluation
 
                     cmp #128                        ; CC=white, CS=black
                     and #PIECE_MASK
@@ -620,27 +620,34 @@ HandlerVectorHI     HANDLEVEC >
 
                     JSROM AddPieceMaterialValue
 
+
+;#region add positional value
+
                     txa
                     pha
 
                     lda #RAMBANK_PLY
                     sta SET_BANK_RAM
+
+    ; add the positional value of the piece to the evaluation 
+
                     ldy InitPieceList+1,x           ; square
-
-
                     lda InitPieceList,x             ; type
 
                     ldx #BANK_AddPiecePositionValue
                     stx SET_BANK
-
-
                     jsr AddPiecePositionValue
 
                     pla
                     tax
+;#endregion
 
-    ; ^
-#endif
+
+;#region store piece value
+
+    ; Store the piece's value with the piece itself, so it doesn't have to 
+    ; be looked-up everytime it's added/removed
+    ; this may be overkill and more effort than it's worth...
 
                     lda #BANK_PieceValueLO
                     sta SET_BANK
@@ -665,55 +672,13 @@ HandlerVectorHI     HANDLEVEC >
                     pla
                     sta PieceMaterialValueHI+RAM_WRITE,y
 
+;#endregion
+
                     inx
                     inx
                     bpl .fillPieceLists
 
 .finish
-
-#if 0
-
-    SUBROUTINE
-
-                    lda #RAMBANK_PLY
-                    sta SET_BANK_RAM
-
-                    ldx #15
-.scan               lda PieceSquare,x
-                    beq .dead
-
-                    clc
-                    lda Evaluation
-                    adc PieceMaterialValueLO,x
-                    sta Evaluation
-                    lda Evaluation+1
-                    adc PieceMaterialValueHI,x
-                    sta Evaluation+1
-
-.dead               dex
-                    bpl .scan
-
-    SUBROUTINE
-
-                    lda #RAMBANK_PLY+1
-                    sta SET_BANK_RAM
-
-                    ldx #15
-.scan               lda PieceSquare,x
-                    beq .dead
-
-                    sec
-                    lda Evaluation
-                    sbc PieceMaterialValueLO,x
-                    sta Evaluation
-                    lda Evaluation+1
-                    sbc PieceMaterialValueHI,x
-                    sta Evaluation+1
-
-.dead               dex
-                    bpl .scan
-
-#endif
 
                     rts
 
@@ -768,7 +733,7 @@ HandlerVectorHI     HANDLEVEC >
     ; Does the square exist in the movelist?
 
                     ldx cursorX12
-                    stx aiFromSquareX12
+                    stx fromX12
                     txa
 
                     ldy currentPly
@@ -782,7 +747,7 @@ HandlerVectorHI     HANDLEVEC >
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SAFE_GetPiece
+    DEF GetPiece
     SUBROUTINE
 
     ; Retrieve the piece+flags from the movelist, given from/to squares
@@ -799,36 +764,6 @@ HandlerVectorHI     HANDLEVEC >
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SAFE_IsValidMoveToSquare
-    SUBROUTINE
-
-    ; Does the square exist in the movelist?
-
-                    ldy cursorX12
-                    sty aiToSquareX12
-                    tya
-
-                    ldy currentPly
-                    sty SET_BANK_RAM
-                    jsr CheckMoveListToSquare
-
-.found              lda savedBank
-                    sta SET_BANK
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF SAFE_CopyShadowROMtoRAM
-    SUBROUTINE
-
-                    jsr CopyShadowROMtoRAM
-                    lda savedBank
-                    sta SET_BANK
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
 
     DEF CopyShadowROMtoRAM
     SUBROUTINE
@@ -869,46 +804,25 @@ HandlerVectorHI     HANDLEVEC >
 
                     dex
                     bne .copyPage
-                    rts
 
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF PromoteStart
-    SUBROUTINE
-
-        ; Remove any piece on the promotion square while we do the promotion selection
-
-                    jsr GetBoard
-                    and #PIECE_MASK
-                    beq .nopiece
-
-    DEF SAFE_CopySinglePiece
-
-                    jsr CopySinglePiece
-.nopiece            lda savedBank
+                    lda savedBank
                     sta SET_BANK
                     rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF CopySinglePiece
     SUBROUTINE
-    TIMING COPYSINGLEPIECE, 2150
+    TIMING COPYSINGLEPIECE, (2600)
 
     ; WARNING: CANNOT USE VAR/OVERLAY IN ANY ROUTINE CALLING THIS!!
     ; ALSO CAN'T USE IN THIS ROUTINE
     ; This routine will STOMP on those vars due to __pieceShapeBuffer occupying whole overlay
-
-
     ; @2150 max
     ; = 33 TIM64T
 
-
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    jsr CopySetup
-
+                    JSROM CopySetup
 
     DEF InterceptMarkerCopy
     SUBROUTINE
@@ -933,20 +847,23 @@ HandlerVectorHI     HANDLEVEC >
                     dey
                     bpl .copy
 
-                    lda drawPieceNumberX12
+                    lda squareToDraw
                     sec
                     ldx #10
 .sub10              sbc #10
                     dex
                     bcs .sub10
 
-                    stx SET_BANK_RAM
+                    stx SET_BANK_RAM                ; row
 
                     adc #8
-                    cmp #4
+                    cmp #4                          ; CS = right side of screen
 
-                    jmp CopyPieceToRowBitmap
+                    jsr CopyPieceToRowBitmap
 
+                    lda savedBank
+                    sta SET_BANK
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -961,7 +878,10 @@ HandlerVectorHI     HANDLEVEC >
                     rts
 
 
+;---------------------------------------------------------------------------------------------------
+
     DEF GoFixPieceList
+
                     sta SET_BANK_RAM
                     jsr FixPieceList
                     lda savedBank
@@ -970,82 +890,28 @@ HandlerVectorHI     HANDLEVEC >
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SAFE_showMoveOptions
-    SUBROUTINE
-
-;SAFETIME = 40           ; time required to be able to safely do a piece draw TODO: optimise
-
-
-    ; place a marker on the board for any square matching the piece
-    ; EXCEPT for squares which are occupied (we'll flash those later)
-    ; x = movelist item # being checked
-
-
-.next               ldx aiMoveIndex
-                    bmi .skip
-
-                    dec aiMoveIndex
-
-                    lda #RAMBANK_PLY                ; current player
-                    sta SET_BANK_RAM
-
-                    lda MoveFrom,x
-                    cmp aiFromSquareX12
-                    bne .next
-
-                    ldy MoveTo,x
-
-    ; If it's a pawn promote (duplicate "to" AND piece different (TODO) then skip others)
-
-                    tya
-.sk                 dex
-                    bmi .prom
-                    cmp MoveTo,x
-                    bne .prom
-
-                    dec aiMoveIndex
-                    dec aiMoveIndex
-                    dec aiMoveIndex
-.prom
-
-
-
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-
-                    lda Board,y
-                    bne .next                       ; don't draw dots on captures - they are flashed later
-
-                    sty drawPieceNumberX12
+    DEF markerDraw
 
                     ldx #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
-                    jsr CopySetupForMarker
-                    jsr InterceptMarkerCopy
-
-.skip               lda savedBank
-                    sta SET_BANK
-                    rts
-
+                    JSROM CopySetupForMarker
+                    jmp InterceptMarkerCopy
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SAFE_showPromoteOptions
+    DEF showPromoteOptions
     SUBROUTINE
 
-    ; Pass          X = character shape # (?/N/B/R/Q)
+    ; X = character shape # (?/N/B/R/Q)
 
                     ldy toX12
-                    sty drawPieceNumberX12
+                    sty squareToDraw
 
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    jsr CopySetupForMarker
+                    JSROM CopySetupForMarker
+                    jmp InterceptMarkerCopy
 
-                    jsr InterceptMarkerCopy
-
-                    lda savedBank
-                    sta SET_BANK
-                    rts
+;                    lda savedBank
+;                    sta SET_BANK
+;                    rts
 
 ;---------------------------------------------------------------------------------------------------
 

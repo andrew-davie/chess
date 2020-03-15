@@ -11,6 +11,8 @@ TIA_BASE_ADDRESS = $40
                 include "macro.h"
                 include "piece_defines.h"
 
+VERBOSE                 = 0                         ; set to 1 for compile messages
+
 ORIGIN          SET 0
 ORIGIN_RAM      SET 0
 
@@ -18,8 +20,8 @@ ORIGIN_RAM      SET 0
 
 ;FIXED_BANK             = 3 * 2048           ;-->  8K ROM tested OK
 ;FIXED_BANK              = 7 * 2048          ;-->  16K ROM tested OK
-;FIXED_BANK             = 15 * 2048           ; ->> 32K
-FIXED_BANK             = 31 * 2048           ; ->> 64K
+FIXED_BANK             = 15 * 2048           ; ->> 32K
+;FIXED_BANK             = 31 * 2048           ; ->> 64K
 ;FIXED_BANK             = 239 * 2048         ;--> 480K ROM tested OK (KK/CC2 compatibility)
 ;FIXED_BANK             = 127 * 2048         ;--> 256K ROM tested OK
 ;FIXED_BANK             = 255 * 2048         ;--> 512K ROM tested OK (CC2 can't handle this)
@@ -29,13 +31,15 @@ NO                      = 0
 
 ; assemble diagnostics. Remove for release.
 ASSERTS                 = 1
-TEST_POSITION           = 0                ; 0=normal, 1 = setup test position
+TEST_POSITION           = 0               ; 0=normal, 1 = setup test position
 PVSP                    = 0                 ; player versus player =1
-DPN                     = 1                 ; draw piece number X12 or B64
 
 WHITE_PLAYER = 0        ; human
 BLACK_PLAYER = 0        ; human
 
+; DELAYS
+
+READY_TO_MOVE_FLASH             = 10
 
 ;===================================
 FINAL_VERSION                  = NO           ; this OVERRIDES any selections below and sets everything correct for a final release
@@ -164,10 +168,12 @@ BANK_{1}        SET _CURRENT_BANK
         IF (>( * + {2} -1 )) > ( >* )
 EARLY_LOCATION  SET *
             ALIGN 256
+            IF VERBOSE=1
             ECHO "PAGE BREAK INSERTED FOR", {1}
             ECHO "REQUESTED SIZE =", {2}
             ECHO "WASTED SPACE =", *-EARLY_LOCATION
             ECHO "PAGEBREAK LOCATION =", *
+            ENDIF
         ENDIF
         LIST ON
     ENDM
@@ -359,6 +365,14 @@ ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
     ENDM
 
 
+    MAC JSRAM
+                lda #BANK_{1}
+                sta SET_BANK_RAM
+                jsr {1}
+    ENDM
+
+
+
     MAC TIMECHECK ; {ident}, {branch if out of time}
                     lda INTIM
                     cmp #SPEEDOF_{1}
@@ -433,7 +447,7 @@ RND_EOR_VAL = $FE ;B4
 
     MAC PHASE ;#
     lda #{1}
-    sta aiPhase
+    sta aiState
     ENDM
 
 ;--------------------------------------------------------------------------------

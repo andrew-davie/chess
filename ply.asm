@@ -23,12 +23,6 @@ MAX_PLY  = 6
 
     NEWBANK BANK_PLY                   ; ROM SHADOW
 
-    DEF XGetBoard
-                    ldx #RAMBANK_MOVES_RAM
-                    stx SET_BANK_RAM                ; now executing in other bank
-                    ds 7
-                    rts
-
 ;---------------------------------------------------------------------------------------------------
 ; The piece-lists
 ; ONLY the very first bank piecelist is used - all other banks switch to the first for
@@ -58,7 +52,7 @@ INFINITY                = 32767
 
 ;---------------------------------------------------------------------------------------------------
 
-MAX_MOVES = 100
+MAX_MOVES =120
 
     VARIABLE MoveFrom, MAX_MOVES
     VARIABLE MoveTo, MAX_MOVES
@@ -143,6 +137,7 @@ value = -new_piece + orig_piece - captured_piece
 ;---------------------------------------------------------------------------------------------------
 
     DEF InitPieceLists
+    SUBROUTINE
 
                     lda #-1
                     sta PieceListPtr+RAM_WRITE
@@ -197,7 +192,7 @@ value = -new_piece + orig_piece - captured_piece
 
                 stx __x
 
-                jsr XGetBoard
+                jsr GetBoard
 .fail           beq .fail
                 cmp #-1
 .fail2          beq .fail2
@@ -242,6 +237,7 @@ InitPieceList
 ;---------------------------------------------------------------------------------------------------
 
     DEF NewPlyInitialise
+    SUBROUTINE
 
     ; This MUST be called at the start of a new ply
     ; It initialises the movelist to empty
@@ -273,78 +269,45 @@ InitPieceList
                     lda Evaluation+1
                     sta SavedEvaluation+RAM_WRITE+1
 
-                    lda #0
-                    sta piecelistIndex                  ; move traversing
+                    lda #15
+                    sta piecelistIndex              ; move traversing
 
                     rts
 
 
 ;---------------------------------------------------------------------------------------------------
+
+    SUBROUTINE
+
+GenerateNextPiece   stx piecelistIndex
+                    sta currentSquare
+                    jsr MoveForSinglePiece
+
+                    dec piecelistIndex
+                    bmi .exit
 
     DEF GenerateMovesForNextPiece
 
-                    lda piecelistIndex
-                    and #15
-                    tax
-
-                    lda sideToMove
-                    asl
-                    lda #RAMBANK_PLY            ; W piecelist in "PLY0" bank, and B in "PLY1"
-                    adc #0
-                    sta SET_BANK_RAM            ; ooh! self-switching bank
-
-                    lda PieceSquare,x
-                    beq .noPieceHere            ; piece deleted
-                    sta currentSquare
-
-                    ;lda enPassantSquare        ; saved from previous side's move...
-                    ;sta enPassantPawn          ; used for move generation
-
-                    jsr MoveForSinglePiece
-
-.noPieceHere        inc piecelistIndex
-
-                    lda piecelistIndex
-                    and #15
-                    cmp #0
-                    beq .stop
-
                     lda INTIM
                     cmp #22
-                    bcs GenerateMovesForNextPiece
+                    bcc .exit
+                    
+                    lda sideToMove
+                    asl
+                    lda #RAMBANK_PLY                ; W piecelist in "PLY0" bank, and B in "PLY1"
+                    adc #0
+                    sta SET_BANK_RAM                ; ooh! self-switching bank
 
+                    ldx piecelistIndex
+kk bmi kk
+.next               lda PieceSquare,x
+                    bne GenerateNextPiece
+                    dex
+                    bpl .next
 
-.stop               rts
+                    stx piecelistIndex
+.exit               rts
 
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF GetMaterialValue
-    SUBROUTINE
-
-        VAR __material, 2
-
-#if 0
-                    lda #0
-                    sta __material
-                    sta __material+1
-
-                    ldx #15
-.sum                lda PieceSquare,x
-                    beq .dead
-
-                    clc
-                    lda __material
-                    adc PieceMaterialValueLO,x
-                    sta __material
-                    lda __material+1
-                    adc PieceMaterialValueHI,x
-                    sta __material+1
-
-.dead               dex
-                    bpl .sum
-#endif
-                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -352,7 +315,7 @@ InitPieceList
     DEF FixPieceList
     SUBROUTINE
 
-    ; fromX12            X12 square piece moved from
+    ; originX12          X12 square piece moved from
     ; toX12              X12 square piece moved to (0 to erase piece from list)
 
     ; It scans the piece list looking for the '__from' square and sets it to the '__to' square
@@ -415,12 +378,11 @@ InitPieceList
                     lda currentPly
                     sta SET_BANK_RAM
 
-                    lda #0
+                    lda #15
                     sta piecelistIndex
 iterPieces          jsr GenerateMovesForNextPiece
                     lda piecelistIndex
-                    cmp #15
-                    bne iterPieces
+                    bpl iterPieces
 
         ; Perform a recursive search
         ; simulate alpha-beta cull to just 7 moves per node
@@ -481,7 +443,7 @@ iterPieces          jsr GenerateMovesForNextPiece
     SUBROUTINE
 
                     ldy moveIndex
-                    bmi halted                      ; no valid moves (stalemate if not in check)
+                    bmi .exit                       ; no valid moves (stalemate if not in check)
 
                     NEXT_RANDOM
 
@@ -497,21 +459,14 @@ iterPieces          jsr GenerateMovesForNextPiece
 .mulx               dey
                     bpl .mulxcc
 
-    IF ASSERTS
-    ; Catch illgal move/index
-                    cpx moveIndex
-                    beq .ok
-.whoops             bcs .whoops
-.ok
-    ENDIF
+;    IF ASSERTS
+;    ; Catch illgal move/index
+;                    cpx moveIndex
+;                    beq .ok
+;.whoops             bcs .whoops
+;.ok
+;    ENDIF
 
-
-; fall through...
-;---------------------------------------------------------------------------------------------------
-
-    ;DEF PhysicallyMovePiece
-
-.foundMove
                     lda MoveFrom,x
                     sta fromX12
                     sta originX12
@@ -523,7 +478,7 @@ iterPieces          jsr GenerateMovesForNextPiece
                     ;ora #FLAG_MOVED                ; prevents usage in castling (for K/R)
                     sta fromPiece                   ; MIGHT have castling bit set, which should be handled last
 
-halted              rts
+.exit               rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -535,18 +490,17 @@ halted              rts
     ; y = -1 on return if NOT FOUND
 
                     ldy moveIndex
-                    bmi .failed
+                    bmi .exit
 
 .scan               cmp MoveFrom,y
                     beq .scanned
                     dey
                     bpl .scan
+.exit               rts
 
 .scanned            lda MovePiece,y
-                    ;and #PIECE_MASK
-                    sta aiPiece
-
-.failed             rts
+                    sta fromPiece
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -576,6 +530,7 @@ halted              rts
     SUBROUTINE
 
     ; Return:       a = square king is on (or -1)
+    ;               x = piece type
 
                     ldy PieceListPtr
                     bmi .exit                       ; no pieces?!
@@ -599,6 +554,9 @@ halted              rts
     DEF GetPieceGivenFromToSquares
     SUBROUTINE
 
+    ; returns piece in A+fromPiece
+    ; or Y=-1 if not found
+
     ; We need to get the piece from the movelist because it contains flags (e.g., castling) about
     ; the move. We need to do from/to checks because moves can have multiple origin/desinations.
     ; This fixes the move with/without castle flag
@@ -616,38 +574,32 @@ halted              rts
 .fail               rts
 
 .found              lda MovePiece,y
-                    ;and #PIECE_MASK        castling fails if enabled
-                    sta aiPiece
+                    sta fromPiece
                     rts
 
 
 
 ;---------------------------------------------------------------------------------------------------
 
+#if 0
     DEF CheckMoveListToSquare
     SUBROUTINE
 
-    ; X12 in A
     ; y = -1 on return if NOT FOUND
 
                     ldy moveIndex
-                    bmi .sout
-.scan               cmp MoveTo,y
+                    bmi .exit
+.scan               lda toX12
+                    cmp MoveTo,y
                     bne .xscanned
-
-                    pha
                     lda MoveFrom,y
-                    cmp aiFromSquareX12
-                    beq .scanned
-                    pla
-
+                    cmp fromX12
+                    beq .exit
 .xscanned           dey
                     bpl .scan
-                    pha
 
-.scanned            pla
-.sout               rts
-
+.exit               rts
+#endif
 
 ;---------------------------------------------------------------------------------------------------
 

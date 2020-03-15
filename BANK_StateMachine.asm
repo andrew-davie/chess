@@ -6,9 +6,10 @@
 PLAYER              = RAMBANK_PLY
 OPPONENT            = PLAYER + 1
 
-CURSOR_MOVE_SPEED               = 16/2
-CAP_SPEED                       = 16/2
-HOLD_DELAY                      = 30/2
+CURSOR_MOVE_SPEED               = 16
+CAP_SPEED                       = 20
+HOLD_DELAY                      = 40
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -30,77 +31,69 @@ P SET P+1
     .byte BANK_ai{1}
     ENDM
 
-    MAC TM
-    .byte {2}
-    ENDM
-
 
 ONCEPERFRAME = 40
 
     MAC TABDEF ; {1} = macro to use
-        ; and per-line, {1} = #, {2} = name, {3} = time
+        
+        {1} BeginSelectMovePhase
+        {1} SelectStartSquare
+        {1} StartSquareSelected
+        {1} DrawMoves
+        {1} ShowMoveCaptures
+        {1} SlowFlash
+        {1} UnDrawTargetSquares
+        {1} SelectDestinationSquare
+        {1} Quiescent
+        {1} ReselectDebounce
+        {1} StartMoveGen
+        {1} StepMoveGen
+        {1} LookForCheck
+        {1} StartClearBoard
+        {1} ClearEachRow
+        {1} DrawEntireBoard
+        {1} DrawPart2
+        {1} DrawPart3
+        {1} FlipBuffers
+        {1} GenerateMoves
+        {1} ComputerMove
+        {1} PrepForPhysicalMove
+        {1} WriteStartPieceBlank
+        {1} MarchToTargetA
+        {1} MarchB
+        {1} MarchToTargetB
+        {1} MarchB2
+        {1} FinalFlash
+        {1} SpecialMoveFixup
+        {1} InCheckBackup
+        {1} InCheckDelay
+        {1} PromotePawnStart
+        {1} RollPromotionPiece
+        {1} ChoosePromotePiece
+        {1} ChooseDebounce
 
-    {1} BeginSelectMovePhase,       1
-    {1} SelectStartSquare,          ONCEPERFRAME
-    {1} StartSquareSelected,        ONCEPERFRAME
-    {1} DrawMoves,                  ONCEPERFRAME
-    {1} ShowMoveCaptures,           ONCEPERFRAME
-    {1} SlowFlash,                  ONCEPERFRAME
-    {1} UnDrawTargetSquares,        ONCEPERFRAME
-    {1} SelectDestinationSquare,    ONCEPERFRAME
-    {1} Quiescent,                  ONCEPERFRAME
-    {1} ReselectDebounce,           ONCEPERFRAME
-    {1} StartMoveGen,               ONCEPERFRAME
-    {1} StepMoveGen,                ONCEPERFRAME
-    {1} LookForCheck,               ONCEPERFRAME
-    {1} StartClearBoard,            ONCEPERFRAME
-    {1} ClearEachRow,               ONCEPERFRAME
-    {1} DrawEntireBoard,            ONCEPERFRAME
-    {1} DrawPart2,                  ONCEPERFRAME
-    {1} DrawPart3,                  ONCEPERFRAME
-    {1} FlipBuffers,                ONCEPERFRAME
-    {1} GenerateMoves,              ONCEPERFRAME
-    {1} ComputerMove,               ONCEPERFRAME
-    {1} PrepForPhysicalMove,        ONCEPERFRAME
-    {1} WriteStartPieceBlank,       ONCEPERFRAME
-    {1} MarchToTargetA,             ONCEPERFRAME
-    {1} MarchB,                     ONCEPERFRAME
-    {1} MarchToTargetB,             ONCEPERFRAME
-    {1} MarchB2,                    ONCEPERFRAME
-    {1} FinalFlash,                 ONCEPERFRAME
-    {1} SpecialMoveFixup,           ONCEPERFRAME
-    {1} InCheckBackup,              ONCEPERFRAME
-    {1} InCheckDelay,               ONCEPERFRAME
-    {1} PromotePawnStart,           ONCEPERFRAME
-    {1} RollPromotionPiece,         ONCEPERFRAME
-    {1} ChoosePromotePiece,         ONCEPERFRAME
-    {1} ChooseDebounce,             ONCEPERFRAME
     ENDM
 
     TABDEF AIN
+
     DEF AiVectorLO
-    TABDEF LO
+        TABDEF LO
+
     DEF AiVectorHI
-    TABDEF HI
+        TABDEF HI
+
     DEF AiVectorBANK
-    TABDEF BK
-    DEF AiTimeRequired
-    TABDEF TM
+        TABDEF BK
 
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF AiSetupVectors
-    ;SUBROUTINE
+    SUBROUTINE
 
     ; State machine vector setup - points to current routine to execute
 
-                    ldx aiPhase
-
-                    lda AiTimeRequired,x
-                    cmp INTIM                       ; is there enough time left?
-                    bcs .exit                       ; nope
-
+                    ldx aiState
                     lda AiVectorLO,x
                     sta __ptr
                     lda AiVectorHI,x
@@ -109,8 +102,7 @@ ONCEPERFRAME = 40
                     lda AiVectorBANK,x
                     sta savedBank
 
-                    clc
-.exit               rts
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -147,8 +139,10 @@ ONCEPERFRAME = 40
     ; we generate the opponent moves piece by piece. Time isn't really an isssue here, so
     ; this happens over multiple frames.
 
+
                     jsr GenerateOneMove
-                    bcc .wait
+                    lda piecelistIndex
+                    bpl .wait                       ; not finished yet
 
                     lda sideToMove
                     eor #128
@@ -240,9 +234,9 @@ ONCEPERFRAME = 40
                     sta aiFlashPhase        ;?
 
                     lda #-1
-                    sta aiFromSquareX12
-                    sta aiToSquareX12
-
+                    sta fromX12
+                    sta toX12
+                    
                     PHASE AI_SelectStartSquare
                     rts
 
@@ -312,14 +306,17 @@ ONCEPERFRAME = 40
                     rts
 
 
+;---------------------------------------------------------------------------------------------------
+
 ;          RLDU RLD  RL U RL   R DU R D  R  U R     LDU  LD   L U  L     DU   D     U
- ;         0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111
+;          0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111
 
     ALLOCATE JoyCombined, 16
     .byte     0,   0,   0,   0,   0,   1,   1,   1,   0,  -1,  -1,  -1,   0,   1,  -1,   0
 
     ALLOCATE JoyMoveCursor, 16
     .byte     0,   0,   0,   0,   0,  -9,  11,   1,   0, -11,  9,  -1,   0,  -10,  10,   0
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -335,13 +332,13 @@ ONCEPERFRAME = 40
     ; do 1 by one, when none found then increment state
 
                     lda cursorX12
-                    sta drawPieceNumberX12
+                    sta squareToDraw
 
                     lda #10
                     sta aiFlashDelay
 
                     lda #0
-                    sta aiToSquareX12
+                    sta toX12 ;aiToSquareX12
                     sta aiFlashPhase                ; for debounce exit timing
 
                     lda #-1
@@ -352,6 +349,7 @@ ONCEPERFRAME = 40
 
                     PHASE AI_DrawMoves
                     rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -402,6 +400,75 @@ ONCEPERFRAME = 40
                     PHASE AI_SelectDestinationSquare
 
 .unsure             rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF SAFE_showMoveOptions
+    SUBROUTINE
+
+        VAR __saveIdx, 1
+        VAR __piece, 1
+
+    ; place a marker on the board for any square matching the piece
+    ; EXCEPT for squares which are occupied (we'll flash those later)
+
+.next               ldx aiMoveIndex
+                    stx __saveIdx
+                    bmi .skip
+
+                    lda INTIM
+                    cmp #5
+                    bcc .skip
+
+                    dec aiMoveIndex
+
+                    jsr GetMoveFrom
+                    cmp fromX12
+                    bne .next
+
+                    jsr GetMoveTo
+                    sta squareToDraw
+
+                    jsr GetMovePiece
+                    sta __piece
+
+    ; If it's a pawn promote (duplicate "to" AND piece different (TODO) then skip others)
+
+.sk                 dex
+                    bmi .prom
+                    jsr GetMoveTo
+                    cmp squareToDraw
+                    bne .prom
+                    jsr GetMovePiece
+                    eor __piece
+                    and #PIECE_MASK
+                    beq .prom                       ; same piece type so not a promote
+
+                    dec aiMoveIndex
+                    dec aiMoveIndex
+                    dec aiMoveIndex
+.prom
+
+                    ldy squareToDraw
+                    jsr GetBoard
+                    and #PIECE_MASK
+                    bne .next                       ; don't draw dots on captures - they are flashed later
+
+
+                    lda INTIM
+                    cmp #SPEEDOF_COPYSINGLEPIECE
+                    bcc .skip
+
+                    ;lda aiMoveIndex
+                    ;sta __saveIdx
+
+                    jsr markerDraw
+                    rts
+
+.skip               lda __saveIdx
+                    sta aiMoveIndex
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -559,16 +626,16 @@ ONCEPERFRAME = 40
     ; Flash the selected piece
 
                     dec aiFlashDelay
-                    bne .noFlashAi
+                    bne .exit                       ; don't flash
+                    lda #CAP_SPEED
+                    sta aiFlashDelay
 
                     inc aiFlashPhase
 
-                    lda #10
-                    sta aiFlashDelay
+                    jsr CopySinglePiece
 
-                    jsr SAFE_CopySinglePiece
+.exit               rts
 
-.noFlashAi          rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -579,17 +646,27 @@ ONCEPERFRAME = 40
     ; we flash the piece on-and-off while we're doing that
 
                     jsr FlashPiece
+
+        lda INTIM
+        cmp #20
+        bcc .noButton
+
                     jsr moveCursor
-                    jsr SAFE_IsValidMoveToSquare
+
+                    ldy cursorX12
+                    sty toX12 
+
+                    jsr GetPiece
                     jsr setCursorColours
+
 
     ; y = valid square
 
                     lda INPT4
                     bmi .noButton
 
-                    lda aiToSquareX12
-                    cmp aiFromSquareX12
+                    lda toX12
+                    cmp fromX12
                     beq .cancel
 
                     cpy #-1
@@ -635,55 +712,23 @@ ONCEPERFRAME = 40
                     PHASE AI_SelectStartSquare
 .exit               rts
 
+
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiQuiescent
     SUBROUTINE
-    TAG MOVE_SELECTED
+
+    ; Move has been selected
 
                     lda #-1
                     sta cursorX12
 
-                    lda aiFromSquareX12
-                    sta fromX12
+                    lda fromX12
                     sta originX12
-                    lda aiToSquareX12
-                    sta toX12
-
-                    jsr SAFE_GetPiece
-
-    ; With en-passant flag, it is essentially dual-use.
-    ; First, it marks if the move is *involved* somehow in an en-passant
-    ; if the piece has MOVED already, then it's an en-passant capture
-    ; if it has NOT moved, then it's a pawn leaving home rank, and sets the en-passant square
-
-
-#if 0
-                    ldx #0
-                    lda aiPiece
-                    and #FLAG_ENPASSANT|FLAG_MOVED
-                    cmp #FLAG_ENPASSANT
-                    bne .noep                       ; HAS moved, or not en-passant
-
-                    lda aiPiece
-                    and #~FLAG_ENPASSANT            ; clear flag as it's been handled
-                    sta aiPiece
-
-                    ldx toX12                       ; this IS an en-passantable opening, so record the square
-.noep               ;stx enPassantPawn               ; capturable square for en-passant move
-#endif
-
-    ; End of en-passant handling
-
-                    lda aiPiece
-                    sta fromPiece
-                    ;ora #FLAG_MOVED                ; for K/R prevents usage in castling
-                    ;sta toPiece
-
-
+                    jsr GetPiece                    ; from the movelist
 
                     ldy fromX12
-                    jsr GetBoard                    ; get the piece
+                    jsr GetBoard                    ; get the piece from the board itself
 
                     eor fromPiece
                     and #PIECE_MASK                 ; if not the same piece board/movelist...
@@ -701,16 +746,25 @@ ONCEPERFRAME = 40
     DEF aiPromotePawnStart
     SUBROUTINE
 
+                    lda INTIM
+                    cmp #SPEEDOF_COPYSINGLEPIECE
+                    bcc .exit
+
                     lda #0
                     sta aiFlashPhase
                     sta aiFlashDelay
 
-                    ldy aiToSquareX12
-                    sty drawPieceNumberX12
-                    jsr PromoteStart                ; remove any capturable piece for display purposes
+                    ldy toX12
+                    sty squareToDraw
 
-                    PHASE AI_RollPromotionPiece
-                    rts
+                    jsr GetBoard
+                    and #PIECE_MASK
+                    beq .empty
+
+                    jsr CopySinglePiece             ; remove any capturable piece for display purposes
+
+.empty              PHASE AI_RollPromotionPiece
+.exit               rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -719,6 +773,10 @@ ONCEPERFRAME = 40
     SUBROUTINE
 
     ; Flash the '?' and wait for an UDLR move
+
+                    lda INTIM
+                    cmp #SPEEDOF_COPYSINGLEPIECE
+                    bcc .exit
 
                     lda SWCHA
                     and #$F0
@@ -739,20 +797,30 @@ ONCEPERFRAME = 40
                     sta aiFlashDelay
 
                     ldx #INDEX_WHITE_PROMOTE_on_WHITE_SQUARE_0
-                    jsr SAFE_showPromoteOptions
+                    lda sideToMove
+                    bpl .wtm
+                    ldx #INDEX_BLACK_PROMOTE_on_WHITE_SQUARE_0
+.wtm
+                    jsr showPromoteOptions
 
                     inc aiFlashPhase
 
 .exit               rts
 
 
-.even               lda #3                  ; QUEEN
-                    sta aiPiece             ; cycles as index to NBRQ
+.even               lda #3                          ; QUEEN
+                    sta fromPiece                   ; cycles as index to NBRQ
 
                     inc aiFlashPhase
 
+
                     ldx #INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0        ;TODO: fix for colour
-                    jsr SAFE_showPromoteOptions
+                    lda sideToMove
+                    bpl .whiteToMove
+                    ldx #INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
+.whiteToMove
+
+                    jsr showPromoteOptions
 
                     PHASE AI_ChooseDebounce
                     rts
@@ -765,6 +833,10 @@ ONCEPERFRAME = 40
 
     ; Question-mark phase has exited via joystick direction
     ; Now we cycle through the selectable pieces
+
+                    lda INTIM
+                    cmp #SPEEDOF_COPYSINGLEPIECE
+                    bcc .exit
 
                     lda INPT4
                     bmi .nobut                      ; no press
@@ -779,7 +851,6 @@ ONCEPERFRAME = 40
                     beq .chosen                     ; button pressed --> selection made
 
 .nobut
-
                     lda SWCHA
                     and #$F0
                     cmp #$F0
@@ -801,10 +872,10 @@ ONCEPERFRAME = 40
     ; TODO; use joy table for mod instead of just incrementing all the time
 
                     ;clc
-                    lda aiPiece
+                    lda fromPiece
                     adc JoyCombined,y
                     and #3
-                    sta aiPiece
+                    sta fromPiece
 
                     PHASE AI_ChooseDebounce         ; wait for release
 
@@ -816,25 +887,29 @@ ONCEPERFRAME = 40
 
                     inc aiFlashPhase
 
-                    ldy aiPiece
+                    ldy fromPiece
                     ldx promotePiece,y
-                    jsr SAFE_showPromoteOptions
+                    jsr showPromoteOptions
 
 .exit               rts
 
 
 .chosen
-                    lda aiPiece
+                    lda fromPiece
                     and #PIECE_MASK
                     tax
 
                     lda promoteType,x
                     sta fromPiece
 
-                    ldy aiToSquareX12
-                    jsr PromoteStart
+                    ldy toX12
+                    jsr GetBoard
+                    and #PIECE_MASK
+                    beq .nothing
 
-                    PHASE AI_PrepForPhysicalMove
+                    jsr CopySinglePiece                     ; put back whatever was there to start
+
+.nothing            PHASE AI_PrepForPhysicalMove
                     rts
 
     ALLOCATE promotePiece, 4
@@ -864,6 +939,7 @@ ONCEPERFRAME = 40
 
                     PHASE AI_ChoosePromotePiece
 .exit               rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -925,7 +1001,22 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
     ALLOCATE colToPixel, 8
     .byte 0,20,40,60,80,100,120,140
 
+;---------------------------------------------------------------------------------------------------
+
+ include "gfx/BLACK_MARKER_on_BLACK_SQUARE_0.asm"
+ include "gfx/BLACK_MARKER_on_BLACK_SQUARE_1.asm"
+ include "gfx/BLACK_MARKER_on_BLACK_SQUARE_2.asm"
+ include "gfx/BLACK_MARKER_on_BLACK_SQUARE_3.asm"
+ include "gfx/BLACK_MARKER_on_WHITE_SQUARE_0.asm"
+ include "gfx/BLACK_MARKER_on_WHITE_SQUARE_1.asm"
+ include "gfx/BLACK_MARKER_on_WHITE_SQUARE_2.asm"
+ include "gfx/BLACK_MARKER_on_WHITE_SQUARE_3.asm"
+
+;---------------------------------------------------------------------------------------------------
+
     CHECK_BANK_SIZE "BANK_StateMachine"
 
+
+;---------------------------------------------------------------------------------------------------
 
 ; EOF

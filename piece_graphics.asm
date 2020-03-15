@@ -104,61 +104,20 @@
  include "gfx/BLACK_KNIGHT_on_BLACK_SQUARE_2.asm"
  include "gfx/BLACK_KNIGHT_on_BLACK_SQUARE_3.asm"
     CHECK_BANK_SIZE "PIECES_3 (2K)"
-    NEWBANK PIECES_4
- include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_0.asm"
- include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_1.asm"
- include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_2.asm"
- include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_3.asm"
- include "gfx/BLACK_ROOK_on_BLACK_SQUARE_0.asm"
- include "gfx/BLACK_ROOK_on_BLACK_SQUARE_1.asm"
- include "gfx/BLACK_ROOK_on_BLACK_SQUARE_2.asm"
- include "gfx/BLACK_ROOK_on_BLACK_SQUARE_3.asm"
- include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_0.asm"
- include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_1.asm"
- include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_2.asm"
- include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_3.asm"
- include "gfx/BLACK_KING_on_BLACK_SQUARE_0.asm"
- include "gfx/BLACK_KING_on_BLACK_SQUARE_1.asm"
- include "gfx/BLACK_KING_on_BLACK_SQUARE_2.asm"
- include "gfx/BLACK_KING_on_BLACK_SQUARE_3.asm"
+;    NEWBANK PIECES_4
 
- include "gfx/WHITE_MARKER_on_BLACK_SQUARE_0.asm"
- include "gfx/WHITE_MARKER_on_BLACK_SQUARE_1.asm"
- include "gfx/WHITE_MARKER_on_BLACK_SQUARE_2.asm"
- include "gfx/WHITE_MARKER_on_BLACK_SQUARE_3.asm"
- include "gfx/WHITE_MARKER_on_WHITE_SQUARE_0.asm"
- include "gfx/WHITE_MARKER_on_WHITE_SQUARE_1.asm"
- include "gfx/WHITE_MARKER_on_WHITE_SQUARE_2.asm"
- include "gfx/WHITE_MARKER_on_WHITE_SQUARE_3.asm"
-    CHECK_BANK_SIZE "PIECES_4 (2K)"
+;    CHECK_BANK_SIZE "PIECES_4 (2K)"
 
-    NEWBANK PIECES_5
- include "gfx/BLACK_MARKER_on_BLACK_SQUARE_0.asm"
- include "gfx/BLACK_MARKER_on_BLACK_SQUARE_1.asm"
- include "gfx/BLACK_MARKER_on_BLACK_SQUARE_2.asm"
- include "gfx/BLACK_MARKER_on_BLACK_SQUARE_3.asm"
- include "gfx/BLACK_MARKER_on_WHITE_SQUARE_0.asm"
- include "gfx/BLACK_MARKER_on_WHITE_SQUARE_1.asm"
- include "gfx/BLACK_MARKER_on_WHITE_SQUARE_2.asm"
- include "gfx/BLACK_MARKER_on_WHITE_SQUARE_3.asm"
+;    NEWBANK PIECES_5
 
- include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_0.asm"
- include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_1.asm"
- include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_2.asm"
- include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_3.asm"
- include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_0.asm"
- include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_1.asm"
- include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_2.asm"
- include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_3.asm"
-
- include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_0.asm"
- include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_1.asm"
- include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_2.asm"
- include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_3.asm"
- include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_0.asm"
- include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_1.asm"
- include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_2.asm"
- include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_3.asm"
+; include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_0.asm"
+; include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_1.asm"
+; include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_2.asm"
+; include "gfx/BLACK_PROMOTE_on_BLACK_SQUARE_3.asm"
+; include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_0.asm"
+; include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_1.asm"
+; include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_2.asm"
+; include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_3.asm"
 
 
 #if 0
@@ -179,7 +138,7 @@
  include "gfx/WHITE_MARKED_BISHOP_on_WHITE_SQUARE_2.asm"
  include "gfx/WHITE_MARKED_BISHOP_on_WHITE_SQUARE_3.asm"
 #endif
-    CHECK_BANK_SIZE "PIECES_5 (2K)"
+;    CHECK_BANK_SIZE "PIECES_5 (2K)"
 
 #if 0
     NEWBANK PIECES_6
