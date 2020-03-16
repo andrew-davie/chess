@@ -26,20 +26,17 @@ QUEENSIDE       = -4
         ; AND the K hasn't moved (earlier check), so check for vacant squares between K and R
 
         IF {1} = QUEENSIDE
-                lda Board-3,x               ; nothing in N pos
-                bne .noCastle
-                lda Board-2,x               ; nothing in B pos
-                bne .noCastle
-                lda Board-1,x               ; nothing in Q pos
-                bne .noCastle
+                lda Board-3,x                       ; N pos
+                ora Board-2,x                       ; B pos
+                ora Board-1,x                       ; Q pos
+                bne .noCastle                       ; not vacant?
 
         ENDIF
 
         IF {1} = KINGSIDE
-                lda Board+2,x               ; check N pos
-                bne .noCastle
-                lda Board+1,x               ; check B pos
-                bne .noCastle
+                lda Board+2,x                       ; N pos
+                ora Board+1,x                       ; B pos
+                bne .noCastle                       ; not vacant?
         ENDIF
 
         ; appropriate N/B/(Q) squares are vacant so we proceed...

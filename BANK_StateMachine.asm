@@ -165,9 +165,9 @@ ONCEPERFRAME = 40
                     sta currentPly
                     jsr SAFE_GetKingSquare          ; king's current X12 square
 
-    inc currentPly
-                    jsr SAFE_IsSquareUnderAttack
-    dec currentPly
+                    inc currentPly
+                    jsr Go_IsSquareUnderAttack
+                    dec currentPly
                     bcc .exit
 
     ; in check!
@@ -246,7 +246,7 @@ ONCEPERFRAME = 40
     SUBROUTINE
 
                     jsr moveCursor
-                    jsr SAFE_IsValidMoveFromSquare
+                    jsr IsValidMoveFromSquare
 
                     dec ccur                        ; pulse colour for valid squares
                     jsr setCursorColours

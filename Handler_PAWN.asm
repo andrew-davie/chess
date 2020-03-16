@@ -34,9 +34,6 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
 
         VAR __temp, 1
 
-                    lda currentPiece
-                    pha
-
                     sty __temp
                     lda #{1}|QUEEN
                     sta currentPiece
@@ -57,7 +54,12 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
                     ldy __temp
                     jsr AddMove
 
-                    pla
+        IF {1} = WHITE
+                    lda #WHITE|WP
+        ENDIF
+        IF {1} = BLACK
+                    lda #BLACK|BP
+        ENDIF
                     sta currentPiece
     ENDM
 

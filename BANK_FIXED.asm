@@ -370,8 +370,7 @@ _rts                rts
                     cmp #FLAG_ENPASSANT
                     bne .noep                       ; HAS moved, or not en-passant
 
-                    lda fromPiece
-                    and #~FLAG_ENPASSANT            ; clear flag as it's been handled
+                    eor fromPiece                   ; clear FLAG_ENPASSANT
                     sta fromPiece
 
                     ldx fromX12                     ; this IS an en-passantable opening, so record the square
@@ -385,52 +384,39 @@ _rts                rts
 
                     lda fromPiece
                     and #FLAG_ENPASSANT
-                    beq .noEP                       ; not an en-passant, or it's enpassant by a MOVED piece
+                    beq .notEnPassant               ; not an en-passant, or it's enpassant by a MOVED piece
 
     ; Here we are the aggressor and we need to take the pawn 'en passant' fashion
     ; y = the square containing the pawn to capture (i.e., previous value of 'enPassantPawn')
 
     ; Remove the pawn from the board and piecelist, and undraw
 
-                    lda sideToMove
-                    pha
-                    eor #128
-                    sta sideToMove
-
-                    sty originX12
+                    sty originX12                   ; rqd for FixPieceList
                     sty squareToDraw
 
                     jsr CopySinglePiece             ; undraw captured pawn
-                    
+
+                    lda sideToMove
+                    eor #128
+                    asl                             ; --> C
+
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
                     ldy originX12
                     lda #0
+                    sta toX12                       ; to remove piece
                     sta Board+RAM_WRITE,y           ; zap board
 
-
-                    lda sideToMove
-                    asl
-                    lda #0
-                    adc #RAMBANK_PLY
+                    adc #RAMBANK_PLY                ; <-- C
                     sta SET_BANK_RAM
 
-                    lda #0
-                    sta toX12                       ; to remove piece
                     jsr FixPieceList                ; from the piecelist
 
-                    pla
-                    sta sideToMove
-.noEP
+.notEnPassant
 
   ; }
 
-
-
-
-                    JSROM_SAFE CastleFixup
-
-
+                    JSROM CastleFixup
 
     ; Mark the piece as MOVED
 
@@ -531,7 +517,6 @@ HandlerVectorHI     HANDLEVEC >
     ; add square in y register to movelist as destination (X12 format)
     ; currentPiece = piece moving
     ; currentSquare = start square (X12)
-    ; ??do not modify y
 
                     lda currentPly              ; 3
                     sta SET_BANK_RAM            ; 3
@@ -539,9 +524,6 @@ HandlerVectorHI     HANDLEVEC >
     ; [y]               to square (X12)
     ; currentSquare     from square (X12)
     ; currentPiece      piece. ENPASSANT flag set if pawn double-moving off opening rank
-    ; do not modify [Y]
-
-    ; add a move to the movelist
 
                     tya                         ; 2
 
@@ -550,14 +532,14 @@ HandlerVectorHI     HANDLEVEC >
                     sty moveIndex+RAM_WRITE     ; 4
 
                     sta MoveTo+RAM_WRITE,y      ; 5
-                    tax                         ; 2   new square (for projections)
+                    tax                         ; 2 new square (for projections)
 
                     lda currentSquare           ; 3
                     sta MoveFrom+RAM_WRITE,y    ; 5
                     lda currentPiece            ; 3
                     sta MovePiece+RAM_WRITE,y   ; 5
 
-                    lda #RAMBANK_MOVES_RAM      ; 2         ; TODO: NOT NEEDED IF FIXED BANK CALLED THIS
+                    lda #RAMBANK_MOVES_RAM      ; 2 TODO: NOT NEEDED IF FIXED BANK CALLED THIS
                     sta SET_BANK_RAM            ; 3
                     rts                         ; 6
 
@@ -578,23 +560,17 @@ HandlerVectorHI     HANDLEVEC >
 
 
 
-                    lda #0
-                    sta enPassantPawn               ; no en-passant
-
-
-
+                    ldx #0
+                    stx enPassantPawn               ; no en-passant
 
 
     ; Now setup the board/piecelists
 
-                    ldx #0
-.fillPieceLists
-
-                    lda #RAMBANK_PLY
+.fillPieceLists     lda #RAMBANK_PLY
                     sta SET_BANK_RAM
 
                     lda InitPieceList,x             ; colour/-1
-                    beq .finish
+                    beq .exit
 
                     asl
                     lda #RAMBANK_PLY
@@ -632,9 +608,6 @@ HandlerVectorHI     HANDLEVEC >
 
                     JSROM AddPieceMaterialValue
 
-
-;#region add positional value
-
                     txa
                     pha
 
@@ -652,10 +625,6 @@ HandlerVectorHI     HANDLEVEC >
 
                     pla
                     tax
-;#endregion
-
-
-;#region store piece value
 
     ; Store the piece's value with the piece itself, so it doesn't have to 
     ; be looked-up everytime it's added/removed
@@ -684,15 +653,11 @@ HandlerVectorHI     HANDLEVEC >
                     pla
                     sta PieceMaterialValueHI+RAM_WRITE,y
 
-;#endregion
-
                     inx
                     inx
                     bpl .fillPieceLists
 
-.finish
-
-                    rts
+.exit               rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -709,6 +674,7 @@ HandlerVectorHI     HANDLEVEC >
                     sty SET_BANK
                     rts
 
+
 ;---------------------------------------------------------------------------------------------------
 
     DEF GetValid
@@ -720,6 +686,7 @@ HandlerVectorHI     HANDLEVEC >
                     rts
 
 
+;---------------------------------------------------------------------------------------------------
 
     DEF GetBoard
                     lda #RAMBANK_MOVES_RAM
@@ -729,6 +696,9 @@ HandlerVectorHI     HANDLEVEC >
                     sty SET_BANK
                     rts
 
+
+;---------------------------------------------------------------------------------------------------
+
     DEF PutBoard
                     ldx #RAMBANK_MOVES_RAM
                     stx SET_BANK_RAM
@@ -737,16 +707,17 @@ HandlerVectorHI     HANDLEVEC >
                     stx SET_BANK
                     rts
 
+
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SAFE_IsValidMoveFromSquare
+    DEF IsValidMoveFromSquare
     SUBROUTINE
 
     ; Does the square exist in the movelist?
+    ; Return: y = -1 if NOT FOUND
 
-                    ldx cursorX12
-                    stx fromX12
-                    txa
+                    lda cursorX12
+                    sta fromX12
 
                     ldy currentPly
                     sty SET_BANK_RAM
@@ -773,6 +744,7 @@ HandlerVectorHI     HANDLEVEC >
                     lda savedBank
                     sta SET_BANK
                     rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -877,6 +849,7 @@ HandlerVectorHI     HANDLEVEC >
                     sta SET_BANK
                     rts
 
+
 ;---------------------------------------------------------------------------------------------------
 
     DEF SAFE_getMoveIndex
@@ -937,7 +910,7 @@ HandlerVectorHI     HANDLEVEC >
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SAFE_IsSquareUnderAttack
+    DEF Go_IsSquareUnderAttack
 
     ; Check if passed X12 square is in the "TO" squares in the movelist (and thus under attack)
 
@@ -974,6 +947,9 @@ HandlerVectorHI     HANDLEVEC >
                     sty SET_BANK
                     rts
 
+
+;---------------------------------------------------------------------------------------------------
+
     DEF GetMoveTo
                     lda #RAMBANK_PLY
                     sta SET_BANK_RAM
@@ -981,6 +957,9 @@ HandlerVectorHI     HANDLEVEC >
                     lda MoveTo,x
                     sty SET_BANK
                     rts
+
+
+;---------------------------------------------------------------------------------------------------
 
     DEF GetMovePiece
                     lda #RAMBANK_PLY

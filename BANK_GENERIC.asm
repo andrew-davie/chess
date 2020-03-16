@@ -260,16 +260,14 @@ flashDone2          PHASE AI_SpecialMoveFixup
 
                     lda fromPiece
                     and #FLAG_CASTLE
-                    beq .noCast                     ; NOT involved in castle!
+                    beq .exit                       ; NOT involved in castle!
 
                     ldx #4
                     lda fromX12
 .findCast           dex
-                    bmi .noCast
+                    bmi .exit
                     cmp KSquare,x
                     bne .findCast
-
-    jsr debug
 
                     lda RSquareEnd,x
                     sta toX12
@@ -291,12 +289,7 @@ flashDone2          PHASE AI_SpecialMoveFixup
                     eor #128
                     sta sideToMove
 
-                    rts
-
-.noCast
-
-
-                    rts
+.exit               rts
 
 
 KSquare             .byte 24,28,94,98
