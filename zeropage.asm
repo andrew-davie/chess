@@ -42,3 +42,5 @@ lastPiece                       ds 1
 previousPiece                   ds 1
 
 Platform                        ds 1                ; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
+speech_addr                     ds 2
+temp                            ds 2

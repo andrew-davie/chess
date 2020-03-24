@@ -46,7 +46,6 @@ INFINITY                = 32767
     VARIABLE PiecePositionValueHI, 16
     VARIABLE PieceListPtr, 1
     VARIABLE plyValue, 2                            ; 16-bit signed score value from alphabeta
-    VARIABLE bestMove, 1                            ; index of move (-1 = none)
     VARIABLE SavedEvaluation, 2                     ; THIS node's evaluation - used for reverting moves!
 
 
@@ -71,7 +70,13 @@ MAX_MOVES =120
 ; Move tables hold piece moves for this current ply
 
     VARIABLE moveIndex, 1                           ; points to first available 'slot' for move storage
+    VARIABLE movePtr, 1
+    VARIABLE bestMove, 1
 
+    VARIABLE alpha, 2
+    VARIABLE beta, 2
+    VARIABLE bestValue, 2
+    VARIABLE depth, 1
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -277,9 +282,10 @@ InitPieceList
 
 ;---------------------------------------------------------------------------------------------------
 
+    DEF GenerateNextPiece
     SUBROUTINE
 
-GenerateNextPiece   stx piecelistIndex
+                    stx piecelistIndex
                     sta currentSquare
                     jsr MoveForSinglePiece
 
@@ -299,7 +305,6 @@ GenerateNextPiece   stx piecelistIndex
                     sta SET_BANK_RAM                ; ooh! self-switching bank
 
                     ldx piecelistIndex
-kk bmi kk
 .next               lda PieceSquare,x
                     bne GenerateNextPiece
                     dex
@@ -307,7 +312,6 @@ kk bmi kk
 
                     stx piecelistIndex
 .exit               rts
-
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -318,10 +322,7 @@ kk bmi kk
     ; originX12          X12 square piece moved from
     ; toX12              X12 square piece moved to (0 to erase piece from list)
 
-    ; It scans the piece list looking for the '__from' square and sets it to the '__to' square
-    ; Eventually this will have to be more sophisticated when moves (like castling) involve
-    ; more than one piece.
-
+    ; It scans the piece list looking for the 'from' square and sets it to the 'to' square
     ; TODO: this is slow and should use a pointer to pieces instead
 
 
@@ -340,27 +341,22 @@ kk bmi kk
 
 ;---------------------------------------------------------------------------------------------------
 
+    DEF GenerateAllMoves
+    SUBROUTINE
+                    lda #15
+                    sta piecelistIndex
+.next               jsr GenerateMovesForNextPiece
+                    lda piecelistIndex
+                    bpl .next
+                    rts
+
+;---------------------------------------------------------------------------------------------------
+
+#if 0
     DEF alphaBeta
     SUBROUTINE
 
-
-#if 0
-
-1. create movelist
-2. init score
-
-
-
-
-
-
-
-#endif
-
-
-
-
-                    rts
+            rts
 
                     inc currentPly
                     lda currentPly
@@ -372,6 +368,7 @@ kk bmi kk
                     lda sideToMove
                     eor #128
                     sta sideToMove
+                    ;todo: NEGEVAL?
 
                     jsr NewPlyInitialise
 
@@ -403,12 +400,15 @@ iterPieces          jsr GenerateMovesForNextPiece
                     lda sideToMove
                     eor #128
                     sta sideToMove
+                    ;todo: negeval
 
                     dec currentPly
                     lda currentPly
                     sta SET_BANK_RAM                ; self-referential weirdness!
 
                     rts
+#endif
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -459,14 +459,6 @@ iterPieces          jsr GenerateMovesForNextPiece
 .mulx               dey
                     bpl .mulxcc
 
-;    IF ASSERTS
-;    ; Catch illgal move/index
-;                    cpx moveIndex
-;                    beq .ok
-;.whoops             bcs .whoops
-;.ok
-;    ENDIF
-
                     lda MoveFrom,x
                     sta fromX12
                     sta originX12
@@ -475,8 +467,7 @@ iterPieces          jsr GenerateMovesForNextPiece
                     sta toX12
 
                     lda MovePiece,x
-                    ;ora #FLAG_MOVED                ; prevents usage in castling (for K/R)
-                    sta fromPiece                   ; MIGHT have castling bit set, which should be handled last
+                    sta fromPiece
 
 .exit               rts
 

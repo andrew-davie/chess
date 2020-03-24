@@ -57,7 +57,7 @@ ONCEPERFRAME = 40
         {1} FlipBuffers
         {1} GenerateMoves
         {1} ComputerMove
-        {1} PrepForPhysicalMove
+        {1} MoveIsSelected
         {1} WriteStartPieceBlank
         {1} MarchToTargetA
         {1} MarchB
@@ -147,6 +147,7 @@ ONCEPERFRAME = 40
                     lda sideToMove
                     eor #128
                     sta sideToMove
+                    ;todo: negeval?
 
                     PHASE AI_LookForCheck
 .wait               rts
@@ -734,7 +735,7 @@ ONCEPERFRAME = 40
                     and #PIECE_MASK                 ; if not the same piece board/movelist...
                     bne .promote                    ; promote a pawn
 
-                    PHASE AI_PrepForPhysicalMove
+                    PHASE AI_MoveIsSelected
                     rts
 
 .promote            PHASE AI_PromotePawnStart
@@ -909,7 +910,7 @@ ONCEPERFRAME = 40
 
                     jsr CopySinglePiece                     ; put back whatever was there to start
 
-.nothing            PHASE AI_PrepForPhysicalMove
+.nothing            PHASE AI_MoveIsSelected
                     rts
 
     ALLOCATE promotePiece, 4

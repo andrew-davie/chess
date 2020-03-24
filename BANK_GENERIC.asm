@@ -83,9 +83,10 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
                     rts
 
 
+
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiPrepForPhysicalMove
+    DEF aiMoveIsSelected
     SUBROUTINE
     TAG MOVE_SELECTED (AI)
 
@@ -100,37 +101,12 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
     ; originX12     starting square X12
     ; toX12         ending square X12
 
-;    -previousPiece
-;    +fromPiece
 
+                    jsr AdjustMaterialPositionalValue
 
 
                     lda #BLANK
                     sta previousPiece
-
-
-    ;TODO: evaluation mods
-
-
-#if 0
-    get piece
-                    eor #128
-                    cmp #128                        ; negate colour --> C
-
-                    and #PIECE_MASK
-                    beq .nopiece
-
-    ;TOD: we're taking a piece - at this point we could adjust the
-    ; we've negated the colour so the captured piece will be negatively-added, so to speak
-
-            tay
-
-            ldx #BANK_AddPieceMaterialValue
-            sta SET_BANK
-            jsr AddPieceMaterialValue
-#endif
-
-
 
 
                     ;lda toSquare
@@ -263,7 +239,7 @@ flashDone2          PHASE AI_SpecialMoveFixup
                     beq .exit                       ; NOT involved in castle!
 
                     ldx #4
-                    lda fromX12
+                    lda fromX12                     ; *destination*
 .findCast           dex
                     bmi .exit
                     cmp KSquare,x
@@ -280,16 +256,18 @@ flashDone2          PHASE AI_SpecialMoveFixup
                     ora #ROOK                       ; preserve colour
                     sta fromPiece
 
-                    PHASE AI_PrepForPhysicalMove
+                    PHASE AI_MoveIsSelected
 
     ; in this siutation (castle, rook moving) we do not change sides yet!
-    ; SO we DO change sides so the later change is a no-change...
 
-                    lda sideToMove
+                    rts
+
+.exit               lda sideToMove
                     eor #128
                     sta sideToMove
 
-.exit               rts
+                    NEGEVAL
+                    rts
 
 
 KSquare             .byte 24,28,94,98

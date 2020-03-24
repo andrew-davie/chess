@@ -30,7 +30,7 @@ YES                     = 1
 NO                      = 0
 
 ; assemble diagnostics. Remove for release.
-ASSERTS                 = 1
+ASSERTS                 = 0
 TEST_POSITION           = 0               ; 0=normal, 1 = setup test position
 PVSP                    = 0                 ; player versus player =1
 
@@ -240,6 +240,23 @@ TEMPORARY_OFFSET SET 0
 
 ;---------------------------------------------------------------------------------------------------
 
+    MAC NEGEVAL
+
+                    clc
+                    lda Evaluation
+                    eor #$FF
+                    adc #1
+                    sta Evaluation
+                    lda Evaluation+1
+                    eor #$FF
+                    adc #0
+                    sta Evaluation+1
+
+    ENDM
+
+
+;---------------------------------------------------------------------------------------------------
+
 TEMPORARY_OFFSET SET 0
 
     MAC VARBASE ; {offset}
@@ -255,7 +272,7 @@ VAR_LEVEL2 = 32
     ; Will allocate appropriate bytes, and also check for overflow of the available overlay buffer
 
     MAC VAR ; { name, size }
-{1} SET TEMPORARY_VAR
+{1} = TEMPORARY_VAR
 TEMPORARY_VAR SET TEMPORARY_VAR + TEMPORARY_OFFSET + {2}
 
 OVERLAY_DELTA SET TEMPORARY_VAR - Overlay
@@ -469,6 +486,7 @@ RND_EOR_VAL = $FE ;B4
     include "Handler_BANK1.asm"
     include "ply.asm"
     include "BANK_EVAL.asm"
+    include "BANK_SPEAK.asm"
 
     ; MUST BE LAST...
     include "BANK_FIXED.asm"

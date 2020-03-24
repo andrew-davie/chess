@@ -7,14 +7,11 @@ characters:
 #	cd charset && python icc.py
 
 chess.bin: *.asm Makefile FORCE
-		python clearTerminal.py
-		(cd gfx && python ConvertChessPieces.py)
+	osascript -e 'quit app "Stella"'
+	(cd gfx && python ConvertChessPieces.py)
 #		python tools/grid.py
-		../dasm/bin/dasm ./chess.asm -l./chess.lst -f3 -s./chess.sym -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
-#    done
-	chmod 777 ./chess.bin
-	../stella/stella -rd A ./chess.bin
-	exit 0
+	../dasm/bin/dasm ./chess.asm -l./chess.lst -f3 -s./chess.sym -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
+	open -a /Applications/Stella.app ./chess.bin
 
 force:
 #	echo "force"

@@ -43,6 +43,7 @@
 #else ; test position...
 
     .byte WHITE|WP, 57
+    .byte WHITE|WP|FLAG_MOVED, 69
     .byte BLACK|BP, 88
     .byte BLACK|BP, 86
     .byte WHITE|Q, 65
