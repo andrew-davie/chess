@@ -22,6 +22,9 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
     DEF Cart_Init
     SUBROUTINE
 
+        REFER Reset
+        VEND Cart_Init
+
                     lda #0
                     sta SWBCNT                      ; console I/O always set to INPUT
                     sta SWACNT                      ; set controller I/O to INPUT
@@ -40,20 +43,23 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
                     rts
 
-
 ;---------------------------------------------------------------------------------------------------
 
+#if 0
     DEF Resync
     SUBROUTINE
 
                     RESYNC
                     rts
-
+#endif
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiStartClearBoard
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiStartClearBoard
 
                     ldx #8
                     stx drawCount                   ; = bank
@@ -68,6 +74,9 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
     DEF aiClearEachRow
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiClearEachRow
 
                     dec drawCount
                     bmi .bitmapCleared
@@ -88,15 +97,15 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
     DEF aiMoveIsSelected
     SUBROUTINE
-    TAG MOVE_SELECTED (AI)
+
+        REFER AiStateMachine
+        VEND aiMoveIsSelected
 
 
     ; Both computer and human have now seleted a move, and converge here
 
 
     ; fromPiece     piece doing the move
-    ; fromSquare    starting square BASE64
-    ; toSquare      ending square BASE64
     ; fromX12       current square X12
     ; originX12     starting square X12
     ; toX12         ending square X12
@@ -126,6 +135,11 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
     DEF aiWriteStartPieceBlank
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiWriteStartPieceBlank
+
+    jsr debug
 
     ; Flash the piece in-place preparatory to moving it.
     ; drawDelay = flash speed
@@ -159,6 +173,9 @@ flashDone           PHASE AI_MarchToTargetA
     DEF aiDrawPart2
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiDrawPart2
+
                     jsr CopySinglePiece
 
     DEF aiDrawPart3
@@ -182,6 +199,9 @@ flashDone           PHASE AI_MarchToTargetA
     DEF aiMarchB
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiMarchB
+
     ; Draw the piece in the new square
 
                     lda fromX12
@@ -200,6 +220,10 @@ flashDone           PHASE AI_MarchToTargetA
 
     DEF aiFinalFlash
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiFinalFlash
+
 
                     lda drawDelay
                     beq .deCount
@@ -225,14 +249,14 @@ flashDone2          PHASE AI_SpecialMoveFixup
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF CastleFixup
+    DEF GenCastleMoveForRook
     SUBROUTINE
 
-    ; fixup any castling issues
-    ; at this point the king has finished his two-square march
-    ; based on the finish square, we determine which rook we're interacting with
-    ; and generate a 'move' for the rook to position on the other side of the king
+        REFER MakeMove
+        REFER CastleFixup
+        VEND GenCastleMoveForRook
 
+                    clc
 
                     lda fromPiece
                     and #FLAG_CASTLE
@@ -240,7 +264,8 @@ flashDone2          PHASE AI_SpecialMoveFixup
 
                     ldx #4
                     lda fromX12                     ; *destination*
-.findCast           dex
+.findCast           clc
+                    dex
                     bmi .exit
                     cmp KSquare,x
                     bne .findCast
@@ -256,18 +281,55 @@ flashDone2          PHASE AI_SpecialMoveFixup
                     ora #ROOK                       ; preserve colour
                     sta fromPiece
 
-                    PHASE AI_MoveIsSelected
+                    sec
+.exit               rts
 
-    ; in this siutation (castle, rook moving) we do not change sides yet!
 
-                    rts
+;---------------------------------------------------------------------------------------------------
 
-.exit               lda sideToMove
+    DEF CastleFixup
+    SUBROUTINE
+
+        REFER SpecialBody
+        VEND CastleFixup
+
+    ; fixup any castling issues
+    ; at this point the king has finished his two-square march
+    ; based on the finish square, we determine which rook we're interacting with
+    ; and generate a 'move' for the rook to position on the other side of the king
+
+                    jsr GenCastleMoveForRook
+                    bcs .phase
+
+                    lda sideToMove
                     eor #128
                     sta sideToMove
 
-                    NEGEVAL
+                    ; TODO - check....
+                    ;NEGEVAL
+
+
+    ; Mark the piece as MOVED
+    ; TODO: ensure removal is still OK
+
+;                    lda #RAMBANK_MOVES_RAM
+;                    sta SET_BANK_RAM
+;                    ldy fromX12                     ; final square
+;                    lda Board,y
+;                    and #~FLAG_ENPASSANT            ; probably superflous
+;                    ora #FLAG_MOVED
+;                    sta@RAM Board,y
+
+
                     rts
+
+.phase
+
+    ; in this siutation (castle, rook moving) we do not change sides yet!
+
+                    PHASE AI_MoveIsSelected
+                    rts
+
 
 
 KSquare             .byte 24,28,94,98
@@ -280,7 +342,9 @@ RSquareEnd          .byte 25,27,95,97
     DEF SetupBanks
     SUBROUTINE
 
+        REFER Reset
         VAR __plyBank, 1
+        VEND SetupBanks
 
     ; SAFE
 

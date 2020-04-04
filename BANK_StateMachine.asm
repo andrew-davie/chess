@@ -91,6 +91,9 @@ ONCEPERFRAME = 40
     DEF AiSetupVectors
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND AiSetupVectors
+
     ; State machine vector setup - points to current routine to execute
 
                     ldx aiState
@@ -110,6 +113,9 @@ ONCEPERFRAME = 40
     DEF aiStartMoveGen
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiStartMoveGen
+
     ; To assist with castling, generate the moves for the opponent, giving us effectively
     ; a list of squares that are being attacked. The castling can't happen if the king is
     ; in check or if the squares it would have to move over are in check
@@ -118,8 +124,7 @@ ONCEPERFRAME = 40
     ; the squares between are occupied. We can tell THAT by examining the movelist to see
     ; if there are K-moves marked "FLAG_CASTLE" - and the relevant squares
 
-                    lda #OPPONENT
-                    sta currentPly
+                    inc currentPly
                     jsr InitialiseMoveGeneration
 
                     lda sideToMove
@@ -132,38 +137,23 @@ ONCEPERFRAME = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiStepMoveGen
-    SUBROUTINE
-
-    ; Because we're (possibly) running with the screen on, processing time is very short and
-    ; we generate the opponent moves piece by piece. Time isn't really an isssue here, so
-    ; this happens over multiple frames.
-
-
-                    jsr GenerateOneMove
-                    lda piecelistIndex
-                    bpl .wait                       ; not finished yet
-
-                    lda sideToMove
-                    eor #128
-                    sta sideToMove
-                    ;todo: negeval?
-
-                    PHASE AI_LookForCheck
-.wait               rts
-
-
-;---------------------------------------------------------------------------------------------------
 
     DEF aiLookForCheck
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiLookForCheck
+
+                    dec currentPly
+
+
+#if 0
 
     ; now we've finished generating the opponent moves
     ; See if the square our king is on is an attacked square (that is, it appears as a TO
     ; square in the opponent's movelist)
 
-                    lda #PLAYER
-                    sta currentPly
+                    
                     jsr SAFE_GetKingSquare          ; king's current X12 square
 
                     inc currentPly
@@ -184,15 +174,18 @@ ONCEPERFRAME = 40
 
                     PHASE AI_InCheckBackup
                     rts
+#endif
 
 .exit               PHASE AI_BeginSelectMovePhase
                     rts
-
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiInCheckBackup
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiInCheckBackup
 
     ; We're about to draw some large text on the screen
     ; Make a backup copy of all of the row bitmaps, so that we can restore once text is done
@@ -211,6 +204,9 @@ ONCEPERFRAME = 40
     DEF aiInCheckDelay
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiInCheckDelay
+
                     dec mdelay
                     bne .exit
 
@@ -226,6 +222,8 @@ ONCEPERFRAME = 40
     DEF aiBeginSelectMovePhase
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiBeginSelectMovePhase
 
                     lda #$38
                     sta cursorX12
@@ -246,6 +244,9 @@ ONCEPERFRAME = 40
     DEF aiSelectStartSquare
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiSelectStartSquare
+
                     jsr moveCursor
                     jsr IsValidMoveFromSquare
 
@@ -264,6 +265,9 @@ ONCEPERFRAME = 40
 
     DEF setCursorPriority
     SUBROUTINE
+
+        REFER moveCursor
+        VEND setCursorPriority
 
                     tya
                     pha
@@ -286,6 +290,14 @@ ONCEPERFRAME = 40
 
     DEF setCursorColours
     SUBROUTINE
+
+        REFER aiSelectStartSquare
+        REFER aiDrawMoves
+        REFER aiUnDrawTargetSquares
+        REFER aiShowMoveCaptures
+        REFER aiSlowFlash
+        REFER aiSelectDestinationSquare
+        VEND setCursorColours
 
     ; pass y=-1 if move is NOT in the movelist
     ; preserve y
@@ -324,6 +336,10 @@ ONCEPERFRAME = 40
     DEF aiStartSquareSelected
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiStartSquareSelected
+
+
     ; Mark all the valid moves for the selected piece on the board
     ; and then start pulsing the piece
     ; AND start choosing for selection of TO square
@@ -356,6 +372,9 @@ ONCEPERFRAME = 40
 
     DEF aiDrawMoves
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiDrawMoves
 
                     dec ccur
                     jsr setCursorColours
@@ -408,8 +427,11 @@ ONCEPERFRAME = 40
     DEF SAFE_showMoveOptions
     SUBROUTINE
 
+        REFER aiDrawMoves
+        REFER aiUnDrawTargetSquares
         VAR __saveIdx, 1
         VAR __piece, 1
+        VEND SAFE_showMoveOptions
 
     ; place a marker on the board for any square matching the piece
     ; EXCEPT for squares which are occupied (we'll flash those later)
@@ -477,6 +499,10 @@ ONCEPERFRAME = 40
     DEF aiUnDrawTargetSquares
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiUnDrawTargetSquares
+
+
                     dec ccur
                     jsr setCursorColours
 
@@ -505,6 +531,9 @@ ONCEPERFRAME = 40
 
     DEF aiShowMoveCaptures
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiShowMoveCaptures
 
     ; draw/undraw ALL captured pieces
     ; we should do this an even number of times so that pieces don't disappEOR
@@ -535,6 +564,9 @@ ONCEPERFRAME = 40
 
     DEF aiSlowFlash
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiSlowFlash
 
     ; Joystick button is held down, so we're displaying the available moves
     ; They have all been drawn, so now we "slow" flash any pieces that can be captures
@@ -576,7 +608,10 @@ ONCEPERFRAME = 40
     DEF moveCursor
     SUBROUTINE
 
+        REFER aiSelectStartSquare
+        REFER aiSelectDestinationSquare
         VAR __newCursor, 1
+        VEND moveCursor
 
     ; Part (a) move cursor around the board waiting for joystick press
 
@@ -624,6 +659,9 @@ ONCEPERFRAME = 40
     DEF FlashPiece
     SUBROUTINE
 
+        REFER aiSelectDestinationSquare
+        VEND FlashPiece
+
     ; Flash the selected piece
 
                     dec aiFlashDelay
@@ -642,6 +680,9 @@ ONCEPERFRAME = 40
 
     DEF aiSelectDestinationSquare
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiSelectDestinationSquare
 
     ; Piece is selected and now we're looking for a button press on a destination square
     ; we flash the piece on-and-off while we're doing that
@@ -704,6 +745,9 @@ ONCEPERFRAME = 40
     DEF aiReselectDebounce
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiReselectDebounce
+
     ; We've just cancelled the move. Wait for the button to be released
     ; and then go back to selecting a piece to move
 
@@ -718,6 +762,9 @@ ONCEPERFRAME = 40
 
     DEF aiQuiescent
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiQuiescent
 
     ; Move has been selected
 
@@ -747,6 +794,9 @@ ONCEPERFRAME = 40
     DEF aiPromotePawnStart
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiPromotePawnStart
+
                     lda INTIM
                     cmp #SPEEDOF_COPYSINGLEPIECE
                     bcc .exit
@@ -772,6 +822,9 @@ ONCEPERFRAME = 40
 
     DEF aiRollPromotionPiece
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiRollPromotionPiece
 
     ; Flash the '?' and wait for an UDLR move
 
@@ -831,6 +884,9 @@ ONCEPERFRAME = 40
 
     DEF aiChoosePromotePiece
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiChoosePromotePiece
 
     ; Question-mark phase has exited via joystick direction
     ; Now we cycle through the selectable pieces
@@ -928,6 +984,9 @@ ONCEPERFRAME = 40
     DEF aiChooseDebounce
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiChooseDebounce
+
     ; We've changed promotion piece, but wait for joystick to be released
 
                     lda SWCHA
@@ -947,6 +1006,10 @@ ONCEPERFRAME = 40
     align 256
     DEF PositionSprites
     SUBROUTINE
+
+        REFER Reset
+        VEND PositionSprites
+
 
                     lda cursorX12
                     sec

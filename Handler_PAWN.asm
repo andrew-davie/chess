@@ -32,7 +32,6 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
 
     ;{1} = BLACK or WHITE
 
-        VAR __temp, 1
 
                     sty __temp
                     lda #{1}|QUEEN
@@ -111,6 +110,10 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
     DEF PromoteWhitePawn
     SUBROUTINE
 
+        REFER Handle_WHITE_PAWN
+        VAR __temp, 1
+        VEND PromoteWhitePawn
+
                     PROMOTE_PAWN WHITE
                     rts
 
@@ -119,6 +122,9 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
     DEF Handle_WHITE_PAWN
     SUBROUTINE
 
+        REFER GenerateAllMoves
+        VEND Handle_WHITE_PAWN
+        
                     ldy ValidSquare+_UP,x           ; square above must be blank (WILL NOT EVER be off-board!)
                     lda Board,y
                     bne .pMoved                     ; occupied
@@ -151,6 +157,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
                     TAKE _UP+_RIGHT, WHITE
 
 
+    IF ENPASSANT_ENABLED
     ; en-passant captures...
 
                     lda enPassantPawn
@@ -163,7 +170,10 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
                     EN_PASSANT _LEFT, _UP
                     EN_PASSANT _RIGHT, _UP
 
-.noEnPassant        jmp MoveReturn
+.noEnPassant
+    ENDIF
+
+                    jmp MoveReturn
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -173,11 +183,18 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
     DEF PromoteBlackPawn
     SUBROUTINE
     
+        REFER Handle_BLACK_PAWN
+        VAR __temp, 1
+        VEND PromoteBlackPawn
+
                 PROMOTE_PAWN BLACK
                 rts
 
     DEF Handle_BLACK_PAWN
     SUBROUTINE
+
+        REFER GenerateAllMoves
+        VEND Handle_BLACK_PAWN
 
                 ldy ValidSquare+_DOWN,x         ; square below must be blank (WILL NOT EVER be off-board!)
                 lda Board,y
@@ -213,6 +230,8 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
                 TAKE _DOWN+_LEFT, BLACK
                 TAKE _DOWN+_RIGHT, BLACK
 
+
+    IF ENPASSANT_ENABLED
     ; en-passant captures...
 
                 lda enPassantPawn
@@ -226,6 +245,8 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
                 EN_PASSANT _RIGHT, _DOWN
 
 .noEnPassant
+    ENDIF
+
                 jmp MoveReturn
 
 ; EOF

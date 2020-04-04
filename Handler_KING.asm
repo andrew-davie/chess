@@ -69,6 +69,9 @@ QUEENSIDE       = -4
     DEF Handle_KING
     SUBROUTINE
 
+        REFER GenerateAllMoves
+        VEND Handle_KING
+
     ; x = currentSquare (square the KING is on)
     ; currentPiece (KING of course, but with flags/colour attached)
 
@@ -81,12 +84,16 @@ QUEENSIDE       = -4
                 MOVE_TO_X _UP+_LEFT
                 MOVE_TO_X _LEFT
 
+        IF CASTLING_ENABLED
+        
                 bit currentPiece
                 bvs .exit                           ; king has moved, so no castling
 
                 CASTLE KINGSIDE
                 CASTLE QUEENSIDE
 
+        ENDIF
+        
 .exit           jmp MoveReturn
 
 ;---------------------------------------------------------------------------------------------------

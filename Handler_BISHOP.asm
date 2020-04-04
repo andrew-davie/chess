@@ -7,6 +7,9 @@
     DEF Handle_BISHOP
     SUBROUTINE
 
+        REFER GenerateAllMoves
+        VEND Handle_BISHOP
+        
     ; x = currentSquare (square the piece is on)
     ; currentPiece (with flags/colour attached)
 

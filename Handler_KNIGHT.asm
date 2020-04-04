@@ -8,6 +8,9 @@
     DEF Handle_KNIGHT
     SUBROUTINE
 
+        REFER GenerateAllMoves
+        VEND Handle_KNIGHT
+
     ; x = currentSquare (square the piece is on)
     ; currentPiece (with flags/colour attached)
 

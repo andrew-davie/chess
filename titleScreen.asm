@@ -47,7 +47,7 @@ TitleSequence
 
 
 
-                RESYNC
+                ;RESYNC
 
 RestartFrame0
 

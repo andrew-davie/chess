@@ -6,7 +6,7 @@
                 SEG.U variables
                 ORG $80
 
-squareToDraw              ds 1
+squareToDraw                    ds 1
 rnd                             ds 1                ; random
 drawDelay                       ds 1
 lastSquareX12                   ds 1
@@ -35,7 +35,13 @@ currentSquare                   ds 1
 enPassantPawn                   ds 1                ; TODO - this belongs in PLY bank
 currentPly                      ds 1
 
+    IFCONST PIECELIST_ENABLED
 piecelistIndex                  ds 1
+    ELSE
+squareIndex                     ds 1
+    ENDIF
+    
+
 sideToMove                      ds 1                ; d7 == side, 0=white, 128 = black
 fromPiece                       ds 1
 lastPiece                       ds 1
@@ -43,4 +49,3 @@ previousPiece                   ds 1
 
 Platform                        ds 1                ; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
 speech_addr                     ds 2
-temp                            ds 2

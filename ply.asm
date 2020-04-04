@@ -11,12 +11,13 @@
 ; A ply will hold the move list for that position
 
 
-MAX_PLY  = 6
+MAX_PLY  = 10
     NEWRAMBANK PLY                                  ; RAM bank for holding the following ROM shadow
     REPEAT MAX_PLY-1
         NEWRAMBANK .DUMMY_PLY
     REPEND
 
+MAX_PLY_DEPTH_BANK = MAX_PLY + RAMBANK_PLY
 
 ;---------------------------------------------------------------------------------------------------
 ; and now the ROM shadow - this is copied to ALL of the RAM ply banks
@@ -33,25 +34,13 @@ MAX_PLY  = 6
 ; WHITE pieces in bank BANK_PLY
 ; BLACK pieces in bank BANK_PLY+1
 
-
-INFINITY                = 32767
-
-
-    VARIABLE SortedPieceList, 16                    ; indexes into PieceSquare, etc. NEG = no piece
-    VARIABLE PieceSquare, 16
-    VARIABLE PieceType, 16
-    VARIABLE PieceMaterialValueLO, 16
-    VARIABLE PieceMaterialValueHI, 16
-    VARIABLE PiecePositionValueLO, 16
-    VARIABLE PiecePositionValueHI, 16
-    VARIABLE PieceListPtr, 1
     VARIABLE plyValue, 2                            ; 16-bit signed score value from alphabeta
     VARIABLE SavedEvaluation, 2                     ; THIS node's evaluation - used for reverting moves!
 
 
 ;---------------------------------------------------------------------------------------------------
 
-MAX_MOVES =120
+MAX_MOVES =100
 
     VARIABLE MoveFrom, MAX_MOVES
     VARIABLE MoveTo, MAX_MOVES
@@ -64,7 +53,7 @@ MAX_MOVES =120
 ; This is set/cleared whenever a move is made. The flag is indicated in the move description.
 
     VARIABLE enPassantSquare, 1
-
+    VARIABLE capturedPiece, 1
 
 ;---------------------------------------------------------------------------------------------------
 ; Move tables hold piece moves for this current ply
@@ -72,11 +61,11 @@ MAX_MOVES =120
     VARIABLE moveIndex, 1                           ; points to first available 'slot' for move storage
     VARIABLE movePtr, 1
     VARIABLE bestMove, 1
-
     VARIABLE alpha, 2
     VARIABLE beta, 2
-    VARIABLE bestValue, 2
-    VARIABLE depth, 1
+;    VARIABLE bestValue, 2
+    VARIABLE depthLeft, 1
+    VARIABLE bestScore, 2
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -144,17 +133,11 @@ value = -new_piece + orig_piece - captured_piece
     DEF InitPieceLists
     SUBROUTINE
 
+        REFER InitialisePieceSquares
+        VEND InitPieceLists
+
                     lda #-1
-                    sta PieceListPtr+RAM_WRITE
-
-                    ldx #15
-                    lda #0
-.clearLists         sta SortedPieceList+RAM_WRITE,x
-                    sta PieceSquare+RAM_WRITE,x
-                    sta PieceType+RAM_WRITE,x
-                    dex
-                    bpl .clearLists
-
+                    ;sta@RAM SquarePtr ;PieceListPtr
 
     ; TODO: move the following as they're called 2x due to double-call of InitPiecLists
 
@@ -184,8 +167,10 @@ value = -new_piece + orig_piece - captured_piece
     DEF checkPiecesBank
     SUBROUTINE
 
+        REFER DIAGNOSTIC_checkPiences
         VAR __x, 1
         VAR __bank, 1
+        VEND checkPiecesBank
 
     ; odd usage - switches between concurrent bank code
 
@@ -218,6 +203,9 @@ value = -new_piece + orig_piece - captured_piece
     DEF DIAGNOSTIC_checkPieces
     SUBROUTINE
 
+        REFER aiSpecialMoveFixup
+        VEND DIAGNOSTIC_checkPiences
+
     ; SAFE call
     ; DIAGNOSTIC ONLY
     ; Scan the piecelist and the board square it points to and make sure non blank, non -1
@@ -244,204 +232,48 @@ InitPieceList
     DEF NewPlyInitialise
     SUBROUTINE
 
+        REFER aiFlipBuffers
+        REFER InitialiseMoveGeneration
+        REFER quiesce
+        REFER alphaBeta
+        VEND NewPlyInitialise
+
     ; This MUST be called at the start of a new ply
     ; It initialises the movelist to empty
+    ; x must be preserved
 
-                    ldx #-1
-                    stx moveIndex+RAM_WRITE         ; no valid moves
-                    sta bestMove+RAM_WRITE
+    ; note that 'alpha' and 'beta' are set externally!!
+
+
+                    lda #-1
+                    sta@RAM moveIndex           ; no valid moves
+                    sta@RAM bestMove
 
                     lda enPassantPawn               ; flag/square from last actual move made
-                    sta enPassantSquare+RAM_WRITE   ; used for backtracking, to reset the flag
+                    sta@RAM enPassantSquare         ; used for backtracking, to reset the flag
 
-    ; The evaluation of the current position is a signed 16-bit number
-    ; +ve is good for the current side.
-    ; This is used during the alpha-beta search for finding best position
-    ; Note, this is not the same as the 'Evaluation' which is the current value at ply -- it is the
-    ; alphabeta best/worst value of the node!!
-
-                    lda #<(-INFINITY)
-                    sta plyValue+RAM_WRITE
-                    lda #>(-INFINITY)
-                    sta plyValue+RAM_WRITE+1
 
     ; The value of the material (signed, 16-bit) is restored to the saved value at the reversion
     ; of a move. It's quicker to restore than to re-sum. So we save the current evaluation at the
     ; start of each new ply.
 
                     lda Evaluation
-                    sta SavedEvaluation+RAM_WRITE
+                    sta@RAM SavedEvaluation
                     lda Evaluation+1
-                    sta SavedEvaluation+RAM_WRITE+1
-
-                    lda #15
-                    sta piecelistIndex              ; move traversing
+                    sta@RAM SavedEvaluation+1
 
                     rts
 
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF GenerateNextPiece
-    SUBROUTINE
-
-                    stx piecelistIndex
-                    sta currentSquare
-                    jsr MoveForSinglePiece
-
-                    dec piecelistIndex
-                    bmi .exit
-
-    DEF GenerateMovesForNextPiece
-
-                    lda INTIM
-                    cmp #22
-                    bcc .exit
-                    
-                    lda sideToMove
-                    asl
-                    lda #RAMBANK_PLY                ; W piecelist in "PLY0" bank, and B in "PLY1"
-                    adc #0
-                    sta SET_BANK_RAM                ; ooh! self-switching bank
-
-                    ldx piecelistIndex
-.next               lda PieceSquare,x
-                    bne GenerateNextPiece
-                    dex
-                    bpl .next
-
-                    stx piecelistIndex
-.exit               rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF FixPieceList
-    SUBROUTINE
-
-    ; originX12          X12 square piece moved from
-    ; toX12              X12 square piece moved to (0 to erase piece from list)
-
-    ; It scans the piece list looking for the 'from' square and sets it to the 'to' square
-    ; TODO: this is slow and should use a pointer to pieces instead
-
-
-                    ldx #15
-                    lda originX12
-.pieceCheck         cmp PieceSquare,x
-                    beq .adjustPiece
-                    dex
-                    bpl .pieceCheck
-                    rts
-
-.adjustPiece        lda toX12
-                    sta PieceSquare+RAM_WRITE,x
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF GenerateAllMoves
-    SUBROUTINE
-                    lda #15
-                    sta piecelistIndex
-.next               jsr GenerateMovesForNextPiece
-                    lda piecelistIndex
-                    bpl .next
-                    rts
-
-;---------------------------------------------------------------------------------------------------
-
-#if 0
-    DEF alphaBeta
-    SUBROUTINE
-
-            rts
-
-                    inc currentPly
-                    lda currentPly
-
-                    cmp #MAX_PLY+RAMBANK_PLY
-                    beq .bottomOut                  ; at a leaf node of the search?
-                    sta SET_BANK_RAM                ; self-referential weirdness!
-
-                    lda sideToMove
-                    eor #128
-                    sta sideToMove
-                    ;todo: NEGEVAL?
-
-                    jsr NewPlyInitialise
-
-                    lda currentPly
-                    sta SET_BANK_RAM
-
-                    lda #15
-                    sta piecelistIndex
-iterPieces          jsr GenerateMovesForNextPiece
-                    lda piecelistIndex
-                    bpl iterPieces
-
-        ; Perform a recursive search
-        ; simulate alpha-beta cull to just 7 moves per node
-
-    REPEAT 7
-                    ;jsr PhysicallyMovePiece
-                    ;jsr FinaliseMove
-                    jsr alphaBeta
-    REPEND
-
-.bottomOut
-
-        ; TODO: evaluate board position
-        ; reverse move to previous position
-        ; check the results, update scores and move pointers
-        ; and return vars to expected
-
-                    lda sideToMove
-                    eor #128
-                    sta sideToMove
-                    ;todo: negeval
-
-                    dec currentPly
-                    lda currentPly
-                    sta SET_BANK_RAM                ; self-referential weirdness!
-
-                    rts
-#endif
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF RevertMove
-    SUBROUTINE
-
-    ; backtrack after a move, restoring things to the way they were
-
-
-    ; piecelist
-        ; piece1, piece2
-    ; board
-    ; enpassantpawn
-    ; materialvalue
-    ; positionvalue
-    ; score?
-
-
-    ; restore the board evaluation to what it was at the start of this ply
-
-                    lda SavedEvaluation
-                    sta Evaluation
-                    lda SavedEvaluation+1
-                    sta Evaluation+1
-
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
+#if 1
     DEF MoveViaListAtPly
     SUBROUTINE
 
+        REFER aiComputerMove
+        VEND MoveViaListAtPly
+    
                     ldy moveIndex
                     bmi .exit                       ; no valid moves (stalemate if not in check)
 
@@ -470,12 +302,15 @@ iterPieces          jsr GenerateMovesForNextPiece
                     sta fromPiece
 
 .exit               rts
-
+#endif
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF CheckMoveListFromSquare
     SUBROUTINE
+
+        REFER IsValidMoveFromSquare
+        VEND CheckMoveListFromSquare
 
     ; X12 in A
     ; y = -1 on return if NOT FOUND
@@ -496,8 +331,13 @@ iterPieces          jsr GenerateMovesForNextPiece
 
 ;---------------------------------------------------------------------------------------------------
 
+#if 0
     DEF IsSquareUnderAttack
     SUBROUTINE
+
+        REFER Go_IsSquareUnderAttack
+        REFER aiLookForCheck
+        VEND IsSquareUnderAttack
 
     ; Scan the movelist to find if given square is under attack
 
@@ -514,14 +354,22 @@ iterPieces          jsr GenerateMovesForNextPiece
 .exit               clc
 .found              rts
 
+#endif
+
 
 ;---------------------------------------------------------------------------------------------------
 
+#if 0
     DEF GetKingSquare
     SUBROUTINE
 
+        REFER SAFE_GetKingSquare
+        VEND GetKingSquare
+
     ; Return:       a = square king is on (or -1)
     ;               x = piece type
+
+
 
                     ldy PieceListPtr
                     bmi .exit                       ; no pieces?!
@@ -538,12 +386,15 @@ iterPieces          jsr GenerateMovesForNextPiece
 .found              lda PieceSquare,y
                     ldx PieceType,y
                     rts
-
+#endif
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF GetPieceGivenFromToSquares
     SUBROUTINE
+
+        REFER GetPiece
+        VEND GetPieceGivenFromToSquares
 
     ; returns piece in A+fromPiece
     ; or Y=-1 if not found
@@ -576,6 +427,8 @@ iterPieces          jsr GenerateMovesForNextPiece
     DEF CheckMoveListToSquare
     SUBROUTINE
 
+        VEND CheckMoveListToSquare
+
     ; y = -1 on return if NOT FOUND
 
                     ldy moveIndex
@@ -592,9 +445,163 @@ iterPieces          jsr GenerateMovesForNextPiece
 .exit               rts
 #endif
 
+
 ;---------------------------------------------------------------------------------------------------
+    
+    DEF selectmove
+    SUBROUTINE
+
+        COMMON_VARS_ALPHABETA
+        REFER aiComputerMove
+        VEND selectmove
+
+    ; x = depth to go to
+
+    ;        bestMove = chess.Move.null()
+    ;        bestValue = -99999
+    ;        alpha = -100000
+    ;        beta = 100000
+    ;        for move in board.legal_moves:
+    ;            board.push(move)
+    ;            boardValue = -alphabeta(-beta, -alpha, depth-1)
+    ;            if boardValue > bestValue:
+    ;                bestValue = boardValue;
+    ;                bestMove = move
+    ;            if( boardValue > alpha ):
+    ;                alpha = boardValue
+    ;            board.pop()
+    ;        movehistory.append(bestMove)
+
+
+                    stx@RAM depthLeft
+
+    ; both player (pos) and opponent (neg) have worst value ever!
+
+                    lda #<INFINITY
+                    sta@RAM beta
+                    lda #>INFINITY
+                    sta@RAM beta+1                   ; opponent tries to minimise
+
+                    lda #<-INFINITY
+                    sta@RAM alpha
+                    lda #>-INFINITY
+                    sta@RAM alpha+1                  ; player tries to maximise
+
+                    ;lda #<-INFINITY
+                    ;sta@RAM bestValue
+                    ;lda #>-INFINITY
+                    ;sta@RAM bestValue+1
+
+
+;                    jsr newGen                      ; init ply, generate moves!
+
+;                    lda moveIndex                   ; could just use this instead of movePtr....
+;                    sta@RAM movePtr
+;                    jmp .loopMoves
+
+    ; TODO: here intercept if there are NO moves - in which case we have stalemate
+    ; TODO: also check no moves (-1), checkmate (???), illegal move (king capture)-same
+
+
+
+.loopMoves
+;          ldx movePtr
+;                    bmi .endSearch
+
+;                    jsr MakeMove
+
+    ; "boardValue = -alphabeta( -beta, -alpha, depthleft - 1 )"
+    ; set pareameters for next level --> __alpha, __beta
+    ; we've pre-negated alpha, beta outside the loop
+
+                    sec
+                    lda #0
+                    sbc alpha
+                    sta __alpha
+                    lda #0
+                    sbc alpha+1
+                    sta __alpha+1                   ; = -alpha
+
+                    sec
+                    lda #0
+                    sbc beta
+                    sta __beta
+                    lda #0
+                    sbc beta+1
+                    sta __beta+1                    ; = -beta (effectively unchanged) - no αβ on ply 0
+
+;                   inc currentPly
+;                    lda currentPly
+;                    sta SET_BANK_RAM                ; self-switch
+;                    sta savedBank                   ; ??
+
+                    ldx depthLeft
+                    jsr alphaBeta                   ; recurse!
+
+ ;                   dec currentPly
+ ;                   lda currentPly
+ ;                   sta SET_BANK_RAM
+
+ ;                   sec
+ ;                   lda #0
+ ;                   sbc __bestScore
+ ;                   sta __bestScore
+ ;                   lda #0
+ ;                   sbc __bestScore+1
+ ;                   sta __bestScore+1               ; "-alphabeta....""
+
+ ;                   jsr unmake_move
+                    
+    ;            if boardValue > bestValue:
+    ;                bestValue = boardValue;
+    ;                bestMove = move
+
+
+;                    clc                             ;!! OK -1
+;                    lda __bestScore
+;                    sbc alpha
+;                    lda __bestScore+1
+;                    sbc alpha+1
+;                    bcc .notGt
+
+;                    lda __bestScore
+;                    sta@RAM alpha
+;                    lda __bestScore+1
+;                    sta@RAM alpha+1
+
+;                    lda movePtr
+;                    sta@RAM bestMove
+
+;.notGt
+
+;                    ldx movePtr
+;                    dex
+;                    stx@RAM movePtr
+;                    jmp .loopMoves
+
+
+;.endSearch
+ 
+ 
+                    ldx bestMove
+
+    IF ASSERTS
+        bmi .endSearch
+    endif
+
+                    lda MoveTo,x
+                    sta toX12
+                    lda MoveFrom,x
+                    sta originX12
+                    sta fromX12
+                    lda MovePiece,x
+                    sta fromPiece
+
+                    rts
+
 
     CHECK_HALF_BANK_SIZE "PLY -- 1K"
+
 
 ;---------------------------------------------------------------------------------------------------
 

@@ -17,6 +17,8 @@ ORIGIN              SET FIXED_BANK
     DEF Reset
     SUBROUTINE
 
+        VEND Reset
+
                     sei
                     cld
                     ldx #$FF
@@ -30,9 +32,10 @@ ORIGIN              SET FIXED_BANK
                     ldy #$9A
 .toR                sty rnd
 
+                    JSROM Cart_Init
                     ;JSROM TitleScreen
 
-                    JSROM ShutYourMouth
+                    ;JSROM ShutYourMouth
 
     ; Move a copy of the row bank template to the first 8 banks of RAM
     ; and then terminate the draw subroutine by substituting in a RTS on the last one
@@ -44,14 +47,13 @@ ORIGIN              SET FIXED_BANK
                     ldx #7
                     stx SET_BANK_RAM
                     lda #$60                        ; "rts"
-                    sta SELFMOD_RTS_ON_LAST_ROW+RAM_WRITE
+                    sta@RAM SELFMOD_RTS_ON_LAST_ROW
 
+                    ;lda currentPly
+                    ;sta SET_BANK_RAM
+                    ;jsr NewPlyInitialise            ; must be called at the start of every new ply
 
-                    lda currentPly
-                    sta SET_BANK_RAM
-                    jsr NewPlyInitialise            ; must be called at the start of every new ply
-
-                    JSROM InitialisePieceSquares
+                    jsr InitialisePieceSquares
 
                     lda #WHITE
                     sta sideToMove
@@ -80,24 +82,11 @@ ORIGIN              SET FIXED_BANK
                     ldx #0
                     stx VBLANK
 
-
-        IF ASSERTS
-;                    lda #$C2
-;                    sta COLUBK                     ; colour timing band top of screen
-        ENDIF
-
                     jsr AiStateMachine
-
-                    ;jsr SAFE_PhasedProcessor
-
-        IF ASSERTS
-;                    lda #0
-;                    sta COLUBK                     ; end of timing band
-        ENDIF
 
 #if ASSERTS
 ; Catch timer expired already
-                    bit TIMINT
+;                    bit TIMINT
 ;.whoops             bmi .whoops
 #endif
 
@@ -175,6 +164,9 @@ _rts                rts
     DEF AiStateMachine
     SUBROUTINE
 
+        REFER Reset
+        VEND AiStateMachine
+
                     JSROM AiSetupVectors
                     ;bcs .exit                   ; not enough time
                     sta SET_BANK
@@ -188,6 +180,11 @@ _rts                rts
     DEF CallClear
     SUBROUTINE
 
+        REFER aiClearEachRow
+        VEND CallClear
+
+        ; No transient variable dependencies/calls
+
                     sty SET_BANK_RAM
                     jsr ClearRowBitmap
                     rts
@@ -197,6 +194,9 @@ _rts                rts
 
     DEF aiDrawEntireBoard
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiDrawEntireBoard
 
 
                     lda INTIM
@@ -213,7 +213,7 @@ _rts                rts
                     beq .isablank
                     pha
                     lda #BLANK
-                    sta Board+RAM_WRITE,y
+                    sta@RAM Board,y
 
                     jsr CopySinglePiece
 
@@ -222,7 +222,7 @@ _rts                rts
 
                     ldy squareToDraw
                     pla
-                    sta Board+RAM_WRITE,y
+                    sta@RAM Board,y
 
 .isablank           PHASE AI_DrawPart2
                     rts
@@ -234,6 +234,9 @@ _rts                rts
 
     DEF aiFlipBuffers
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiFlipBuffers
 
     ; Initialise for a new move
 
@@ -251,6 +254,8 @@ _rts                rts
     DEF InitialiseMoveGeneration
     SUBROUTINE
 
+        VEND InitialiseMoveGeneration
+
                     lda currentPly
                     sta SET_BANK_RAM
 
@@ -263,17 +268,138 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF GenerateOneMove
+    DEF newGen
     SUBROUTINE
 
-                    lda currentPly
-                    sta SET_BANK_RAM
-                    jsr GenerateMovesForNextPiece
+        REFER selectmove
+        VEND newGen
 
-                    lda savedBank
-                    sta SET_BANK
+
+        jsr NewPlyInitialise
+        jsr GenerateAllMoves
+
+;        lda savedBank
+;        sta SET_BANK_RAM
+
+        rts
+
+    DEF aiGenerateMoves
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiGenerateMoves
+    
+;                    jsr newGen
+                    jsr GenerateAllMoves
+            jsr debug
+
+    #if PVSP
+        jmp .player ;tmp
+    #endif
+
+                    ldx sideToMove
+                    bpl .player
+
+
+.computer           PHASE AI_ComputerMove               ; computer select move
                     rts
 
+
+.player             PHASE AI_StartMoveGen
+.wait               rts
+
+    DEF aiStepMoveGen
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiStepMoveGen
+
+
+    ; Because we're (possibly) running with the screen on, processing time is very short and
+    ; we generate the opponent moves piece by piece. Time isn't really an isssue here, so
+    ; this happens over multiple frames.
+
+
+                    jsr GenerateAllMoves
+                    ;lda piecelistIndex
+                    ;bpl .wait                       ; not finished yet
+
+                    lda sideToMove
+                    eor #128
+                    sta sideToMove
+                    ;todo: negeval?
+
+                    PHASE AI_LookForCheck
+.wait               rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+
+    DEF GenerateAllMoves
+    SUBROUTINE
+
+        REFER quiesce
+        REFER alphaBeta
+        REFER aiStepMoveGen
+        REFER aiGenerateMoves
+        VAR __vector, 2
+        VEND GenerateAllMoves
+                    
+                    ldy #99
+.next               lda #RAMBANK_MOVES_RAM
+                    sta SET_BANK_RAM
+
+                    lda Board,y
+                    beq .nextSq
+                    cmp #-1
+                    beq .nextSq
+                    eor sideToMove
+                    bmi .nextSq
+                    
+                    sty currentSquare
+
+                    eor sideToMove
+                    ora #FLAG_MOVED                 ; all moves mark piece as moved!
+                    sta currentPiece
+                    and #PIECE_MASK
+                    tay
+
+                    ldx currentSquare
+
+                    lda HandlerVectorLO-1,y
+                    sta __vector
+                    lda HandlerVectorHI-1,y
+                    sta __vector+1
+                    jmp (__vector)
+
+MoveReturn          ldy currentSquare
+.nextSq             dey
+                    cpy #22
+                    bcs .next
+
+.exit               lda savedBank
+                    sta SET_BANK_RAM
+                    rts
+
+
+    MAC HANDLEVEC
+        .byte {1}Handle_WHITE_PAWN        ; 1
+        .byte {1}Handle_BLACK_PAWN        ; 2
+        .byte {1}Handle_KNIGHT            ; 3
+        .byte {1}Handle_BISHOP            ; 4
+        .byte {1}Handle_ROOK              ; 5
+        .byte {1}Handle_QUEEN             ; 6
+        .byte {1}Handle_KING              ; 7
+    ENDM
+
+
+    ALLOCATE Handlers, 15
+
+    .byte 0     ; dummy to prevent page cross access on index 0
+
+HandlerVectorLO     HANDLEVEC <
+HandlerVectorHI     HANDLEVEC >
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -307,10 +433,17 @@ _rts                rts
     DEF aiComputerMove
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiComputerMove
+
     ; Choose one of the moves
 
-                    lda currentPly
+;                    lda currentPly
+
+    lda #RAMBANK_PLY
+    sta currentPly                    
                     sta SET_BANK_RAM                ; switch in movelist
+                    sta savedBank
 
                     lda #-1
                     cmp moveIndex
@@ -322,9 +455,13 @@ _rts                rts
 
                     lda sideToMove
                     bpl .notComputer
+                    
+dddx
+                    ldx #2                          ; 3 ply search!!!
+                    jsr selectmove
+                    ;jsr MoveViaListAtPly
 
-                    jsr MoveViaListAtPly
-
+                    
 .notComputer        PHASE AI_MoveIsSelected
 .halted             rts
 
@@ -336,10 +473,15 @@ _rts                rts
 
     ; A move is about to be made, so  adjust material and positional values based on from/to and
     ; capture.
-    
-        VAR __pval, 2
+
+    ; First, nominate referencing subroutines so that local variables can be adjusted properly
+
+        REFER alphaBeta
+        REFER MakeMove
+        REFER aiMoveIsSelected
         VAR __originalPiece, 1
         VAR __capturedPiece, 1
+        VEND AdjustMaterialPositionalValue
 
     ; fromPiece     piece doing the move (promoted type)
     ; fromX12       current square
@@ -433,16 +575,8 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SpecialBody
+    DEF EnPassantCheck
     SUBROUTINE
-
-
-
-    ; Handle en-passant captures
-    ; The (dual-use) FLAG_ENPASSANT will have been cleared if it was set for a home-rank move
-    ; but if we're here and the flag is still set, then it's an actual en-passant CAPTURE and we
-    ; need to do the appropriate things...
-
 
     ; {
     ; With en-passant flag, it is essentially dual-use.
@@ -467,27 +601,26 @@ _rts                rts
     ; }
 
 
-    ; {
     ; Check to see if we are doing an actual en-passant capture...
 
     ; NOTE: If using test boards for debugging, the FLAG_MOVED flag is IMPORTANT
     ;  as the en-passant will fail if the taking piece does not have this flag set correctly
 
+                    ;sty originX12                   ; rqd for FixPieceList
+
                     lda fromPiece
                     and #FLAG_ENPASSANT
-                    beq .notEnPassant               ; not an en-passant, or it's enpassant by a MOVED piece
+                    ;beq .notEnPassant               ; not an en-passant, or it's enpassant by a MOVED piece
+                    rts
 
-    ; Here we are the aggressor and we need to take the pawn 'en passant' fashion
-    ; y = the square containing the pawn to capture (i.e., previous value of 'enPassantPawn')
+;---------------------------------------------------------------------------------------------------
 
-    ; Remove the pawn from the board and piecelist, and undraw
+    DEF EnPassantRemovePiece
+    SUBROUTINE
 
-                    sty originX12                   ; rqd for FixPieceList
-                    sty squareToDraw
+        REFER SpecialBody
+        VEND EnPassantRemovePiece
 
-                    jsr CopySinglePiece             ; undraw captured pawn
-
-                    ldy originX12                   ; taken pawn's square
                     jsr DeletePiece                 ; adjust material/position evaluation
 
                     lda sideToMove
@@ -497,25 +630,50 @@ _rts                rts
                     adc #RAMBANK_PLY                ; <-- C
                     sta SET_BANK_RAM
 
-                    jsr FixPieceList                ; from the piecelist
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF SpecialBody
+    SUBROUTINE
+
+        COMMON_VARS_ALPHABETA
+        REFER aiSpecialMoveFixup
+        VEND SpecialBody
+
+    IF ENPASSANT_ENABLED
+
+; TODO - enpassant borked
+
+    ; Handle en-passant captures
+    ; The (dual-use) FLAG_ENPASSANT will have been cleared if it was set for a home-rank move
+    ; but if we're here and the flag is still set, then it's an actual en-passant CAPTURE and we
+    ; need to do the appropriate things...
+
+                    jsr EnPassantCheck
+                    beq .notEnPassant
+
+    ; {
+
+    ; Here we are the aggressor and we need to take the pawn 'en passant' fashion
+    ; y = the square containing the pawn to capture (i.e., previous value of 'enPassantPawn')
+
+    ; Remove the pawn from the board and piecelist, and undraw
+
+                    sty squareToDraw
+                    jsr CopySinglePiece             ; undraw captured pawn
+
+                    ldy originX12                   ; taken pawn's square
+
+                    jsr EnPassantRemovePiece
 
 .notEnPassant
-
     ; }
 
-                    JSROM CastleFixup
+    ENDIF
 
-    ; Mark the piece as MOVED
-
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    ldy fromX12                     ; final square
-                    lda Board,y
-                    and #~FLAG_ENPASSANT            ; probably superflous
-                    ora #FLAG_MOVED
-                    sta Board+RAM_WRITE,y
-
-
+                    JSROM  CastleFixup
                     rts
 
 
@@ -523,6 +681,9 @@ _rts                rts
 
     DEF aiSpecialMoveFixup
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiSpecialMoveFixup
 
                     lda INTIM
                     cmp #SPEEDOF_COPYSINGLEPIECE+4
@@ -532,7 +693,7 @@ _rts                rts
 .cont
                     PHASE AI_FlipBuffers
 
-
+                    lda #1
                     jsr SpecialBody
 
 
@@ -546,35 +707,18 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF HeadlessMove
-    SUBROUTINE
-
-    ; Do a move without any GUI stuff
-
-    ; fromPiece     piece doing the move
-    ; fromSquare    starting square BASE64
-    ; toSquare      ending square BASE64
-    ; fromX12       current square X12
-    ; originX12     starting square X12
-    ; toX12         ending square X12
-
-
-                    jsr AdjustMaterialPositionalValue
-                    jsr SpecialBody                     ;TODO: stop draw of enpassant delete
-
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF DeletePiece
     SUBROUTINE
+
 
     ; Based on piece square, adjust material and position value with piece deleted
     ; y = piece square
 
+        REFER EnPassantRemovePiece
+        REFER SpecialBody
         VAR __y, 1
         VAR __col, 1
+        VEND DeletePiece
 
                     sty __y
 
@@ -603,64 +747,7 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF MoveForSinglePiece
-    SUBROUTINE
 
-
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-
-                    ldx currentSquare               ; used in move handlers
-                    lda Board,x
-                    sta currentPiece
-
-    IF ASSERTS
-    SUBROUTINE
-    ; DEBUG: Make sure we're looking at correct colour
-                    eor sideToMove
-.lock               bmi .lock
-                    lda currentPiece
-    ENDIF
-
-                    and #PIECE_MASK
-                    tay
-
-    IF ASSERTS
-    ; DEBUG: Make sure we have an actual piece, not an empty square
-    SUBROUTINE
-.lock               beq .lock                       ; catch errors
-    ENDIF
-
-        VAR __vector, 2
-
-                    lda HandlerVectorLO-1,y
-                    sta __vector
-                    lda HandlerVectorHI-1,y
-                    sta __vector+1
-                    jmp (__vector)
-
-MoveReturn          lda currentPly
-                    sta SET_BANK_RAM
-
-                    rts
-
-    MAC HANDLEVEC
-        .byte {1}Handle_WHITE_PAWN        ; 1
-        .byte {1}Handle_BLACK_PAWN        ; 2
-        .byte {1}Handle_KNIGHT            ; 3
-        .byte {1}Handle_BISHOP            ; 4
-        .byte {1}Handle_ROOK              ; 5
-        .byte {1}Handle_QUEEN             ; 6
-        .byte {1}Handle_KING              ; 7
-    ENDM
-
-
-    ALLOCATE Handlers, 15
-
-    .byte 0     ; dummy to prevent page cross access on index 0
-
-HandlerVectorLO     HANDLEVEC <
-HandlerVectorHI     HANDLEVEC >
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -673,33 +760,30 @@ HandlerVectorHI     HANDLEVEC >
     ; =57 including call
 
     ; add square in y register to movelist as destination (X12 format)
-    ; currentPiece = piece moving
-    ; currentSquare = start square (X12)
-
-                    lda currentPly              ; 3
-                    sta SET_BANK_RAM            ; 3
-
     ; [y]               to square (X12)
     ; currentSquare     from square (X12)
     ; currentPiece      piece. ENPASSANT flag set if pawn double-moving off opening rank
 
-                    tya                         ; 2
+                    lda currentPly                  ; 3
+                    sta SET_BANK_RAM                ; 3
 
-                    ldy moveIndex               ; 3
-                    iny                         ; 2
-                    sty moveIndex+RAM_WRITE     ; 4
+                    tya                             ; 2
 
-                    sta MoveTo+RAM_WRITE,y      ; 5
-                    tax                         ; 2 new square (for projections)
+                    ldy moveIndex                   ; 3
+                    iny                             ; 2
+                    sty@RAM moveIndex     ; 4
 
-                    lda currentSquare           ; 3
-                    sta MoveFrom+RAM_WRITE,y    ; 5
-                    lda currentPiece            ; 3
-                    sta MovePiece+RAM_WRITE,y   ; 5
+                    sta@RAM MoveTo,y      ; 5
+                    tax                             ; 2 new square (for projections)
 
-                    lda #RAMBANK_MOVES_RAM      ; 2 TODO: NOT NEEDED IF FIXED BANK CALLED THIS
-                    sta SET_BANK_RAM            ; 3
-                    rts                         ; 6
+                    lda currentSquare               ; 3
+                    sta@RAM MoveFrom,y    ; 5
+                    lda currentPiece                ; 3
+                    sta@RAM MovePiece,y   ; 5
+
+                    lda #RAMBANK_MOVES_RAM          ; 2 TODO: NOT NEEDED IF FIXED BANK CALLED THIS
+                    sta SET_BANK_RAM                ; 3
+                    rts                             ; 6
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -707,22 +791,19 @@ HandlerVectorHI     HANDLEVEC >
     DEF InitialisePieceSquares
     SUBROUTINE
 
-    ; Initialise the piecelists and the board for the two piecelist banks (BLACK/WHITE)
+        REFER Reset
+        VAR __initPiece, 1
+        VAR __initSquare, 1
+        VAR __initListPtr, 1
+        VEND InitialisePieceSquares
 
                     lda #RAMBANK_PLY
                     sta SET_BANK_RAM
-                    jsr InitPieceLists              ; for white
-                    lda #RAMBANK_PLY+1
-                    sta SET_BANK_RAM
-                    jsr InitPieceLists              ; for black
-
-
+                    jsr InitPieceLists
 
                     ldx #0
                     stx enPassantPawn               ; no en-passant
 
-
-    ; We init evaluation as "white"
 
     ; Now setup the board/piecelists
 
@@ -730,41 +811,16 @@ HandlerVectorHI     HANDLEVEC >
                     sta SET_BANK_RAM
 
                     lda InitPieceList,x             ; colour/-1
-                    bne .go
-                    jmp .exit
-.go                 sta __originalPiece             ; type
-
-                    asl
-                    lda #RAMBANK_PLY
-                    adc #0
-                    sta SET_BANK_RAM                ; BLACK/WHITE
-
-                    ldy PieceListPtr                ; init'd in InitPieceLists
-                    iny
-
-                    lda InitPieceList+1,x           ; square
-                    sta PieceSquare+RAM_WRITE,y
-                    tya
-                    sta SortedPieceList+RAM_WRITE,y
-
-                    lda __originalPiece             ; piece type
-                    sta PieceType+RAM_WRITE,y
-                    pha
-
-                    sty PieceListPtr+RAM_WRITE
-
+                    beq .exit
+                    sta __originalPiece             ; type
 
                     ldy InitPieceList+1,x           ; square
-
+                    sty __initSquare
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
-                    pla
-                    sta Board+RAM_WRITE,y
+                    lda __originalPiece
+                    sta@RAM Board,y
 
-
-    ; TODO: if black, toggle eval
-
-                    lda __originalPiece             ; type/colour
                     bpl .white
                     NEGEVAL
 .white
@@ -777,70 +833,40 @@ HandlerVectorHI     HANDLEVEC >
 
                     JSROM AddPieceMaterialValue
 
-                    txa
-                    pha
-
-                    lda #RAMBANK_PLY
-                    sta SET_BANK_RAM
+                    stx __initListPtr
 
     ; add the positional value of the piece to the evaluation 
 
-                    ldy InitPieceList+1,x           ; square
-                    lda __originalPiece             ; type
+                    ldy __initSquare
+                    lda __originalPiece
 
                     ldx #BANK_AddPiecePositionValue
                     stx SET_BANK
                     jsr AddPiecePositionValue
 
 
-                    pla
-                    tax
 
                     lda __originalPiece             ; type/colour
                     bpl .white2
                     NEGEVAL
 .white2
 
-    ; Store the piece's value with the piece itself, so it doesn't have to 
-    ; be looked-up everytime it's added/removed
-    ; this may be overkill and more effort than it's worth...
-
-                    lda #BANK_PieceValueLO
-                    sta SET_BANK
-
-                    lda PieceValueHI,y
-                    pha
-                    lda PieceValueLO,y
-                    pha
-
-                    lda __originalPiece             ; colour/-1
-                    asl
-                    lda #RAMBANK_PLY
-                    adc #0
-                    sta SET_BANK_RAM                ; BLACK/WHITE
-
-                    ldy PieceListPtr
-                    iny
-
-
-                    pla
-                    sta PieceMaterialValueLO+RAM_WRITE,y
-                    pla
-                    sta PieceMaterialValueHI+RAM_WRITE,y
-
+                    ldx __initListPtr
                     inx
                     inx
-                    bmi .exit
-                    jmp .fillPieceLists
+                    bpl .fillPieceLists
 
 .exit               rts
 
 
 ;---------------------------------------------------------------------------------------------------
 
+#if 0
     DEF SAFE_GetKingSquare
     SUBROUTINE
 
+        VEND SAFE_GetKingSquare
+        
     ; Pass:         A = correct bank for current side (RAMBANK_PLY/+1)
     ; Return:       A = square king is on (or -1)
 
@@ -849,7 +875,7 @@ HandlerVectorHI     HANDLEVEC >
                     ldy savedBank
                     sty SET_BANK
                     rts
-
+#endif
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -878,7 +904,7 @@ HandlerVectorHI     HANDLEVEC >
     DEF PutBoard
                     ldx #RAMBANK_MOVES_RAM
                     stx SET_BANK_RAM
-                    sta Board+RAM_WRITE,y           ; and what's actually moving there
+                    sta@RAM Board,y             ; and what's actually moving there
                     ldx savedBank
                     stx SET_BANK
                     rts
@@ -888,6 +914,9 @@ HandlerVectorHI     HANDLEVEC >
 
     DEF IsValidMoveFromSquare
     SUBROUTINE
+
+        REFER aiSelectStartSquare
+        VEND IsValidMoveFromSquare
 
     ; Does the square exist in the movelist?
     ; Return: y = -1 if NOT FOUND
@@ -909,6 +938,10 @@ HandlerVectorHI     HANDLEVEC >
     DEF GetPiece
     SUBROUTINE
 
+        REFER aiSelectDestinationSquare
+        REFER aiQuiescent
+        VEND GetPiece
+
     ; Retrieve the piece+flags from the movelist, given from/to squares
     ; Required as moves have different flags but same origin squares (e.g., castling)
 
@@ -928,9 +961,10 @@ HandlerVectorHI     HANDLEVEC >
     DEF CopyShadowROMtoRAM
     SUBROUTINE
 
+        REFER SetupBanks
         VAR __destinationBank, 1
         VAR __sourceBank, 1
-
+        VEND CopyShadowROMtoRAM
 
     ; Copy a whole 1K ROM SHADOW into a destination RAM 1K bank
     ; used to setup callable RAM code from ROM templates
@@ -954,13 +988,13 @@ HandlerVectorHI     HANDLEVEC >
 
                     sty SET_BANK_RAM
 
-                    sta $F300+RAM_WRITE,x
+                    sta@RAM $F300,x
                     pla
-                    sta $F200+RAM_WRITE,x
+                    sta@RAM $F200,x
                     pla
-                    sta $F100+RAM_WRITE,x
+                    sta@RAM $F100,x
                     pla
-                    sta $F000+RAM_WRITE,x
+                    sta@RAM $F000,x
 
                     dex
                     bne .copyPage
@@ -975,6 +1009,21 @@ HandlerVectorHI     HANDLEVEC >
     DEF CopySinglePiece
     SUBROUTINE
     TIMING COPYSINGLEPIECE, (2600)
+
+        REFER aiDrawEntireBoard
+        REFER SpecialBody
+        REFER aiWriteStartPieceBlank
+        REFER aiDrawPart2
+        REFER aiMarchB
+        REFER aiFinalFlash
+        REFER UNSAFE_showMoveCaptures
+        REFER aiMarchToTargetA
+        REFER aiMarchB2
+        REFER aiMarchToTargetB
+        REFER FlashPiece
+        REFER aiPromotePawnStart
+        REFER aiChoosePromotePiece
+        VEND CopySinglePiece
 
     ; WARNING: CANNOT USE VAR/OVERLAY IN ANY ROUTINE CALLING THIS!!
     ; ALSO CAN'T USE IN THIS ROUTINE
@@ -1041,6 +1090,7 @@ HandlerVectorHI     HANDLEVEC >
 
 ;---------------------------------------------------------------------------------------------------
 
+#if 0
     DEF GoFixPieceList
 
                     sta SET_BANK_RAM
@@ -1048,11 +1098,15 @@ HandlerVectorHI     HANDLEVEC >
                     lda savedBank
                     sta SET_BANK
                     rts
-
+#endif
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF markerDraw
+    SUBROUTINE
+
+        REFER SAFE_showMoveOptions
+        VEND markerDraw
 
                     ldx #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
                     JSROM CopySetupForMarker
@@ -1063,6 +1117,10 @@ HandlerVectorHI     HANDLEVEC >
 
     DEF showPromoteOptions
     SUBROUTINE
+
+        REFER aiRollPromotionPiece
+        REFER aiChoosePromotePiece
+        VEND showPromoteOptions
 
     ; X = character shape # (?/N/B/R/Q)
 
@@ -1076,6 +1134,9 @@ HandlerVectorHI     HANDLEVEC >
 ;---------------------------------------------------------------------------------------------------
 
     DEF SAFE_BackupBitmaps
+    SUBROUTINE
+
+        VEND SAFE_BackupBitmaps
 
                     sty SET_BANK_RAM
                     jsr SaveBitmap
@@ -1086,7 +1147,12 @@ HandlerVectorHI     HANDLEVEC >
 
 ;---------------------------------------------------------------------------------------------------
 
+#if 0
     DEF Go_IsSquareUnderAttack
+    SUBROUTINE
+
+        ;REFER aiLookForCheck
+        VEND Go_IsSquareUnderAttack
 
     ; Check if passed X12 square is in the "TO" squares in the movelist (and thus under attack)
 
@@ -1100,12 +1166,14 @@ HandlerVectorHI     HANDLEVEC >
                     lda savedBank
                     sta SET_BANK
                     rts
-
+#endif
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF SAFE_showMoveCaptures
     SUBROUTINE
+
+        VEND SAFE_showMoveCaptures
 
                     JSROM UNSAFE_showMoveCaptures
                     lda savedBank
@@ -1155,6 +1223,18 @@ HandlerVectorHI     HANDLEVEC >
     DEF MakeMove
     SUBROUTINE
 
+        REFER quiesce
+        REFER alphaBeta
+        VAR __capture,1
+        VEND MakeMove
+
+    ; Do a move without any GUI stuff
+
+    ; fromPiece     piece doing the move
+    ; fromX12       current square X12
+    ; originX12     starting square X12
+    ; toX12         ending square X12
+
                     ldx movePtr
 
                     lda MoveFrom,x
@@ -1165,14 +1245,116 @@ HandlerVectorHI     HANDLEVEC >
                     lda MovePiece,x
                     sta fromPiece
 
+.move               jsr AdjustMaterialPositionalValue
+
+    ; Modify the board (and the piecelists)
+
+                    lda #RAMBANK_MOVES_RAM
+                    sta SET_BANK_RAM
+                    ldy originX12
+                    lda #0
+                    sta@RAM Board,y
+                    ldy toX12
+                    lda Board,y
+                    sta __capture
+                    lda fromPiece
+                    ora #FLAG_MOVED
+                    sta@RAM Board,y
+
+                    lda currentPly
+                    sta SET_BANK_RAM
+                    lda __capture
+                    sta@RAM capturedPiece
+
+
+    IF ENPASSANT_ENABLED
+    
+        ; TODO : piecelist
+
+                    JSROM EnPassantCheck
+                    beq .notEnPassant
+                    jsr EnPassantRemovePiece        ; y = origin X12
+.notEnPassant
+    ENDIF
+
+    IF CASTLING_ENABLED
+
+                    JSROM GenCastleMoveForRook
+                    bcs .move                       ; move the rook!
+    ENDIF
+
+                    ;jsr FinaliseMove
+
+    ; Swap over sides
+
+                    sec
+                    lda #0
+                    sbc Evaluation
+                    sta Evaluation
+                    lda #0
+                    sbc Evaluation+1
+                    sta Evaluation+1                ; -Evaluation
+
+                    lda sideToMove
+                    eor #128
+                    sta sideToMove
+
                     rts
 
 
 ;---------------------------------------------------------------------------------------------------
 
-
     DEF unmake_move
+    SUBROUTINE
+
+        REFER quiesce
+        REFER alphaBeta
+        VAR __unmake_capture, 1
+        VEND unmake_move
+
+    ; restore the board evaluation to what it was at the start of this ply
+    ; TODO: note: moved flag seems wrong on restoration
+
+                    lda SavedEvaluation
+                    sta Evaluation
+                    lda SavedEvaluation+1
+                    sta Evaluation+1
+
+
+                    ldx movePtr
+
+                    lda MoveFrom,x
+                    sta fromX12
+                    sta originX12
+                    lda MoveTo,x
+                    sta toX12
+                    lda MovePiece,x
+                    sta fromPiece
+                    lda capturedPiece
+                    sta __unmake_capture
+
+    ; Modify the board (and the piecelists)
+
+                    lda #RAMBANK_MOVES_RAM
+                    sta SET_BANK_RAM
+                    ldy fromX12
+                    lda fromPiece
+                    sta@RAM Board,y
+                    ldy toX12
+                    lda __unmake_capture
+                    sta@RAM Board,y
+
+    ; TODO: fix piecelist!!!!
+
+                    lda currentPly
+                    sta SET_BANK_RAM
+
+                    lda sideToMove
+                    eor #128
+                    sta sideToMove
+
                     rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -1204,12 +1386,26 @@ HandlerVectorHI     HANDLEVEC >
     ; requriement: correct PLY bank already switched in
     ; --> savedBank too
 
-        VAR __return, 2
-        VAR __bestValue, 2
+        COMMON_VARS_ALPHABETA
+        REFER alphaBeta
+        VEND quiesce
 
     ; we have already done the Evaluation (incrementally)
 
+    ; setup parameters
+    ; beta = -alpha, alpha = -beta
 
+                    lda __beta
+                    sta@RAM alpha
+                    lda __beta+1
+                    sta@RAM alpha+1
+
+                    lda __alpha
+                    sta@RAM beta
+                    lda __alpha+1
+                    sta@RAM beta+1
+
+    DEF QuiesceStart
 
 ;    if( stand_pat >= beta ):
 ;        return beta
@@ -1222,16 +1418,16 @@ HandlerVectorHI     HANDLEVEC >
                     bcc .endif0
 
                     lda beta+1
-                    sta __return+1
+                    sta __bestScore+1
                     lda beta
-                    sta __return
+                    sta __bestScore
                     rts
 .endif0
 
 ;    if( alpha < stand_pat ):
 ;        alpha = stand_pat
 
-                    clc             ;!!
+                    clc                             ;!! OK
                     lda alpha
                     sbc Evaluation
                     lda alpha+1
@@ -1239,34 +1435,41 @@ HandlerVectorHI     HANDLEVEC >
                     bcs .endif1
 
                     lda Evaluation
-                    sta alpha  [+RAM_WRITE]
+                    sta@RAM alpha
                     lda Evaluation+1
-                    sta alpha+1  [+RAM_WRITE]
+                    sta@RAM alpha+1
 
 .endif1
 
-
-;   generate all moves
-
-                    jsr GenerateAllMoves
+                    jsr newGen
 
                     lda moveIndex
-                    sta movePtr  [+RAM_WRITE]
+                    sta@RAM movePtr
 
-;    for move in board.legal_moves:
-;    {
+.loopMoves
 
-.loopMoves          ldy movePtr
+                    lda currentPly
+                    sta SET_BANK_RAM
+
+
+
+                    ldx movePtr
                     bpl .cont
 
-;    return alpha
+    ; finished looking, all moves done - return alpha
+
                     lda alpha
-                    sta __return
+                    sta __bestScore
                     lda alpha+1
-                    sta __return+1
+                    sta __bestScore+1
                     rts
 
 .cont
+
+    ;        if board.is_capture(move):
+    ;            make_move(move)
+
+                    ldy MoveTo,x
 
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
@@ -1276,46 +1479,33 @@ HandlerVectorHI     HANDLEVEC >
                     and #PIECE_MASK
                     beq .nextMove                   ; only process capture moves
 
-
                     jsr MakeMove
 
-;        if board.is_capture(move):
-;            make_move(move)
+    ; TODO: can't go past MAX_PLY... thing
 
-;            score = -quiesce( -beta, -alpha )
+    ; score = -quiesce( -beta, -alpha )
 
                     sec
                     lda #0
                     sbc beta
-                    pha
+                    sta __beta
                     lda #0
                     sbc beta+1
-                    pha
+                    sta __beta+1                    ; -beta
 
                     sec
                     lda #0
                     sbc alpha
-                    pha
+                    sta __alpha
                     lda #0
                     sbc alpha+1
-                    pha
+                    sta __alpha+1                   ; -alpha
 
                     inc currentPly
-                    lda currentPly
-                    sta SET_BANK_RAM
-                    jsr NewPlyInitialise
+                    ldx currentPly
+                    stx SET_BANK_RAM
 
-                    pla
-                    sta beta+1  [+RAM_WRITE]
-                    pla
-                    sta beta  [+RAM_WRITE]                        ; -alpha
-
-                    pla
-                    sta alpha+1  [+RAM_WRITE]
-                    pla
-                    sta alpha  [+RAM_WRITE]                       ; -beta
-
-                    jsr quiesce
+                    jsr quiesce                     ; recurse
 
                     dec currentPly
                     lda currentPly
@@ -1323,31 +1513,29 @@ HandlerVectorHI     HANDLEVEC >
 
                     sec
                     lda #0
-                    sbc __return
-                    sta __return
+                    sbc __bestScore
+                    sta __bestScore
                     lda #0
-                    sbc __return+1
-                    sta __return+1                     ; score = -quiesce( -beta, -alpha)
+                    sbc __bestScore+1
+                    sta __bestScore+1               ; "-quiesce(..."
 
-
-; TODO:
-;            unmake_move()
+                    jsr unmake_move
 
 
 ;            if( score >= beta ):
 ;                return beta
 
                     sec
-                    lda __return
+                    lda __bestScore
                     sbc beta
-                    lda __return+1
+                    lda __bestScore+1
                     sbc beta+1
                     bcc .endif2
 
                     lda beta
-                    sta __return
+                    sta __bestScore
                     lda beta+1
-                    sta __return+1
+                    sta __bestScore+1
                     rts
 
 .endif2
@@ -1355,17 +1543,17 @@ HandlerVectorHI     HANDLEVEC >
 ;            if( score > alpha ):
 ;                alpha = score
 
-                    clc                 ; !!
+                    clc                             ; !! OK
                     lda alpha
-                    sbc __return
+                    sbc __bestScore
                     lda alpha+1
-                    sbc __return+1
-                    bcs .endif3
+                    sbc __bestScore+1
+                    bcs .endif3             ;TODO
 
-                    lda __return
-                    sta alpha  [+RAM_WRITE]
-                    lda __return+1
-                    sta alpha+1  [+RAM_WRITE]
+                    lda __bestScore
+                    sta@RAM alpha
+                    lda __bestScore+1
+                    sta@RAM alpha+1
 .endif3
 
 
@@ -1374,182 +1562,289 @@ HandlerVectorHI     HANDLEVEC >
 .nextMove           sec
                     lda movePtr
                     sbc #1
-                    sta movePtr+RAM_WRITE
+                    sta@RAM movePtr
                     jmp .loopMoves
-
-
-
-
 
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF selectmove
     SUBROUTINE
-    
-    ; x = depth to go to
 
-;        bestMove = chess.Move.null()
-;        bestValue = -99999
-;        alpha = -100000
-;        beta = 100000
-
-        VAR __return, 2
-        VAR __boardValue, 2
-
-                    lda currentPly
-                    sta SET_BANK_RAM
-
-                    stx depth [+RAM_WRITE]
-
-                    lda #-1
-                    sta bestMove  [+RAM_WRITE]
-
-                    lda #<(-INFINITY)
-                    sta alpha  [+RAM_WRITE]
-                    lda #>(-INFINITY)
-                    sta alpha+1  [+RAM_WRITE]
-
-                    lda #<INFINITY
-                    sta beta  [+RAM_WRITE]
-                    lda #>INFINITY
-                    sta beta+1  [+RAM_WRITE]
-
-                    lda #<(-(INFINITY-1))
-                    sta bestValue  [+RAM_WRITE]
-                    lda #<(-(INFINITY-1))
-                    sta bestValue+1  [+RAM_WRITE]
-
-;        for move in board.legal_moves:
-; TODO: we should have generated moves at this point!
-
-                    jsr GenerateAllMoves
+.terminal           ;jsr QuiesceStart                ; with alpha, beta already setup
+;                    rts
 
 
-                    lda moveIndex
-                    sta movePtr [+RAM_WRITE]
-
-.loopMoves          ldx movePtr
-                    bpl .validMove
-                    
-;        movehistory.append(bestMove)
-;        return bestMove
-
-                    lda bestMove
-                    sta __return
+                    lda Evaluation
+                    sta __bestScore
+                    lda Evaluation+1
+                    sta __bestScore+1
                     rts
 
-.validMove
 
-;            make_move(move)
+.returnScore
+
+    ; we've iterated the moves, so 'bestMove' and 'bestScore' are the result
+
+                    lda alpha
+                    sta __bestScore
+                    lda alpha+1
+                    sta __bestScore+1               ; value of the best move found
+
+                    lda bestMove
+                    sta __bestMove                  ; moveIndex of the best move found
+                    rts
+
+
+    DEF alphaBeta
+
+    ; Performs an alpha-beta search.
+    ; The current 'level' is always considered in terms of maximising the evaluation
+    ; To achieve minimisation for the opponent when being considered, the alpha/beta are negated
+    ; and which is which is swapped between each ply
+
+    ; pass...
+    ; x = depthleft
+    ; SET_BANK_RAM      --> current ply
+    ; __alpha[2] = -alpha
+    ; __beta[2] = -beta
+
+
+        COMMON_VARS_ALPHABETA
+        REFER selectmove
+        VEND alphaBeta
+
+
+    ;def alphabeta( alpha, beta, depthleft ):
+    ;    bestscore = -9999
+    ;    if( depthleft == 0 ):
+    ;        return quiesce( alpha, beta )
+    ;    for move in board.legal_moves:
+    ;        make_move(move)
+    ;        score = -alphabeta( -beta, -alpha, depthleft - 1 )
+    ;        unmake_move()
+    ;        if( score >= beta ):
+    ;            return score
+    ;        if( score > bestscore ):
+    ;            bestscore = score
+    ;        if( score > alpha ):
+    ;            alpha = score
+    ;    return bestscore
+
+                    stx@RAM depthLeft
+
+
+    ; setup parameters
+    ; beta = -alpha, alpha = -beta
+    ; we want to maximise alpha
+    ;  and if score > beta then abort (cutoff)
+
+                    lda __beta
+                    sta@RAM alpha
+                    lda __beta+1
+                    sta@RAM alpha+1
+
+                    lda __alpha
+                    sta@RAM beta
+                    lda __alpha+1
+                    sta@RAM beta+1
+
+    ; on 1st call this becomes alpha = -INF and beta = INF
+    ; we're trying to maximise alpha
+
+    ; The evaluation of the current position is a signed 16-bit number
+    ; +ve is good for the current side.
+    ; This is used during the alpha-beta search for finding best position
+    ; Note, this is not the same as the 'Evaluation' which is the current value at ply -- it is the
+    ; alphabeta best/worst value of the node!!
+
+                    ldx depthLeft
+                    dex                             ; passed depth remaining
+                    bmi .terminal                   ; bottomed out
+
+        lda currentPly
+        sta savedBank
+
+                    jsr NewPlyInitialise
+                    jsr GenerateAllMoves
+
+    ; Now iterate the moves one-by-one
+
+                    lda moveIndex
+                    sta@RAM movePtr
+
+.loopMoves          ldx movePtr
+                    bmi .returnScore
 
                     jsr MakeMove
 
+    ; "score = -alphabeta( -beta, -alpha, depthleft - 1 )"
+    ; set pareameters for next level --> __alpha, __beta
+    
                     sec
                     lda #0
                     sbc alpha
-                    pha
+                    sta __alpha
                     lda #0
                     sbc alpha+1
-                    pha                             ; -alpha
+                    sta __alpha+1                   ; -alpha
 
                     sec
                     lda #0
                     sbc beta
-                    pha
+                    sta __beta
                     lda #0
                     sbc beta+1
-                    pha                             ; -beta
+                    sta __beta+1                    ; -beta
 
-                    ldx depth
+                    ldx depthLeft
+                    dex
 
                     inc currentPly
                     lda currentPly
-                    sta SET_BANK_RAM
+                    sta SET_BANK_RAM                ; self-switch
 
-                    dex
-                    stx depth [+RAM_WRITE]
-
-                    pla
-                    sta alpha+1  [+RAM_WRITE]
-                    pla
-                    sta alpha  [+RAM_WRITE]         ; alpha = -beta
-
-                    pla
-                    sta beta+1  [+RAM_WRITE]
-                    pla
-                    sta beta  [+RAM_WRITE]          ; beta  = -alpha
-
-                    ;tmp jsr alphaBeta
-
-;            boardValue = -alphabeta(-beta, -alpha, depth-1)
-
-                    sec
-                    lda #0
-                    sbc __return
-                    sta __boardValue
-                    lda #0
-                    sbc __return+1
-                    sta __boardValue+1
+                    jsr alphaBeta                   ; recurse!
 
                     dec currentPly
                     lda currentPly
                     sta SET_BANK_RAM
 
+                    sec
+                    lda #0
+                    sbc __bestScore
+                    sta __bestScore
+                    lda #0
+                    sbc __bestScore+1
+                    sta __bestScore+1               ; "-alphabeta....""
 
-;            if boardValue > bestValue:
-;                bestValue = boardValue;
-
-                    clc                         ; !!
-                    lda bestValue
-                    sbc __boardValue
-                    lda bestValue+1
-                    sbc __boardValue+1
-                    bcs .endif20
-
-                    lda __boardValue
-                    sta bestValue
-                    lda __boardValue+1
-                    sta bestValue+1
-
-;                bestMove = move
-
-                    lda movePtr
-                    sta bestMove
-
-.endif20
-;            if( boardValue > alpha ):
-;                alpha = boardValue
-
-                    clc                     ; !!
-                    lda __boardValue
-                    sbc alpha
-                    lda __boardValue+1
-                    sbc alpha+1
-                    bcc .endif23
-
-                    lda __boardValue
-                    sta alpha
-                    lda __boardValue+1
-                    sta alpha+1
-.endif23
-
-;            unmake_move()
                     jsr unmake_move
 
-                    sec
-                    lda movePtr
-                    sbc #1
-                    sta movePtr  [+RAM_WRITE]
-                    sta movePtr
+    ;        if( score >= beta ):
+    ;            return score
 
+    ; an alpha-beta cutoff?
+    ; aborts searching any more moves because the opponent score improves
+
+        IF 0
+                    sec                             ; drop for extra speed
+                    lda __bestScore
+                    sbc beta
+                    lda __bestScore+1
+                    sbc beta+1
+                    bcc .notScoreGteBeta    ;todo
+
+                    ;lda __score
+                    ;sta __bestScore
+                    ;lda __score+1
+                    ;sta __bestScore+1              // already has correct value
+
+                    lda movePtr
+                    sta __bestMove                  ; this move!
+                    rts
+
+.notScoreGteBeta
+        ENDIF
+
+        IF 0
+    ;        if( score > bestscore ):
+    ;            bestscore = score
+
+                    clc                     ; !! OK. Could be dropped for a bit of speed
+                    lda alpha
+                    sbc __bestScore
+                    lda alpha+1
+                    sbc __bestScore+1
+                    bcs .notScoreGtBestScore    ;todo
+
+                    lda __bestScore
+                    sta@RAM alpha
+                    lda __bestScore+1
+                    sta@RAM alpha+1
+
+                    lda __bestMove
+                    sta@RAM bestMove
+
+.notScoreGtBestScore
+    ENDIF
+
+    ;        if( score > alpha ):
+    ;            alpha = score
+
+
+
+;As stated above, after a CMP instruction, the N flag is NOT the signed
+;comparison result.  A signed comparison works by performing a subtraction,
+;but the signed comparison result is the exclusive-or (eor) of the N and V
+;flags.  Specifically, to compare the signed numbers NUM1 and NUM2, the
+;subtraction NUM1-NUM2 is performed, and NUM1 &lt; NUM2 when N eor V is 1, and
+;NUM1 &gt;= NUM2 when N eor V is 0.  (A program that proves this is given in
+;Appendix A.)
+
+    ; We've found a higher scoring move than currently known, so record it
+
+                    clc                     ; !! OK. Could be dropped for a bit of speed
+                    lda alpha
+                    sbc __bestScore
+                    lda alpha+1
+                    sbc __bestScore+1
+                    bvc .lab                ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
+                    eor #$80                ; A = A eor $80, and N= N eor 1
+.lab
+
+                    bpl .notScoreGtAlpha
+
+;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
+;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
+;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
+
+
+                    lda __bestScore
+                    sta@RAM alpha
+                    lda __bestScore+1
+                    sta@RAM alpha+1
+
+                    lda movePtr
+                    sta@RAM bestMove
+
+.notScoreGtAlpha    ldx movePtr
+                    dex
+                    stx@RAM movePtr
                     jmp .loopMoves
+
+
+
 
 
 ;---------------------------------------------------------------------------------------------------
 
-    ECHO "FREE BYTES IN FIXED BANK = ", $FFFC - *
+#if 0
+    DEF FixPieceList
+    SUBROUTINE
 
+    ; originX12          X12 square piece moved from
+    ; toX12              X12 square piece moved to (0 to erase piece from list)
+
+    ; It scans the piece list looking for the 'from' square and sets it to the 'to' square
+    ; TODO: this is slow and should use a pointer to pieces instead
+
+
+                    ldx #15
+                    lda originX12
+.pieceCheck         cmp PieceSquare,x
+                    beq .adjustPiece
+                    dex
+                    bpl .pieceCheck
+                    rts
+
+.adjustPiece        lda toX12
+                    sta@RAM PieceSquare,x
+                    rts
+
+#endif
+
+;---------------------------------------------------------------------------------------------------
+
+    ECHO "FREE BYTES IN FIXED BANK = ", $FFFC - *
 
 ;---------------------------------------------------------------------------------------------------
     ; The reset vectors

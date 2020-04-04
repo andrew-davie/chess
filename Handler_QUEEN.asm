@@ -7,6 +7,9 @@
     DEF Handle_QUEEN
     SUBROUTINE
 
+        REFER GenerateAllMoves
+        VEND Handle_QUEEN
+
     ; Pass...
     ; x = currentSquare (square the piece is on)
     ; currentPiece (with flags/colour attached)

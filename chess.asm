@@ -29,10 +29,16 @@ FIXED_BANK             = 15 * 2048           ; ->> 32K
 YES                     = 1
 NO                      = 0
 
+INFINITY                = 32767
+
+
 ; assemble diagnostics. Remove for release.
 ASSERTS                 = 0
 TEST_POSITION           = 0               ; 0=normal, 1 = setup test position
 PVSP                    = 0                 ; player versus player =1
+ENPASSANT_ENABLED       = 0
+CASTLING_ENABLED        = 0
+;PIECELIST_ENABLED       = 0
 
 WHITE_PLAYER = 0        ; human
 BLACK_PLAYER = 0        ; human
@@ -79,7 +85,7 @@ SET_BANK_RAM                = $3E               ; write address to switch RAM ba
 RAM_3E                      = $1000
 RAM_SIZE                    = $400
 RAM_WRITE                   = $400              ; add this to RAM address when doing writes
-
+RAM                           = RAM_WRITE
 
 
 
@@ -226,6 +232,8 @@ BANK_{1}        SET _CURRENT_BANK         ; bank in which this subroutine reside
 {1}                                     ; entry point
 TEMPORARY_VAR SET Overlay
 TEMPORARY_OFFSET SET 0
+VAR_BOUNDARY_{1} SET TEMPORARY_OFFSET
+FUNCTION_NAME SET {1}
     SUBROUTINE
     ENDM
 
@@ -242,15 +250,23 @@ TEMPORARY_OFFSET SET 0
 
     MAC NEGEVAL
 
-                    clc
-                    lda Evaluation
-                    eor #$FF
-                    adc #1
+                    sec
+                    lda #0
+                    sbc Evaluation
                     sta Evaluation
-                    lda Evaluation+1
-                    eor #$FF
-                    adc #0
+                    lda #0
+                    sbc Evaluation+1
                     sta Evaluation+1
+                    
+;                    clc
+;                    lda Evaluation
+;                    eor #$FF
+;                    adc #1
+;                    sta Evaluation
+;                    lda Evaluation+1
+;                    eor #$FF
+;                    adc #0
+;                    sta Evaluation+1
 
     ENDM
 
@@ -259,13 +275,22 @@ TEMPORARY_OFFSET SET 0
 
 TEMPORARY_OFFSET SET 0
 
-    MAC VARBASE ; {offset}
-TEMPORARY_OFFSET SET {1}
+
+    MAC VEND ; {1}
+    IFNCONST {1}
+        ECHO "Incorrect VEND label", {1}
+        ERR
+    ENDIF
+VAREND_{1} = TEMPORARY_VAR
     ENDM
 
-VAR_LEVEL0 = 0
-VAR_LEVEL1 = 16
-VAR_LEVEL2 = 32
+
+    MAC REFER ; {1}
+        IF VAREND_{1} > TEMPORARY_VAR
+TEMPORARY_VAR SET VAREND_{1}
+        ENDIF
+    ENDM
+
 
 
     ; Define a temporary variable for use in a subroutine
@@ -293,6 +318,20 @@ MAXIMUM_REQUIRED_OVERLAY_SIZE SET OVERLAY_DELTA
 
     MAC TAG ; {ident/tag}
 ; {0}
+    ENDM
+
+;---------------------------------------------------------------------------------------------------
+
+    MAC sta@RAM ;{}
+        sta [RAM]+{0}
+    ENDM
+
+    MAC stx@RAM
+        stx [RAM]+{0}
+    ENDM
+
+    MAC sty@RAM
+        sty [RAM]+{0}
     ENDM
 
 
@@ -465,6 +504,16 @@ RND_EOR_VAL = $FE ;B4
     MAC PHASE ;#
     lda #{1}
     sta aiState
+    ENDM
+
+
+    MAC COMMON_VARS_ALPHABETA
+
+        VAR __bestMove, 1
+        VAR __bestScore, 2
+        VAR __alpha, 2
+        VAR __beta, 2
+
     ENDM
 
 ;--------------------------------------------------------------------------------

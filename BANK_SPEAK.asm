@@ -37,6 +37,9 @@ SERIAL_RDYMASK  equ     $02
     DEF ShutYourMouth
     SUBROUTINE
 
+        REFER Reset
+        VEND ShutYourMouth
+
                     SPEAK silence_speech
                     rts
 
@@ -46,8 +49,10 @@ SERIAL_RDYMASK  equ     $02
     DEF GameSpeak
     SUBROUTINE
 
-    jsr debug
-    
+        REFER Reset
+        VAR __speak_temp, 1
+        VEND GameSpeak
+
                     ldy #0
                     lda (speech_addr),y
                     cmp #$ff
@@ -69,7 +74,7 @@ SERIAL_RDYMASK  equ     $02
 
                     eor #$ff
                     beq .speech_done
-                    sta temp
+                    sta __speak_temp
 
                     inc speech_addr
                     bne .incaddr_skip
@@ -99,7 +104,7 @@ SERIAL_RDYMASK  equ     $02
                                         ; } = 7 * 5 - 1 = 34
                                         ; @54
 
-                    lsr temp            ; 5 59
+                    lsr __speak_temp            ; 5 59
                     bpl .byteout_loop   ; 3 62 cycles for loop
 
 .speech_done        rts
@@ -214,7 +219,7 @@ silence_speech
 
 #if 0
 typedef enum
-  182     {
+  182     
   183         Pause0        = 0,                     ///< Pause 0ms
   184         Pause1        = 1,                     ///< Pause 100ms
   185         Pause2        = 2,                     ///< Pause 200ms
@@ -380,6 +385,6 @@ typedef enum
   345 
   346         EndOfPhrase   = 255,                   ///< End of phrase marker. Required at end of code arrays
   347 
-  348     } CommandCodes;
+  348      CommandCodes;
   349 
   #endif

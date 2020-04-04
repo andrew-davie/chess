@@ -5,9 +5,11 @@
     DEF UNSAFE_showMoveCaptures
     SUBROUTINE
 
+        REFER SAFE_showMoveCaptures
         VAR __toSquareX12, 1
         VAR __fromPiece, 1
         VAR __aiMoveIndex, 1
+        VEND UNSAFE_showMoveCaptures
 
     ; place a marker on the board for any square matching the piece
     ; EXCEPT for squares which are occupied (we'll flash those later)
@@ -83,10 +85,12 @@ restoreIndex        lda __aiMoveIndex
     DEF aiMarchToTargetA
     SUBROUTINE
 
+        REFER AiStateMachine
         VAR __fromRow, 1
         VAR __boardIndex, 1
         VAR __fromCol, 1
         VAR __toCol, 1
+        VEND aiMarchToTargetA
 
 
     ; Now we calculate move to new square
@@ -181,6 +185,9 @@ restoreIndex        lda __aiMoveIndex
     DEF aiMarchB2
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiMarchB2
+
                     ldy lastSquareX12
                     sty squareToDraw
 
@@ -219,17 +226,20 @@ xhalt
     DEF FinaliseMove
     SUBROUTINE
 
+        REFER aiMarchB2
+        VEND FinaliseMove
+
     ; Now the visible movement on the board has happened, fix up the pointers to the pieces
     ; for both sides.
 
                     lda #BANK_FinaliseMove
                     sta savedBank
 
-                    lda sideToMove
-                    asl
-                    lda #RAMBANK_PLY
-                    adc #0
-                    jsr GoFixPieceList
+                    ;lda sideToMove
+                    ;asl
+                    ;lda #RAMBANK_PLY
+                    ;adc #0
+                    ;jsr GoFixPieceList
 
                     lda toX12
                     sta fromX12                     ; there MAY be no other-side piece at this square - that is OK!
@@ -238,15 +248,15 @@ xhalt
                     lda #0
                     sta toX12                       ; --> deleted (square=0)
 
-                    lda lastPiece
-                    beq .notake
+                    ;lda lastPiece
+                    ;beq .notake
 
-                    lda sideToMove
-                    eor #128
-                    asl
-                    lda #RAMBANK_PLY
-                    adc #0
-                    jsr GoFixPieceList                ; REMOVE any captured object
+                    ;lda sideToMove
+                    ;eor #128
+                    ;asl
+                    ;lda #RAMBANK_PLY
+                    ;adc #0
+                    ;jsr GoFixPieceList                ; REMOVE any captured object
 
 .notake             rts
 
@@ -255,6 +265,9 @@ xhalt
 
     DEF aiMarchToTargetB
     SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiMarchToTargetB
 
     ; now we want to undraw the piece in the old square
 
@@ -276,41 +289,18 @@ xhalt
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiGenerateMoves
-    SUBROUTINE
-
-                    jsr GenerateOneMove
-                    lda piecelistIndex
-                    bpl .wait
-
-                    ;lda currentPly
-                    ;sta SET_BANK_RAM
-                    ;jsr alphaBeta
-
-    #if PVSP
-        jmp .player ;tmp
-    #endif
-
-                    ldx sideToMove
-                    bpl .player
-
-
-.computer           PHASE AI_ComputerMove               ; computer select move
-                    rts
-
-
-.player             PHASE AI_StartMoveGen
-.wait               rts
-
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF CopySetupForMarker
     SUBROUTINE
 
+        REFER markerDraw
+        REFER showPromoteOptions
         VAR __pieceColour, 1
         VAR __oddeven, 1
         VAR __pmcol, 1
+        VEND CopySetupForMarker
 
                     lda squareToDraw
                     sec
@@ -348,8 +338,10 @@ xhalt
     DEF CopySetup
     SUBROUTINE
 
+        REFER CopySinglePiece
         VAR __tmp, 1
         VAR __shiftx, 1
+        VEND CopySetup
 
                     lda savedBank
                     pha
