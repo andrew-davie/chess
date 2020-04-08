@@ -169,7 +169,7 @@ restoreIndex        lda __aiMoveIndex
                     jsr GetBoard
                     sta lastPiece                   ; what we are overwriting
                     lda fromPiece
-                    ;ora #FLAG_MOVED                ; prevents usage in castling for K/R
+                    ora #FLAG_MOVED                ; prevents usage in castling for K/R
                     and #~FLAG_ENPASSANT
                     ldy __boardIndex
                     jsr PutBoard
@@ -210,7 +210,7 @@ restoreIndex        lda __aiMoveIndex
 
 xhalt
 
-                    jsr FinaliseMove
+                    ;??? jsr FinaliseMove
 
                     lda #4                          ; on/off count
                     sta drawCount                   ; flashing for piece about to move
@@ -223,6 +223,7 @@ xhalt
 
 ;---------------------------------------------------------------------------------------------------
 
+#if 0
     DEF FinaliseMove
     SUBROUTINE
 
@@ -259,6 +260,7 @@ xhalt
                     ;jsr GoFixPieceList                ; REMOVE any captured object
 
 .notake             rts
+#endif
 
 
 ;---------------------------------------------------------------------------------------------------

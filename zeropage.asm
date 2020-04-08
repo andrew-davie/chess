@@ -35,11 +35,11 @@ currentSquare                   ds 1
 enPassantPawn                   ds 1                ; TODO - this belongs in PLY bank
 currentPly                      ds 1
 
-    IFCONST PIECELIST_ENABLED
-piecelistIndex                  ds 1
-    ELSE
+;    IFCONST PIECELIST_ENABLED
+;piecelistIndex                  ds 1
+;    ELSE
 squareIndex                     ds 1
-    ENDIF
+;    ENDIF
     
 
 sideToMove                      ds 1                ; d7 == side, 0=white, 128 = black
@@ -49,3 +49,8 @@ previousPiece                   ds 1
 
 Platform                        ds 1                ; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
 speech_addr                     ds 2
+bg                              ds 1
+
+_2nd_square                     ds 1
+_2nd_blank                      ds 1
+_2nd_piece                      ds 1

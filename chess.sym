@@ -1,348 +1,353 @@
 --- Symbol List (sorted by symbol)
 0.FREE_BYTES             0000                  
-1001.TEMP                0748              (R )
-1018.empty               f0e1              (R )
-1018.invalid             f0f5              (R )
-1018.project             f0e4              (R )
-1020.empty               f0f9              (R )
-1020.invalid             f10d              (R )
-1020.project             f0fc              (R )
-1022.empty               f111              (R )
-1022.invalid             f125              (R )
-1022.project             f114              (R )
-1024.empty               f129              (R )
-1024.invalid             f13d              (R )
-1024.project             f12c              (R )
-1026.empty               f141              (R )
-1026.invalid             f155              (R )
-1026.project             f144              (R )
-1028.empty               f159              (R )
-1028.invalid             f16d              (R )
-1028.project             f15c              (R )
-1030.empty               f171              (R )
-1030.invalid             f185              (R )
-1030.project             f174              (R )
-1032.empty               f189              (R )
-1032.invalid             f19d              (R )
-1032.project             f18c              (R )
-1039.empty               f1a4              (R )
-1039.invalid             f1b8              (R )
-1039.project             f1a7              (R )
-1041.empty               f1bc              (R )
-1041.invalid             f1d0              (R )
-1041.project             f1bf              (R )
-1043.empty               f1d4              (R )
-1043.invalid             f1e8              (R )
-1043.project             f1d7              (R )
-1045.empty               f1ec              (R )
-1045.invalid             f200              (R )
-1045.project             f1ef              (R )
-1052.empty               f207              (R )
-1052.invalid             f21b              (R )
-1052.project             f20a              (R )
-1054.empty               f21f              (R )
-1054.invalid             f233              (R )
-1054.project             f222              (R )
-1056.empty               f237              (R )
-1056.invalid             f24b              (R )
-1056.project             f23a              (R )
-1058.empty               f24f              (R )
-1058.invalid             f263              (R )
-1058.project             f252              (R )
-1061.exit                f2fc                  
-1065.invalid             f277              (R )
-1065.squareEmpty         f274              (R )
-1068.invalid             f28a              (R )
-1068.squareEmpty         f287              (R )
-1071.invalid             f29d              (R )
-1071.squareEmpty         f29a              (R )
-1074.invalid             f2b0              (R )
-1074.squareEmpty         f2ad              (R )
-1077.invalid             f2c3              (R )
-1077.squareEmpty         f2c0              (R )
-1080.invalid             f2d6              (R )
-1080.squareEmpty         f2d3              (R )
-1083.invalid             f2e9              (R )
-1083.squareEmpty         f2e6              (R )
-1086.invalid             f2fc              (R )
-1086.squareEmpty         f2f9              (R )
-1093.invalid             f310              (R )
-1093.squareEmpty         f30d              (R )
-1096.invalid             f323              (R )
-1096.squareEmpty         f320              (R )
-1099.invalid             f336              (R )
-1099.squareEmpty         f333              (R )
+1001.empty               f129              (R )
+1001.invalid             f13d              (R )
+1001.project             f12c              (R )
+1003.empty               f141              (R )
+1003.invalid             f155              (R )
+1003.project             f144              (R )
+1005.empty               f159              (R )
+1005.invalid             f16d              (R )
+1005.project             f15c              (R )
+1007.empty               f171              (R )
+1007.invalid             f185              (R )
+1007.project             f174              (R )
+1009.empty               f189              (R )
+1009.invalid             f19d              (R )
+1009.project             f18c              (R )
+1016.empty               f1a4              (R )
+1016.invalid             f1b8              (R )
+1016.project             f1a7              (R )
+1018.empty               f1bc              (R )
+1018.invalid             f1d0              (R )
+1018.project             f1bf              (R )
+1020.empty               f1d4              (R )
+1020.invalid             f1e8              (R )
+1020.project             f1d7              (R )
+1022.empty               f1ec              (R )
+1022.invalid             f200              (R )
+1022.project             f1ef              (R )
+1029.empty               f207              (R )
+1029.invalid             f21b              (R )
+1029.project             f20a              (R )
+1031.empty               f21f              (R )
+1031.invalid             f233              (R )
+1031.project             f222              (R )
+1033.empty               f237              (R )
+1033.invalid             f24b              (R )
+1033.project             f23a              (R )
+1035.empty               f24f              (R )
+1035.invalid             f263              (R )
+1035.project             f252              (R )
+1038.exit                f341              (R )
+1042.invalid             f277              (R )
+1042.squareEmpty         f274              (R )
+1045.invalid             f28a              (R )
+1045.squareEmpty         f287              (R )
+1048.invalid             f29d              (R )
+1048.squareEmpty         f29a              (R )
+1051.invalid             f2b0              (R )
+1051.squareEmpty         f2ad              (R )
+1054.invalid             f2c3              (R )
+1054.squareEmpty         f2c0              (R )
+1057.invalid             f2d6              (R )
+1057.squareEmpty         f2d3              (R )
+1060.invalid             f2e9              (R )
+1060.squareEmpty         f2e6              (R )
+1063.invalid             f2fc              (R )
+1063.squareEmpty         f2f9              (R )
+1064.noCastle            f31f              (R )
+1065.noCastle            f341              (R )
+1072.invalid             f355              (R )
+1072.squareEmpty         f352              (R )
+1075.invalid             f368              (R )
+1075.squareEmpty         f365              (R )
+1078.invalid             f37b              (R )
+1078.squareEmpty         f378              (R )
+1081.invalid             f38e              (R )
+1081.squareEmpty         f38b              (R )
+1084.invalid             f3a1              (R )
+1084.squareEmpty         f39e              (R )
+1087.invalid             f3b4              (R )
+1087.squareEmpty         f3b1              (R )
+1090.invalid             f3c7              (R )
+1090.squareEmpty         f3c4              (R )
+1093.invalid             f3da              (R )
+1093.squareEmpty         f3d7              (R )
+1094.TEMP                03dd              (R )
 11.RAM_BANK_SIZE         0000              (R )
-1102.invalid             f349              (R )
-1102.squareEmpty         f346              (R )
-1105.invalid             f35c              (R )
-1105.squareEmpty         f359              (R )
-1108.invalid             f36f              (R )
-1108.squareEmpty         f36c              (R )
-1111.invalid             f382              (R )
-1111.squareEmpty         f37f              (R )
-1114.invalid             f395              (R )
-1114.squareEmpty         f392              (R )
-1115.TEMP                0398              (R )
-1140.TEMP                0648              (R )
-1201.exit                f20e              (R )
-1201.mulx                f1fa              (R )
-1201.mulxcc              f1f4              (R )
-1204.skipEOR             f1ee              (R )
-1207.exit                f21c              (R )
-1207.scan                f214              (R )
-1207.scanned             f21d              (R )
-1212.fail                f239              (R )
-1212.found               f23a              (R )
-1212.next                f236              (R )
-1212.scan                f228              (R )
-1217.loopMoves           f257                  
-1230.TEMP                0290              (R )
-1272.pos                 f03f              (R )
-1272.SQBASE              000a                  
-1272.SQX                 000a                  
-1272.white               f02c              (R )
-1291.TEMP                032d              (R )
+1119.TEMP                0690              (R )
+1192.exit                f27f              (R )
+1192.mulx                f26b              (R )
+1192.mulxcc              f265              (R )
+1195.skipEOR             f25f              (R )
+1198.exit                f28d              (R )
+1198.scan                f285              (R )
+1198.scanned             f28e              (R )
+1203.fail                f2aa              (R )
+1203.found               f2ab              (R )
+1203.next                f2a7              (R )
+1203.scan                f299              (R )
+1223.exit                f333              (R )
+1223.findCast            f30c              (R )
+1232.phase               f340              (R )
+1238.copyPlyBanks        f36d              (R )
+1238.copyRowBanks        f356              (R )
+1244.next                f3bd              (R )
+1244.scan                f383              (R )
+1254.TEMP                03c1              (R )
+129.TEMP                 0748              (R )
+1296.pos                 f03f              (R )
+1296.SQBASE              000a                  
+1296.SQX                 000a                  
+1296.white               f02c              (R )
 13.RAM_BANK_SIZE         0000              (R )
-1301.byteout_loop        f031              (R )
-1301.delay_loop          f042              (R )
-1301.incaddr_skip        f030              (R )
-1301.speech_done         f049              (R )
-1301.talk                f019              (R )
-1306.TEMP                0076              (R )
-1310.loopVSync3          f830              (R )
-1310.StartFrame          f82e              (R )
-1310.toR                 f80c              (R )
-1310.wait                f843              (R )
-1315.CYCLES              0000              (R )
-1320.exit                f8a9                  
-1331.exit                f8e3              (R )
-1331.isablank            f8da              (R )
-1331.isablank2           f8df              (R )
-1355.computer            f90d                  
-1355.player              f912              (R )
-1355.wait                f916                  
-1362.wait                f924                  
-1368.exit                f959                  
-1368.next                f927              (R )
-1368.nextSq              f954              (R )
-1383.failed              f985              (R )
-1383.inCheck             f986              (R )
-1383.scan                f976              (R )
-1386.halted              f9ab              (R )
-1386.notComputer         f9a7              (R )
-1392.noCapture           fa14              (R )
-1392.same1               f9d9              (R )
-1392.same2               f9fd              (R )
-1406.noep                fa2c              (R )
-1425.cont                fa52              (R )
-1446.pMoved              face              (R )
-1449.pMoved              fab7              (R )
-1449.standard            fab4              (R )
-1450.invalid             faeb              (R )
-1451.pMoved              faeb              (R )
-1451.standard            fae8              (R )
-1452.invalid             fb08              (R )
-1453.pMoved              fb08              (R )
-1453.standard            fb05              (R )
-1463.pMoved              fb60              (R )
-1466.pMoved              fb49              (R )
-1466.standard            fb46              (R )
-1467.invalid             fb7d              (R )
-1468.pMoved              fb7d              (R )
-1468.standard            fb7a              (R )
-1469.invalid             fb9a              (R )
-147.TEMP                 07d8              (R )
-1470.pMoved              fb9a              (R )
-1470.standard            fb97              (R )
-1480.exit                fc1f              (R )
-1480.fillPieceLists      fbc7              (R )
-1480.white               fbef              (R )
-1480.white2              fc19              (R )
+1315.TEMP                032d              (R )
+1325.byteout_loop        f031              (R )
+1325.delay_loop          f042              (R )
+1325.incaddr_skip        f030              (R )
+1325.speech_done         f049              (R )
+1325.talk                f019              (R )
+1330.TEMP                0076              (R )
+1334.loopVSync3          f830              (R )
+1334.StartFrame          f82e              (R )
+1334.toR                 f80c              (R )
+1334.wait                f843              (R )
+1339.CYCLES              0000              (R )
+1344.exit                f8a9                  
+1355.exit                f8e3              (R )
+1355.isablank            f8da              (R )
+1355.isablank2           f8df              (R )
+1379.computer            f90a                  
+1379.player              f90f              (R )
+1379.wait                f913                  
+1386.wait                f92e                  
+1392.exit                f963              (R )
+1392.next                f939              (R )
+1392.next2               f935              (R )
+1407.failed              f98f              (R )
+1407.inCheck             f990              (R )
+1407.scan                f980              (R )
+1410.halted              f9b5              (R )
+1410.notComputer         f9b1              (R )
+1416.noCapture           fa1e              (R )
+1416.same1               f9e3              (R )
+1416.same2               fa07              (R )
+1430.noep                fa36              (R )
+1448.cont                fa5c              (R )
+1469.pMoved              fad6              (R )
+1472.pMoved              fabf              (R )
+1472.standard            fabc              (R )
+1473.invalid             faf3              (R )
+1474.pMoved              faf3              (R )
+1474.standard            faf0              (R )
+1475.invalid             fb10              (R )
+1476.pMoved              fb10              (R )
+1476.standard            fb0d              (R )
+1486.pMoved              fb68              (R )
+1489.pMoved              fb51              (R )
+1489.standard            fb4e              (R )
+149.clearRow             f194              (R )
+1490.invalid             fb85              (R )
+1491.pMoved              fb85              (R )
+1491.standard            fb82              (R )
+1492.invalid             fba2              (R )
+1493.pMoved              fba2              (R )
+1493.standard            fb9f              (R )
 15.RAM_BANK_SIZE         0000              (R )
-1510.copyPage            fc64              (R )
-1540.copy                fcac              (R )
-1540.sub10               fcb9              (R )
-1576.move                fd40                  
-1595.cont                fe19              (R )
-1595.endif0              fde5              (R )
-1595.endif1              fdfc              (R )
-1595.endif2              fe83              (R )
-1595.endif3              fe9a              (R )
-1595.loopMoves           fe05              (R )
-1595.nextMove            fe9a              (R )
-1615.lab                 ff44              (R )
-1615.loopMoves           feec              (R )
-1615.notScoreGtAlpha     ff56              (R )
-1615.returnScore         feaf              (R )
-1615.terminal            fea6              (R )
-167.clearRow             f194              (R )
+1503.exit                fc27              (R )
+1503.fillPieceLists      fbcf              (R )
+1503.white               fbf7              (R )
+1503.white2              fc21              (R )
+1535.copyPage            fc78              (R )
+155.blank1               f1aa              (R )
+155.blank2               f1b5              (R )
+155.blank3               f1c0              (R )
+155.blank4               f1cb              (R )
+155.copyPiece            f19f              (R )
+155.rightSide            f1cf              (R )
+1565.copy                fcc0              (R )
+1565.sub10               fccd              (R )
+1601.move                fd59              (R )
+1612.noSecondary         fded              (R )
+162.blank1               f1da              (R )
+162.blank2               f1e5              (R )
+162.blank3               f1f0              (R )
+162.blank4               f1fb              (R )
+162.copyPieceR           f1cf              (R )
+1632.lab                 fef1              (R )
+1632.lab2                feb9              (R )
+1632.lab3                fed0              (R )
+1632.loopMoves           fe54              (R )
+1632.notScoreGtAlpha     fefd              (R )
+1632.notScoreGtBestScore fee2              (R )
+1632.notScoreGteBeta     fec1              (R )
+1632.returnScore         fdfd              (R )
+1632.terminal            fdf4              (R )
+167.dl2                  f242              (R )
+167.drawLine             f23c                  
+167.endline              f200              (R )
+167.l3                   f207              (R )
 17.RAM_BANK_SIZE         0000              (R )
-173.blank1               f1aa              (R )
-173.blank2               f1b5              (R )
-173.blank3               f1c0              (R )
-173.blank4               f1cb              (R )
-173.copyPiece            f19f              (R )
-173.rightSide            f1cf              (R )
-180.blank1               f1da              (R )
-180.blank2               f1e5              (R )
-180.blank3               f1f0              (R )
-180.blank4               f1fb              (R )
-180.copyPieceR           f1cf              (R )
-185.dl2                  f242              (R )
-185.drawLine             f23c                  
-185.endline              f200              (R )
-185.l3                   f207              (R )
+172.CYCLES               0006              (R )
+173.CYCLES               0004              (R )
+174.CYCLES               0008              (R )
+175.CYCLES               0000              (R )
+176.CYCLES               0002              (R )
+177.CYCLES               0008              (R )
 19.RAM_BANK_SIZE         0000              (R )
-190.CYCLES               0006              (R )
-191.CYCLES               0004              (R )
-192.CYCLES               0008              (R )
-193.CYCLES               0000              (R )
-194.CYCLES               0002              (R )
-195.CYCLES               0008              (R )
+197.exit                 f2f3              (R )
+197.sub10                f2d6              (R )
+208.fromTo               f2f6              (R )
 21.RAM_BANK_SIZE         0000              (R )
-215.exit                 f2f3              (R )
-215.sub10                f2d6              (R )
-226.fromTo               f2f6              (R )
+213.TEMP                 0306              (R )
 23.RAM_BANK_SIZE         0000              (R )
-231.TEMP                 0306              (R )
-305.TEMP                 07d8              (R )
-379.TEMP                 07d8              (R )
+287.TEMP                 07d8              (R )
+361.TEMP                 07d8              (R )
 39.bitmapCleared         f033              (R )
+435.TEMP                 07d8              (R )
 45.idleErase             f04f                  
-453.TEMP                 07d8              (R )
-527.TEMP                 07d8              (R )
-62.comp                  f081              (R )
-692.exit                 f08d                  
-698.exit                 f09b              (R )
-704.exit                 f0ac              (R )
-716.exit                 f0d6              (R )
-722.under                f0e8              (R )
-727.writeCursorCol       f0fd              (R )
-73.deCount               f09d              (R )
-751.exit                 f165              (R )
-751.unsure               f171              (R )
-751.valid                f151              (R )
-758.next                 f172              (R )
-758.prom                 f1ab              (R )
-758.sk                   f192                  
-758.skip                 f1bf              (R )
-766.exit                 f1e5              (R )
-766.valid                f1da              (R )
-772.exit                 f203              (R )
-772.valid                f1f6              (R )
-778.butpress             f220              (R )
-778.notEven              f213              (R )
-778.slowWait             f21f              (R )
-785.cursor               f255              (R )
-785.delaym               f25c              (R )
-785.invalid              f24d              (R )
-79.exit                  f0dd              (R )
-79.findCast              f0bf              (R )
-792.exit                 f26a              (R )
-797.cancel               f299              (R )
-797.doCancel             f2a4              (R )
-797.done                 f2a9              (R )
-797.noButton             f2ad              (R )
-804.exit                 f2b6              (R )
-810.promote              f2d2              (R )
-817.empty                f2f2              (R )
-817.exit                 f2f6              (R )
-823.even                 f327              (R )
-823.exit                 f326              (R )
-823.nojoy                f311              (R )
-823.whiteToMove          f335              (R )
-823.wtm                  f321              (R )
-829.chosen               f385              (R )
-829.exit                 f384              (R )
-829.force                f376                  
-829.nobut                f352              (R )
-829.nothing              f39b              (R )
-829.odd                  f372              (R )
-844.exit                 f3b9              (R )
-85.phase                 f0ea              (R )
-850.divideby15           f410              (R )
-850.sub10                f403              (R )
-881.TEMP                 06d8              (R )
-886.loopVSync2           f01e              (R )
-890.CYCLES               0002              (R )
-891.CYCLES               0000              (R )
-892.skipEOR              f084              (R )
-893.LUM1                 0400                  
-893.LUM2                 0600                  
-893.LUM3                 0800                  
-893.STEP1                0000              (R )
-893.STEP2                0000              (R )
-893.STEP3                0000              (R )
-894.LUM1                 0600                  
-894.LUM2                 0400                  
-894.LUM3                 0800                  
-894.STEP1                0000              (R )
-894.STEP2                0000              (R )
-894.STEP3                0000              (R )
-895.TEMP                 07c0              (R )
-899.legit                f040              (R )
-899.next                 f007              (R )
-899.skip                 f04e              (R )
-908.colDone              f0a3              (R )
-908.incCol               f0a1              (R )
-908.incRow               f08d              (R )
-908.rowDone              f094              (R )
-908.skipbl               f0b1              (R )
-908.sub10                f064              (R )
-908.sub10b               f074              (R )
-908.unmovedx             f0c7              (R )
-91.copyPlyBanks          f114              (R )
-91.copyRowBanks          f0fd              (R )
-918.skipbl2              f0d6              (R )
-925.notake               f103                  
-936.sub10                f120              (R )
-936.white                f135              (R )
-945.blackAdjust          f173              (R )
-945.sub10                f152              (R )
-945.white                f167              (R )
-95.TEMP                  011f              (R )
-__aiMoveIndex            00a0              (R )
-__alpha                  00a1              (R )
-__bestMove               009e                  
-__bestScore              009f              (R )
-__beta                   00a3              (R )
-__boardIndex             009f              (R )
-__capture                00a5              (R )
-__capturedPiece          00a7              (R )
-__col                    00a6              (R )
-__colour_table           009e              (R )
+509.TEMP                 07d8              (R )
+62.comp                  f07e              (R )
+674.exit                 f08d                  
+680.exit                 f09b              (R )
+686.exit                 f0ac              (R )
+698.exit                 f0d6              (R )
+704.under                f0e8              (R )
+709.writeCursorCol       f0fd              (R )
+73.deCount               f09a              (R )
+733.exit                 f165              (R )
+733.unsure               f171              (R )
+733.valid                f151              (R )
+740.next                 f172              (R )
+740.prom                 f1ab              (R )
+740.sk                   f192                  
+740.skip                 f1bf              (R )
+748.exit                 f1e5              (R )
+748.valid                f1da              (R )
+754.exit                 f203              (R )
+754.valid                f1f6              (R )
+760.butpress             f220              (R )
+760.notEven              f213              (R )
+760.slowWait             f21f              (R )
+767.cursor               f255              (R )
+767.delaym               f25c              (R )
+767.invalid              f24d              (R )
+77.TEMP                  00b1              (R )
+774.exit                 f26a              (R )
+779.cancel               f299              (R )
+779.doCancel             f2a4              (R )
+779.done                 f2a9              (R )
+779.noButton             f2ad              (R )
+786.exit                 f2b6              (R )
+792.promote              f2d2              (R )
+799.empty                f2f2              (R )
+799.exit                 f2f6              (R )
+805.even                 f327              (R )
+805.exit                 f326              (R )
+805.nojoy                f311              (R )
+805.whiteToMove          f335              (R )
+805.wtm                  f321              (R )
+811.chosen               f385              (R )
+811.exit                 f384              (R )
+811.force                f376                  
+811.nobut                f352              (R )
+811.nothing              f39b              (R )
+811.odd                  f372              (R )
+826.exit                 f3b9              (R )
+832.divideby15           f410              (R )
+832.sub10                f403              (R )
+863.TEMP                 06d8              (R )
+868.loopVSync2           f01e              (R )
+872.CYCLES               0002              (R )
+873.CYCLES               0000              (R )
+874.skipEOR              f084              (R )
+875.LUM1                 0400                  
+875.LUM2                 0600                  
+875.LUM3                 0800                  
+875.STEP1                0000              (R )
+875.STEP2                0000              (R )
+875.STEP3                0000              (R )
+876.LUM1                 0600                  
+876.LUM2                 0400                  
+876.LUM3                 0800                  
+876.STEP1                0000              (R )
+876.STEP2                0000              (R )
+876.STEP3                0000              (R )
+877.TEMP                 07c0              (R )
+881.legit                f040              (R )
+881.next                 f007              (R )
+881.skip                 f04e              (R )
+890.colDone              f0a3              (R )
+890.incCol               f0a1              (R )
+890.incRow               f08d              (R )
+890.rowDone              f094              (R )
+890.skipbl               f0b1              (R )
+890.sub10                f064              (R )
+890.sub10b               f074              (R )
+890.unmovedx             f0c9              (R )
+900.skipbl2              f0d8              (R )
+913.sub10                f110              (R )
+913.white                f125              (R )
+922.blackAdjust          f163              (R )
+922.sub10                f142              (R )
+922.white                f157              (R )
+978.TEMP                 0748              (R )
+995.empty                f0e1              (R )
+995.invalid              f0f5              (R )
+995.project              f0e4              (R )
+997.empty                f0f9              (R )
+997.invalid              f10d              (R )
+997.project              f0fc              (R )
+999.empty                f111              (R )
+999.invalid              f125              (R )
+999.project              f114              (R )
+_2nd_blank               00a0                  
+_2nd_piece               00a1                  
+_2nd_square              009f                  
+__aiMoveIndex            00a4              (R )
+__alpha                  00a5              (R )
+__bestMove               00a2              (R )
+__bestScore              00a3              (R )
+__beta                   00a7              (R )
+__boardIndex             00a3              (R )
+__capture                00a9              (R )
+__capturedPiece          00ab              (R )
+__col                    00aa              (R )
+__colour_table           00a2              (R )
 __DASM__TOTAL_FREE_MEMORY 0000                  
-__destinationBank        009f                  
+__destinationBank        00a3                  
 __dummy                  f200              (R )
-__fromCol                00a0              (R )
-__fromPiece              009f              (R )
-__fromRow                009e              (R )
-__initListPtr            00a0              (R )
-__initPiece              009e                  
-__initSquare             009f              (R )
-__newCursor              009e              (R )
-__oddeven                00a1              (R )
-__originalPiece          00a6              (R )
-__piece                  009f              (R )
-__pieceColour            00a0              (R )
-__pieceShapeBuffer       009e              (R )
-__plyBank                009e              (R )
-__pmcol                  00a2              (R )
-__ptr                    00e6              (R )
-__ptr2                   00e8                  
-__pval3                  00a8              (R )
-__saveIdx                009e              (R )
-__shiftx                 00a6              (R )
-__sourceBank             00a0              (R )
-__speak_temp             009e              (R )
-__temp                   00a7              (R )
-__tmp                    00a5              (R )
-__toCol                  00a1              (R )
-__toSquareX12            009e              (R )
-__unmake_capture         00a5              (R )
-__vector                 00a5              (R )
-__y                      00a5              (R )
+__fromCol                00a4              (R )
+__fromPiece              00a3              (R )
+__fromRow                00a2              (R )
+__initListPtr            00a4              (R )
+__initPiece              00a2                  
+__initSquare             00a3              (R )
+__newCursor              00a2              (R )
+__oddeven                00a5              (R )
+__originalPiece          00aa              (R )
+__piece                  00a3              (R )
+__pieceColour            00a4              (R )
+__pieceShapeBuffer       00a2              (R )
+__plyBank                00a2              (R )
+__pmcol                  00a6              (R )
+__ptr                    00ea              (R )
+__ptr2                   00ec                  
+__pval3                  00ac              (R )
+__saveIdx                00a2              (R )
+__secondaryBlank         00aa              (R )
+__shiftx                 00aa              (R )
+__sourceBank             00a4              (R )
+__speak_temp             00a2              (R )
+__temp                   00ab              (R )
+__tmp                    00a9              (R )
+__toCol                  00a5              (R )
+__toSquareX12            00a2              (R )
+__unmake_capture         00a9                  
+__vector                 00a9              (R )
+__xs                     00a2              (R )
+__y                      00a9              (R )
 _CURRENT_BANK            000f              (R )
 _CURRENT_RAMBANK         0012                  
 _DOWN                    fffffffffffffff6              (R )
@@ -350,10 +355,10 @@ _LEFT                    ffffffffffffffff              (R )
 _RIGHT                   0001              (R )
 _rts                     f89c              (R )
 _UP                      000a              (R )
-AddMove                  fb9d              (R )
+AddMove                  fba5              (R )
 AddPieceMaterialValue    f010              (R )
 AddPiecePositionValue    f020              (R )
-AdjustMaterialPositionalValue f9ac              (R )
+AdjustMaterialPositionalValue f9b6              (R )
 AI_BeginSelectMovePhase  0000              (R )
 AI_ChooseDebounce        0022              (R )
 AI_ChoosePromotePiece    0021              (R )
@@ -393,12 +398,12 @@ aiBeginSelectMovePhase   f0ad              (R )
 aiChooseDebounce         f3a8              (R )
 aiChoosePromotePiece     f33d              (R )
 aiClearEachRow           f02a              (R )
-aiComputerMove           f98b              (R )
+aiComputerMove           f995              (R )
 aiDrawEntireBoard        f8b0              (R )
 aiDrawMoves              f13b              (R )
-aiDrawPart2              f071              (R )
-aiDrawPart3              f074              (R )
-aiFinalFlash             f096              (R )
+aiDrawPart2              f06e              (R )
+aiDrawPart3              f071              (R )
+aiFinalFlash             f093              (R )
 aiFlashDelay             008d              (R )
 aiFlashPhase             008f              (R )
 aiFlipBuffers            f8e4              (R )
@@ -406,10 +411,10 @@ aiGenerateMoves          f903              (R )
 aiInCheckBackup          f092              (R )
 aiInCheckDelay           f0a0              (R )
 aiLookForCheck           f08b              (R )
-aiMarchB                 f086              (R )
-aiMarchB2                f0c8              (R )
+aiMarchB                 f083              (R )
+aiMarchB2                f0ca              (R )
 aiMarchToTargetA         f059              (R )
-aiMarchToTargetB         f104              (R )
+aiMarchToTargetB         f0f4              (R )
 aiMoveIndex              008e              (R )
 aiMoveIsSelected         f03c              (R )
 aiPromotePawnStart       f2d7              (R )
@@ -421,20 +426,20 @@ aiSelectStartSquare      f0c2              (R )
 AiSetupVectors           f069              (R )
 aiShowMoveCaptures       f1e6              (R )
 aiSlowFlash              f204              (R )
-aiSpecialMoveFixup       fa4a              (R )
+aiSpecialMoveFixup       fa54              (R )
 aiStartClearBoard        f01d              (R )
 aiStartMoveGen           f07b              (R )
 aiStartSquareSelected    f120              (R )
 aiState                  008c              (R )
 AiStateMachine           f89d              (R )
-aiStepMoveGen            f917              (R )
+aiStepMoveGen            f914              (R )
 aiUnDrawTargetSquares    f1c4              (R )
 AiVectorBANK             f046              (R )
 AiVectorHI               f023              (R )
 AiVectorLO               f000              (R )
 aiWriteStartPieceBlank   f050              (R )
-alpha                    f169              (R )
-alphaBeta                febf              (R )
+alpha                    f1da              (R )
+alphaBeta                fe0d              (R )
 ASSERTS                  0000              (R )
 AUDC0                    0055                  
 AUDC1                    0056                  
@@ -567,7 +572,7 @@ BANK_BlankSprite         0001
 BANK_Board               000a                  
 BANK_CallClear           000f                  
 BANK_Cart_Init           0000              (R )
-BANK_CastleFixup         0000              (R )
+BANK_CastleFixupDraw     000b                  
 BANK_CheckMoveListFromSquare 000b                  
 BANK_ChessBitmap         0001                  
 BANK_ClearRowBitmap      0001                  
@@ -583,13 +588,13 @@ BANK_DeletePiece         000f
 BANK_DrawRow             0001                  
 BANK_EnPassantCheck      000f                  
 BANK_EnPassantRemovePiece 000f                  
-BANK_FinaliseMove        0009              (R )
 BANK_FlashPiece          0006                  
 BANK_FlipSquareIndex     000c                  
 BANK_GameSpeak           000d              (R )
-BANK_GenCastleMoveForRook 0000                  
+BANK_GenCastleMoveForRook 000b                  
 BANK_GenerateAllMoves    000f                  
 BANK_GetBoard            000f                  
+BANK_GetBoardRAM         000f                  
 BANK_GetMoveFrom         000f                  
 BANK_GetMovePiece        000f                  
 BANK_GetMoveTo           000f                  
@@ -633,7 +638,6 @@ BANK_promoteType         0006
 BANK_PromoteWhitePawn    000f                  
 BANK_PutBoard            000f                  
 BANK_quiesce             000f                  
-BANK_QuiesceStart        000f                  
 BANK_Reset               000f                  
 BANK_RestartFrame        0008                  
 BANK_ROM_SHADOW_OF_CHESS_BITMAP 0001              (R )
@@ -646,9 +650,10 @@ BANK_SaveBitmap          0001
 BANK_selectmove          000b                  
 BANK_setCursorColours    0006                  
 BANK_setCursorPriority   0006                  
-BANK_SetupBanks          0000              (R )
+BANK_SetupBanks          000b              (R )
 BANK_showPromoteOptions  000f                  
 BANK_ShutYourMouth       000d                  
+BANK_Sort                000b                  
 BANK_SpecialBody         000f                  
 BANK_SpriteBuffer        0001                  
 BANK_START               f000                  
@@ -731,12 +736,13 @@ BANK_WHITE_ROOK_on_WHITE_SQUARE_2 0002
 BANK_WHITE_ROOK_on_WHITE_SQUARE_3 0002                  
 BANK_WriteBlank          0001                  
 BANK_WriteCursor         0001                  
-bestMove                 f168              (R )
-bestScore                f16e                  
-beta                     f16b              (R )
+bestMove                 f1d9              (R )
+bestScore                f1df              (R )
+beta                     f1dc              (R )
+bg                       009e                  
 BISHOP                   0004              (R )
 BLACK                    0080              (R )
-BLACK_BISHOP_on_BLACK_SQUARE_0 f197              (R )
+BLACK_BISHOP_on_BLACK_SQUARE_0 f187              (R )
 BLACK_BISHOP_on_BLACK_SQUARE_1 f200              (R )
 BLACK_BISHOP_on_BLACK_SQUARE_2 f248              (R )
 BLACK_BISHOP_on_BLACK_SQUARE_3 f290              (R )
@@ -786,14 +792,14 @@ BLACK_PAWN_on_WHITE_SQUARE_1 f448              (R )
 BLACK_PAWN_on_WHITE_SQUARE_2 f490              (R )
 BLACK_PAWN_on_WHITE_SQUARE_3 f500              (R )
 BLACK_PLAYER             0000                  
-BLACK_PROMOTE_on_BLACK_SQUARE_0 f300              (R )
-BLACK_PROMOTE_on_BLACK_SQUARE_1 f348              (R )
-BLACK_PROMOTE_on_BLACK_SQUARE_2 f390              (R )
-BLACK_PROMOTE_on_BLACK_SQUARE_3 f400              (R )
-BLACK_PROMOTE_on_WHITE_SQUARE_0 f448              (R )
-BLACK_PROMOTE_on_WHITE_SQUARE_1 f490              (R )
-BLACK_PROMOTE_on_WHITE_SQUARE_2 f500              (R )
-BLACK_PROMOTE_on_WHITE_SQUARE_3 f548              (R )
+BLACK_PROMOTE_on_BLACK_SQUARE_0 f261              (R )
+BLACK_PROMOTE_on_BLACK_SQUARE_1 f2a9              (R )
+BLACK_PROMOTE_on_BLACK_SQUARE_2 f300              (R )
+BLACK_PROMOTE_on_BLACK_SQUARE_3 f348              (R )
+BLACK_PROMOTE_on_WHITE_SQUARE_0 f390              (R )
+BLACK_PROMOTE_on_WHITE_SQUARE_1 f400              (R )
+BLACK_PROMOTE_on_WHITE_SQUARE_2 f448              (R )
+BLACK_PROMOTE_on_WHITE_SQUARE_3 f490              (R )
 BLACK_QUEEN_on_BLACK_SQUARE_0 f448              (R )
 BLACK_QUEEN_on_BLACK_SQUARE_1 f490              (R )
 BLACK_QUEEN_on_BLACK_SQUARE_2 f500              (R )
@@ -817,12 +823,12 @@ BP                       0002              (R )
 BPAWN                    0002              (R )
 CallClear                f8aa              (R )
 CAP_SPEED                0014              (R )
-capturedPiece            f165              (R )
+capturedPiece            f1d3              (R )
 Cart_Init                f004              (R )
-CastleFixup              f0de              (R )
-CASTLING_ENABLED         0000              (R )
+CastleFixupDraw          f334              (R )
+CASTLING_ENABLED         0001              (R )
 ccur                     008a              (R )
-CheckMoveListFromSquare  f20f              (R )
+CheckMoveListFromSquare  f280              (R )
 ChessBitmap              f000              (R )
 ChessBitmap0             f000              (R )
 ChessBitmap1             f018              (R )
@@ -851,10 +857,10 @@ COLUPF                   0048              (R )
 colvec                   f004                  
 COMPILE_ILLEGALOPCODES   0001                  
 CopyPieceToRowBitmap     f19b              (R )
-CopySetup                f146              (R )
-CopySetupForMarker       f11b              (R )
-CopyShadowROMtoRAM       fc60              (R )
-CopySinglePiece          fc90              (R )
+CopySetup                f136              (R )
+CopySetupForMarker       f10b              (R )
+CopyShadowROMtoRAM       fc74              (R )
+CopySinglePiece          fca4              (R )
 CTRLPF                   004a              (R )
 currentPiece             0092              (R )
 currentPly               0095              (R )
@@ -870,66 +876,65 @@ CXM1P                    0041
 CXP0FB                   0042                  
 CXP1FB                   0043                  
 CXPPMM                   0047                  
-dddx                     f9a2                  
-debug                    fa19              (R )
-deCount                  f05a              (R )
-DeletePiece              fa5c              (R )
-depthLeft                f16d              (R )
+debug                    fa23              (R )
+deCount                  f057              (R )
+DeletePiece              fa64              (R )
+depthLeft                f1de              (R )
 DIRECTION_BITS           0007                  
 drawCount                0084              (R )
 drawDelay                0082              (R )
 DrawRow                  f203              (R )
-EARLY_LOCATION           f0cc                  
+EARLY_LOCATION           f0d6                  
 ENABL                    005f                  
 ENAM0                    005d                  
 ENAM1                    005e                  
-END_OF_OVERLAY           00ea              (R )
+END_OF_OVERLAY           00ee              (R )
 ENPASSANT_ENABLED        0000              (R )
-EnPassantCheck           fa1a              (R )
+EnPassantCheck           fa24              (R )
 enPassantPawn            0094              (R )
-EnPassantRemovePiece     fa33              (R )
-enPassantSquare          f164              (R )
+EnPassantRemovePiece     fa3d              (R )
+enPassantSquare          f1d2              (R )
 EVAL                     000c              (R )
 Evaluation               0090              (R )
 FINAL_VERSION            0000              (R )
-FinaliseMove             f0f5              (R )
 fineAdjustBegin          f421              (R )
 fineAdjustTable          f330                  
 FIXED_BANK               7800              (R )
 FLAG_CASTLE              0010              (R )
-FLAG_COLOUR              0080                  
+FLAG_COLOUR              0080              (R )
 FLAG_ENPASSANT           0020              (R )
 FLAG_MOVED               0040              (R )
-flashDone                f06c              (R )
-flashDone2               f0af              (R )
+flashDone                f069              (R )
+flashDone2               f0ac              (R )
 FlashPiece               f25d              (R )
 FlipSquareIndex          f049              (R )
 fromPiece                0098              (R )
 fromX12                  0085              (R )
-FUNCTION_NAME            febf                  
+FUNCTION_NAME            fe0d                  
 GameSpeak                f009              (R )
-GenCastleMoveForRook     f0b4              (R )
-GenerateAllMoves         f925              (R )
+GenCastleMoveForRook     f301              (R )
+GenerateAllMoves         f92f              (R )
 GENERIC_BANK_1           0000              (R )
-GetBoard                 fc2c              (R )
-GetMoveFrom              fd08              (R )
-GetMovePiece             fd20              (R )
-GetMoveTo                fd14              (R )
-GetPiece                 fc54              (R )
-GetPieceGivenFromToSquares f223              (R )
-GetValid                 fc20              (R )
+GetBoard                 fc34              (R )
+GetBoardRAM              fc40              (R )
+GetMoveFrom              fd1c              (R )
+GetMovePiece             fd34              (R )
+GetMoveTo                fd28              (R )
+GetPiece                 fc68              (R )
+GetPieceGivenFromToSquares f294              (R )
+GetValid                 fc28              (R )
 GRP0                     005b              (R )
 GRP1                     005c              (R )
 Handle_BISHOP            f1a0              (R )
-Handle_BLACK_PAWN        fb34              (R )
+Handle_BLACK_PAWN        fb3c              (R )
 Handle_KING              f266              (R )
-Handle_KNIGHT            f2ff              (R )
+Handle_KNIGHT            f344              (R )
 Handle_QUEEN             f0dd              (R )
 Handle_ROOK              f203              (R )
-Handle_WHITE_PAWN        faa2              (R )
-Handlers                 f95e              (R )
-HandlerVectorHI          f966              (R )
-HandlerVectorLO          f95f              (R )
+Handle_WHITE_PAWN        faaa              (R )
+Handlers                 f968              (R )
+HandlerVectorHI          f970              (R )
+HandlerVectorLO          f969              (R )
 HMBL                     0064                  
 HMCLR                    006b              (R )
 HMM0                     0062                  
@@ -1084,35 +1089,35 @@ INDEX_WHITE_ROOK_on_WHITE_SQUARE_2 0012
 INDEX_WHITE_ROOK_on_WHITE_SQUARE_3 0013                  
 INFINITY                 7fff              (R )
 InitialiseMoveGeneration f8f0              (R )
-InitialisePieceSquares   fbbc              (R )
-InitPieceList            f189              (R )
-InitPieceLists           f170              (R )
+InitialisePieceSquares   fbc4              (R )
+InitPieceList            f1fa              (R )
+InitPieceLists           f1e1              (R )
 INPT0                    0048                  
 INPT1                    0049                  
 INPT2                    004a                  
 INPT3                    004b                  
 INPT4                    004c              (R )
 INPT5                    004d                  
-InterceptMarkerCopy      fc97              (R )
+InterceptMarkerCopy      fcab              (R )
 INTIM                    0284              (R )
-IsValidMoveFromSquare    fc44              (R )
+IsValidMoveFromSquare    fc58              (R )
 JoyCombined              f100              (R )
 JoyMoveCursor            f110              (R )
 K                        0007              (R )
 k2                       f02d              (R )
 KING                     0007              (R )
-KINGSIDE                 0003                  
+KINGSIDE                 0003              (R )
 KNIGHT                   0003              (R )
-KSquare                  f0ef              (R )
+KSquare                  f348              (R )
 L276                     0001              (R )
 lastPiece                0099              (R )
 lastSquareX12            0083              (R )
 left_speech              f04a              (R )
 LINES_PER_CHAR           0018                  
-MakeMove                 fd2c              (R )
+MakeMove                 fd40              (R )
 MARKER                   0008                  
-markerDraw               fcd8              (R )
-MAX_MOVES                0064              (R )
+markerDraw               fcec              (R )
+MAX_MOVES                0046              (R )
 MAX_PLY                  000a              (R )
 MAX_PLY_DEPTH_BANK       0013                  
 MAXIMUM_REQUIRED_OVERLAY_SIZE 004c              (R )
@@ -1120,16 +1125,18 @@ mdelay                   0089              (R )
 MINIMUM_SEGTIME          0003                  
 moveCursor               f229              (R )
 MoveFrom                 f004              (R )
-moveIndex                f166              (R )
-MovePiece                f100              (R )
-movePtr                  f167              (R )
-MoveReturn               f952              (R )
+moveIndex                f1d7              (R )
+MovePiece                f090              (R )
+movePtr                  f1d8              (R )
+MoveReturn               f933              (R )
 MOVES                    000a              (R )
-MoveTo                   f068              (R )
-MoveViaListAtPly         f1e2              (R )
+MoveScoreHI              f146              (R )
+MoveScoreLO              f100              (R )
+MoveTo                   f04a              (R )
+MoveViaListAtPly         f253              (R )
 N                        0003              (R )
 newGen                   f8fc              (R )
-NewPlyInitialise         f1ca              (R )
+NewPlyInitialise         f23b              (R )
 NO                       0000              (R )
 NO_ILLEGAL_OPCODES       0000 ????         (R )
 NUSIZ0                   0044              (R )
@@ -1140,7 +1147,7 @@ ORIGIN                   8000
 ORIGIN_RAM               4c00                  
 originX12                0087              (R )
 oscan                    f086              (R )
-Overlay                  009e              (R )
+Overlay                  00a2              (R )
 OVERLAY_DELTA            0007              (R )
 OVERLAY_SIZE             004c              (R )
 OVERSCAN_TIM_NTSC        0023                  
@@ -1155,15 +1162,14 @@ PF1                      004e              (R )
 PF2                      004f              (R )
 PIECE_MASK               000f              (R )
 PIECE_SHAPE_SIZE         0048              (R )
-PIECE_VECTOR_BANK        f23f              (R )
-PIECE_VECTOR_HI          f1af              (R )
-PIECE_VECTOR_LO          f11f              (R )
-PIECELIST_ENABLED        0000 ????         (R )
+PIECE_VECTOR_BANK        f1d1              (R )
+PIECE_VECTOR_HI          f141              (R )
+PIECE_VECTOR_LO          f0b1              (R )
 PIECES_0                 0002              (R )
 PIECES_1                 0003              (R )
 PIECES_2                 0004              (R )
 PIECES_3                 0005              (R )
-PieceToShape             f187              (R )
+PieceToShape             f177              (R )
 PieceValueHI             f008              (R )
 PieceValueLO             f000              (R )
 Platform                 009b              (R )
@@ -1182,17 +1188,16 @@ PositionSprites          f400              (R )
 PosValVecHI              f0b5              (R )
 PosValVecLO              f0ad              (R )
 previousPiece            009a              (R )
-PromoteBlackPawn         fb0b              (R )
+PromoteBlackPawn         fb13              (R )
 promotePiece             f3a0              (R )
 promoteType              f3a4              (R )
-PromoteWhitePawn         fa79              (R )
-PutBoard                 fc38              (R )
+PromoteWhitePawn         fa81              (R )
+PutBoard                 fc4c              (R )
 PVSP                     0000              (R )
 Q                        0006              (R )
 QUEEN                    0006              (R )
-QUEENSIDE                fffffffffffffffc                  
-quiesce                  fdb9              (R )
-QuiesceStart             fdcd              (R )
+QUEENSIDE                fffffffffffffffc              (R )
+quiesce                  fdf4              (R )
 R                        0005              (R )
 RAM                      0400              (R )
 RAM_3E                   1000              (R )
@@ -1225,13 +1230,13 @@ RND_EOR_VAL              00fe              (R )
 ROM_BANK_SIZE            0800              (R )
 ROOK                     0005              (R )
 ROW_BITMAP_SIZE          0090              (R )
-RSquareEnd               f0f7              (R )
-RSquareStart             f0f3              (R )
+RSquareEnd               f350              (R )
+RSquareStart             f34c              (R )
 RSYNC                    0043                  
-SAFE_BackupBitmaps       fcf2              (R )
-SAFE_getMoveIndex        fccc              (R )
-SAFE_LookForCheck        f96d              (R )
-SAFE_showMoveCaptures    fcfc              (R )
+SAFE_BackupBitmaps       fd06              (R )
+SAFE_getMoveIndex        fce0              (R )
+SAFE_LookForCheck        f977              (R )
+SAFE_showMoveCaptures    fd10              (R )
 SAFE_showMoveOptions     f172              (R )
 sample                   f000                  
 SaveBitmap               f2f4              (R )
@@ -1239,10 +1244,13 @@ savedBank                008b              (R )
 SavedEvaluation          f002              (R )
 SCANLINES_NTSC           0114                  
 SCANLINES_PAL            0138                  
+secondaryBlank           f1d6              (R )
+secondaryPiece           f1d4              (R )
+secondarySquare          f1d5              (R )
 SEGMENT_DECODE_LEVEL_SHADOW f000                  
 SEGTIME_MAN              0016                  
 SEGTIME_MINIMUM_TIMESLICE 0003                  
-selectmove               f240              (R )
+selectmove               f2b1              (R )
 SELFMOD_RTS_ON_LAST_ROW  f200              (R )
 SERIAL_OUTMASK           0001                  
 SERIAL_RDYMASK           0002              (R )
@@ -1250,8 +1258,8 @@ SET_BANK                 003f              (R )
 SET_BANK_RAM             003e              (R )
 setCursorColours         f0ed              (R )
 setCursorPriority        f0d7              (R )
-SetupBanks               f0fb              (R )
-showPromoteOptions       fce4              (R )
+SetupBanks               f354              (R )
+showPromoteOptions       fcf8              (R )
 ShutYourMouth            f000              (R )
 sideToMove               0097              (R )
 silence_speech           f074              (R )
@@ -1262,8 +1270,11 @@ SMSPRITE16_1             f20c              (R )
 SMSPRITE8_0              f273              (R )
 SMSPRITE8_1              f278              (R )
 SokoLogo                 f03c              (R )
+Sort                     f378              (R )
+SortedMove               f18c                  
+sorter                   f9ac                  
 SPEAK                    000d              (R )
-SpecialBody              fa42              (R )
+SpecialBody              fa4c              (R )
 speech_addr              009c              (R )
 SPEEDOF_COPYSINGLEPIECE  0029                  
 SpriteBuffer             f098              (R )
@@ -1278,7 +1289,7 @@ SWCHA                    0280              (R )
 SWCHB                    0282                  
 T1024T                   0297                  
 TEMPORARY_OFFSET         0000              (R )
-TEMPORARY_VAR            00a5              (R )
+TEMPORARY_VAR            00a9              (R )
 TEST_MINIMUM_SEGTIME     0000                  
 TEST_POSITION            0000              (R )
 TEST_SEGTIME_MAN         0000                  
@@ -1294,12 +1305,12 @@ TIM8T                    0295
 TIME_PART_1              002f              (R )
 TIME_PART_2              002e              (R )
 TIMINT                   0285              (R )
-TitleScreen              f00a              (R )
 TITLESCREEN              0008              (R )
+TitleScreen              f00a              (R )
 TitleSequence            f00a                  
 toX12                    0086              (R )
 triplet                  f03e              (R )
-unmake_move              fd79              (R )
+unmake_move              fd99              (R )
 UNSAFE_showMoveCaptures  f000              (R )
 Valid                    f000              (R )
 ValidSquare              f015              (R )
@@ -1438,7 +1449,7 @@ VAR_BOUNDARY_BlankSprite 0000
 VAR_BOUNDARY_Board       0000                  
 VAR_BOUNDARY_CallClear   0000                  
 VAR_BOUNDARY_Cart_Init   0000                  
-VAR_BOUNDARY_CastleFixup 0000                  
+VAR_BOUNDARY_CastleFixupDraw 0000                  
 VAR_BOUNDARY_CheckMoveListFromSquare 0000                  
 VAR_BOUNDARY_ChessBitmap 0000                  
 VAR_BOUNDARY_ClearRowBitmap 0000                  
@@ -1453,13 +1464,13 @@ VAR_BOUNDARY_DeletePiece 0000
 VAR_BOUNDARY_DrawRow     0000                  
 VAR_BOUNDARY_EnPassantCheck 0000                  
 VAR_BOUNDARY_EnPassantRemovePiece 0000                  
-VAR_BOUNDARY_FinaliseMove 0000                  
 VAR_BOUNDARY_FlashPiece  0000                  
 VAR_BOUNDARY_FlipSquareIndex 0000                  
 VAR_BOUNDARY_GameSpeak   0000                  
 VAR_BOUNDARY_GenCastleMoveForRook 0000                  
 VAR_BOUNDARY_GenerateAllMoves 0000                  
 VAR_BOUNDARY_GetBoard    0000                  
+VAR_BOUNDARY_GetBoardRAM 0000                  
 VAR_BOUNDARY_GetMoveFrom 0000                  
 VAR_BOUNDARY_GetMovePiece 0000                  
 VAR_BOUNDARY_GetMoveTo   0000                  
@@ -1502,7 +1513,6 @@ VAR_BOUNDARY_promoteType 0000
 VAR_BOUNDARY_PromoteWhitePawn 0000                  
 VAR_BOUNDARY_PutBoard    0000                  
 VAR_BOUNDARY_quiesce     0000                  
-VAR_BOUNDARY_QuiesceStart 0000                  
 VAR_BOUNDARY_Reset       0000                  
 VAR_BOUNDARY_RestartFrame 0000                  
 VAR_BOUNDARY_SAFE_BackupBitmaps 0000                  
@@ -1517,6 +1527,7 @@ VAR_BOUNDARY_setCursorPriority 0000
 VAR_BOUNDARY_SetupBanks  0000                  
 VAR_BOUNDARY_showPromoteOptions 0000                  
 VAR_BOUNDARY_ShutYourMouth 0000                  
+VAR_BOUNDARY_Sort        0000                  
 VAR_BOUNDARY_SpecialBody 0000                  
 VAR_BOUNDARY_SpriteBuffer 0000                  
 VAR_BOUNDARY_TitleScreen 0000                  
@@ -1598,103 +1609,103 @@ VAR_BOUNDARY_WHITE_ROOK_on_WHITE_SQUARE_2 0000
 VAR_BOUNDARY_WHITE_ROOK_on_WHITE_SQUARE_3 0000                  
 VAR_BOUNDARY_WriteBlank  0000                  
 VAR_BOUNDARY_WriteCursor 0000                  
-VAREND___dummy           00a5                  
-VAREND_AddPieceMaterialValue 00a8                  
-VAREND_AddPiecePositionValue 00aa                  
-VAREND_AdjustMaterialPositionalValue 00a8                  
-VAREND_aiBeginSelectMovePhase 009e                  
-VAREND_aiChooseDebounce  009e                  
-VAREND_aiChoosePromotePiece 009e              (R )
-VAREND_aiClearEachRow    009e              (R )
-VAREND_aiComputerMove    009e                  
-VAREND_aiDrawEntireBoard 009e              (R )
-VAREND_aiDrawMoves       009e              (R )
-VAREND_aiDrawPart2       009e              (R )
-VAREND_aiFinalFlash      009e              (R )
-VAREND_aiFlipBuffers     009e                  
-VAREND_aiGenerateMoves   009e              (R )
-VAREND_aiInCheckBackup   009e                  
-VAREND_aiInCheckDelay    009e                  
-VAREND_aiLookForCheck    009e                  
-VAREND_aiMarchB          009e              (R )
-VAREND_aiMarchB2         009e              (R )
-VAREND_aiMarchToTargetA  00a2              (R )
-VAREND_aiMarchToTargetB  009e              (R )
-VAREND_aiMoveIsSelected  009e              (R )
-VAREND_aiPromotePawnStart 009e              (R )
-VAREND_aiQuiescent       009e              (R )
-VAREND_aiReselectDebounce 009e                  
-VAREND_aiRollPromotionPiece 009e              (R )
-VAREND_aiSelectDestinationSquare 009e              (R )
-VAREND_aiSelectStartSquare 009e              (R )
-VAREND_AiSetupVectors    009e                  
-VAREND_aiShowMoveCaptures 009e                  
-VAREND_aiSlowFlash       009e                  
-VAREND_aiSpecialMoveFixup 009e                  
-VAREND_aiStartClearBoard 009e                  
-VAREND_aiStartMoveGen    009e                  
-VAREND_aiStartSquareSelected 009e                  
-VAREND_AiStateMachine    009e              (R )
-VAREND_aiStepMoveGen     009e              (R )
-VAREND_aiUnDrawTargetSquares 009e                  
-VAREND_aiWriteStartPieceBlank 009e              (R )
-VAREND_alphaBeta         00a5                  
-VAREND_CallClear         009e                  
-VAREND_Cart_Init         009e                  
-VAREND_CastleFixup       00a5                  
-VAREND_CheckMoveListFromSquare 009e                  
-VAREND_ClearRowBitmap    009e                  
-VAREND_CopyPieceToRowBitmap 00a5                  
-VAREND_CopySetup         00a7                  
-VAREND_CopySetupForMarker 00a3                  
-VAREND_CopyShadowROMtoRAM 00a1                  
-VAREND_CopySinglePiece   00a5                  
-VAREND_DeletePiece       00a7                  
-VAREND_EnPassantRemovePiece 00a5              (R )
-VAREND_FinaliseMove      009e                  
-VAREND_FlashPiece        009e              (R )
-VAREND_GameSpeak         009f                  
-VAREND_GenCastleMoveForRook 00a6                  
-VAREND_GenerateAllMoves  00a7              (R )
-VAREND_GetPiece          009e                  
-VAREND_GetPieceGivenFromToSquares 009e                  
-VAREND_Handle_BISHOP     00a7                  
-VAREND_Handle_BLACK_PAWN 00a7                  
-VAREND_Handle_KING       00a7                  
-VAREND_Handle_KNIGHT     00a7                  
-VAREND_Handle_QUEEN      00a7                  
-VAREND_Handle_ROOK       00a7                  
-VAREND_Handle_WHITE_PAWN 00a7                  
-VAREND_InitialiseMoveGeneration 009e                  
-VAREND_InitialisePieceSquares 00a1                  
-VAREND_InitPieceLists    00a1                  
-VAREND_IsValidMoveFromSquare 009e                  
-VAREND_MakeMove          00a6                  
-VAREND_markerDraw        00a0                  
-VAREND_moveCursor        009f                  
-VAREND_MoveViaListAtPly  009e                  
-VAREND_newGen            00a5                  
-VAREND_NewPlyInitialise  00a5                  
-VAREND_PositionSprites   009e                  
-VAREND_PromoteBlackPawn  00a8                  
-VAREND_PromoteWhitePawn  00a8                  
-VAREND_quiesce           00a5                  
-VAREND_Reset             009e              (R )
-VAREND_SAFE_BackupBitmaps 009e                  
-VAREND_SAFE_showMoveCaptures 009e                  
-VAREND_SAFE_showMoveOptions 00a0              (R )
-VAREND_SaveBitmap        009e                  
-VAREND_selectmove        00a5              (R )
-VAREND_setCursorColours  009e                  
-VAREND_setCursorPriority 009f                  
-VAREND_SetupBanks        009f              (R )
-VAREND_showPromoteOptions 009e                  
-VAREND_ShutYourMouth     009e                  
-VAREND_SpecialBody       00a5              (R )
-VAREND_unmake_move       00a6                  
-VAREND_UNSAFE_showMoveCaptures 00a1              (R )
-VAREND_WriteBlank        009e                  
-VAREND_WriteCursor       009e                  
+VAREND___dummy           00a9                  
+VAREND_AddPieceMaterialValue 00ac                  
+VAREND_AddPiecePositionValue 00ae                  
+VAREND_AdjustMaterialPositionalValue 00ac                  
+VAREND_aiBeginSelectMovePhase 00a2                  
+VAREND_aiChooseDebounce  00a2                  
+VAREND_aiChoosePromotePiece 00a2              (R )
+VAREND_aiClearEachRow    00a2              (R )
+VAREND_aiComputerMove    00a2                  
+VAREND_aiDrawEntireBoard 00a2              (R )
+VAREND_aiDrawMoves       00a2              (R )
+VAREND_aiDrawPart2       00a2              (R )
+VAREND_aiFinalFlash      00a2              (R )
+VAREND_aiFlipBuffers     00a2                  
+VAREND_aiGenerateMoves   00a2              (R )
+VAREND_aiInCheckBackup   00a2                  
+VAREND_aiInCheckDelay    00a2                  
+VAREND_aiLookForCheck    00a2                  
+VAREND_aiMarchB          00a2              (R )
+VAREND_aiMarchB2         00a2              (R )
+VAREND_aiMarchToTargetA  00a6              (R )
+VAREND_aiMarchToTargetB  00a2              (R )
+VAREND_aiMoveIsSelected  00a2              (R )
+VAREND_aiPromotePawnStart 00a2              (R )
+VAREND_aiQuiescent       00a2              (R )
+VAREND_aiReselectDebounce 00a2                  
+VAREND_aiRollPromotionPiece 00a2              (R )
+VAREND_aiSelectDestinationSquare 00a2              (R )
+VAREND_aiSelectStartSquare 00a2              (R )
+VAREND_AiSetupVectors    00a2                  
+VAREND_aiShowMoveCaptures 00a2                  
+VAREND_aiSlowFlash       00a2                  
+VAREND_aiSpecialMoveFixup 00a2                  
+VAREND_aiStartClearBoard 00a2                  
+VAREND_aiStartMoveGen    00a2                  
+VAREND_aiStartSquareSelected 00a2                  
+VAREND_AiStateMachine    00a2              (R )
+VAREND_aiStepMoveGen     00a2              (R )
+VAREND_aiUnDrawTargetSquares 00a2                  
+VAREND_aiWriteStartPieceBlank 00a2              (R )
+VAREND_alphaBeta         00a9                  
+VAREND_CallClear         00a2                  
+VAREND_Cart_Init         00a2                  
+VAREND_CastleFixupDraw   00a9                  
+VAREND_CheckMoveListFromSquare 00a2                  
+VAREND_ClearRowBitmap    00a2                  
+VAREND_CopyPieceToRowBitmap 00a9                  
+VAREND_CopySetup         00ab                  
+VAREND_CopySetupForMarker 00a7                  
+VAREND_CopyShadowROMtoRAM 00a5                  
+VAREND_CopySinglePiece   00a9                  
+VAREND_DeletePiece       00ab                  
+VAREND_EnPassantRemovePiece 00a9              (R )
+VAREND_FlashPiece        00a2              (R )
+VAREND_GameSpeak         00a3                  
+VAREND_GenCastleMoveForRook 00aa                  
+VAREND_GenerateAllMoves  00ab              (R )
+VAREND_GetPiece          00a2                  
+VAREND_GetPieceGivenFromToSquares 00a2                  
+VAREND_Handle_BISHOP     00ab                  
+VAREND_Handle_BLACK_PAWN 00ab                  
+VAREND_Handle_KING       00ab                  
+VAREND_Handle_KNIGHT     00ab                  
+VAREND_Handle_QUEEN      00ab                  
+VAREND_Handle_ROOK       00ab                  
+VAREND_Handle_WHITE_PAWN 00ab                  
+VAREND_InitialiseMoveGeneration 00a2                  
+VAREND_InitialisePieceSquares 00a5                  
+VAREND_InitPieceLists    00a5                  
+VAREND_IsValidMoveFromSquare 00a2                  
+VAREND_MakeMove          00aa                  
+VAREND_markerDraw        00a4                  
+VAREND_moveCursor        00a3                  
+VAREND_MoveViaListAtPly  00a2                  
+VAREND_newGen            00a9                  
+VAREND_NewPlyInitialise  00a9                  
+VAREND_PositionSprites   00a2                  
+VAREND_PromoteBlackPawn  00ac                  
+VAREND_PromoteWhitePawn  00ac                  
+VAREND_quiesce           00a9                  
+VAREND_Reset             00a2              (R )
+VAREND_SAFE_BackupBitmaps 00a2                  
+VAREND_SAFE_showMoveCaptures 00a2                  
+VAREND_SAFE_showMoveOptions 00a4              (R )
+VAREND_SaveBitmap        00a2                  
+VAREND_selectmove        00a9              (R )
+VAREND_setCursorColours  00a2                  
+VAREND_setCursorPriority 00a3                  
+VAREND_SetupBanks        00a3              (R )
+VAREND_showPromoteOptions 00a2                  
+VAREND_ShutYourMouth     00a2                  
+VAREND_Sort              00a3                  
+VAREND_SpecialBody       00a9              (R )
+VAREND_unmake_move       00ab                  
+VAREND_UNSAFE_showMoveCaptures 00a5              (R )
+VAREND_WriteBlank        00a2                  
+VAREND_WriteCursor       00a2                  
 VBLANK                   0041              (R )
 VBLANK_TIM_NTSC          0030                  
 VBLANK_TIM_PAL           0055                  
@@ -1742,13 +1753,13 @@ WHITE_KNIGHT_on_WHITE_SQUARE_0 f290              (R )
 WHITE_KNIGHT_on_WHITE_SQUARE_1 f300              (R )
 WHITE_KNIGHT_on_WHITE_SQUARE_2 f348              (R )
 WHITE_KNIGHT_on_WHITE_SQUARE_3 f390              (R )
-WHITE_MARKER_on_BLACK_SQUARE_0 f590              (R )
-WHITE_MARKER_on_BLACK_SQUARE_1 f600              (R )
-WHITE_MARKER_on_BLACK_SQUARE_2 f648              (R )
-WHITE_MARKER_on_BLACK_SQUARE_3 f690              (R )
-WHITE_MARKER_on_WHITE_SQUARE_0 f700              (R )
-WHITE_MARKER_on_WHITE_SQUARE_1 f748              (R )
-WHITE_MARKER_on_WHITE_SQUARE_2 f790              (R )
+WHITE_MARKER_on_BLACK_SQUARE_0 f500              (R )
+WHITE_MARKER_on_BLACK_SQUARE_1 f548              (R )
+WHITE_MARKER_on_BLACK_SQUARE_2 f590              (R )
+WHITE_MARKER_on_BLACK_SQUARE_3 f600              (R )
+WHITE_MARKER_on_WHITE_SQUARE_0 f648              (R )
+WHITE_MARKER_on_WHITE_SQUARE_1 f690              (R )
+WHITE_MARKER_on_WHITE_SQUARE_2 f700              (R )
 WHITE_MARKER_on_WHITE_SQUARE_3 f700              (R )
 WHITE_PAWN_on_BLACK_SQUARE_0 f290              (R )
 WHITE_PAWN_on_BLACK_SQUARE_1 f300              (R )
@@ -1759,14 +1770,14 @@ WHITE_PAWN_on_WHITE_SQUARE_1 f190              (R )
 WHITE_PAWN_on_WHITE_SQUARE_2 f200              (R )
 WHITE_PAWN_on_WHITE_SQUARE_3 f248              (R )
 WHITE_PLAYER             0000                  
-WHITE_PROMOTE_on_BLACK_SQUARE_0 f398              (R )
-WHITE_PROMOTE_on_BLACK_SQUARE_1 f400              (R )
-WHITE_PROMOTE_on_BLACK_SQUARE_2 f448              (R )
-WHITE_PROMOTE_on_BLACK_SQUARE_3 f490              (R )
-WHITE_PROMOTE_on_WHITE_SQUARE_0 f500              (R )
-WHITE_PROMOTE_on_WHITE_SQUARE_1 f548              (R )
-WHITE_PROMOTE_on_WHITE_SQUARE_2 f590              (R )
-WHITE_PROMOTE_on_WHITE_SQUARE_3 f600              (R )
+WHITE_PROMOTE_on_BLACK_SQUARE_0 f400              (R )
+WHITE_PROMOTE_on_BLACK_SQUARE_1 f448              (R )
+WHITE_PROMOTE_on_BLACK_SQUARE_2 f490              (R )
+WHITE_PROMOTE_on_BLACK_SQUARE_3 f500              (R )
+WHITE_PROMOTE_on_WHITE_SQUARE_0 f548              (R )
+WHITE_PROMOTE_on_WHITE_SQUARE_1 f590              (R )
+WHITE_PROMOTE_on_WHITE_SQUARE_2 f600              (R )
+WHITE_PROMOTE_on_WHITE_SQUARE_3 f648              (R )
 WHITE_QUEEN_on_BLACK_SQUARE_0 f000              (R )
 WHITE_QUEEN_on_BLACK_SQUARE_1 f048              (R )
 WHITE_QUEEN_on_BLACK_SQUARE_2 f090              (R )
@@ -1788,7 +1799,7 @@ WPAWN                    0001              (R )
 WriteBlank               f2a6              (R )
 WriteCursor              f2cf              (R )
 WSYNC                    0042              (R )
-xhalt                    f0e5              (R )
+xhalt                    f0e7              (R )
 YES                      0001              (R )
 zapem                    f889              (R )
 ███                0000                  

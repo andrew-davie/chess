@@ -40,12 +40,15 @@ MAX_PLY_DEPTH_BANK = MAX_PLY + RAMBANK_PLY
 
 ;---------------------------------------------------------------------------------------------------
 
-MAX_MOVES =100
+MAX_MOVES =70
 
     VARIABLE MoveFrom, MAX_MOVES
     VARIABLE MoveTo, MAX_MOVES
     VARIABLE MovePiece, MAX_MOVES
 
+    VARIABLE MoveScoreLO, MAX_MOVES
+    VARIABLE MoveScoreHI, MAX_MOVES
+    VARIABLE SortedMove, MAX_MOVES
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -54,7 +57,10 @@ MAX_MOVES =100
 
     VARIABLE enPassantSquare, 1
     VARIABLE capturedPiece, 1
-
+    VARIABLE secondaryPiece, 1                      ; original piece on secondary (castle, enpassant)
+    VARIABLE secondarySquare, 1                     ; original square of secondary piece
+    VARIABLE secondaryBlank, 1                      ; square to blank on secondary
+    
 ;---------------------------------------------------------------------------------------------------
 ; Move tables hold piece moves for this current ply
 
@@ -455,24 +461,8 @@ InitPieceList
         REFER aiComputerMove
         VEND selectmove
 
-    ; x = depth to go to
-
-    ;        bestMove = chess.Move.null()
-    ;        bestValue = -99999
-    ;        alpha = -100000
-    ;        beta = 100000
-    ;        for move in board.legal_moves:
-    ;            board.push(move)
-    ;            boardValue = -alphabeta(-beta, -alpha, depth-1)
-    ;            if boardValue > bestValue:
-    ;                bestValue = boardValue;
-    ;                bestMove = move
-    ;            if( boardValue > alpha ):
-    ;                alpha = boardValue
-    ;            board.pop()
-    ;        movehistory.append(bestMove)
-
-
+    ; RAM bank already switched in!!!
+    
                     stx@RAM depthLeft
 
     ; both player (pos) and opponent (neg) have worst value ever!
@@ -487,32 +477,8 @@ InitPieceList
                     lda #>-INFINITY
                     sta@RAM alpha+1                  ; player tries to maximise
 
-                    ;lda #<-INFINITY
-                    ;sta@RAM bestValue
-                    ;lda #>-INFINITY
-                    ;sta@RAM bestValue+1
-
-
-;                    jsr newGen                      ; init ply, generate moves!
-
-;                    lda moveIndex                   ; could just use this instead of movePtr....
-;                    sta@RAM movePtr
-;                    jmp .loopMoves
-
-    ; TODO: here intercept if there are NO moves - in which case we have stalemate
-    ; TODO: also check no moves (-1), checkmate (???), illegal move (king capture)-same
-
-
-
-.loopMoves
-;          ldx movePtr
-;                    bmi .endSearch
-
-;                    jsr MakeMove
 
     ; "boardValue = -alphabeta( -beta, -alpha, depthleft - 1 )"
-    ; set pareameters for next level --> __alpha, __beta
-    ; we've pre-negated alpha, beta outside the loop
 
                     sec
                     lda #0
@@ -530,65 +496,10 @@ InitPieceList
                     sbc beta+1
                     sta __beta+1                    ; = -beta (effectively unchanged) - no αβ on ply 0
 
-;                   inc currentPly
-;                    lda currentPly
-;                    sta SET_BANK_RAM                ; self-switch
-;                    sta savedBank                   ; ??
-
                     ldx depthLeft
                     jsr alphaBeta                   ; recurse!
-
- ;                   dec currentPly
- ;                   lda currentPly
- ;                   sta SET_BANK_RAM
-
- ;                   sec
- ;                   lda #0
- ;                   sbc __bestScore
- ;                   sta __bestScore
- ;                   lda #0
- ;                   sbc __bestScore+1
- ;                   sta __bestScore+1               ; "-alphabeta....""
-
- ;                   jsr unmake_move
-                    
-    ;            if boardValue > bestValue:
-    ;                bestValue = boardValue;
-    ;                bestMove = move
-
-
-;                    clc                             ;!! OK -1
-;                    lda __bestScore
-;                    sbc alpha
-;                    lda __bestScore+1
-;                    sbc alpha+1
-;                    bcc .notGt
-
-;                    lda __bestScore
-;                    sta@RAM alpha
-;                    lda __bestScore+1
-;                    sta@RAM alpha+1
-
-;                    lda movePtr
-;                    sta@RAM bestMove
-
-;.notGt
-
-;                    ldx movePtr
-;                    dex
-;                    stx@RAM movePtr
-;                    jmp .loopMoves
-
-
-;.endSearch
- 
  
                     ldx bestMove
-
-    IF ASSERTS
-        bmi .endSearch
-    endif
-
                     lda MoveTo,x
                     sta toX12
                     lda MoveFrom,x
@@ -600,8 +511,366 @@ InitPieceList
                     rts
 
 
-    CHECK_HALF_BANK_SIZE "PLY -- 1K"
+;---------------------------------------------------------------------------------------------------
 
+    DEF GenCastleMoveForRook
+    SUBROUTINE
+
+        REFER MakeMove
+        REFER CastleFixupDraw
+        VEND GenCastleMoveForRook
+
+                    clc
+
+                    lda fromPiece
+                    and #FLAG_CASTLE
+                    beq .exit                       ; NOT involved in castle!
+
+                    ldx #4
+                    lda fromX12                     ; *destination*
+.findCast           clc
+                    dex
+                    bmi .exit
+                    cmp KSquare,x
+                    bne .findCast
+
+                    lda RSquareEnd,x
+                    sta toX12
+                    sta@RAM secondaryBlank
+                    ldy RSquareStart,x
+                    sty fromX12
+                    sty originX12
+                    sty@RAM secondarySquare
+
+                    lda fromPiece
+                    and #128                        ; colour bit
+                    ora #ROOK                       ; preserve colour
+                    sta fromPiece
+                    sta@RAM secondaryPiece
+
+                    sec
+.exit               rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CastleFixupDraw
+    SUBROUTINE
+
+        REFER SpecialBody
+        VEND CastleFixupDraw
+
+    ; fixup any castling issues
+    ; at this point the king has finished his two-square march
+    ; based on the finish square, we determine which rook we're interacting with
+    ; and generate a 'move' for the rook to position on the other side of the king
+
+
+    IF CASTLING_ENABLED
+                    jsr GenCastleMoveForRook
+                    bcs .phase
+    ENDIF
+    
+                    lda sideToMove
+                    eor #128
+                    sta sideToMove
+                    rts
+
+.phase
+
+    ; in this siutation (castle, rook moving) we do not change sides yet!
+
+    jsr debug
+
+                    PHASE AI_MoveIsSelected
+                    rts
+
+
+
+KSquare             .byte 24,28,94,98
+RSquareStart        .byte 22,29,92,99
+RSquareEnd          .byte 25,27,95,97
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF SetupBanks
+    SUBROUTINE
+
+        REFER Reset
+        VAR __plyBank, 1
+        VEND SetupBanks
+
+    ; SAFE
+
+                    ldy #7
+.copyRowBanks       ldx #BANK_ROM_SHADOW_OF_CHESS_BITMAP
+                    jsr CopyShadowROMtoRAM
+                    dey
+                    bpl .copyRowBanks
+
+    ; copy the BOARD/MOVES bank
+
+                    ldy #RAMBANK_MOVES_RAM
+                    ldx #MOVES
+                    jsr CopyShadowROMtoRAM     ; this auto-initialises Board too
+
+    ; copy the PLY banks
+
+                    lda #MAX_PLY
+                    sta __plyBank
+                    ldy #RAMBANK_PLY
+                    sty currentPly
+.copyPlyBanks       ldx #BANK_PLY
+                    jsr CopyShadowROMtoRAM
+                    iny
+                    dec __plyBank
+                    bne .copyPlyBanks
+
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+#if 0
+    DEF Sort
+    SUBROUTINE
+
+        VAR __big, 2
+        VAR __biggest, 1
+        VEND Sort
+
+                    ldx moveIndex
+                    bmi .exit
+
+.fill               txa
+                    sta@RAM SortedMove,x
+                    dex
+                    bpl .fill
+
+
+                    ldy moveIndex
+.getNext            ldx moveIndex
+                    lda #<-INFINITY
+                    sta __big
+                    lda #>-INFINITY
+                    sta __big+1
+
+.findBig            
+
+                    sec
+                    lda MoveScoreLO,x
+                    sbc __big
+                    lda MoveScoreHI,x
+                    sbc __big+1
+                    bvc .l0
+                    eor #$80
+.l0                 bmi .lt            
+
+                    lda MoveScoreLO,x
+                    sta __big
+                    lda MoveScoreHI,x
+                    sta __big+1
+
+                    stx __biggest
+
+.lt                 dex
+                    bpl .findBig
+
+                    lda __biggest
+                    sta@RAM SortedMove,y
+                    tax
+
+
+                    lda #<-INFINITY
+                    sta@RAM MoveScoreLO,x
+                    lda #>-INFINITY
+                    sta@RAM MoveScoreHI,x
+
+
+
+                    dey
+                    bpl .getNext
+.exit               rts
+#endif
+
+
+
+    DEF Sort
+    SUBROUTINE
+
+        REFER aiComputerMove
+        VAR __xs, 1
+        VEND Sort
+
+                    lda currentPly
+                    sta savedBank
+
+
+                    ldx moveIndex
+                    ldy moveIndex
+                    dey
+.scan               sty __xs
+                    lda MoveTo,y
+                    tay
+                    jsr GetBoardRAM
+                    ldy __xs
+                    and #PIECE_MASK
+                    beq .next
+
+                    
+                    lda MoveTo,x
+                    pha
+                    lda MoveFrom,x
+                    pha
+                    lda MovePiece,x
+                    pha
+
+                    lda MovePiece,y
+                    sta@RAM MovePiece,x
+                    pla
+                    sta@RAM MovePiece,y
+
+                    lda MoveFrom,y
+                    sta@RAM MoveFrom,x
+                    pla
+                    sta@RAM MoveFrom,y
+
+                    lda MoveTo,y
+                    sta@RAM MoveTo,x
+                    pla
+                    sta@RAM MoveTo,y
+
+                    dex
+
+.next               dey
+                    bpl .scan
+
+
+                    rts
+
+
+
+
+
+#if 0
+    DEF Sort
+    SUBROUTINE
+
+        VAR __idx, 1
+        VAR __work1, 1
+        VAR __work2, 2
+        VAR __work3, 2
+        VAR __sx, 1
+        VEND Sort
+
+        jsr debug
+
+        ; Fill the move pointer list (in order)
+        ; We want the LAST entry to be the index of the one with the BEST score
+        
+                    ldx moveIndex
+                    stx __idx
+                    bmi .exit
+
+.fill               txa
+                    sta@RAM SortedMove,x
+                    dex
+                    bpl .fill
+
+        ; Now that oddball sort!
+
+.sort               ldx __idx
+                    ldy SortedMove,x
+                    sty __work3
+                    jmp .l2
+
+.l1                 ldx __sx
+                    dex
+                    beq .l3
+                    stx __sx
+
+
+                    lda SortedMove,x
+                    ldy __work2
+                    ldx SortedMove,y        ; y = nval
+                    tay                     ; x = "work2"
+
+                    sec
+                    lda MoveScoreLO,y
+                    sbc MoveScoreLO,x
+                    lda MoveScoreHI,y
+                    sbc MoveScoreHI,x
+                    bvc .lab0
+                    eor #$80
+.lab0               bmi .l1
+
+                    ldx __sx
+
+;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
+;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
+;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
+
+.l2                 stx __work1
+                    sty __work2
+                    stx __sx
+                    jmp .l1
+
+.l3                 ldy __idx
+                    lda __work2
+                    sta@RAM SortedMove,y
+                    ldy __work1
+                    lda __work3
+                    sta@RAM SortedMove,y
+
+                    dec __idx
+                    bne .sort
+.exit               rts
+                    
+;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
+;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
+;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
+#endif
+
+
+#if 0
+.exit
+
+
+;
+ZPADD  = $30            ;2 BYTE POINTER IN PAGE ZERO. SET BY CALLING PROGRAM
+NVAL   = $32            ;SET BY CALLING PROGRAM
+WORK1  = $33            ;3 BYTES USED AS WORKING AREA
+WORK2  = $34
+WORK3  = $35
+        *=$6000         ;CODE ANYWHERE IN RAM OR ROM
+SORT LDY NVAL           ;START OF SUBROUTINE SORT
+     LDA (ZPADD),Y      ;LAST VALUE IN (WHAT IS LEFT OF) SEQUENCE TO BE SORTED
+     STA WORK3          ;SAVE VALUE. WILL BE OVER-WRITTEN BY LARGEST NUMBER
+     BRA L2
+L1   DEY
+     BEQ L3
+     LDA (ZPADD),Y
+     CMP WORK2
+     BCC L1
+L2   STY WORK1          ;INDEX OF POTENTIALLY LARGEST VALUE
+     STA WORK2          ;POTENTIALLY LARGEST VALUE
+     BRA L1
+L3   LDY NVAL           ;WHERE THE LARGEST VALUE SHALL BE PUT
+     LDA WORK2          ;THE LARGEST VALUE
+     STA (ZPADD),Y      ;PUT LARGEST VALUE IN PLACE
+     LDY WORK1          ;INDEX OF FREE SPACE
+     LDA WORK3          ;THE OVER-WRITTEN VALUE
+     STA (ZPADD),Y      ;PUT THE OVER-WRITTEN VALUE IN THE FREE SPACE
+     DEC NVAL           ;END OF THE SHORTER SEQUENCE STILL LEFT
+     BNE SORT           ;START WORKING WITH THE SHORTER SEQUENCE
+     RTS
+#endif
+
+
+;---------------------------------------------------------------------------------------------------
+
+    CHECK_HALF_BANK_SIZE "PLY -- 1K"
 
 ;---------------------------------------------------------------------------------------------------
 

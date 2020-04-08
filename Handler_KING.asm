@@ -84,7 +84,7 @@ QUEENSIDE       = -4
                 MOVE_TO_X _UP+_LEFT
                 MOVE_TO_X _LEFT
 
-        IF CASTLING_ENABLED
+        ;IF CASTLING_ENABLED
         
                 bit currentPiece
                 bvs .exit                           ; king has moved, so no castling
@@ -92,7 +92,7 @@ QUEENSIDE       = -4
                 CASTLE KINGSIDE
                 CASTLE QUEENSIDE
 
-        ENDIF
+        ;ENDIF
         
 .exit           jmp MoveReturn
 

@@ -110,13 +110,10 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
     ; originX12     starting square X12
     ; toX12         ending square X12
 
-
                     jsr AdjustMaterialPositionalValue
-
 
                     lda #BLANK
                     sta previousPiece
-
 
                     ;lda toSquare
                     ;cmp fromSquare
@@ -138,8 +135,6 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
         REFER AiStateMachine
         VEND aiWriteStartPieceBlank
-
-    jsr debug
 
     ; Flash the piece in-place preparatory to moving it.
     ; drawDelay = flash speed
@@ -244,134 +239,6 @@ flashDone           PHASE AI_MarchToTargetA
                     rts
 
 flashDone2          PHASE AI_SpecialMoveFixup
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF GenCastleMoveForRook
-    SUBROUTINE
-
-        REFER MakeMove
-        REFER CastleFixup
-        VEND GenCastleMoveForRook
-
-                    clc
-
-                    lda fromPiece
-                    and #FLAG_CASTLE
-                    beq .exit                       ; NOT involved in castle!
-
-                    ldx #4
-                    lda fromX12                     ; *destination*
-.findCast           clc
-                    dex
-                    bmi .exit
-                    cmp KSquare,x
-                    bne .findCast
-
-                    lda RSquareEnd,x
-                    sta toX12
-                    ldy RSquareStart,x
-                    sty fromX12
-                    sty originX12
-
-                    lda fromPiece
-                    and #128                        ; colour bit
-                    ora #ROOK                       ; preserve colour
-                    sta fromPiece
-
-                    sec
-.exit               rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF CastleFixup
-    SUBROUTINE
-
-        REFER SpecialBody
-        VEND CastleFixup
-
-    ; fixup any castling issues
-    ; at this point the king has finished his two-square march
-    ; based on the finish square, we determine which rook we're interacting with
-    ; and generate a 'move' for the rook to position on the other side of the king
-
-                    jsr GenCastleMoveForRook
-                    bcs .phase
-
-                    lda sideToMove
-                    eor #128
-                    sta sideToMove
-
-                    ; TODO - check....
-                    ;NEGEVAL
-
-
-    ; Mark the piece as MOVED
-    ; TODO: ensure removal is still OK
-
-;                    lda #RAMBANK_MOVES_RAM
-;                    sta SET_BANK_RAM
-;                    ldy fromX12                     ; final square
-;                    lda Board,y
-;                    and #~FLAG_ENPASSANT            ; probably superflous
-;                    ora #FLAG_MOVED
-;                    sta@RAM Board,y
-
-
-                    rts
-
-.phase
-
-    ; in this siutation (castle, rook moving) we do not change sides yet!
-
-                    PHASE AI_MoveIsSelected
-                    rts
-
-
-
-KSquare             .byte 24,28,94,98
-RSquareStart        .byte 22,29,92,99
-RSquareEnd          .byte 25,27,95,97
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF SetupBanks
-    SUBROUTINE
-
-        REFER Reset
-        VAR __plyBank, 1
-        VEND SetupBanks
-
-    ; SAFE
-
-                    ldy #7
-.copyRowBanks       ldx #BANK_ROM_SHADOW_OF_CHESS_BITMAP
-                    jsr CopyShadowROMtoRAM
-                    dey
-                    bpl .copyRowBanks
-
-    ; copy the BOARD/MOVES bank
-
-                    ldy #RAMBANK_MOVES_RAM
-                    ldx #MOVES
-                    jsr CopyShadowROMtoRAM     ; this auto-initialises Board too
-
-    ; copy the PLY banks
-
-                    lda #MAX_PLY
-                    sta __plyBank
-                    ldy #RAMBANK_PLY
-                    sty currentPly
-.copyPlyBanks       ldx #BANK_PLY
-                    jsr CopyShadowROMtoRAM
-                    iny
-                    dec __plyBank
-                    bne .copyPlyBanks
-
                     rts
 
 

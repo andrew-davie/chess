@@ -291,7 +291,6 @@ _rts                rts
     
 ;                    jsr newGen
                     jsr GenerateAllMoves
-            jsr debug
 
     #if PVSP
         jmp .player ;tmp
@@ -321,13 +320,18 @@ _rts                rts
 
 
                     jsr GenerateAllMoves
-                    ;lda piecelistIndex
-                    ;bpl .wait                       ; not finished yet
 
                     lda sideToMove
                     eor #128
                     sta sideToMove
-                    ;todo: negeval?
+
+                    sec
+                    lda #0
+                    sbc Evaluation
+                    sta Evaluation
+                    lda #0
+                    sbc Evaluation+1
+                    sta Evaluation+1                ; -Evaluation
 
                     PHASE AI_LookForCheck
 .wait               rts
@@ -346,26 +350,34 @@ _rts                rts
         VAR __vector, 2
         VEND GenerateAllMoves
                     
-                    ldy #99
-.next               lda #RAMBANK_MOVES_RAM
+
+                    ldx #100
+                    bne .next2
+
+MoveReturn          ldx currentSquare
+
+.next2              lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
 
-                    lda Board,y
-                    beq .nextSq
+.next               dex
+                    cpx #22
+                    bcc .exit
+
+                    lda Board,x
+                    beq .next
                     cmp #-1
-                    beq .nextSq
+                    beq .next
                     eor sideToMove
-                    bmi .nextSq
+                    bmi .next
                     
-                    sty currentSquare
+                    stx currentSquare
 
                     eor sideToMove
-                    ora #FLAG_MOVED                 ; all moves mark piece as moved!
+                    and #~FLAG_CASTLE               ; todo: better part of the move, mmh?
+                    ;ora #FLAG_MOVED                 ; all moves mark piece as moved!
                     sta currentPiece
                     and #PIECE_MASK
                     tay
-
-                    ldx currentSquare
 
                     lda HandlerVectorLO-1,y
                     sta __vector
@@ -373,12 +385,8 @@ _rts                rts
                     sta __vector+1
                     jmp (__vector)
 
-MoveReturn          ldy currentSquare
-.nextSq             dey
-                    cpy #22
-                    bcs .next
 
-.exit               lda savedBank
+.exit               lda currentPly ;savedBank
                     sta SET_BANK_RAM
                     rts
 
@@ -456,8 +464,13 @@ HandlerVectorHI     HANDLEVEC >
                     lda sideToMove
                     bpl .notComputer
                     
-dddx
-                    ldx #2                          ; 3 ply search!!!
+
+                    ;ldx #2
+                    ;jsr selectmove
+sorter              ;jsr Sort
+
+
+                    ldx #4                          ; 3 ply search!!!
                     jsr selectmove
                     ;jsr MoveViaListAtPly
 
@@ -466,7 +479,7 @@ dddx
 .halted             rts
 
 
-;---------------------------------------------------------------------------------------------------
+     ;---------------------------------------------------------------------------------------------------
 
     DEF AdjustMaterialPositionalValue
     SUBROUTINE
@@ -547,6 +560,11 @@ dddx
                     NEGEVAL
 
     ; If there's a capture, we adjust the material value    
+
+;                    lda __capturedPiece
+;                    eor __originalPiece
+;                    bpl .noCapture                  ; special-case capture rook castling onto king
+
 
                     lda __capturedPiece
                     and #PIECE_MASK
@@ -673,7 +691,10 @@ dddx
 
     ENDIF
 
-                    JSROM  CastleFixup
+
+                    lda currentPly
+                    sta SET_BANK_RAM
+                    jsr  CastleFixupDraw
                     rts
 
 
@@ -693,16 +714,8 @@ dddx
 .cont
                     PHASE AI_FlipBuffers
 
-                    lda #1
                     jsr SpecialBody
-
-
-
-#if ASSERTS
-;                    JSROM_SAFE DIAGNOSTIC_checkPieces
-#endif
-
-                   rts
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -730,8 +743,6 @@ dddx
                     and #PIECE_MASK
                     tay
 
-                   ; NEGEVAL
-
                     lda #BANK_AddPieceMaterialValue
                     sta SET_BANK
                     jsr AddPieceMaterialValue       ; adding for opponent = taking
@@ -740,13 +751,7 @@ dddx
                     ldy __y
                     jsr AddPiecePositionValue       ; adding for opponent = taking
 
-                   ; NEGEVAL
-
                     rts
-
-
-;---------------------------------------------------------------------------------------------------
-
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -898,6 +903,13 @@ dddx
                     sty SET_BANK
                     rts
 
+    DEF GetBoardRAM
+                    lda #RAMBANK_MOVES_RAM
+                    sta SET_BANK_RAM
+                    lda Board,y
+                    ldy savedBank
+                    sty SET_BANK_RAM
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -1229,13 +1241,30 @@ dddx
         VEND MakeMove
 
     ; Do a move without any GUI stuff
+    ; This function is ALWAYS paired with "unmake_move" - a call to both will leave board
+    ; and all relevant flags in original state. This is NOT used for the visible move on the
+    ; screen.
+
 
     ; fromPiece     piece doing the move
     ; fromX12       current square X12
     ; originX12     starting square X12
     ; toX12         ending square X12
 
+
+    ; There are potentially "two" moves, with the following
+    ; a) Castling, moving both rook and king
+    ; b) en-Passant, capturing pawn on "odd" square
+    ; These both set "secondary" movers which are used for restoring during unmake_move
+
+                    lda #0
+                    sta@RAM secondaryPiece
+
+
+
                     ldx movePtr
+                    ;lda SortedMove,x
+                    ;tax
 
                     lda MoveFrom,x
                     sta fromX12
@@ -1247,8 +1276,8 @@ dddx
 
 .move               jsr AdjustMaterialPositionalValue
 
-    ; Modify the board (and the piecelists)
-
+    ; Modify the board
+    
                     lda #RAMBANK_MOVES_RAM
                     sta SET_BANK_RAM
                     ldy originX12
@@ -1258,6 +1287,7 @@ dddx
                     lda Board,y
                     sta __capture
                     lda fromPiece
+                    and #PIECE_MASK|FLAG_COLOUR
                     ora #FLAG_MOVED
                     sta@RAM Board,y
 
@@ -1265,6 +1295,16 @@ dddx
                     sta SET_BANK_RAM
                     lda __capture
                     sta@RAM capturedPiece
+
+    IF CASTLING_ENABLED
+
+        ; If the FROM piece has the castle bit set (i.e., it's a king that's just moved 2 squares)
+        ; then we find the appropriate ROOK, set the secondary piece "undo" information, and then
+        ; redo the moving code (for the rook, this time).
+
+                    jsr GenCastleMoveForRook
+                    bcs .move                       ; move the rook!
+    ENDIF
 
 
     IF ENPASSANT_ENABLED
@@ -1277,11 +1317,6 @@ dddx
 .notEnPassant
     ENDIF
 
-    IF CASTLING_ENABLED
-
-                    JSROM GenCastleMoveForRook
-                    bcs .move                       ; move the rook!
-    ENDIF
 
                     ;jsr FinaliseMove
 
@@ -1310,6 +1345,7 @@ dddx
         REFER quiesce
         REFER alphaBeta
         VAR __unmake_capture, 1
+        VAR __secondaryBlank, 1
         VEND unmake_move
 
     ; restore the board evaluation to what it was at the start of this ply
@@ -1322,6 +1358,8 @@ dddx
 
 
                     ldx movePtr
+                    ;lda SortedMove,x
+                    ;tax
 
                     lda MoveFrom,x
                     sta fromX12
@@ -1330,25 +1368,49 @@ dddx
                     sta toX12
                     lda MovePiece,x
                     sta fromPiece
+
                     lda capturedPiece
-                    sta __unmake_capture
+
 
     ; Modify the board (and the piecelists)
 
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
+                    ldx #RAMBANK_MOVES_RAM
+                    stx SET_BANK_RAM
+
+                    ldy toX12
+                    sta@RAM Board,y
+
                     ldy fromX12
                     lda fromPiece
                     sta@RAM Board,y
-                    ldy toX12
-                    lda __unmake_capture
-                    sta@RAM Board,y
 
-    ; TODO: fix piecelist!!!!
 
                     lda currentPly
                     sta SET_BANK_RAM
 
+    ; See if there are any 'secondary' pieces that moved
+    ; here we're dealing with reverting a castling or enPassant move
+
+                    lda secondaryPiece
+                    beq .noSecondary
+                    ldy secondaryBlank
+                    sty __secondaryBlank
+                    ldy secondarySquare
+
+
+                    ldx #RAMBANK_MOVES_RAM
+                    stx SET_BANK_RAM
+                    sta@RAM Board,y                     ; put piece back
+
+                    ldy __secondaryBlank
+                    lda #0
+                    sta@RAM Board,y                     ; blank piece origin
+
+                    lda currentPly
+                    sta SET_BANK_RAM
+
+
+.noSecondary
                     lda sideToMove
                     eor #128
                     sta sideToMove
@@ -1390,6 +1452,7 @@ dddx
         REFER alphaBeta
         VEND quiesce
 
+#if 0
     ; we have already done the Evaluation (incrementally)
 
     ; setup parameters
@@ -1407,6 +1470,28 @@ dddx
 
     DEF QuiesceStart
 
+
+
+;def quiesce( alpha, beta ):
+;    stand_pat = evaluate_board()
+;    if( stand_pat >= beta ):
+;        return beta
+;    if( alpha < stand_pat ):
+;        alpha = stand_pat
+;
+;    for move in board.legal_moves:
+;        if board.is_capture(move):
+;            make_move(move)
+;            score = -quiesce( -beta, -alpha )
+;            unmake_move()
+;            if( score >= beta ):
+;                return beta
+;            if( score > alpha ):
+;                alpha = score
+;    return alpha
+
+
+
 ;    if( stand_pat >= beta ):
 ;        return beta
 
@@ -1415,7 +1500,13 @@ dddx
                     sbc beta
                     lda Evaluation+1
                     sbc beta+1
-                    bcc .endif0
+                    bvc .lab0                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
+                    eor #$80                        ; A = A eor $80, and N= N eor 1
+.lab0               bmi .endif0
+
+;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
+;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
+;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
 
                     lda beta+1
                     sta __bestScore+1
@@ -1432,7 +1523,14 @@ dddx
                     sbc Evaluation
                     lda alpha+1
                     sbc Evaluation+1
-                    bcs .endif1
+                    bvc .lab1                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
+                    eor #$80                        ; A = A eor $80, and N= N eor 1
+.lab1               bpl .endif1
+
+;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
+;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
+;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
+
 
                     lda Evaluation
                     sta@RAM alpha
@@ -1441,6 +1539,11 @@ dddx
 
 .endif1
 
+    lda currentPly
+    sta savedBank
+
+
+
                     jsr newGen
 
                     lda moveIndex
@@ -1448,8 +1551,8 @@ dddx
 
 .loopMoves
 
-                    lda currentPly
-                    sta SET_BANK_RAM
+                    ;lda currentPly
+                    ;sta SET_BANK_RAM
 
 
 
@@ -1466,6 +1569,9 @@ dddx
 
 .cont
 
+
+
+
     ;        if board.is_capture(move):
     ;            make_move(move)
 
@@ -1478,6 +1584,9 @@ dddx
                     stx SET_BANK_RAM
                     and #PIECE_MASK
                     beq .nextMove                   ; only process capture moves
+
+        lda currentPly
+        sta SET_BANK_RAM
 
                     jsr MakeMove
 
@@ -1522,6 +1631,25 @@ dddx
                     jsr unmake_move
 
 
+;def quiesce( alpha, beta ):
+;    stand_pat = evaluate_board()
+;    if( stand_pat >= beta ):
+;        return beta
+;    if( alpha < stand_pat ):
+;        alpha = stand_pat
+;
+;    for move in board.legal_moves:
+;        if board.is_capture(move):
+;            make_move(move)
+;            score = -quiesce( -beta, -alpha )
+;            unmake_move()
+;            if( score >= beta ):
+;                return beta
+;            if( score > alpha ):
+;                alpha = score
+;    return alpha
+
+
 ;            if( score >= beta ):
 ;                return beta
 
@@ -1530,7 +1658,13 @@ dddx
                     sbc beta
                     lda __bestScore+1
                     sbc beta+1
-                    bcc .endif2
+                    bvc .lab2                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
+                    eor #$80                        ; A = A eor $80, and N= N eor 1
+.lab2               bmi .endif2
+
+;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
+;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
+;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
 
                     lda beta
                     sta __bestScore
@@ -1548,7 +1682,13 @@ dddx
                     sbc __bestScore
                     lda alpha+1
                     sbc __bestScore+1
-                    bcs .endif3             ;TODO
+                    bvc .lab3                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
+                    eor #$80                        ; A = A eor $80, and N= N eor 1
+.lab3               bpl .endif3
+
+;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
+;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
+;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
 
                     lda __bestScore
                     sta@RAM alpha
@@ -1564,7 +1704,7 @@ dddx
                     sbc #1
                     sta@RAM movePtr
                     jmp .loopMoves
-
+#endif
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -1573,11 +1713,28 @@ dddx
 .terminal           ;jsr QuiesceStart                ; with alpha, beta already setup
 ;                    rts
 
-
                     lda Evaluation
                     sta __bestScore
                     lda Evaluation+1
                     sta __bestScore+1
+
+#if 0
+    lda moveIndex
+    bmi .OF
+
+    sec
+    lda __bestScore
+    sbc moveIndex
+    sta __bestScore
+    lda __bestScore+1
+    sbc #0
+    sta __bestScore+1
+    rts
+
+
+
+.OF
+#endif
                     rts
 
 
@@ -1585,9 +1742,9 @@ dddx
 
     ; we've iterated the moves, so 'bestMove' and 'bestScore' are the result
 
-                    lda alpha
+                    lda bestScore
                     sta __bestScore
-                    lda alpha+1
+                    lda bestScore+1
                     sta __bestScore+1               ; value of the best move found
 
                     lda bestMove
@@ -1651,29 +1808,49 @@ dddx
     ; on 1st call this becomes alpha = -INF and beta = INF
     ; we're trying to maximise alpha
 
+                    cpx #0
+                    beq .terminal                   ; --> quiesce
+
+                    lda #<-(INFINITY-1)
+                    sta@RAM bestScore
+                    lda #>-(INFINITY-1)
+                    sta@RAM bestScore+1
+
+
+
     ; The evaluation of the current position is a signed 16-bit number
     ; +ve is good for the current side.
     ; This is used during the alpha-beta search for finding best position
     ; Note, this is not the same as the 'Evaluation' which is the current value at ply -- it is the
     ; alphabeta best/worst value of the node!!
 
-                    ldx depthLeft
-                    dex                             ; passed depth remaining
-                    bmi .terminal                   ; bottomed out
-
-        lda currentPly
-        sta savedBank
 
                     jsr NewPlyInitialise
                     jsr GenerateAllMoves
 
+                    jsr Sort
+
     ; Now iterate the moves one-by-one
+
+#if 1
+                    lda moveIndex
+                    lsr
+                    clc
+                    adc SavedEvaluation
+                    sta@RAM SavedEvaluation
+                    lda SavedEvaluation+1
+                    adc #0
+                    sta@RAM SavedEvaluation+1                ; + mobility (kind of odd/bad - happens every level)
+#endif
 
                     lda moveIndex
                     sta@RAM movePtr
 
+
 .loopMoves          ldx movePtr
                     bmi .returnScore
+                    ;lda SortedMove,x
+                    ;tax
 
                     jsr MakeMove
 
@@ -1719,66 +1896,64 @@ dddx
 
                     jsr unmake_move
 
+                    ldx movePtr
+                    ;lda SortedMove,x
+                    ;tax
+
+                    lda __bestScore
+                    sta@RAM MoveScoreLO,x
+                    lda __bestScore+1
+                    sta@RAM MoveScoreHI,x
+
+
     ;        if( score >= beta ):
     ;            return score
 
     ; an alpha-beta cutoff?
     ; aborts searching any more moves because the opponent score improves
 
-        IF 0
                     sec                             ; drop for extra speed
                     lda __bestScore
                     sbc beta
                     lda __bestScore+1
                     sbc beta+1
-                    bcc .notScoreGteBeta    ;todo
+                    bvc .lab2                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
+                    eor #$80                        ; A = A eor $80, and N= N eor 1
+.lab2               bmi .notScoreGteBeta            ; A < NUM
 
-                    ;lda __score
-                    ;sta __bestScore
-                    ;lda __score+1
-                    ;sta __bestScore+1              // already has correct value
-
-                    lda movePtr
+                    lda bestMove
                     sta __bestMove                  ; this move!
                     rts
 
 .notScoreGteBeta
-        ENDIF
 
-        IF 0
     ;        if( score > bestscore ):
     ;            bestscore = score
 
-                    clc                     ; !! OK. Could be dropped for a bit of speed
-                    lda alpha
-                    sbc __bestScore
-                    lda alpha+1
-                    sbc __bestScore+1
-                    bcs .notScoreGtBestScore    ;todo
+                    clc                             ; !! OK. Could be dropped for a bit of speed
+                    lda __bestScore
+                    sbc bestScore
+                    lda __bestScore+1
+                    sbc bestScore+1
+                    bvc .lab3                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
+                    eor #$80                        ; A = A eor $80, and N= N eor 1
+.lab3               bmi .notScoreGtBestScore        ; A < NUM
 
                     lda __bestScore
-                    sta@RAM alpha
+                    sta@RAM bestScore
                     lda __bestScore+1
-                    sta@RAM alpha+1
+                    sta@RAM bestScore+1
 
-                    lda __bestMove
+                    ;ldx movePtr
+                    ;lda SortedMove,x
+                    lda movePtr
                     sta@RAM bestMove
 
 .notScoreGtBestScore
-    ENDIF
+
 
     ;        if( score > alpha ):
     ;            alpha = score
-
-
-
-;As stated above, after a CMP instruction, the N flag is NOT the signed
-;comparison result.  A signed comparison works by performing a subtraction,
-;but the signed comparison result is the exclusive-or (eor) of the N and V
-;flags.  Specifically, to compare the signed numbers NUM1 and NUM2, the
-;subtraction NUM1-NUM2 is performed, and NUM1 &lt; NUM2 when N eor V is 1, and
-;NUM1 &gt;= NUM2 when N eor V is 0.  (A program that proves this is given in
-;Appendix A.)
 
     ; We've found a higher scoring move than currently known, so record it
 
@@ -1789,58 +1964,18 @@ dddx
                     sbc __bestScore+1
                     bvc .lab                ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
                     eor #$80                ; A = A eor $80, and N= N eor 1
-.lab
-
-                    bpl .notScoreGtAlpha
-
-;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
-;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
-;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
-
+.lab                bpl .notScoreGtAlpha    ; A >= NUM
 
                     lda __bestScore
                     sta@RAM alpha
                     lda __bestScore+1
                     sta@RAM alpha+1
 
-                    lda movePtr
-                    sta@RAM bestMove
-
 .notScoreGtAlpha    ldx movePtr
                     dex
                     stx@RAM movePtr
                     jmp .loopMoves
 
-
-
-
-
-;---------------------------------------------------------------------------------------------------
-
-#if 0
-    DEF FixPieceList
-    SUBROUTINE
-
-    ; originX12          X12 square piece moved from
-    ; toX12              X12 square piece moved to (0 to erase piece from list)
-
-    ; It scans the piece list looking for the 'from' square and sets it to the 'to' square
-    ; TODO: this is slow and should use a pointer to pieces instead
-
-
-                    ldx #15
-                    lda originX12
-.pieceCheck         cmp PieceSquare,x
-                    beq .adjustPiece
-                    dex
-                    bpl .pieceCheck
-                    rts
-
-.adjustPiece        lda toX12
-                    sta@RAM PieceSquare,x
-                    rts
-
-#endif
 
 ;---------------------------------------------------------------------------------------------------
 
