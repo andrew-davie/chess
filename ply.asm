@@ -45,10 +45,11 @@ MAX_MOVES =70
     VARIABLE MoveFrom, MAX_MOVES
     VARIABLE MoveTo, MAX_MOVES
     VARIABLE MovePiece, MAX_MOVES
+    VARIABLE MoveCapture, MAX_MOVES
 
     VARIABLE MoveScoreLO, MAX_MOVES
     VARIABLE MoveScoreHI, MAX_MOVES
-    VARIABLE SortedMove, MAX_MOVES
+;    VARIABLE SortedMove, MAX_MOVES
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -57,10 +58,13 @@ MAX_MOVES =70
 
     VARIABLE enPassantSquare, 1
     VARIABLE capturedPiece, 1
+    VARIABLE originalPiece, 1
     VARIABLE secondaryPiece, 1                      ; original piece on secondary (castle, enpassant)
     VARIABLE secondarySquare, 1                     ; original square of secondary piece
     VARIABLE secondaryBlank, 1                      ; square to blank on secondary
-    
+    VARIABLE quiescentEnabled, 1                    ; all child nodes to quiesce
+    VARIABLE captureMove, 1                         ; previous move was a capture
+
 ;---------------------------------------------------------------------------------------------------
 ; Move tables hold piece moves for this current ply
 
@@ -72,6 +76,7 @@ MAX_MOVES =70
 ;    VARIABLE bestValue, 2
     VARIABLE depthLeft, 1
     VARIABLE bestScore, 2
+    VARIABLE restorePiece, 1
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -240,7 +245,6 @@ InitPieceList
 
         REFER aiFlipBuffers
         REFER InitialiseMoveGeneration
-        REFER quiesce
         REFER alphaBeta
         VEND NewPlyInitialise
 
@@ -270,45 +274,6 @@ InitPieceList
 
                     rts
 
-
-;---------------------------------------------------------------------------------------------------
-
-#if 1
-    DEF MoveViaListAtPly
-    SUBROUTINE
-
-        REFER aiComputerMove
-        VEND MoveViaListAtPly
-    
-                    ldy moveIndex
-                    bmi .exit                       ; no valid moves (stalemate if not in check)
-
-                    NEXT_RANDOM
-
-    ; int(random * # moves) --> a random move #
-
-                    lda #0
-                    tax                             ; selected move
-                    clc
-.mulxcc             adc rnd
-                    bcc .mulx
-                    clc
-                    inx
-.mulx               dey
-                    bpl .mulxcc
-
-                    lda MoveFrom,x
-                    sta fromX12
-                    sta originX12
-
-                    lda MoveTo,x
-                    sta toX12
-
-                    lda MovePiece,x
-                    sta fromPiece
-
-.exit               rts
-#endif
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -462,8 +427,15 @@ InitPieceList
         VEND selectmove
 
     ; RAM bank already switched in!!!
-    
-                    stx@RAM depthLeft
+
+    IF DIAGNOSTICS
+                    lda #0
+                    sta positionCount
+                    sta positionCount+1
+                    sta positionCount+2
+
+                    sta maxPly
+    ENDIF
 
     ; both player (pos) and opponent (neg) have worst value ever!
 
@@ -496,10 +468,13 @@ InitPieceList
                     sbc beta+1
                     sta __beta+1                    ; = -beta (effectively unchanged) - no αβ on ply 0
 
-                    ldx depthLeft
+                    ldx #SEARCH_DEPTH               ; depth
+                    lda #0                          ; no quiescence yet
+                    ldy #0                          ; no capture on last move
                     jsr alphaBeta                   ; recurse!
  
                     ldx bestMove
+                    bmi .nomove
                     lda MoveTo,x
                     sta toX12
                     lda MoveFrom,x
@@ -508,7 +483,13 @@ InitPieceList
                     lda MovePiece,x
                     sta fromPiece
 
-                    rts
+    ; get piece from board because of promotions!
+
+                    ;ldy originX12
+                    ;jsr GetBoardRAM
+                    ;sta fromPiece
+
+.nomove             rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -580,8 +561,6 @@ InitPieceList
 
     ; in this siutation (castle, rook moving) we do not change sides yet!
 
-    jsr debug
-
                     PHASE AI_MoveIsSelected
                     rts
 
@@ -632,68 +611,6 @@ RSquareEnd          .byte 25,27,95,97
 
 ;---------------------------------------------------------------------------------------------------
 
-#if 0
-    DEF Sort
-    SUBROUTINE
-
-        VAR __big, 2
-        VAR __biggest, 1
-        VEND Sort
-
-                    ldx moveIndex
-                    bmi .exit
-
-.fill               txa
-                    sta@RAM SortedMove,x
-                    dex
-                    bpl .fill
-
-
-                    ldy moveIndex
-.getNext            ldx moveIndex
-                    lda #<-INFINITY
-                    sta __big
-                    lda #>-INFINITY
-                    sta __big+1
-
-.findBig            
-
-                    sec
-                    lda MoveScoreLO,x
-                    sbc __big
-                    lda MoveScoreHI,x
-                    sbc __big+1
-                    bvc .l0
-                    eor #$80
-.l0                 bmi .lt            
-
-                    lda MoveScoreLO,x
-                    sta __big
-                    lda MoveScoreHI,x
-                    sta __big+1
-
-                    stx __biggest
-
-.lt                 dex
-                    bpl .findBig
-
-                    lda __biggest
-                    sta@RAM SortedMove,y
-                    tax
-
-
-                    lda #<-INFINITY
-                    sta@RAM MoveScoreLO,x
-                    lda #>-INFINITY
-                    sta@RAM MoveScoreHI,x
-
-
-
-                    dey
-                    bpl .getNext
-.exit               rts
-#endif
-
 
 
     DEF Sort
@@ -701,24 +618,22 @@ RSquareEnd          .byte 25,27,95,97
 
         REFER aiComputerMove
         VAR __xs, 1
+        VAR __swapped, 1
+        VAR __pc, 1
         VEND Sort
 
                     lda currentPly
                     sta savedBank
 
-
                     ldx moveIndex
                     ldy moveIndex
                     dey
-.scan               sty __xs
-                    lda MoveTo,y
-                    tay
-                    jsr GetBoardRAM
-                    ldy __xs
-                    and #PIECE_MASK
+.scan
+
+                    lda MoveCapture,y
+                    ;and #PIECE_MASK
                     beq .next
 
-                    
                     lda MoveTo,x
                     pha
                     lda MoveFrom,x
@@ -745,127 +660,7 @@ RSquareEnd          .byte 25,27,95,97
 
 .next               dey
                     bpl .scan
-
-
                     rts
-
-
-
-
-
-#if 0
-    DEF Sort
-    SUBROUTINE
-
-        VAR __idx, 1
-        VAR __work1, 1
-        VAR __work2, 2
-        VAR __work3, 2
-        VAR __sx, 1
-        VEND Sort
-
-        jsr debug
-
-        ; Fill the move pointer list (in order)
-        ; We want the LAST entry to be the index of the one with the BEST score
-        
-                    ldx moveIndex
-                    stx __idx
-                    bmi .exit
-
-.fill               txa
-                    sta@RAM SortedMove,x
-                    dex
-                    bpl .fill
-
-        ; Now that oddball sort!
-
-.sort               ldx __idx
-                    ldy SortedMove,x
-                    sty __work3
-                    jmp .l2
-
-.l1                 ldx __sx
-                    dex
-                    beq .l3
-                    stx __sx
-
-
-                    lda SortedMove,x
-                    ldy __work2
-                    ldx SortedMove,y        ; y = nval
-                    tay                     ; x = "work2"
-
-                    sec
-                    lda MoveScoreLO,y
-                    sbc MoveScoreLO,x
-                    lda MoveScoreHI,y
-                    sbc MoveScoreHI,x
-                    bvc .lab0
-                    eor #$80
-.lab0               bmi .l1
-
-                    ldx __sx
-
-;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
-;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
-;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
-
-.l2                 stx __work1
-                    sty __work2
-                    stx __sx
-                    jmp .l1
-
-.l3                 ldy __idx
-                    lda __work2
-                    sta@RAM SortedMove,y
-                    ldy __work1
-                    lda __work3
-                    sta@RAM SortedMove,y
-
-                    dec __idx
-                    bne .sort
-.exit               rts
-                    
-;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
-;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
-;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
-#endif
-
-
-#if 0
-.exit
-
-
-;
-ZPADD  = $30            ;2 BYTE POINTER IN PAGE ZERO. SET BY CALLING PROGRAM
-NVAL   = $32            ;SET BY CALLING PROGRAM
-WORK1  = $33            ;3 BYTES USED AS WORKING AREA
-WORK2  = $34
-WORK3  = $35
-        *=$6000         ;CODE ANYWHERE IN RAM OR ROM
-SORT LDY NVAL           ;START OF SUBROUTINE SORT
-     LDA (ZPADD),Y      ;LAST VALUE IN (WHAT IS LEFT OF) SEQUENCE TO BE SORTED
-     STA WORK3          ;SAVE VALUE. WILL BE OVER-WRITTEN BY LARGEST NUMBER
-     BRA L2
-L1   DEY
-     BEQ L3
-     LDA (ZPADD),Y
-     CMP WORK2
-     BCC L1
-L2   STY WORK1          ;INDEX OF POTENTIALLY LARGEST VALUE
-     STA WORK2          ;POTENTIALLY LARGEST VALUE
-     BRA L1
-L3   LDY NVAL           ;WHERE THE LARGEST VALUE SHALL BE PUT
-     LDA WORK2          ;THE LARGEST VALUE
-     STA (ZPADD),Y      ;PUT LARGEST VALUE IN PLACE
-     LDY WORK1          ;INDEX OF FREE SPACE
-     LDA WORK3          ;THE OVER-WRITTEN VALUE
-     STA (ZPADD),Y      ;PUT THE OVER-WRITTEN VALUE IN THE FREE SPACE
-     DEC NVAL           ;END OF THE SHORTER SEQUENCE STILL LEFT
-     BNE SORT           ;START WORKING WITH THE SHORTER SEQUENCE
-     RTS
-#endif
 
 
 ;---------------------------------------------------------------------------------------------------

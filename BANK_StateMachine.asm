@@ -797,6 +797,7 @@ ONCEPERFRAME = 40
         REFER AiStateMachine
         VEND aiPromotePawnStart
 
+
                     lda INTIM
                     cmp #SPEEDOF_COPYSINGLEPIECE
                     bcc .exit

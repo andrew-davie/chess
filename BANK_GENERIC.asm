@@ -101,7 +101,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
         REFER AiStateMachine
         VEND aiMoveIsSelected
 
-
+    
     ; Both computer and human have now seleted a move, and converge here
 
 

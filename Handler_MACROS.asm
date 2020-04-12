@@ -11,6 +11,9 @@
 
     ; = 76 for single square (empty/take)
 
+                lda #0
+                sta capture
+
                 ldx currentSquare               ; 3
                 bne .project                    ; 3   unconditional
 
@@ -19,6 +22,7 @@
                 bmi .invalid                    ; 2/3 off board!
                 lda Board,y                     ; 4   piece @ destination
                 beq .empty                      ; 2/3
+                sta capture
                 eor currentPiece                ; 3
                 bpl .invalid                    ; 2/3 same colour
                 jsr AddMove                     ; 57  and exit
@@ -34,6 +38,7 @@
                 ldy ValidSquare+{1},x
                 bmi .invalid                    ; off board!
                 lda Board,y                     ; piece @ destination
+                sta capture
                 beq .squareEmpty
                 eor currentPiece
                 bpl .invalid                    ; same colour

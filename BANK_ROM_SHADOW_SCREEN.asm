@@ -9,12 +9,17 @@
 ; we effectively have 1K
 ;---------------------------------------------------------------------------------------------------
 
-COLOUR_LINE_1 = $a4
+COLOUR_LINE_1 = $94
 COLOUR_LINE_2 = $4a
-COLOUR_LINE_3 = $2A
+COLOUR_LINE_3 = $fa
 BACKGCOL      = $00
 
+;COLOUR_LINE_1 = $94
+;COLOUR_LINE_2 = $48
+;COLOUR_LINE_3 = $2C
+;BACKGCOL      = $00
 
+;
 
 ; good/contrast
 ;COLOUR_LINE_1 = $a6

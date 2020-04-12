@@ -240,6 +240,9 @@ _rts                rts
 
     ; Initialise for a new move
 
+        ;PHASE AI_ComputerMove
+        ;rts
+
                     lda currentPly
                     sta SET_BANK_RAM
 
@@ -296,6 +299,8 @@ _rts                rts
         jmp .player ;tmp
     #endif
 
+    ;TODO -- mmh!!!!
+
                     ldx sideToMove
                     bpl .player
 
@@ -343,7 +348,6 @@ _rts                rts
     DEF GenerateAllMoves
     SUBROUTINE
 
-        REFER quiesce
         REFER alphaBeta
         REFER aiStepMoveGen
         REFER aiGenerateMoves
@@ -444,35 +448,25 @@ HandlerVectorHI     HANDLEVEC >
         REFER AiStateMachine
         VEND aiComputerMove
 
-    ; Choose one of the moves
-
-;                    lda currentPly
-
-    lda #RAMBANK_PLY
-    sta currentPly                    
+ 
+                    lda #RAMBANK_PLY
+                    sta currentPly                    
                     sta SET_BANK_RAM                ; switch in movelist
-                    sta savedBank
+                    ;sta savedBank
 
-                    lda #-1
-                    cmp moveIndex
-                    beq .halted                     ; no valid moves
+                    ;lda #-1
+                    ;cmp moveIndex
+                    ;beq .halted                     ; no valid moves
 
                     ;sta fromX12
-                    sta originX12
-                    sta toX12
+                    ;sta originX12
+                    ;sta toX12
 
-                    lda sideToMove
-                    bpl .notComputer
+                    ;lda sideToMove
+                    ;bpl .notComputer
                     
 
-                    ;ldx #2
-                    ;jsr selectmove
-sorter              ;jsr Sort
-
-
-                    ldx #4                          ; 3 ply search!!!
                     jsr selectmove
-                    ;jsr MoveViaListAtPly
 
                     
 .notComputer        PHASE AI_MoveIsSelected
@@ -757,6 +751,7 @@ sorter              ;jsr Sort
 ;---------------------------------------------------------------------------------------------------
 
     include "Handler_PAWN.asm"
+    include "Handler_KNIGHT.asm"
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -768,6 +763,7 @@ sorter              ;jsr Sort
     ; [y]               to square (X12)
     ; currentSquare     from square (X12)
     ; currentPiece      piece. ENPASSANT flag set if pawn double-moving off opening rank
+    ; capture           captured piece
 
                     lda currentPly                  ; 3
                     sta SET_BANK_RAM                ; 3
@@ -776,15 +772,17 @@ sorter              ;jsr Sort
 
                     ldy moveIndex                   ; 3
                     iny                             ; 2
-                    sty@RAM moveIndex     ; 4
+                    sty@RAM moveIndex               ; 4
 
-                    sta@RAM MoveTo,y      ; 5
+                    sta@RAM MoveTo,y                ; 5
                     tax                             ; 2 new square (for projections)
 
                     lda currentSquare               ; 3
-                    sta@RAM MoveFrom,y    ; 5
+                    sta@RAM MoveFrom,y              ; 5
                     lda currentPiece                ; 3
-                    sta@RAM MovePiece,y   ; 5
+                    sta@RAM MovePiece,y             ; 5
+                    lda capture                     ; 3
+                    sta@RAM MoveCapture,y           ; 5
 
                     lda #RAMBANK_MOVES_RAM          ; 2 TODO: NOT NEEDED IF FIXED BANK CALLED THIS
                     sta SET_BANK_RAM                ; 3
@@ -1235,9 +1233,9 @@ sorter              ;jsr Sort
     DEF MakeMove
     SUBROUTINE
 
-        REFER quiesce
         REFER alphaBeta
-        VAR __capture,1
+        VAR __capture, 1
+        VAR __restore, 1
         VEND MakeMove
 
     ; Do a move without any GUI stuff
@@ -1272,15 +1270,17 @@ sorter              ;jsr Sort
                     lda MoveTo,x
                     sta toX12
                     lda MovePiece,x
-                    sta fromPiece
+                    sta fromPiece                   
 
 .move               jsr AdjustMaterialPositionalValue
 
     ; Modify the board
     
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
+                    ldy #RAMBANK_MOVES_RAM
+                    sty SET_BANK_RAM
                     ldy originX12
+                    lda Board,y
+                    sta __restore
                     lda #0
                     sta@RAM Board,y
                     ldy toX12
@@ -1295,6 +1295,8 @@ sorter              ;jsr Sort
                     sta SET_BANK_RAM
                     lda __capture
                     sta@RAM capturedPiece
+                    lda __restore
+                    sta@RAM restorePiece
 
     IF CASTLING_ENABLED
 
@@ -1342,7 +1344,6 @@ sorter              ;jsr Sort
     DEF unmake_move
     SUBROUTINE
 
-        REFER quiesce
         REFER alphaBeta
         VAR __unmake_capture, 1
         VAR __secondaryBlank, 1
@@ -1367,8 +1368,10 @@ sorter              ;jsr Sort
                     lda MoveTo,x
                     sta toX12
                     lda MovePiece,x
-                    sta fromPiece
+                    sta fromPiece           ; incorrect in prommotion...
 
+                    lda restorePiece
+                    pha
                     lda capturedPiece
 
 
@@ -1381,7 +1384,7 @@ sorter              ;jsr Sort
                     sta@RAM Board,y
 
                     ldy fromX12
-                    lda fromPiece
+                    pla ;lda fromPiece
                     sta@RAM Board,y
 
 
@@ -1420,321 +1423,13 @@ sorter              ;jsr Sort
 
 ;---------------------------------------------------------------------------------------------------
 
-;def quiesce( alpha, beta ):
-;    stand_pat = evaluate_board()
-;    if( stand_pat >= beta ):
-;        return beta
-;    if( alpha < stand_pat ):
-;        alpha = stand_pat
-;
-;    for move in board.legal_moves:
-;        if board.is_capture(move):
-;            make_move(move)
-;            score = -quiesce( -beta, -alpha )
-;            unmake_move()
-;            if( score >= beta ):
-;                return beta
-;            if( score > alpha ):
-;                alpha = score
-;    return alpha
-
-
-    DEF quiesce
     SUBROUTINE
 
-    ; We are at the lowest level of the tree search, so we want to only continue if there
-    ; are captures in effect. Keep going until there are no captures.
-
-    ; requriement: correct PLY bank already switched in
-    ; --> savedBank too
-
-        COMMON_VARS_ALPHABETA
-        REFER alphaBeta
-        VEND quiesce
-
-#if 0
-    ; we have already done the Evaluation (incrementally)
-
-    ; setup parameters
-    ; beta = -alpha, alpha = -beta
-
-                    lda __beta
-                    sta@RAM alpha
-                    lda __beta+1
-                    sta@RAM alpha+1
-
-                    lda __alpha
-                    sta@RAM beta
-                    lda __alpha+1
-                    sta@RAM beta+1
-
-    DEF QuiesceStart
-
-
-
-;def quiesce( alpha, beta ):
-;    stand_pat = evaluate_board()
-;    if( stand_pat >= beta ):
-;        return beta
-;    if( alpha < stand_pat ):
-;        alpha = stand_pat
-;
-;    for move in board.legal_moves:
-;        if board.is_capture(move):
-;            make_move(move)
-;            score = -quiesce( -beta, -alpha )
-;            unmake_move()
-;            if( score >= beta ):
-;                return beta
-;            if( score > alpha ):
-;                alpha = score
-;    return alpha
-
-
-
-;    if( stand_pat >= beta ):
-;        return beta
-
-                    sec
-                    lda Evaluation
-                    sbc beta
-                    lda Evaluation+1
-                    sbc beta+1
-                    bvc .lab0                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
-                    eor #$80                        ; A = A eor $80, and N= N eor 1
-.lab0               bmi .endif0
-
-;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
-;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
-;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
-
-                    lda beta+1
-                    sta __bestScore+1
-                    lda beta
-                    sta __bestScore
-                    rts
-.endif0
-
-;    if( alpha < stand_pat ):
-;        alpha = stand_pat
-
-                    clc                             ;!! OK
-                    lda alpha
-                    sbc Evaluation
-                    lda alpha+1
-                    sbc Evaluation+1
-                    bvc .lab1                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
-                    eor #$80                        ; A = A eor $80, and N= N eor 1
-.lab1               bpl .endif1
-
-;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
-;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
-;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
-
-
-                    lda Evaluation
-                    sta@RAM alpha
-                    lda Evaluation+1
-                    sta@RAM alpha+1
-
-.endif1
-
-    lda currentPly
-    sta savedBank
-
-
-
-                    jsr newGen
-
-                    lda moveIndex
-                    sta@RAM movePtr
-
-.loopMoves
-
-                    ;lda currentPly
-                    ;sta SET_BANK_RAM
-
-
-
-                    ldx movePtr
-                    bpl .cont
-
-    ; finished looking, all moves done - return alpha
-
-                    lda alpha
-                    sta __bestScore
-                    lda alpha+1
-                    sta __bestScore+1
-                    rts
-
-.cont
-
-
-
-
-    ;        if board.is_capture(move):
-    ;            make_move(move)
-
-                    ldy MoveTo,x
-
-                    lda #RAMBANK_MOVES_RAM
-                    sta SET_BANK_RAM
-                    lda Board,y
-                    ldx currentPly
-                    stx SET_BANK_RAM
-                    and #PIECE_MASK
-                    beq .nextMove                   ; only process capture moves
-
-        lda currentPly
-        sta SET_BANK_RAM
-
-                    jsr MakeMove
-
-    ; TODO: can't go past MAX_PLY... thing
-
-    ; score = -quiesce( -beta, -alpha )
-
-                    sec
-                    lda #0
-                    sbc beta
-                    sta __beta
-                    lda #0
-                    sbc beta+1
-                    sta __beta+1                    ; -beta
-
-                    sec
-                    lda #0
-                    sbc alpha
-                    sta __alpha
-                    lda #0
-                    sbc alpha+1
-                    sta __alpha+1                   ; -alpha
-
-                    inc currentPly
-                    ldx currentPly
-                    stx SET_BANK_RAM
-
-                    jsr quiesce                     ; recurse
-
-                    dec currentPly
-                    lda currentPly
-                    sta SET_BANK_RAM
-
-                    sec
-                    lda #0
-                    sbc __bestScore
-                    sta __bestScore
-                    lda #0
-                    sbc __bestScore+1
-                    sta __bestScore+1               ; "-quiesce(..."
-
-                    jsr unmake_move
-
-
-;def quiesce( alpha, beta ):
-;    stand_pat = evaluate_board()
-;    if( stand_pat >= beta ):
-;        return beta
-;    if( alpha < stand_pat ):
-;        alpha = stand_pat
-;
-;    for move in board.legal_moves:
-;        if board.is_capture(move):
-;            make_move(move)
-;            score = -quiesce( -beta, -alpha )
-;            unmake_move()
-;            if( score >= beta ):
-;                return beta
-;            if( score > alpha ):
-;                alpha = score
-;    return alpha
-
-
-;            if( score >= beta ):
-;                return beta
-
-                    sec
-                    lda __bestScore
-                    sbc beta
-                    lda __bestScore+1
-                    sbc beta+1
-                    bvc .lab2                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
-                    eor #$80                        ; A = A eor $80, and N= N eor 1
-.lab2               bmi .endif2
-
-;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
-;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
-;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
-
-                    lda beta
-                    sta __bestScore
-                    lda beta+1
-                    sta __bestScore+1
-                    rts
-
-.endif2
-
-;            if( score > alpha ):
-;                alpha = score
-
-                    clc                             ; !! OK
-                    lda alpha
-                    sbc __bestScore
-                    lda alpha+1
-                    sbc __bestScore+1
-                    bvc .lab3                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
-                    eor #$80                        ; A = A eor $80, and N= N eor 1
-.lab3               bpl .endif3
-
-;If the N flag is 1, then A (signed) < NUM (signed) and BMI will branch
-;If the N flag is 0, then A (signed) >= NUM (signed) and BPL will branch
-;One way to remember which is which is to remember that minus (BMI) is less than, and plus (BPL) is greater than or equal to.
-
-                    lda __bestScore
-                    sta@RAM alpha
-                    lda __bestScore+1
-                    sta@RAM alpha+1
-.endif3
-
-
-    ; end of move iteration/loop
-
-.nextMove           sec
-                    lda movePtr
-                    sbc #1
-                    sta@RAM movePtr
-                    jmp .loopMoves
-#endif
-
-;---------------------------------------------------------------------------------------------------
-
-    SUBROUTINE
-
-.terminal           ;jsr QuiesceStart                ; with alpha, beta already setup
-;                    rts
-
+.terminal
                     lda Evaluation
                     sta __bestScore
                     lda Evaluation+1
                     sta __bestScore+1
-
-#if 0
-    lda moveIndex
-    bmi .OF
-
-    sec
-    lda __bestScore
-    sbc moveIndex
-    sta __bestScore
-    lda __bestScore+1
-    sbc #0
-    sta __bestScore+1
-    rts
-
-
-
-.OF
-#endif
                     rts
 
 
@@ -1788,6 +1483,30 @@ sorter              ;jsr Sort
     ;    return bestscore
 
                     stx@RAM depthLeft
+                    sta@RAM quiescentEnabled
+                    sty@RAM captureMove
+
+
+
+                    cpx #0
+                    bne .normal                     ; not leaf node or below
+                    lda quiescentEnabled
+                    bne .quiescing
+                    lda captureMove
+                    beq .terminal                   ; leaf node with no previous capture - evaluate
+                    ;sta@RAM quiescentEnabled
+.quiescing
+.normal
+
+
+
+    IF DIAGNOSTICS
+                    lda currentPly
+                    cmp maxPly
+                    bcc .notmax
+                    sta maxPly
+.notmax
+    ENDIF
 
 
     ; setup parameters
@@ -1808,8 +1527,8 @@ sorter              ;jsr Sort
     ; on 1st call this becomes alpha = -INF and beta = INF
     ; we're trying to maximise alpha
 
-                    cpx #0
-                    beq .terminal                   ; --> quiesce
+                    ;cpx #0
+                    ;beq .terminal                   ; --> quiesce
 
                     lda #<-(INFINITY-1)
                     sta@RAM bestScore
@@ -1827,20 +1546,21 @@ sorter              ;jsr Sort
 
                     jsr NewPlyInitialise
                     jsr GenerateAllMoves
-
                     jsr Sort
 
     ; Now iterate the moves one-by-one
 
 #if 1
-                    lda moveIndex
-                    lsr
                     clc
-                    adc SavedEvaluation
+                    ;lda depthLeft
+                    ;beq .skipMob
+                    lda moveIndex
+.skipMob            adc SavedEvaluation
                     sta@RAM SavedEvaluation
                     lda SavedEvaluation+1
                     adc #0
                     sta@RAM SavedEvaluation+1                ; + mobility (kind of odd/bad - happens every level)
+
 #endif
 
                     lda moveIndex
@@ -1849,10 +1569,29 @@ sorter              ;jsr Sort
 
 .loopMoves          ldx movePtr
                     bmi .returnScore
-                    ;lda SortedMove,x
-                    ;tax
+
+
+                    lda quiescentEnabled
+                    beq .normal2
+                    lda MoveCapture,x
+                    bne .normal2
+                    jmp .nextMove
+
+.normal2
+
+    IF DIAGNOSTICS
+
+                    inc positionCount
+                    bne .p1
+                    inc positionCount+1
+                    bne .p1
+                    inc positionCount+2
+.p1
+    ENDIF
 
                     jsr MakeMove
+
+
 
     ; "score = -alphabeta( -beta, -alpha, depthleft - 1 )"
     ; set pareameters for next level --> __alpha, __beta
@@ -1874,12 +1613,16 @@ sorter              ;jsr Sort
                     sta __beta+1                    ; -beta
 
                     ldx depthLeft
+                    beq .bottom
                     dex
+.bottom
 
                     inc currentPly
                     lda currentPly
                     sta SET_BANK_RAM                ; self-switch
 
+                    lda quiescentEnabled
+                    ldy capturedPiece
                     jsr alphaBeta                   ; recurse!
 
                     dec currentPly
@@ -1897,9 +1640,6 @@ sorter              ;jsr Sort
                     jsr unmake_move
 
                     ldx movePtr
-                    ;lda SortedMove,x
-                    ;tax
-
                     lda __bestScore
                     sta@RAM MoveScoreLO,x
                     lda __bestScore+1
@@ -1944,8 +1684,6 @@ sorter              ;jsr Sort
                     lda __bestScore+1
                     sta@RAM bestScore+1
 
-                    ;ldx movePtr
-                    ;lda SortedMove,x
                     lda movePtr
                     sta@RAM bestMove
 
@@ -1971,7 +1709,9 @@ sorter              ;jsr Sort
                     lda __bestScore+1
                     sta@RAM alpha+1
 
-.notScoreGtAlpha    ldx movePtr
+.notScoreGtAlpha
+.nextMove
+                    ldx movePtr
                     dex
                     stx@RAM movePtr
                     jmp .loopMoves

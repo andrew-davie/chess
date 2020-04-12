@@ -92,6 +92,10 @@
 
     ; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 99
 
+    ;DEF PieceList
+    ;ds 16
+
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -99,7 +103,6 @@
     include "Handler_BISHOP.asm"
     include "Handler_ROOK.asm"
     include "Handler_KING.asm"
-    include "Handler_KNIGHT.asm"
 
 
 ;---------------------------------------------------------------------------------------------------

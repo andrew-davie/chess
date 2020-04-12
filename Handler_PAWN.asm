@@ -98,6 +98,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
                     bmi .invalid
                     lda Board,y
                     beq .invalid                    ; square empty
+                    sta capture
                     eor currentPiece
                     bpl .invalid                    ; same colour
 
@@ -128,6 +129,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
                     ldy ValidSquare+_UP,x           ; square above must be blank (WILL NOT EVER be off-board!)
                     lda Board,y
                     bne .pMoved                     ; occupied
+                    sta capture
 
     ; we may need to promote the pawn
     ; All possibilites (Q/R/B/N) are added as individual moves
@@ -199,7 +201,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
                 ldy ValidSquare+_DOWN,x         ; square below must be blank (WILL NOT EVER be off-board!)
                 lda Board,y
                 bne .pMoved                     ; occupied
-
+                sta capture
 
     ; we may need to promote the pawn
     ; All possibilites (Q/R/B/N) are added as individual moves

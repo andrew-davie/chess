@@ -51,6 +51,10 @@ Platform                        ds 1                ; TV system (%0x=NTSC, %10=P
 speech_addr                     ds 2
 bg                              ds 1
 
-_2nd_square                     ds 1
-_2nd_blank                      ds 1
-_2nd_piece                      ds 1
+capture                         ds 1
+captureLastPly                  ds 1
+
+    IF DIAGNOSTICS
+maxPly                          ds 1
+positionCount                   ds 3
+    ENDIF

@@ -33,8 +33,11 @@ INFINITY                = 32767
 
 
 ; assemble diagnostics. Remove for release.
-ASSERTS                 = 0
+
 TEST_POSITION           = 0               ; 0=normal, 1 = setup test position
+DIAGNOSTICS             = 0
+QUIESCENCE              = 1
+ASSERTS                 = 0
 PVSP                    = 0                 ; player versus player =1
 ENPASSANT_ENABLED       = 0
 CASTLING_ENABLED        = 1
@@ -42,6 +45,9 @@ CASTLING_ENABLED        = 1
 
 WHITE_PLAYER = 0        ; human
 BLACK_PLAYER = 0        ; human
+
+SEARCH_DEPTH            = 3
+
 
 ; DELAYS
 
