@@ -46,8 +46,8 @@ CASTLING_ENABLED        = 1
 WHITE_PLAYER = 0        ; human
 BLACK_PLAYER = 0        ; human
 
-SEARCH_DEPTH            = 3
-
+SEARCH_DEPTH            = 4
+SWAP_SIDE               = 128 + (RAMBANK_PLY ^ (RAMBANK_PLY+1))
 
 ; DELAYS
 
@@ -123,7 +123,7 @@ SCANLINES_NTSC      = 262                       ; NTSC 262
 SCANLINES_PAL       = 312
 
 
-TIME_PART_2         = 46
+TIME_PART_2         = 45
 TIME_PART_1         = 47
 
 
@@ -318,8 +318,6 @@ MAXIMUM_REQUIRED_OVERLAY_SIZE SET OVERLAY_DELTA
     ENDM
 
 
-
-
 ;---------------------------------------------------------------------------------------------------
 
     MAC TAG ; {ident/tag}
@@ -338,6 +336,53 @@ MAXIMUM_REQUIRED_OVERLAY_SIZE SET OVERLAY_DELTA
 
     MAC sty@RAM
         sty [RAM]+{0}
+    ENDM
+
+    MAC sta@PLY ;{}
+        sta [RAM]+{0}
+    ENDM
+
+    MAC stx@PLY
+        stx [RAM]+{0}
+    ENDM
+
+    MAC sty@PLY
+        sty [RAM]+{0}
+    ENDM
+
+
+    MAC lda@RAM ;{}
+        lda {0}
+    ENDM
+
+    MAC ldx@RAM ;{}
+        ldx {0}
+    ENDM
+
+    MAC ldy@RAM ;{}
+        ldy {0}
+    ENDM
+
+
+    MAC lda@PLY ;{}
+        lda {0}
+    ENDM
+
+    MAC ldx@PLY ;{}
+        ldx {0}
+    ENDM
+
+    MAC ldy@PLY ;{}
+        ldy {0}
+    ENDM
+
+
+    MAC adc@PLY ;{}
+        adc {0}
+    ENDM
+
+    MAC sbc@PLY ;{}
+        sbc {0}
     ENDM
 
 
@@ -519,6 +564,8 @@ RND_EOR_VAL = $FE ;B4
         VAR __bestScore, 2
         VAR __alpha, 2
         VAR __beta, 2
+        VAR __negamax, 2
+        VAR __value, 2
 
     ENDM
 

@@ -2,14 +2,14 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF UNSAFE_showMoveCaptures
+    DEF UNSAFE_showP_MoveCaptures
     SUBROUTINE
 
-        REFER SAFE_showMoveCaptures
+        REFER SAFE_showP_MoveCaptures
         VAR __toSquareX12, 1
         VAR __fromPiece, 1
         VAR __aiMoveIndex, 1
-        VEND UNSAFE_showMoveCaptures
+        VEND UNSAFE_showP_MoveCaptures
 
     ; place a marker on the board for any square matching the piece
     ; EXCEPT for squares which are occupied (we'll flash those later)
@@ -18,7 +18,7 @@
                     lda savedBank
                     pha
 
-                    lda #BANK_UNSAFE_showMoveCaptures
+                    lda #BANK_UNSAFE_showP_MoveCaptures
                     sta savedBank
 
 
@@ -32,12 +32,12 @@
 
                     dec aiMoveIndex
 
-                    jsr GetMoveFrom
+                    jsr GetP_MoveFrom
                     cmp fromX12
                     bne .next
 
 
-                    jsr GetMoveTo
+                    jsr GetP_MoveTo
                     sta __toSquareX12
                     tay
                     jsr GetBoard
@@ -51,7 +51,7 @@
                     jsr GetBoard
                     sta __fromPiece
 
-                    jsr GetMovePiece
+                    jsr GetP_MovePiece
                     eor __fromPiece
                     and #PIECE_MASK
                     beq .legit                  ; from == to, so not a promote
@@ -372,7 +372,7 @@ xhalt
 
     ; PieceColour = 0 for white square, 36 for black square
 
-                    ;lda #RAMBANK_MOVES_RAM
+                    ;lda #RAMBANK_BOARD
                     ;sta SET_BANK_RAM
 
                     ldy squareToDraw

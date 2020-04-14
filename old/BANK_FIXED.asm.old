@@ -432,6 +432,7 @@ HandlerVectorHI     HANDLEVEC >
                     ;lda sideToMove
                     ;bpl .notComputer
                     
+
                     jsr selectmove
 
                     lda bestMove
@@ -1385,73 +1386,27 @@ isDraw              PHASE AI_Draw
 ;negamax(rootNode, depth, −∞, +∞, 1)
 
 
-    SUBROUTINE
 
-.terminal
-
-    NEXT_RANDOM
-    and #15
-                    adc Evaluation
-                    sta __negamax
+.terminal           
+                    lda Evaluation
+                    sta __value
                     lda Evaluation+1
-                    sta __negamax+1
+                    sta __value+1
                     rts
-
-.exit               lda@PLY value
-                    sta __negamax
-                    lda@PLY value+1
-                    sta __negamax+1
-                    rts
-
 
     DEF negamax
 
-    ; pass...
-    ; x = depthleft
-    ; SET_BANK_RAM      --> current ply
-    ; __alpha[2] = param alpha
-    ; __beta[2] = param beta
-
-
-        COMMON_VARS_ALPHABETA
-        REFER selectmove
-        VEND negamax
-
-                    dex
-                    bmi .terminal
                     stx@PLY depthLeft
-
-                    lda __alpha
-                    sta@PLY alpha
-                    lda __alpha+1
-                    sta@PLY alpha+1
-
-                    lda __beta
-                    sta@PLY beta
-                    lda __beta+1
-                    sta@PLY beta+1
-
+                    cpx #0
+                    beq .terminal
 
                     jsr NewPlyInitialise
                     jsr GenerateAllMoves
 
-                    ;lda flagCheck
+                    lda flagCheck
                     ;bne .terminate                  ; we can capture the king, so just return for that to be fixed on previous ply
 
                     jsr Sort
-
-
-#if 1
-                    lda@PLY moveIndex
-                    asl
-                    asl
-                    adc@PLY SavedEvaluation
-                    sta@PLY SavedEvaluation
-                    lda@PLY SavedEvaluation+1
-                    adc #0
-                    sta@PLY SavedEvaluation+1                ; + mobility (kind of odd/bad - happens every level)
-#endif
-
 
                     lda #<-INFINITY
                     sta@PLY value
@@ -1459,76 +1414,38 @@ isDraw              PHASE AI_Draw
                     sta@PLY value+1
 
                     ldx@PLY moveIndex
-                    bmi .exit
-                    
+                    bmi .retVal
 .forChild           stx@PLY movePtr
 
-                    jsr MakeMove
-
-
-
-    ;        value := max(value, −negamax(child, depth − 1, −β, −α, −color))
-
-    ; PARAMS depth-1, -beta, -alpha
-    ; pased through temporary variables (__alpha, __beta) and X reg
-
-                    sec
-                    lda #0
-                    sbc@PLY beta
-                    sta __alpha
-                    lda #0
-                    sbc@PLY beta+1
-                    sta __alpha+1
-
-                    sec
-                    lda #0
-                    sbc@PLY alpha
-                    sta __beta
-                    lda #0
-                    sbc@PLY alpha+1
-                    sta __beta+1
+;        value := max(value, −negamax(child, depth − 1, −β, −α, −color))
 
                     ldx@PLY depthLeft
-
-                    inc currentPly
-                    lda currentPly
-                    sta SET_BANK_RAM                ; self-switch
+                    dex
 
                     jsr negamax
 
-                    dec currentPly
-                    lda currentPly
-                    sta SET_BANK_RAM
-
-                    jsr unmake_move
-
                     sec
                     lda #0
-                    sbc __negamax
-                    sta __negamax
+                    sbc __value
+                    sta __value
                     lda #0
-                    sbc __negamax+1
-                    sta __negamax+1                 ; -negamax(...)
-
+                    sbc __value+1
+                    sta __value+1                   ; -negamax(...)
 
                     sec
-                    lda@PLY value
-                    sbc __negamax
-                    lda@PLY value+1
-                    sbc __negamax+1
+                    lda __value
+                    sbc@PLY value
+                    lda __value+1
+                    sbc@PLY value+1
                     bvc .lab0
                     eor #$80
-.lab0               bpl .lt0                        ; branch if value >= negamax
+.lab0               bmi .lt0                        ; __value < value
 
-    ; so, negamax > value!
+                    lda __value
+                    sta@RAM value
+                    lda __value+1
+                    sta@RAM value+1                 ; max(__value, value)
 
-                    lda __negamax
-                    sta@PLY value
-                    lda __negamax+1
-                    sta@PLY value+1                 ; max(value, -negamax)
-
-                    lda@PLY movePtr
-                    sta@PLY bestMove
 .lt0
 
 ;        α := max(α, value)
@@ -1547,6 +1464,8 @@ isDraw              PHASE AI_Draw
                     lda@PLY value+1
                     sta@PLY alpha+1                 ; alpha = max(alpha, value)
 
+                    lda@PLY movePtr
+                    sta@PLY bestMove
 .lt1
 
 ;        if α ≥ β then
@@ -1559,15 +1478,357 @@ isDraw              PHASE AI_Draw
                     sbc@PLY beta+1
                     bvc .lab2
                     eor #$80
-.lab2               bpl .retrn                      ; alpha >= beta
+.lab2               bpl .retVal                     ; alpha >= beta
 
 
-                    ldx@PLY movePtr
+.nextChild          ldx@PLY movePtr
                     dex
-                    bmi .retrn
-                    jmp .forChild
+                    bpl .forChild
 
-.retrn              jmp .exit
+.retVal             lda value
+                    sta __value
+                    lda value+1
+                    sta __value+1
+                    rts
+
+
+    SUBROUTINE
+
+.terminal
+                    lda Evaluation
+                    sta __bestScore
+                    lda Evaluation+1
+                    sta __bestScore+1
+.terminate          rts
+
+
+.returnScore
+
+    ; we've iterated the moves, so return the score
+
+                    lda bestScore
+                    sta __bestScore
+                    lda bestScore+1
+                    sta __bestScore+1               ; value of the best move found
+
+.returnMove         lda bestMove
+                    sta __bestMove                  ; could be negative --> no moves
+                    rts
+
+
+    DEF alphaBeta
+
+    ; Performs an alpha-beta search.
+    ; The current 'level' is always considered in terms of maximising the evaluation
+    ; To achieve minimisation for the opponent when being considered, the alpha/beta are negated
+    ; and which is which is swapped between each ply
+
+    ; pass...
+    ; x = depthleft
+    ; SET_BANK_RAM      --> current ply
+    ; __alpha[2] = -alpha
+    ; __beta[2] = -beta
+
+
+        COMMON_VARS_ALPHABETA
+        REFER selectmove
+        VEND alphaBeta
+
+
+    ;def alphabeta( alpha, beta, depthleft ):
+    ;    bestscore = -9999
+    ;    if( depthleft == 0 ):
+    ;        return quiesce( alpha, beta )
+    ;    for move in board.legal_moves:
+    ;        make_move(move)
+    ;        score = -alphabeta( -beta, -alpha, depthleft - 1 )
+    ;        unmake_move()
+    ;        if( score >= beta ):
+    ;            return score
+    ;        if( score > bestscore ):
+    ;            bestscore = score
+    ;        if( score > alpha ):
+    ;            alpha = score
+    ;    return bestscore
+
+                    stx@RAM depthLeft
+    IF QUIESCENCE                    
+                    sta@RAM quiescentEnabled
+    ENDIF
+                    sty@RAM captureMove
+
+
+
+
+
+    IF DIAGNOSTICS
+                    lda currentPly
+                    cmp maxPly
+                    bcc .notmax
+                    sta maxPly
+.notmax
+    ENDIF
+
+
+    ; setup parameters
+    ; beta = -alpha, alpha = -beta
+    ; we want to maximise alpha
+    ;  and if score > beta then abort (cutoff)
+
+                    lda __beta
+                    sta@RAM alpha
+                    lda __beta+1
+                    sta@RAM alpha+1
+
+                    lda __alpha
+                    sta@RAM beta
+                    lda __alpha+1
+                    sta@RAM beta+1
+
+    ; on 1st call this becomes alpha = -INF and beta = INF
+    ; we're trying to maximise alpha
+
+                    lda #<-(INFINITY-1)
+                    sta@RAM bestScore
+                    lda #>-(INFINITY-1)
+                    sta@RAM bestScore+1
+
+
+    IF QUIESCENCE
+                    cpx #0
+                    bne .normal                     ; not leaf node or below
+                    lda quiescentEnabled
+                    bne .quiescing
+                    lda captureMove
+                    beq .terminal                   ; leaf node with no previous capture - evaluate
+                    sta@RAM quiescentEnabled
+.quiescing
+.normal
+    ELSE
+                    cpx #0
+                    beq .terminal
+    ENDIF
+
+    ; The evaluation of the current position is a signed 16-bit number
+    ; +ve is good for the current side.
+    ; This is used during the alpha-beta search for finding best position
+    ; Note, this is not the same as the 'Evaluation' which is the current value at ply -- it is the
+    ; alphabeta best/worst value of the node!!
+
+
+                    jsr NewPlyInitialise
+                    jsr GenerateAllMoves
+
+                    lda flagCheck
+                    ;bne .terminate                  ; we can capture the king, so just return for that to be fixed on previous ply
+
+                    jsr Sort
+
+    ; Now iterate the moves one-by-one
+
+#if 0
+                    clc
+                    lda@PLY moveIndex
+.skipMob            adc SavedEvaluation
+                    sta@PLY SavedEvaluation
+                    lda SavedEvaluation+1
+                    adc #0
+                    sta@PLY SavedEvaluation+1                ; + mobility (kind of odd/bad - happens every level)
+
+#endif
+
+                    lda@PLY moveIndex
+                    sta@PLY movePtr
+
+
+.loopMoves          ldx movePtr
+                    bmi .returnScore
+
+    IF QUIESCENCE
+                    lda quiescentEnabled
+                    beq .normal2
+                    lda@PLY MoveCapture,x
+                    bne .normal2
+                    jmp .nextMove
+
+.normal2
+    ENDIF
+
+    IF DIAGNOSTICS
+
+                    inc positionCount
+                    bne .p1
+                    inc positionCount+1
+                    bne .p1
+                    inc positionCount+2
+.p1
+    ENDIF
+
+                    jsr MakeMove
+
+
+
+    ; "score = -alphabeta( -beta, -alpha, depthleft - 1 )"
+    ; set pareameters for next level --> __alpha, __beta
+    
+                    sec
+                    lda #0
+                    sbc alpha
+                    sta __alpha
+                    lda #0
+                    sbc alpha+1
+                    sta __alpha+1                   ; -alpha
+
+                    sec
+                    lda #0
+                    sbc beta
+                    sta __beta
+                    lda #0
+                    sbc beta+1
+                    sta __beta+1                    ; -beta
+
+                    ldx depthLeft
+                    beq .bottom
+                    dex
+.bottom
+
+                    inc currentPly
+                    lda currentPly
+                    sta SET_BANK_RAM                ; self-switch
+
+                    lda quiescentEnabled
+                    ldy capturedPiece
+                    jsr alphaBeta                   ; recurse!
+
+                    dec currentPly
+                    lda currentPly
+                    sta SET_BANK_RAM
+
+
+                    jsr unmake_move
+
+    ; If the "in check" flag was set, this means that on the child-ply just searched, the move
+    ; generation detected a king capture. This means that the current move (this ply) was illegal
+    ; and our response is to just skip the move.
+
+
+    #if 0
+                    lda flagCheck                   ; if response move captures our king...
+                    beq .notCheck2
+
+                    lda@PLY moveCounter
+                    ora #$80                        ; a "Check" detected
+                    tax
+                    dex
+                    stx@RAM moveCounter           ; decrement # valid moves -- if $80 --> mate 
+
+    ; Invalidate the move in the movelist - useful for player "in check" detection
+
+                    ldx movePtr
+                    lda #0                          ; invalid move!
+                    sta@PLY MoveFrom,x
+
+                    ;todo
+                    
+                    jmp .nextMove                   ; then this wasn't a valid move, and we skip it
+
+.notCheck2 
+
+    #endif
+
+                    sec
+                    lda #0
+                    sbc __bestScore
+                    sta __bestScore
+                    lda #0
+                    sbc __bestScore+1
+                    sta __bestScore+1               ; "-alphabeta....""
+
+                    ;ldx movePtr
+                    ;lda __bestScore
+                    ;sta@PLY MoveScoreLO,x
+                    ;lda __bestScore+1
+                    ;sta@PLY MoveScoreHI,x
+
+
+    ;        if( score >= beta ):
+    ;            return score
+
+    ; an alpha-beta cutoff?
+    ; aborts searching any more moves because the opponent score improves
+
+                    sec                             ; drop for extra speed
+                    lda __bestScore
+                    sbc beta
+                    lda __bestScore+1
+                    sbc beta+1
+                    bvc .lab2                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
+                    eor #$80                        ; A = A eor $80, and N= N eor 1
+.lab2               bmi .notScoreGteBeta            ; A < NUM
+
+    ; __bestScore >= beta
+
+                    rts
+                    ;lda bestMove
+                    ;sta __bestMove
+                    ;rts
+
+.notScoreGteBeta
+
+    ;        if( score > bestscore ):
+    ;            bestscore = score
+
+#if 0
+                    clc                             ; !! OK. Could be dropped for a bit of speed
+                    lda __bestScore
+                    sbc bestScore
+                    lda __bestScore+1
+                    sbc bestScore+1
+                    bvc .lab3                       ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
+                    eor #$80                        ; A = A eor $80, and N= N eor 1
+.lab3               bmi .notScoreGtBestScore        ; A < NUM
+
+                    lda __bestScore
+                    sta@RAM bestScore
+                    lda __bestScore+1
+                    sta@RAM bestScore+1
+
+                    lda@PLY movePtr
+                    sta@PLY bestMove
+
+.notScoreGtBestScore
+#endif
+
+
+    ;        if( score > alpha ):
+    ;            alpha = score
+
+    ; We've found a higher scoring move than currently known, so record it
+
+                    clc                     ; !! OK. Could be dropped for a bit of speed
+                    lda alpha
+                    sbc __bestScore
+                    lda alpha+1
+                    sbc __bestScore+1
+                    bvc .lab                ; if V is 0, N eor V = N, otherwise N eor V = N eor 1
+                    eor #$80                ; A = A eor $80, and N= N eor 1
+.lab                bpl .notScoreGtAlpha    ; A >= NUM
+
+                    lda __bestScore
+                    sta@RAM alpha
+                    lda __bestScore+1
+                    sta@RAM alpha+1
+
+                    lda@PLY movePtr
+                    sta@PLY bestMove
+
+.notScoreGtAlpha
+.nextMove
+                    ldx movePtr
+                    dex
+                    stx@RAM movePtr
+                    jmp .loopMoves
+
 
 ;---------------------------------------------------------------------------------------------------
 

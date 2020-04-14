@@ -58,3 +58,5 @@ captureLastPly                  ds 1
 maxPly                          ds 1
 positionCount                   ds 3
     ENDIF
+
+flagCheck                       ds 1

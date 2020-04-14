@@ -25,6 +25,17 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
         REFER Reset
         VEND Cart_Init
 
+                    sei
+                    cld
+
+    ; See if we can come up with something 'random' for startup
+
+                    ldy INTIM
+                    bne .toR
+                    ldy #$9A
+.toR                sty rnd
+
+
                     lda #0
                     sta SWBCNT                      ; console I/O always set to INPUT
                     sta SWACNT                      ; set controller I/O to INPUT
@@ -41,9 +52,94 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
                     lda #%100                       ; players/missiles BEHIND BG
                     sta CTRLPF
 
-                    rts
+                    lda #WHITE+RAMBANK_PLY
+                    sta sideToMove
+
+
+;                    rts
+;   ; fall through...
 
 ;---------------------------------------------------------------------------------------------------
+
+    DEF SetupBanks
+    SUBROUTINE
+
+    ; Move a copy of the row bank template to the first 8 banks of RAM
+    ; and then terminate the draw subroutine by substituting in a RTS on the last one
+
+        REFER Reset
+        VAR __plyBank, 1
+        VEND SetupBanks
+
+    ; SAFE
+
+                    ldy #7
+.copyRowBanks       ldx #BANK_ROM_SHADOW_OF_CHESS_BITMAP
+                    jsr CopyShadowROMtoRAM
+                    dey
+                    bpl .copyRowBanks
+
+
+    ; copy the BOARD/MOVES bank
+
+                    ldy #RAMBANK_BOARD
+                    ldx #MOVES
+                    jsr CopyShadowROMtoRAM     ; this auto-initialises Board too
+
+    ; copy the PLY banks
+
+                    lda #MAX_PLY
+                    sta __plyBank
+                    ldy #RAMBANK_PLY
+                    sty currentPly
+.copyPlyBanks       ldx #BANK_PLY
+                    jsr CopyShadowROMtoRAM
+                    iny
+                    dec __plyBank
+                    bne .copyPlyBanks
+
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF tidySc
+    SUBROUTINE
+
+                    lda #0
+                    sta PF0
+                    sta PF1
+                    sta PF2
+                    sta GRP0
+                    sta GRP1
+
+                    lda #%01000010                  ; bit6 is not required
+                    sta VBLANK                      ; end of screen - enter blanking
+
+
+; END OF VISIBLE SCREEN
+; HERE'S SOME TIME TO DO STUFF
+
+                    lda #TIME_PART_2
+                    sta TIM64T
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF longD
+    SUBROUTINE
+
+                    sta WSYNC
+
+                    jsr _rts
+                    jsr _rts
+                    jsr _rts
+                    SLEEP 7
+
+                    ldx #0
+                    stx VBLANK
+                    rts
 
 #if 0
     DEF Resync
@@ -239,6 +335,24 @@ flashDone           PHASE AI_MarchToTargetA
                     rts
 
 flashDone2          PHASE AI_SpecialMoveFixup
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiDraw
+    SUBROUTINE
+                    lda #$C0
+                    sta COLUBK
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiCheckMate
+    SUBROUTINE
+                    lda #$44
+                    sta COLUBK
                     rts
 
 

@@ -50,6 +50,7 @@ VALUE_{1} = {2}
 
     DEF AddPieceMaterialValue
     SUBROUTINE
+ jsr debug
 
         REFER AdjustMaterialPositionalValue
         REFER DeletePiece

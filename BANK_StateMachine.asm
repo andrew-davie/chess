@@ -40,7 +40,7 @@ ONCEPERFRAME = 40
         {1} SelectStartSquare
         {1} StartSquareSelected
         {1} DrawMoves
-        {1} ShowMoveCaptures
+        {1} ShowP_MoveCaptures
         {1} SlowFlash
         {1} UnDrawTargetSquares
         {1} SelectDestinationSquare
@@ -71,6 +71,8 @@ ONCEPERFRAME = 40
         {1} RollPromotionPiece
         {1} ChoosePromotePiece
         {1} ChooseDebounce
+        {1} CheckMate
+        {1} Draw
 
     ENDM
 
@@ -127,9 +129,9 @@ ONCEPERFRAME = 40
                     inc currentPly
                     jsr InitialiseMoveGeneration
 
-                    lda sideToMove
-                    eor #128
-                    sta sideToMove              ; for movegen to know
+                    ;lda sideToMove
+                    ;eor #SWAP_SIDE
+                    ;sta sideToMove              ; for movegen to know
 
                     PHASE AI_StepMoveGen
                     rts
@@ -248,7 +250,7 @@ ONCEPERFRAME = 40
         VEND aiSelectStartSquare
 
                     jsr moveCursor
-                    jsr IsValidMoveFromSquare
+                    jsr IsValidP_MoveFromSquare
 
                     dec ccur                        ; pulse colour for valid squares
                     jsr setCursorColours
@@ -294,7 +296,7 @@ ONCEPERFRAME = 40
         REFER aiSelectStartSquare
         REFER aiDrawMoves
         REFER aiUnDrawTargetSquares
-        REFER aiShowMoveCaptures
+        REFER aiShowP_MoveCaptures
         REFER aiSlowFlash
         REFER aiSelectDestinationSquare
         VEND setCursorColours
@@ -400,7 +402,7 @@ ONCEPERFRAME = 40
                     lda #0
                     sta aiFlashPhase                    ; controls odd/even exit of flashing
 
-                    PHASE AI_ShowMoveCaptures
+                    PHASE AI_ShowP_MoveCaptures
                     rts
 
 .exit
@@ -446,24 +448,24 @@ ONCEPERFRAME = 40
 
                     dec aiMoveIndex
 
-                    jsr GetMoveFrom
+                    jsr GetP_MoveFrom
                     cmp fromX12
                     bne .next
 
-                    jsr GetMoveTo
+                    jsr GetP_MoveTo
                     sta squareToDraw
 
-                    jsr GetMovePiece
+                    jsr GetP_MovePiece
                     sta __piece
 
     ; If it's a pawn promote (duplicate "to" AND piece different (TODO) then skip others)
 
 .sk                 dex
                     bmi .prom
-                    jsr GetMoveTo
+                    jsr GetP_MoveTo
                     cmp squareToDraw
                     bne .prom
-                    jsr GetMovePiece
+                    jsr GetP_MovePiece
                     eor __piece
                     and #PIECE_MASK
                     beq .prom                       ; same piece type so not a promote
@@ -529,11 +531,11 @@ ONCEPERFRAME = 40
 ;---------------------------------------------------------------------------------------------------
 
 
-    DEF aiShowMoveCaptures
+    DEF aiShowP_MoveCaptures
     SUBROUTINE
 
         REFER AiStateMachine
-        VEND aiShowMoveCaptures
+        VEND aiShowP_MoveCaptures
 
     ; draw/undraw ALL captured pieces
     ; we should do this an even number of times so that pieces don't disappEOR
@@ -549,7 +551,7 @@ ONCEPERFRAME = 40
                     sta aiMoveIndex
 .valid
 
-                    jsr SAFE_showMoveCaptures
+                    jsr SAFE_showP_MoveCaptures
                     lda aiMoveIndex
                     bpl .exit
 
@@ -591,7 +593,7 @@ ONCEPERFRAME = 40
                     lda #CAP_SPEED
                     sta mdelay
 
-                    PHASE AI_ShowMoveCaptures       ; go back and rEORdraw all captures again
+                    PHASE AI_ShowP_MoveCaptures       ; go back and rEORdraw all captures again
 
 .slowWait           rts
 
@@ -688,6 +690,8 @@ ONCEPERFRAME = 40
     ; we flash the piece on-and-off while we're doing that
 
                     jsr FlashPiece
+
+        NEXT_RANDOM
 
         lda INTIM
         cmp #20

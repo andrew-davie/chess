@@ -2,8 +2,8 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    NEWRAMBANK MOVES_RAM                ; RAM bank for holding the following ROM shadow
-    NEWBANK MOVES                       ; copy the following bank to RAMBANK_MOVES_RAM
+    NEWRAMBANK BOARD               ; RAM bank for holding the following ROM shadow
+    NEWBANK MOVES                       ; copy the following bank to RAMBANK_BOARD
 
 ; Board is a 10 x 12 object which simplifies the generation of moves
 ; The squares marked '░░░' are illegal. The ("X12") index of each square is the left

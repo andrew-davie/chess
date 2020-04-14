@@ -47,9 +47,10 @@ MAX_MOVES =70
     VARIABLE MovePiece, MAX_MOVES
     VARIABLE MoveCapture, MAX_MOVES
 
-    VARIABLE MoveScoreLO, MAX_MOVES
-    VARIABLE MoveScoreHI, MAX_MOVES
+;    VARIABLE MoveScoreLO, MAX_MOVES
+;    VARIABLE MoveScoreHI, MAX_MOVES
 ;    VARIABLE SortedMove, MAX_MOVES
+    VARIABLE moveCounter, 1
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -73,71 +74,17 @@ MAX_MOVES =70
     VARIABLE bestMove, 1
     VARIABLE alpha, 2
     VARIABLE beta, 2
+    VARIABLE value, 2
+
 ;    VARIABLE bestValue, 2
     VARIABLE depthLeft, 1
-    VARIABLE bestScore, 2
+;    VARIABLE bestScore, 2
     VARIABLE restorePiece, 1
+    
+    VARIABLE statusFlags, 1
 
-;---------------------------------------------------------------------------------------------------
-
-
-#if 0
-; reverting a move
-; from/to/piece/toOriginal
-; castling   affects 4 squares (2xfrom/to each with original piece)
-; en-passant
-
-from/to/piece
-
-
-from = piece
-to = originalPiece
-from2 = piece2
-to2 = originalPiece2
-
-
-
-so, normal move (N)
-
-B1 = knight
-C3 = blank
-null/null
-
-pawn promot with capture
-A7 = WP
-B8 = BLACK_ROOK
-
-
-castle
-E1=king
-G1=blank
-H1=rook
-F1=blank
-
-
-en-passant
-B4=P
-A3=blank
-A4=P
-A3=blank
-
-FROM
-TO
-CAPTURED_PIECE
-ORIG_PIECE
-FROM2
-TO2
-PIECE2
-
-board[FROM] = ORIG_PIECE
-board[TO] = CAPTURED_PIECE
-
-value = -new_piece + orig_piece - captured_piece
-
-
-#endif
-
-
+STATUS_CHECK = $80
+STATUS_STALEMATE = $40
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -152,6 +99,7 @@ value = -new_piece + orig_piece - captured_piece
 
     ; TODO: move the following as they're called 2x due to double-call of InitPiecLists
 
+                    lda #0
                     sta Evaluation
                     sta Evaluation+1                ; tracks CURRENT value of everything (signed 16-bit)
 
@@ -209,29 +157,6 @@ value = -new_piece + orig_piece - captured_piece
 
 ;---------------------------------------------------------------------------------------------------
 
-#if ASSERTS
-
-    DEF DIAGNOSTIC_checkPieces
-    SUBROUTINE
-
-        REFER aiSpecialMoveFixup
-        VEND DIAGNOSTIC_checkPiences
-
-    ; SAFE call
-    ; DIAGNOSTIC ONLY
-    ; Scan the piecelist and the board square it points to and make sure non blank, non -1
-
-                    lda #RAMBANK_PLY
-                    sta __bank
-                    jsr checkPiecesBank
-                    inc __bank
-                    jsr checkPiecesBank
-                    rts
-
-#endif
-
-
-;---------------------------------------------------------------------------------------------------
 
 InitPieceList
 
@@ -245,7 +170,7 @@ InitPieceList
 
         REFER aiFlipBuffers
         REFER InitialiseMoveGeneration
-        REFER alphaBeta
+        REFER negamax
         VEND NewPlyInitialise
 
     ; This MUST be called at the start of a new ply
@@ -256,8 +181,8 @@ InitPieceList
 
 
                     lda #-1
-                    sta@RAM moveIndex           ; no valid moves
-                    sta@RAM bestMove
+                    sta@PLY moveIndex           ; no valid moves
+                    sta@PLY bestMove
 
                     lda enPassantPawn               ; flag/square from last actual move made
                     sta@RAM enPassantSquare         ; used for backtracking, to reset the flag
@@ -280,13 +205,13 @@ InitPieceList
     DEF CheckMoveListFromSquare
     SUBROUTINE
 
-        REFER IsValidMoveFromSquare
+        REFER IsValidP_MoveFromSquare
         VEND CheckMoveListFromSquare
 
     ; X12 in A
     ; y = -1 on return if NOT FOUND
 
-                    ldy moveIndex
+                    ldy@RAM moveIndex
                     bmi .exit
 
 .scan               cmp MoveFrom,y
@@ -295,69 +220,10 @@ InitPieceList
                     bpl .scan
 .exit               rts
 
-.scanned            lda MovePiece,y
+.scanned            lda@PLY MovePiece,y
                     sta fromPiece
                     rts
 
-
-;---------------------------------------------------------------------------------------------------
-
-#if 0
-    DEF IsSquareUnderAttack
-    SUBROUTINE
-
-        REFER Go_IsSquareUnderAttack
-        REFER aiLookForCheck
-        VEND IsSquareUnderAttack
-
-    ; Scan the movelist to find if given square is under attack
-
-    ; Pass:         A = X12 square to check
-    ; Return:       CC = no
-
-                    ldy moveIndex
-                    bmi .exit
-.scan               cmp MoveTo,y
-                    beq .found                      ; YES!
-                    dey
-                    bpl .scan
-
-.exit               clc
-.found              rts
-
-#endif
-
-
-;---------------------------------------------------------------------------------------------------
-
-#if 0
-    DEF GetKingSquare
-    SUBROUTINE
-
-        REFER SAFE_GetKingSquare
-        VEND GetKingSquare
-
-    ; Return:       a = square king is on (or -1)
-    ;               x = piece type
-
-
-
-                    ldy PieceListPtr
-                    bmi .exit                       ; no pieces?!
-.find               lda PieceType,y
-                    and #PIECE_MASK
-                    cmp #KING
-                    beq .found
-                    dey
-                    bpl .find
-
-.exit               lda #-1                         ; not found/no king square
-                    rts
-
-.found              lda PieceSquare,y
-                    ldx PieceType,y
-                    rts
-#endif
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -374,7 +240,7 @@ InitPieceList
     ; the move. We need to do from/to checks because moves can have multiple origin/desinations.
     ; This fixes the move with/without castle flag
 
-                    ldy moveIndex
+                    ldy@RAM moveIndex
                     bmi .fail               ; shouldn't happen
 .scan               lda fromX12
                     cmp MoveFrom,y
@@ -386,7 +252,7 @@ InitPieceList
                     bpl .scan
 .fail               rts
 
-.found              lda MovePiece,y
+.found              lda@PLY MovePiece,y
                     sta fromPiece
                     rts
 
@@ -402,12 +268,12 @@ InitPieceList
 
     ; y = -1 on return if NOT FOUND
 
-                    ldy moveIndex
+                    ldy@RAM moveIndex
                     bmi .exit
 .scan               lda toX12
                     cmp MoveTo,y
                     bne .xscanned
-                    lda MoveFrom,y
+                    lda@PLY MoveFrom,y
                     cmp fromX12
                     beq .exit
 .xscanned           dey
@@ -437,59 +303,38 @@ InitPieceList
                     sta maxPly
     ENDIF
 
-    ; both player (pos) and opponent (neg) have worst value ever!
+
+;(* Initial call for Player A's root node *)
+;negamax(rootNode, depth, −∞, +∞, 1)
+
 
                     lda #<INFINITY
-                    sta@RAM beta
+                    sta __beta
                     lda #>INFINITY
-                    sta@RAM beta+1                   ; opponent tries to minimise
+                    sta __beta+1
 
                     lda #<-INFINITY
-                    sta@RAM alpha
-                    lda #>-INFINITY
-                    sta@RAM alpha+1                  ; player tries to maximise
-
-
-    ; "boardValue = -alphabeta( -beta, -alpha, depthleft - 1 )"
-
-                    sec
-                    lda #0
-                    sbc alpha
                     sta __alpha
-                    lda #0
-                    sbc alpha+1
-                    sta __alpha+1                   ; = -alpha
-
-                    sec
-                    lda #0
-                    sbc beta
-                    sta __beta
-                    lda #0
-                    sbc beta+1
-                    sta __beta+1                    ; = -beta (effectively unchanged) - no αβ on ply 0
+                    lda #>-INFINITY
+                    sta __alpha+1                   ; player tries to maximise
 
                     ldx #SEARCH_DEPTH               ; depth
-                    lda #0                          ; no quiescence yet
-                    ldy #0                          ; no capture on last move
-                    jsr alphaBeta                   ; recurse!
+                    jsr negamax
  
-                    ldx bestMove
+                    ldx@PLY bestMove
                     bmi .nomove
-                    lda MoveTo,x
+
+                    lda@PLY MoveTo,x
                     sta toX12
-                    lda MoveFrom,x
+                    lda@PLY MoveFrom,x
                     sta originX12
                     sta fromX12
-                    lda MovePiece,x
+                    lda@PLY MovePiece,x
                     sta fromPiece
 
-    ; get piece from board because of promotions!
-
-                    ;ldy originX12
-                    ;jsr GetBoardRAM
-                    ;sta fromPiece
-
-.nomove             rts
+.nomove
+                    NEGEVAL
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -553,7 +398,7 @@ InitPieceList
     ENDIF
     
                     lda sideToMove
-                    eor #128
+                    eor #SWAP_SIDE
                     sta sideToMove
                     rts
 
@@ -573,45 +418,6 @@ RSquareEnd          .byte 25,27,95,97
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SetupBanks
-    SUBROUTINE
-
-        REFER Reset
-        VAR __plyBank, 1
-        VEND SetupBanks
-
-    ; SAFE
-
-                    ldy #7
-.copyRowBanks       ldx #BANK_ROM_SHADOW_OF_CHESS_BITMAP
-                    jsr CopyShadowROMtoRAM
-                    dey
-                    bpl .copyRowBanks
-
-    ; copy the BOARD/MOVES bank
-
-                    ldy #RAMBANK_MOVES_RAM
-                    ldx #MOVES
-                    jsr CopyShadowROMtoRAM     ; this auto-initialises Board too
-
-    ; copy the PLY banks
-
-                    lda #MAX_PLY
-                    sta __plyBank
-                    ldy #RAMBANK_PLY
-                    sty currentPly
-.copyPlyBanks       ldx #BANK_PLY
-                    jsr CopyShadowROMtoRAM
-                    iny
-                    dec __plyBank
-                    bne .copyPlyBanks
-
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-
 
     DEF Sort
     SUBROUTINE
@@ -625,42 +431,45 @@ RSquareEnd          .byte 25,27,95,97
                     lda currentPly
                     sta savedBank
 
-                    ldx moveIndex
-                    ldy moveIndex
-                    dey
+                    ldx@PLY moveIndex
+                    bmi .exit
+                    beq .exit
+
+                    ldy@PLY moveIndex
+                    jmp .next
 .scan
 
-                    lda MoveCapture,y
-                    ;and #PIECE_MASK
+                    lda@PLY MoveCapture,y
+                    and #PIECE_MASK
                     beq .next
 
-                    lda MoveTo,x
+                    lda@PLY MoveTo,x
                     pha
-                    lda MoveFrom,x
+                    lda@PLY MoveFrom,x
                     pha
-                    lda MovePiece,x
+                    lda@PLY MovePiece,x
                     pha
 
-                    lda MovePiece,y
-                    sta@RAM MovePiece,x
+                    lda@PLY MovePiece,y
+                    sta@PLY MovePiece,x
                     pla
-                    sta@RAM MovePiece,y
+                    sta@PLY MovePiece,y
 
-                    lda MoveFrom,y
-                    sta@RAM MoveFrom,x
+                    lda@PLY MoveFrom,y
+                    sta@PLY MoveFrom,x
                     pla
-                    sta@RAM MoveFrom,y
+                    sta@PLY MoveFrom,y
 
-                    lda MoveTo,y
-                    sta@RAM MoveTo,x
+                    lda@PLY MoveTo,y
+                    sta@PLY MoveTo,x
                     pla
-                    sta@RAM MoveTo,y
+                    sta@PLY MoveTo,y
 
                     dex
 
 .next               dey
                     bpl .scan
-                    rts
+.exit               rts
 
 
 ;---------------------------------------------------------------------------------------------------
