@@ -46,8 +46,10 @@ CASTLING_ENABLED        = 1
 WHITE_PLAYER = 0        ; human
 BLACK_PLAYER = 0        ; human
 
-SEARCH_DEPTH            = 4
+SEARCH_DEPTH            = 3
 SWAP_SIDE               = 128 + (RAMBANK_PLY ^ (RAMBANK_PLY+1))
+
+
 
 ; DELAYS
 
@@ -263,17 +265,13 @@ FUNCTION_NAME SET {1}
                     lda #0
                     sbc Evaluation+1
                     sta Evaluation+1
-                    
-;                    clc
-;                    lda Evaluation
-;                    eor #$FF
-;                    adc #1
-;                    sta Evaluation
-;                    lda Evaluation+1
-;                    eor #$FF
-;                    adc #0
-;                    sta Evaluation+1
+    ENDM
 
+
+    MAC SWAP
+                    lda sideToMove
+                    eor #SWAP_SIDE
+                    sta sideToMove
     ENDM
 
 

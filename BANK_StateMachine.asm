@@ -128,11 +128,6 @@ ONCEPERFRAME = 40
 
                     inc currentPly
                     jsr InitialiseMoveGeneration
-
-                    ;lda sideToMove
-                    ;eor #SWAP_SIDE
-                    ;sta sideToMove              ; for movegen to know
-
                     PHASE AI_StepMoveGen
                     rts
 

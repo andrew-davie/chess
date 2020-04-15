@@ -273,19 +273,6 @@ _rts                rts
     ; this happens over multiple frames.
 
                     jsr GenerateAllMoves
-
-                    ;lda sideToMove
-                    ;eor #SWAP_SIDE
-                    ;sta sideToMove
-
-                    ;sec
-                    ;lda #0
-                    ;sbc Evaluation
-                    ;sta Evaluation
-                    ;lda #0
-                    ;sbc Evaluation+1
-                    ;sta Evaluation+1                ; -Evaluation
-
                     PHASE AI_BeginSelectMovePhase ;LookForCheck
 .wait               rts
 
@@ -300,9 +287,28 @@ _rts                rts
         REFER aiStepMoveGen
         REFER aiGenerateMoves
         VAR __vector, 2
+        VAR __masker, 1
         VEND GenerateAllMoves
-                    
 
+
+                    lda #3
+                    sta __masker
+                    lda #0
+                    sta __masker+1
+                    jsr GenMoves
+
+                    lda #8
+                    sta __masker
+                    lda #3
+                    sta __masker+1
+                    jsr GenMoves
+
+
+                    rts
+
+
+    DEF GenMoves
+    
                     ldx #100
                     bne .next2
 
@@ -326,9 +332,12 @@ MoveReturn          ldx currentSquare
 
                     eor sideToMove
                     and #~FLAG_CASTLE               ; todo: better part of the move, mmh?
-                    ;ora #FLAG_MOVED                 ; all moves mark piece as moved!
                     sta currentPiece
                     and #PIECE_MASK
+                    cmp __masker
+                    bcs .next       ; pawns only!
+                    cmp __masker+1
+                    bcc .next
                     tay
 
                     lda HandlerVectorLO-1,y
@@ -419,37 +428,25 @@ HandlerVectorHI     HANDLEVEC >
                     lda #RAMBANK_PLY
                     sta currentPly                    
                     sta SET_BANK_RAM                ; switch in movelist
-                    ;sta savedBank
-
-                    ;lda #-1
-                    ;cmp moveIndex
-                    ;beq .halted                     ; no valid moves
-
-                    ;sta fromX12
-                    ;sta originX12
-                    ;sta toX12
-
-                    ;lda sideToMove
-                    ;bpl .notComputer
                     
                     jsr selectmove
 
                     lda bestMove
                     bpl .notComputer
 
-                    lda sideToMove
-                    eor #SWAP_SIDE
-                    sta sideToMove
+    ; Computer could not find a valid move. It's checkmate or stalemate. Find which...
+
+                    SWAP
 
                     jsr GenerateAllMoves
                     lda flagCheck
-                    beq isDraw
+                    beq .gameDrawn
 
                     PHASE AI_CheckMate
                     rts
 
 
-isDraw              PHASE AI_Draw
+.gameDrawn          PHASE AI_Draw
                     rts
                     
 .notComputer        PHASE AI_MoveIsSelected
@@ -1283,17 +1280,8 @@ isDraw              PHASE AI_Draw
 
     ; Swap over sides
 
-                    sec
-                    lda #0
-                    sbc Evaluation
-                    sta Evaluation
-                    lda #0
-                    sbc Evaluation+1
-                    sta Evaluation+1                ; -Evaluation
-
-                    lda sideToMove
-                    eor #SWAP_SIDE
-                    sta sideToMove
+                    NEGEVAL
+                    SWAP
 
                     rts
 
@@ -1359,10 +1347,7 @@ isDraw              PHASE AI_Draw
 
 
 .noSecondary
-                    lda sideToMove
-                    eor #SWAP_SIDE
-                    sta sideToMove
-
+                    SWAP
                     rts
 
 
@@ -1390,10 +1375,11 @@ isDraw              PHASE AI_Draw
 .terminal
 
     NEXT_RANDOM
-    and #15
+    and #63
                     adc Evaluation
                     sta __negamax
                     lda Evaluation+1
+                    adc #0
                     sta __negamax+1
                     rts
 

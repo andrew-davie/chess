@@ -34,9 +34,7 @@ MAX_PLY_DEPTH_BANK = MAX_PLY + RAMBANK_PLY
 ; WHITE pieces in bank BANK_PLY
 ; BLACK pieces in bank BANK_PLY+1
 
-    VARIABLE plyValue, 2                            ; 16-bit signed score value from alphabeta
     VARIABLE SavedEvaluation, 2                     ; THIS node's evaluation - used for reverting moves!
-
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -46,10 +44,6 @@ MAX_MOVES =70
     VARIABLE MoveTo, MAX_MOVES
     VARIABLE MovePiece, MAX_MOVES
     VARIABLE MoveCapture, MAX_MOVES
-
-;    VARIABLE MoveScoreLO, MAX_MOVES
-;    VARIABLE MoveScoreHI, MAX_MOVES
-;    VARIABLE SortedMove, MAX_MOVES
     VARIABLE moveCounter, 1
 
 ;---------------------------------------------------------------------------------------------------
@@ -397,10 +391,8 @@ InitPieceList
                     bcs .phase
     ENDIF
     
-                    lda sideToMove
-                    eor #SWAP_SIDE
-                    sta sideToMove
-                    rts
+                SWAP
+                rts
 
 .phase
 

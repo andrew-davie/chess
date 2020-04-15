@@ -44,8 +44,8 @@
 #else ; test position...
 
     .byte WHITE|K, 26
-    .byte BLACK|BP, 82
-
+    .byte BLACK|Q, 82
+    .byte BLACK|K, 83
     .byte 0 ;end
 
 #endif
