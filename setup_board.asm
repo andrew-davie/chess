@@ -43,9 +43,43 @@
 
 #else ; test position...
 
+    .byte WHITE|R, 22
+    .byte WHITE|N, 23
+    .byte WHITE|B, 24
+    .byte WHITE|Q,      35
     .byte WHITE|K, 26
-    .byte BLACK|Q, 82
-    .byte BLACK|K, 83
+    .byte WHITE|B,      63
+    .byte WHITE|N,      47
+    .byte WHITE|R, 29
+
+    .byte WHITE|WP, 32
+    .byte WHITE|WP, 33
+    .byte WHITE|WP, 34
+    .byte WHITE|WP,     56
+    .byte WHITE|WP, 37
+    .byte WHITE|WP, 38
+    .byte WHITE|WP, 39
+
+
+    .byte BLACK|R, 92
+    .byte BLACK|N,      $37
+    .byte BLACK|B, 94
+    .byte BLACK|Q,      $35
+    .byte BLACK|K, 96
+    .byte BLACK|B, 97
+    .byte BLACK|N, 98
+    .byte BLACK|R, 99
+
+    .byte BLACK|BP, 82
+    .byte BLACK|BP, 83
+    .byte BLACK|BP, 84
+    .byte BLACK|BP, 85
+    .byte BLACK|BP,     $42
+    .byte BLACK|BP, 87
+    .byte BLACK|BP, 88
+    .byte BLACK|BP, 89
+
+
     .byte 0 ;end
 
 #endif

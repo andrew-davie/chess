@@ -55,8 +55,8 @@ capture                         ds 1
 captureLastPly                  ds 1
 
     IF DIAGNOSTICS
-maxPly                          ds 1
 positionCount                   ds 3
     ENDIF
 
+maxPly                          ds 1
 flagCheck                       ds 1

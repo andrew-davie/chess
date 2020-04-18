@@ -64,7 +64,7 @@
 
 .legit
 
-        TIMECHECK COPYSINGLEPIECE, restoreIndex     ; not enough time to draw
+        ;TIMECHECK COPYSINGLEPIECE, restoreIndex     ; not enough time to draw
 
                     lda __toSquareX12
                     sta squareToDraw
@@ -148,8 +148,14 @@ restoreIndex        lda __aiMoveIndex
 
 .incCol             inc fromX12
 .colDone
+.unmovedx
+
+                    PHASE AI_MarchA2
+                    rts
 
 
+    DEF aiMarchA2
+    SUBROUTINE                    
 
 
     ; erase object in new sqare --> blank
@@ -175,10 +181,7 @@ restoreIndex        lda __aiMoveIndex
                     jsr PutBoard
 
                     PHASE AI_MarchB
-
-.unmovedx
                     rts
-
 
 ;---------------------------------------------------------------------------------------------------
 

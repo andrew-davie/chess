@@ -35,7 +35,7 @@ INFINITY                = 32767
 ; assemble diagnostics. Remove for release.
 
 TEST_POSITION           = 0               ; 0=normal, 1 = setup test position
-DIAGNOSTICS             = 0
+DIAGNOSTICS             = 1
 QUIESCENCE              = 1
 ASSERTS                 = 0
 PVSP                    = 0                 ; player versus player =1
@@ -47,6 +47,11 @@ WHITE_PLAYER = 0        ; human
 BLACK_PLAYER = 0        ; human
 
 SEARCH_DEPTH            = 3
+QUIESCE_EXTRA_DEPTH     = 3
+
+
+
+
 SWAP_SIDE               = 128 + (RAMBANK_PLY ^ (RAMBANK_PLY+1))
 
 
@@ -125,8 +130,8 @@ SCANLINES_NTSC      = 262                       ; NTSC 262
 SCANLINES_PAL       = 312
 
 
-TIME_PART_2         = 45
-TIME_PART_1         = 47
+TIME_PART_2         = 46
+TIME_PART_1         = 46
 
 
 ;------------------------------------------------------------------------------
@@ -551,21 +556,25 @@ RND_EOR_VAL = $FE ;B4
 ;--------------------------------------------------------------------------------
 
     MAC PHASE ;#
-    lda #{1}
-    sta aiState
+        lda #{1}
+        sta aiState
     ENDM
 
+
+;--------------------------------------------------------------------------------
 
     MAC COMMON_VARS_ALPHABETA
 
         VAR __bestMove, 1
-        VAR __bestScore, 2
         VAR __alpha, 2
         VAR __beta, 2
         VAR __negamax, 2
         VAR __value, 2
 
+        VAR __quiesceCapOnly, 1
+
     ENDM
+
 
 ;--------------------------------------------------------------------------------
 

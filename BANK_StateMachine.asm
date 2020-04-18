@@ -37,6 +37,7 @@ ONCEPERFRAME = 40
     MAC TABDEF ; {1} = macro to use
         
         {1} BeginSelectMovePhase
+        {1} GenInitialMoves
         {1} SelectStartSquare
         {1} StartSquareSelected
         {1} DrawMoves
@@ -60,6 +61,7 @@ ONCEPERFRAME = 40
         {1} MoveIsSelected
         {1} WriteStartPieceBlank
         {1} MarchToTargetA
+        {1} MarchA2
         {1} MarchB
         {1} MarchToTargetB
         {1} MarchB2
@@ -126,8 +128,9 @@ ONCEPERFRAME = 40
     ; the squares between are occupied. We can tell THAT by examining the movelist to see
     ; if there are K-moves marked "FLAG_CASTLE" - and the relevant squares
 
-                    inc currentPly
-                    jsr InitialiseMoveGeneration
+                    ;inc currentPly
+                    ;jsr InitialiseMoveGeneration
+
                     PHASE AI_StepMoveGen
                     rts
 
@@ -222,6 +225,7 @@ ONCEPERFRAME = 40
         REFER AiStateMachine
         VEND aiBeginSelectMovePhase
 
+
                     lda #$38
                     sta cursorX12
 
@@ -243,6 +247,8 @@ ONCEPERFRAME = 40
 
         REFER AiStateMachine
         VEND aiSelectStartSquare
+
+                    ;NEXT_RANDOM
 
                     jsr moveCursor
                     jsr IsValidP_MoveFromSquare
@@ -438,7 +444,7 @@ ONCEPERFRAME = 40
                     bmi .skip
 
                     lda INTIM
-                    cmp #5
+                    cmp #2+SPEEDOF_COPYSINGLEPIECE
                     bcc .skip
 
                     dec aiMoveIndex
@@ -476,9 +482,9 @@ ONCEPERFRAME = 40
                     bne .next                       ; don't draw dots on captures - they are flashed later
 
 
-                    lda INTIM
-                    cmp #SPEEDOF_COPYSINGLEPIECE
-                    bcc .skip
+                    ;lda INTIM
+                    ;cmp #SPEEDOF_COPYSINGLEPIECE
+                    ;bcc .skip
 
                     ;lda aiMoveIndex
                     ;sta __saveIdx
@@ -653,13 +659,20 @@ ONCEPERFRAME = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF FlashPiece
+    DEF aiSelectDestinationSquare
     SUBROUTINE
 
-        REFER aiSelectDestinationSquare
-        VEND FlashPiece
+        REFER AiStateMachine
+        VEND aiSelectDestinationSquare
 
+    ; Piece is selected and now we're looking for a button press on a destination square
+    ; we flash the piece on-and-off while we're doing that
     ; Flash the selected piece
+
+                    lda INTIM
+                    cmp #ONCEPERFRAME
+                    bcc .exit
+
 
                     dec aiFlashDelay
                     bne .exit                       ; don't flash
@@ -669,25 +682,9 @@ ONCEPERFRAME = 40
                     inc aiFlashPhase
 
                     jsr CopySinglePiece
+                    rts
 
-.exit               rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiSelectDestinationSquare
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiSelectDestinationSquare
-
-    ; Piece is selected and now we're looking for a button press on a destination square
-    ; we flash the piece on-and-off while we're doing that
-
-                    jsr FlashPiece
-
-        NEXT_RANDOM
-
+.exit
         lda INTIM
         cmp #20
         bcc .noButton

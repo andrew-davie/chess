@@ -11,7 +11,7 @@
 ; A ply will hold the move list for that position
 
 
-MAX_PLY  = 10
+MAX_PLY  = 20
     NEWRAMBANK PLY                                  ; RAM bank for holding the following ROM shadow
     REPEAT MAX_PLY-1
         NEWRAMBANK .DUMMY_PLY
@@ -69,10 +69,7 @@ MAX_MOVES =70
     VARIABLE alpha, 2
     VARIABLE beta, 2
     VARIABLE value, 2
-
-;    VARIABLE bestValue, 2
     VARIABLE depthLeft, 1
-;    VARIABLE bestScore, 2
     VARIABLE restorePiece, 1
     
     VARIABLE statusFlags, 1
@@ -163,7 +160,7 @@ InitPieceList
     SUBROUTINE
 
         REFER aiFlipBuffers
-        REFER InitialiseMoveGeneration
+        REFER GenerateAllMoves
         REFER negamax
         VEND NewPlyInitialise
 
@@ -172,7 +169,6 @@ InitPieceList
     ; x must be preserved
 
     ; note that 'alpha' and 'beta' are set externally!!
-
 
                     lda #-1
                     sta@PLY moveIndex           ; no valid moves
@@ -312,7 +308,10 @@ InitPieceList
                     lda #>-INFINITY
                     sta __alpha+1                   ; player tries to maximise
 
-                    ldx #SEARCH_DEPTH               ; depth
+                    ldx #SEARCH_DEPTH  
+                    lda #0 ;no captured piece
+                    sta __quiesceCapOnly
+
                     jsr negamax
  
                     ldx@PLY bestMove
@@ -410,58 +409,240 @@ RSquareEnd          .byte 25,27,95,97
 
 ;---------------------------------------------------------------------------------------------------
 
+    MAC XCHG ;{name}
+        lda@PLY {1},x
+        sta __xchg
+        lda@PLY {1},y
+        sta@PLY {1},x
+        lda __xchg
+        sta@PLY {1},y
+    ENDM
+
 
     DEF Sort
     SUBROUTINE
 
-        REFER aiComputerMove
-        VAR __xs, 1
-        VAR __swapped, 1
-        VAR __pc, 1
+        REFER GenerateAllMoves
+        VAR __xchg, 1
         VEND Sort
 
-                    lda currentPly
-                    sta savedBank
+                    ;lda currentPly
+                    ;sta savedBank           ; ??
+
+                    lda __quiesceCapOnly
+                    bmi .exit                       ; only caps present so already sorted!
 
                     ldx@PLY moveIndex
-                    bmi .exit
-                    beq .exit
-
                     ldy@PLY moveIndex
-                    jmp .next
-.scan
+.next               dey
+                    bmi .exit
 
                     lda@PLY MoveCapture,y
-                    and #PIECE_MASK
                     beq .next
 
-                    lda@PLY MoveTo,x
-                    pha
-                    lda@PLY MoveFrom,x
-                    pha
-                    lda@PLY MovePiece,x
-                    pha
-
-                    lda@PLY MovePiece,y
-                    sta@PLY MovePiece,x
-                    pla
-                    sta@PLY MovePiece,y
-
-                    lda@PLY MoveFrom,y
-                    sta@PLY MoveFrom,x
-                    pla
-                    sta@PLY MoveFrom,y
-
-                    lda@PLY MoveTo,y
-                    sta@PLY MoveTo,x
-                    pla
-                    sta@PLY MoveTo,y
+                    XCHG MoveFrom
+                    XCHG MoveTo
+                    XCHG MovePiece
+                    XCHG MoveCapture
 
                     dex
+                    bpl .next
 
-.next               dey
-                    bpl .scan
 .exit               rts
+
+
+;---------------------------------------------------------------------------------------------------
+; QUIESCE!
+
+;int Quiesce( int alpha, int beta ) {
+;    int stand_pat = Evaluate();
+;    if( stand_pat >= beta )
+;        return beta;
+;    if( alpha < stand_pat )
+;        alpha = stand_pat;
+
+;    until( every_capture_has_been_examined )  {
+;        MakeCapture();
+;        score = -Quiesce( -beta, -alpha );
+;        TakeBackMove();
+
+;        if( score >= beta )
+;            return beta;
+;        if( score > alpha )
+;           alpha = score;
+;    }
+;    return alpha;
+;}
+
+
+    DEF quiesce
+    SUBROUTINE
+
+    ; pass...
+    ; x = depthleft
+    ; SET_BANK_RAM      --> current ply
+    ; __alpha[2] = param alpha
+    ; __beta[2] = param beta
+
+
+        COMMON_VARS_ALPHABETA
+        REFER selectmove
+        REFER negamax
+        VEND quiesce
+
+                    lda currentPly
+                    cmp #14                         ; hardwired - stella bug RAM >= 16
+                    bcs .retBeta
+
+                    lda __beta
+                    sta@PLY beta
+                    lda __beta+1
+                    sta@PLY beta+1
+
+                    lda __alpha
+                    sta@PLY alpha
+                    lda __alpha+1
+                    sta@PLY alpha+1
+
+
+    ;    int stand_pat = Evaluate();
+    ;    if( stand_pat >= beta )
+    ;        return beta;
+
+                    sec
+                    lda Evaluation
+                    sbc@PLY beta
+                    lda Evaluation+1
+                    sbc@PLY beta+1
+                    bvc .spat0
+                    eor #$80
+.spat0              bpl .retBeta                    ; branch if stand_pat >= beta
+
+    ;    if( alpha < stand_pat )
+    ;        alpha = stand_pat;
+
+                    sec
+                    lda alpha
+                    sbc Evaluation
+                    lda alpha+1
+                    sbc Evaluation+1
+                    bvc .spat1
+                    eor #$80
+.spat1              bpl .alpha                    ; branch if alpha >= stand_pat
+
+    ; alpha < stand_pat
+
+                    lda Evaluation
+                    sta@PLY alpha
+                    lda Evaluation+1
+                    sta@PLY alpha+1
+
+.alpha
+                    jsr GenerateAllMoves
+
+                    ldx@PLY moveIndex
+                    bpl .forChild
+                    jmp .exit
+
+.retBeta            lda beta
+                    sta __negamax
+                    lda beta+1
+                    sta __negamax+1
+                    rts                    
+
+.forChild           stx@PLY movePtr
+
+    ; The movelist has captures ONLY (ref: __quiesceCapOnly != 0)
+
+                    jsr MakeMove
+
+                    sec
+                    lda #0
+                    sbc@PLY beta
+                    sta __alpha
+                    lda #0
+                    sbc@PLY beta+1
+                    sta __alpha+1
+
+                    sec
+                    lda #0
+                    sbc@PLY alpha
+                    sta __beta
+                    lda #0
+                    sbc@PLY alpha+1
+                    sta __beta+1
+
+                    inc currentPly
+                    lda currentPly
+                    sta SET_BANK_RAM                ; self-switch
+
+                    jsr quiesce
+
+                    dec currentPly
+                    lda currentPly
+                    sta SET_BANK_RAM
+
+                    jsr unmake_move
+
+                    sec
+                    lda #0
+                    sbc __negamax
+                    sta __negamax
+                    lda #0
+                    sbc __negamax+1
+                    sta __negamax+1                 ; -negamax(...)
+
+
+;        if( score >= beta )
+;            return beta;
+
+
+                    sec
+                    lda __negamax
+                    sbc@PLY beta
+                    lda __negamax+1
+                    sbc@PLY beta+1
+                    bvc .lab0
+                    eor #$80
+.lab0               bpl .retBeta                    ; branch if score >= beta
+
+;        if( score > alpha )
+;           alpha = score;
+;    }
+
+                    sec
+                    lda@PLY alpha
+                    sbc __negamax
+                    lda@PLY alpha+1
+                    sbc __negamax+1
+                    bvc .lab2
+                    eor #$80
+.lab2               bpl .nextMove                   ; alpha >= score
+
+    ; score > alpha
+
+                    lda __negamax
+                    sta@PLY alpha
+                    lda __negamax+1
+                    sta@PLY alpha+1
+
+.nextMove           ldx@PLY movePtr
+                    dex
+                    bpl .forChild
+
+.exit
+
+
+;    return alpha;
+
+                    lda@PLY alpha
+                    sta __negamax
+                    lda@PLY alpha+1
+                    sta __negamax+1
+                    rts
+
+
+
 
 
 ;---------------------------------------------------------------------------------------------------

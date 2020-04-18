@@ -280,8 +280,11 @@ flashDone           PHASE AI_MarchToTargetA
                     PHASE AI_DrawEntireBoard
                     rts
 
-.comp               PHASE AI_FlipBuffers
+.comp               ;lda #0 ;??
+                    ;jsr GenerateAllMoves
+                    PHASE AI_FlipBuffers ;GenInitialMoves
                     rts
+                    
 
 
 
