@@ -95,15 +95,18 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
 
                     ldx currentSquare
                     ldy ValidSquare+{1},x
-                    bmi .invalid
+                    bmi .invalid2
                     lda Board,y
-                    beq .invalid                    ; square empty
+                    beq .invalid2                   ; square empty
                     sta capture
                     eor currentPiece
                     bpl .invalid                    ; same colour
 
                     MOVE_OR_PROMOTE_PAWN {2}
-.invalid
+
+                    jmp .invalid2
+.invalid            inc protecting
+.invalid2
     ENDM
 
 ;---------------------------------------------------------------------------------------------------

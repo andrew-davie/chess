@@ -217,7 +217,7 @@ silence_speech
 
     CHECK_BANK_SIZE "BANK_SPEAK"
 
-#if 0
+    IF 0
 typedef enum
   182     
   183         Pause0        = 0,                     ///< Pause 0ms
@@ -387,4 +387,5 @@ typedef enum
   347 
   348      CommandCodes;
   349 
-  #endif
+
+ENDIF

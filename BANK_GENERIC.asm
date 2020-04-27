@@ -3,12 +3,12 @@
 
     DEFINE_1K_SEGMENT DECODE_LEVEL_SHADOW
 
-#if 0
+    IF 0
     IF PLUSCART = YES
             .byte "ChessAPI.php", #0      //TODO: change!
 	        .byte "pluscart.firmaplus.de", #0
     ENDIF
-#endif
+    ENDIF
 
 STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
@@ -19,11 +19,11 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 ; bank finishes.  Just continue on from where it left off...
 ;---------------------------------------------------------------------------------------------------
 
-    DEF Cart_Init
+    DEF cartInit
     SUBROUTINE
 
         REFER Reset
-        VEND Cart_Init
+        VEND cartInit
 
                     sei
                     cld
@@ -88,7 +88,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
     ; copy the PLY banks
 
-                    lda #MAX_PLY
+                    lda #PLY_BANKS
                     sta __plyBank
                     ldy #RAMBANK_PLY
                     sty currentPly
@@ -97,6 +97,16 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
                     iny
                     dec __plyBank
                     bne .copyPlyBanks
+
+    ; copy the evaluation code/tables
+
+                    ldy #RAMBANK_BANK_EVAL
+                    ldx #EVAL
+                    jsr CopyShadowROMtoRAM
+
+                    ldy #RAMBANK_RAM_PIECELIST
+                    ldx #ROM_PIECELIST
+                    jsr CopyShadowROMtoRAM
 
                     rts
 
@@ -114,7 +124,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
                     sta GRP1
 
                     lda #%01000010                  ; bit6 is not required
-                    sta VBLANK                      ; end of screen - enter blanking
+                    ;sta VBLANK                      ; end of screen - enter blanking
 
 
 ; END OF VISIBLE SCREEN
@@ -141,13 +151,14 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
                     stx VBLANK
                     rts
 
-#if 0
+    IF 0
     DEF Resync
     SUBROUTINE
 
                     RESYNC
                     rts
-#endif
+    ENDIF
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -206,6 +217,8 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
     ; originX12     starting square X12
     ; toX12         ending square X12
 
+
+
                     jsr AdjustMaterialPositionalValue
 
                     lda #BLANK
@@ -215,7 +228,7 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
                     ;cmp fromSquare
                     ;beq .idleErase
 
-                    lda #6                          ; on/off count
+                    lda #10                          ; on/off count
                     sta drawCount                   ; flashing for piece about to move
                     lda #0
                     sta drawDelay
@@ -236,6 +249,15 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
     ; drawDelay = flash speed
     ; drawCount = # of flashes
 
+                    lda originX12
+                    sta cursorX12
+
+                    lda #%100
+                    sta CTRLPF
+                    lda #2
+                    sta COLUP0
+
+
                     lda drawDelay
                     beq deCount
                     dec drawDelay
@@ -255,7 +277,9 @@ deCount
                     jsr CopySinglePiece             ; EOR-draw = flash
                     rts
 
-flashDone           PHASE AI_MarchToTargetA
+flashDone
+
+                    PHASE AI_MarchToTargetA
                     rts
 
 
@@ -280,9 +304,15 @@ flashDone           PHASE AI_MarchToTargetA
                     PHASE AI_DrawEntireBoard
                     rts
 
-.comp               ;lda #0 ;??
-                    ;jsr GenerateAllMoves
-                    PHASE AI_FlipBuffers ;GenInitialMoves
+.comp
+
+                    lda #-1
+                    sta toX12                        ; becomes startup flash square
+                    lda #36                         ; becomes cursor position
+                    sta originX12
+
+
+                    PHASE AI_GenerateMoves
                     rts
                     
 
@@ -325,7 +355,7 @@ flashDone           PHASE AI_MarchToTargetA
                     rts
 
 .deCount            lda drawCount
-                    beq flashDone2
+                    beq .flashDone2
                     dec drawCount
 
                     lda #10
@@ -337,7 +367,12 @@ flashDone           PHASE AI_MarchToTargetA
                     jsr CopySinglePiece
                     rts
 
-flashDone2          PHASE AI_SpecialMoveFixup
+.flashDone2
+
+                    lda #100
+                    sta aiFlashDelay
+
+                    PHASE AI_SpecialMoveFixup
                     rts
 
 
@@ -360,6 +395,39 @@ flashDone2          PHASE AI_SpecialMoveFixup
 
 
 ;---------------------------------------------------------------------------------------------------
+
+    DEF InitPieceLists
+    SUBROUTINE
+
+        REFER InitialisePieceSquares
+        VEND InitPieceLists
+
+                    ;lda #-1
+                    ;sta@RAM SquarePtr ;PieceListPtr
+
+    ; TODO: move the following as they're called 2x due to double-call of InitPiecLists
+
+                    lda #0
+                    sta Evaluation
+                    sta Evaluation+1                ; tracks CURRENT value of everything (signed 16-bit)
+
+
+    ; General inits that are moved out of FIXED....
+
+                    lda #%111
+                    sta NUSIZ0
+                    sta NUSIZ1              ; quad-width
+
+                    lda #%00000100
+                    sta CTRLPF
+                    lda #BACKGCOL
+                    sta COLUBK
+
+                    PHASE AI_StartClearBoard
+                    rts
+
+;---------------------------------------------------------------------------------------------------
+
 
     CHECK_HALF_BANK_SIZE "GENERIC_BANK_1"
 

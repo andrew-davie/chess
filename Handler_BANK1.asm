@@ -51,8 +51,40 @@
     ; and sause "segfaults". 21 is the max offset (a knight move). These spare bytes can
     ; be re-used for something else - we just need to guarantee there are 21 of them there
 
-    ALLOCATE Valid, 120 + 80 + 21
-    ds 21                      ; so indexing of "ValidSquare-21,x" won't fail
+    ALLOCATE Valid, 120 + 80 + 32 ;21
+    ;ds 21                      ; so indexing of "ValidSquare-21,x" won't fail
+
+    ;DEF PieceList
+    ;ds 16
+
+    MAC HANDLEVEC
+        .byte {1}MoveReturn
+        .byte {1}MoveReturn ;byte {1}Handle_WHITE_PAWN        ; 1
+        .byte {1}MoveReturn ;.byte {1}Handle_BLACK_PAWN        ; 2
+        .byte {1}Handle_KNIGHT            ; 3
+        .byte {1}Handle_BISHOP            ; 4
+        .byte {1}Handle_ROOK              ; 5
+        .byte {1}Handle_QUEEN             ; 6
+        .byte {1}Handle_KING              ; 7
+
+        .byte {1}MoveReturn
+        .byte {1}Handle_WHITE_PAWN        ; 1
+        .byte {1}Handle_BLACK_PAWN        ; 2
+        .byte {1}MoveReturn;.byte {1}Handle_KNIGHT            ; 3
+        .byte {1}MoveReturn;.byte {1}Handle_BISHOP            ; 4
+        .byte {1}MoveReturn;.byte {1}Handle_ROOK              ; 5
+        .byte {1}MoveReturn;.byte {1}Handle_QUEEN             ; 6
+        .byte {1}MoveReturn;.byte {1}Handle_KING              ; 7
+    ENDM
+
+
+    ;ALLOCATE Handlers, 32
+
+;    .byte 0     ; dummy to prevent page cross access on index 0
+
+HandlerVectorLO     HANDLEVEC <
+HandlerVectorHI     HANDLEVEC >
+
 
     ; Note, we will never index INTO the above bytes - x will always be >= 22
     ; We just need to make sure that the actual indexing will not have an address before
@@ -92,9 +124,25 @@
 
     ; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 99
 
-    ;DEF PieceList
-    ;ds 16
 
+    DEF handleIt
+    SUBROUTINE
+
+
+                    stx currentSquare
+
+                    eor sideToMove
+                    and #~FLAG_CASTLE               ; todo: better part of the move, mmh?
+                    sta currentPiece
+                    and #PIECE_MASK
+                    ora __pieceFilter
+                    tay
+
+                    lda HandlerVectorHI,y
+                    sta __vector+1                    
+                    lda HandlerVectorLO,y
+                    sta __vector
+                    jmp (__vector)
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -103,7 +151,6 @@
     include "Handler_BISHOP.asm"
     include "Handler_ROOK.asm"
     include "Handler_KING.asm"
-
 
 ;---------------------------------------------------------------------------------------------------
 

@@ -3,8 +3,6 @@
 
 ; Banks holding data (ply 0 doubles as WHITE, and ply 1 as BLACK)
 
-PLAYER              = RAMBANK_PLY
-OPPONENT            = PLAYER + 1
 
 CURSOR_MOVE_SPEED               = 16
 CAP_SPEED                       = 20
@@ -36,12 +34,12 @@ ONCEPERFRAME = 40
 
     MAC TABDEF ; {1} = macro to use
         
+        {1} FlashComputerMove
         {1} BeginSelectMovePhase
-        {1} GenInitialMoves
         {1} SelectStartSquare
         {1} StartSquareSelected
         {1} DrawMoves
-        {1} ShowP_MoveCaptures
+        {1} ShowMoveCaptures
         {1} SlowFlash
         {1} UnDrawTargetSquares
         {1} SelectDestinationSquare
@@ -49,13 +47,11 @@ ONCEPERFRAME = 40
         {1} ReselectDebounce
         {1} StartMoveGen
         {1} StepMoveGen
-        {1} LookForCheck
         {1} StartClearBoard
         {1} ClearEachRow
         {1} DrawEntireBoard
         {1} DrawPart2
         {1} DrawPart3
-        {1} FlipBuffers
         {1} GenerateMoves
         {1} ComputerMove
         {1} MoveIsSelected
@@ -75,6 +71,8 @@ ONCEPERFRAME = 40
         {1} ChooseDebounce
         {1} CheckMate
         {1} Draw
+        {1} DelayAfterMove
+        {1} DelayAfterPlaced
 
     ENDM
 
@@ -137,50 +135,6 @@ ONCEPERFRAME = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-
-    DEF aiLookForCheck
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiLookForCheck
-
-                    dec currentPly
-
-
-#if 0
-
-    ; now we've finished generating the opponent moves
-    ; See if the square our king is on is an attacked square (that is, it appears as a TO
-    ; square in the opponent's movelist)
-
-                    
-                    jsr SAFE_GetKingSquare          ; king's current X12 square
-
-                    inc currentPly
-                    jsr Go_IsSquareUnderAttack
-                    dec currentPly
-                    bcc .exit
-
-    ; in check!
-
-                    lda #$40
-                    sta COLUBK
-
-                    lda #50
-                    sta mdelay
-
-                    lda #8
-                    sta drawCount               ; row #
-
-                    PHASE AI_InCheckBackup
-                    rts
-#endif
-
-.exit               PHASE AI_BeginSelectMovePhase
-                    rts
-
-;---------------------------------------------------------------------------------------------------
-
     DEF aiInCheckBackup
     SUBROUTINE
 
@@ -225,20 +179,61 @@ ONCEPERFRAME = 40
         REFER AiStateMachine
         VEND aiBeginSelectMovePhase
 
-
-                    lda #$38
-                    sta cursorX12
+                    lda #$2
+                    sta COLUP0
+                    ldx #%100
+                    stx CTRLPF              ; under
 
                     lda #0
                     sta mdelay              ;?
-                    sta aiFlashPhase        ;?
+                    sta aiFlashPhase        ; odd/even for flashing pieces
+
+                    lda #CAP_SPEED*2
+                    sta aiFlashDelay
 
                     lda #-1
                     sta fromX12
                     sta toX12
                     
-                    PHASE AI_SelectStartSquare
+                    PHASE AI_FlashComputerMove
                     rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiFlashComputerMove
+    SUBROUTINE
+
+
+                    lda squareToDraw
+                    bmi .initial                    ; startup - no computer move to show
+
+    ; "squareToDraw" is the piece that should flash while human waits
+
+                    lda SWCHA
+                    and #$F0
+                    cmp #$F0
+                    beq .nodir
+
+                    lda #1
+                    sta aiFlashDelay
+                    and aiFlashPhase
+                    beq .initial
+
+.nodir              dec aiFlashDelay
+                    bne .exit                       ; don't flash
+                    lda #CAP_SPEED*2
+                    sta aiFlashDelay
+
+                    inc aiFlashPhase
+
+                    jsr CopySinglePiece
+                    rts
+
+.initial            PHASE AI_SelectStartSquare
+
+.exit               rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -248,8 +243,8 @@ ONCEPERFRAME = 40
         REFER AiStateMachine
         VEND aiSelectStartSquare
 
-                    ;NEXT_RANDOM
-
+                    NEXT_RANDOM
+                    
                     jsr moveCursor
                     jsr IsValidP_MoveFromSquare
 
@@ -297,7 +292,7 @@ ONCEPERFRAME = 40
         REFER aiSelectStartSquare
         REFER aiDrawMoves
         REFER aiUnDrawTargetSquares
-        REFER aiShowP_MoveCaptures
+        REFER aiShowMoveCaptures
         REFER aiSlowFlash
         REFER aiSelectDestinationSquare
         VEND setCursorColours
@@ -403,7 +398,7 @@ ONCEPERFRAME = 40
                     lda #0
                     sta aiFlashPhase                    ; controls odd/even exit of flashing
 
-                    PHASE AI_ShowP_MoveCaptures
+                    PHASE AI_ShowMoveCaptures
                     rts
 
 .exit
@@ -460,6 +455,7 @@ ONCEPERFRAME = 40
                     sta __piece
 
     ; If it's a pawn promote (duplicate "to" AND piece different (TODO) then skip others)
+    ; TODO this could/will fail on sorted lists. MMh.
 
 .sk                 dex
                     bmi .prom
@@ -532,11 +528,11 @@ ONCEPERFRAME = 40
 ;---------------------------------------------------------------------------------------------------
 
 
-    DEF aiShowP_MoveCaptures
+    DEF aiShowMoveCaptures
     SUBROUTINE
 
         REFER AiStateMachine
-        VEND aiShowP_MoveCaptures
+        VEND aiShowMoveCaptures
 
     ; draw/undraw ALL captured pieces
     ; we should do this an even number of times so that pieces don't disappEOR
@@ -552,7 +548,7 @@ ONCEPERFRAME = 40
                     sta aiMoveIndex
 .valid
 
-                    jsr SAFE_showP_MoveCaptures
+                    jsr SAFE_showMoveCaptures
                     lda aiMoveIndex
                     bpl .exit
 
@@ -594,7 +590,7 @@ ONCEPERFRAME = 40
                     lda #CAP_SPEED
                     sta mdelay
 
-                    PHASE AI_ShowP_MoveCaptures       ; go back and rEORdraw all captures again
+                    PHASE AI_ShowMoveCaptures       ; go back and rEORdraw all captures again
 
 .slowWait           rts
 
@@ -685,11 +681,12 @@ ONCEPERFRAME = 40
                     rts
 
 .exit
+                    jsr moveCursor
+
         lda INTIM
         cmp #20
         bcc .noButton
 
-                    jsr moveCursor
 
                     ldy cursorX12
                     sty toX12 
@@ -995,6 +992,35 @@ ONCEPERFRAME = 40
                     sta aiFlashDelay
 
                     PHASE AI_ChoosePromotePiece
+.exit               rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+        DEF aiDelayAfterMove
+        SUBROUTINE
+
+            VEND aiDelayAfterMove
+
+                    dec aiFlashDelay
+                    bne .exit
+                    PHASE AI_MoveIsSelected
+.exit               rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+        DEF aiDelayAfterPlaced
+        SUBROUTINE
+
+            VEND aiDelayAfterPlaced
+
+                    lda #-1
+                    ;sta cursorX12
+
+                    dec aiFlashDelay
+                    bne .exit
+                    PHASE AI_GenerateMoves
 .exit               rts
 
 

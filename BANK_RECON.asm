@@ -2,14 +2,22 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF UNSAFE_showP_MoveCaptures
+    DEF InitPieceList
     SUBROUTINE
 
-        REFER SAFE_showP_MoveCaptures
+    include "setup_board.asm"
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF UNSAFE_showMoveCaptures
+    SUBROUTINE
+
+        REFER SAFE_showMoveCaptures
         VAR __toSquareX12, 1
         VAR __fromPiece, 1
         VAR __aiMoveIndex, 1
-        VEND UNSAFE_showP_MoveCaptures
+        VEND UNSAFE_showMoveCaptures
 
     ; place a marker on the board for any square matching the piece
     ; EXCEPT for squares which are occupied (we'll flash those later)
@@ -18,7 +26,7 @@
                     lda savedBank
                     pha
 
-                    lda #BANK_UNSAFE_showP_MoveCaptures
+                    lda #BANK_UNSAFE_showMoveCaptures
                     sta savedBank
 
 
@@ -226,48 +234,6 @@ xhalt
 
 ;---------------------------------------------------------------------------------------------------
 
-#if 0
-    DEF FinaliseMove
-    SUBROUTINE
-
-        REFER aiMarchB2
-        VEND FinaliseMove
-
-    ; Now the visible movement on the board has happened, fix up the pointers to the pieces
-    ; for both sides.
-
-                    lda #BANK_FinaliseMove
-                    sta savedBank
-
-                    ;lda sideToMove
-                    ;asl
-                    ;lda #RAMBANK_PLY
-                    ;adc #0
-                    ;jsr GoFixPieceList
-
-                    lda toX12
-                    sta fromX12                     ; there MAY be no other-side piece at this square - that is OK!
-                    sta originX12
-
-                    lda #0
-                    sta toX12                       ; --> deleted (square=0)
-
-                    ;lda lastPiece
-                    ;beq .notake
-
-                    ;lda sideToMove
-                    ;eor #128
-                    ;asl
-                    ;lda #RAMBANK_PLY
-                    ;adc #0
-                    ;jsr GoFixPieceList                ; REMOVE any captured object
-
-.notake             rts
-#endif
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF aiMarchToTargetB
     SUBROUTINE
 
@@ -290,9 +256,6 @@ xhalt
 
                     PHASE AI_MarchB2
                     rts
-
-
-;---------------------------------------------------------------------------------------------------
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -356,6 +319,18 @@ xhalt
     ; figure colouration of square
 
                     lda squareToDraw
+
+    IF DIAGNOSTICS
+    ; Catch out-of-range piece square
+    ; will not catch off left/right edge
+
+.fail               cmp #100
+                    bcs .fail
+                    cmp #22
+                    bcc .fail
+    ENDIF
+
+
                     ldx #10
                     sec
 .sub10              sbc #10
@@ -363,12 +338,20 @@ xhalt
                     bcs .sub10
                     adc #8
                     sta __shiftx
-                    stx __tmp
+    IF DIAGNOSTICS
+.fail2              cmp #8
+                    bcs .fail2
+                    cpx #8
+                    bcs .fail2
+    ENDIF
+                    stx __tmp                    
                     adc __tmp
 
 
+
+
                     and #1
-                    eor #1
+                    ;eor #1
                     beq .white
                     lda #36
 .white              sta __pieceColour               ; actually SQUARE black/white

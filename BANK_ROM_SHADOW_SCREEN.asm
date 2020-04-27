@@ -9,9 +9,9 @@
 ; we effectively have 1K
 ;---------------------------------------------------------------------------------------------------
 
-COLOUR_LINE_1 = $94
-COLOUR_LINE_2 = $4a
-COLOUR_LINE_3 = $fa
+COLOUR_LINE_1 = $84
+COLOUR_LINE_2 = $4A
+COLOUR_LINE_3 = $16
 BACKGCOL      = $00
 
 ;COLOUR_LINE_1 = $94
@@ -342,7 +342,8 @@ SMSPRITE8_1         lda SpriteBuffer2+8,y       ; 4
 
 ;---------------------------------------------------------------------------------------------------
 
-#if 0
+    IF 0
+
     DEF RestoreBitmap
     SUBROUTINE
 
@@ -356,11 +357,12 @@ SMSPRITE8_1         lda SpriteBuffer2+8,y       ; 4
                     dey
                     bpl .fromTo
                     rts
-#endif
+    ENDIF
 
 ;---------------------------------------------------------------------------------------------------
 
-#if 0
+    IF 0
+
     DEF CopyTextToRowBitmap
     SUBROUTINE
 
@@ -394,7 +396,7 @@ SMSPRITE8_1         lda SpriteBuffer2+8,y       ; 4
 
                     rts
 
-#endif
+    ENDIF
 
 ;---------------------------------------------------------------------------------------------------
 

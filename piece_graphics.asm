@@ -120,7 +120,7 @@
 ; include "gfx/BLACK_PROMOTE_on_WHITE_SQUARE_3.asm"
 
 
-#if 0
+   IF 0
  include "gfx/WHITE_MARKED_BLANK_on_WHITE_SQUARE_0.asm"
  include "gfx/WHITE_MARKED_BLANK_on_WHITE_SQUARE_1.asm"
  include "gfx/WHITE_MARKED_BLANK_on_WHITE_SQUARE_2.asm"
@@ -137,10 +137,11 @@
  include "gfx/WHITE_MARKED_BISHOP_on_WHITE_SQUARE_1.asm"
  include "gfx/WHITE_MARKED_BISHOP_on_WHITE_SQUARE_2.asm"
  include "gfx/WHITE_MARKED_BISHOP_on_WHITE_SQUARE_3.asm"
-#endif
+   ENDIF
+
 ;    CHECK_BANK_SIZE "PIECES_5 (2K)"
 
-#if 0
+   IF 0
     NEWBANK PIECES_6
  include "gfx/WHITE_MARKED_ROOK_on_WHITE_SQUARE_0.asm"
  include "gfx/WHITE_MARKED_ROOK_on_WHITE_SQUARE_1.asm"
@@ -228,7 +229,7 @@
  include "gfx/BLACK_MARKED_PAWN_on_BLACK_SQUARE_3.asm"
     CHECK_BANK_SIZE "PIECES_8 (2K)"
 
-#endif
+   ENDIF
 
 ;    NEWBANK PIECES_9
 
@@ -238,19 +239,15 @@
 ; include "gfx/BLACK_MARKED_BLANK_on_BLACK_SQUARE_3.asm"
 ; include "gfx/BLACK_MARKED_KNIGHT_on_BLACK_SQUARE_0.asm"
 
-#if 0
+   IF 0
  include "gfx/BLACK_MARKED_KNIGHT_on_BLACK_SQUARE_1.asm"
  include "gfx/BLACK_MARKED_KNIGHT_on_BLACK_SQUARE_2.asm"
  include "gfx/BLACK_MARKED_KNIGHT_on_BLACK_SQUARE_3.asm"
-#endif
-
+   ENDIF
+   
 ;    CHECK_BANK_SIZE "PIECES_9 (2K)"
 
-#if 0
-
-
-
-
+   IF 0
  include "gfx/BLACK_MARKED_BISHOP_on_BLACK_SQUARE_0.asm"
  include "gfx/BLACK_MARKED_BISHOP_on_BLACK_SQUARE_1.asm"
  include "gfx/BLACK_MARKED_BISHOP_on_BLACK_SQUARE_2.asm"
@@ -267,6 +264,4 @@
  include "gfx/BLACK_MARKED_KING_on_BLACK_SQUARE_1.asm"
  include "gfx/BLACK_MARKED_KING_on_BLACK_SQUARE_2.asm"
  include "gfx/BLACK_MARKED_KING_on_BLACK_SQUARE_3.asm"
-
-
-#endif
+   ENDIF

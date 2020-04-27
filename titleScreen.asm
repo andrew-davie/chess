@@ -35,14 +35,14 @@ TitleSequence
 ;                sta rnd
 
 
-#if 0
+    IF 0
                 lda #0
                 sta digit
                 lda #$10
                 sta digit+1
                 lda #$20
                 sta digit+2
-#endif
+    ENDIF
 
 
 
@@ -51,7 +51,7 @@ TitleSequence
 
 RestartFrame0
 
-#if 0
+    IF 0
                 ldx #2
 rollcols        clc
                 lda digit+2
@@ -61,7 +61,7 @@ rollcols        clc
                 dex
                 bpl rollcols
 finxc
-#endif
+    ENDIF
 
     DEF RestartFrame
                 LDA #0
@@ -78,7 +78,7 @@ finxc
                 sty TIM64T
 
 
-#if 0
+    IF 0
                 lda SWCHB
                 rol
                 rol
@@ -90,7 +90,7 @@ finxc
                 sta Platform
                 jmp TitleSequence
 platOK
-#endif
+    ENDIF
 
 k2              inc rnd
                 beq k2
@@ -146,7 +146,7 @@ triplet         lda (__colour_table),y
                 lda OverscanTime2,x
                 sta TIM64T
 
-#if 0
+    IF 0
             sta WSYNC
             sta WSYNC
             sta WSYNC
@@ -158,7 +158,7 @@ triplet         lda (__colour_table),y
     lda #0
     sta BoardScrollX
     sta BoardScrollY
-#endif
+    ENDIF
 
 ;              ldy #63
 ;bot2           sta WSYNC
@@ -185,7 +185,7 @@ oscan
                 lda #%01000010                  ; bit6 is not required
                 sta VBLANK                      ; end of screen - enter blanking
 
-#if 0
+    IF 0
     inc rnd
     bne rdd
     inc rndHi
@@ -206,7 +206,7 @@ rdd
     jmp RestartFrame0
 
 ret2
-#endif
+    ENDIF
 
 
                 lda INPT4

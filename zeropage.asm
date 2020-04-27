@@ -58,5 +58,7 @@ captureLastPly                  ds 1
 positionCount                   ds 3
     ENDIF
 
-maxPly                          ds 1
+;maxPly                          ds 1
 flagCheck                       ds 1
+protecting                      ds 1
+spiral                          ds 1

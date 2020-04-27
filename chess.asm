@@ -20,8 +20,8 @@ ORIGIN_RAM      SET 0
 
 ;FIXED_BANK             = 3 * 2048           ;-->  8K ROM tested OK
 ;FIXED_BANK              = 7 * 2048          ;-->  16K ROM tested OK
-FIXED_BANK             = 15 * 2048           ; ->> 32K
-;FIXED_BANK             = 31 * 2048           ; ->> 64K
+;FIXED_BANK             = 15 * 2048           ; ->> 32K
+FIXED_BANK             = 31 * 2048           ; ->> 64K
 ;FIXED_BANK             = 239 * 2048         ;--> 480K ROM tested OK (KK/CC2 compatibility)
 ;FIXED_BANK             = 127 * 2048         ;--> 256K ROM tested OK
 ;FIXED_BANK             = 255 * 2048         ;--> 512K ROM tested OK (CC2 can't handle this)
@@ -29,12 +29,12 @@ FIXED_BANK             = 15 * 2048           ; ->> 32K
 YES                     = 1
 NO                      = 0
 
-INFINITY                = 32767
+INFINITY                = $7000 ;32767
 
 
 ; assemble diagnostics. Remove for release.
 
-TEST_POSITION           = 0               ; 0=normal, 1 = setup test position
+TEST_POSITION           = 0             ; 0=normal, 1 = setup test position
 DIAGNOSTICS             = 1
 QUIESCENCE              = 1
 ASSERTS                 = 0
@@ -43,11 +43,15 @@ ENPASSANT_ENABLED       = 0
 CASTLING_ENABLED        = 1
 ;PIECELIST_ENABLED       = 0
 
-WHITE_PLAYER = 0        ; human
-BLACK_PLAYER = 0        ; human
+SEARCH_DEPTH            = 4
+QUIESCE_EXTRA_DEPTH     = 4
 
-SEARCH_DEPTH            = 3
-QUIESCE_EXTRA_DEPTH     = 3
+PLY_BANKS = SEARCH_DEPTH + QUIESCE_EXTRA_DEPTH
+MAX_PLY_DEPTH_BANK = RAMBANK_PLY + PLY_BANKS
+
+    IF MAX_PLY_DEPTH_BANK > 31
+        ERR "Not enough RAM for PLY banks"
+    ENDIF
 
 
 
@@ -159,10 +163,11 @@ BANK_{1}        SET _CURRENT_BANK
             MAC CHECK_BANK_SIZE ; name
 .TEMP = * - BANK_START
     ECHO {1}, "(2K) SIZE = ", .TEMP, ", FREE=", ROM_BANK_SIZE - .TEMP
-#if ( .TEMP ) > ROM_BANK_SIZE
-    ECHO "BANK OVERFLOW @ ", * - ORIGIN
-    ERR
-#endif
+    IF ( .TEMP ) > ROM_BANK_SIZE
+        ECHO "BANK OVERFLOW @ ", * - ORIGIN
+        ERR
+    ENDIF
+
             ENDM
 
 
@@ -171,10 +176,10 @@ BANK_{1}        SET _CURRENT_BANK
     ; Note that these ROM banks can contain 2K, so this macro will generally go 'halfway'
 .TEMP = * - BANK_START
     ECHO {1}, "(1K) SIZE = ", .TEMP, ", FREE=", ROM_BANK_SIZE/2 - .TEMP
-#if ( .TEMP ) > ROM_BANK_SIZE/2
-    ECHO "HALF-BANK OVERFLOW @ ", * - ORIGIN
-    ERR
-#endif
+    IF ( .TEMP ) > ROM_BANK_SIZE/2
+        ECHO "HALF-BANK OVERFLOW @ ", * - ORIGIN
+        ERR
+    ENDIF
             ENDM
 
 
@@ -200,10 +205,10 @@ EARLY_LOCATION  SET *
 
     MAC CHECK_PAGE_CROSSING
         LIST OFF
-#if ( >BLOCK_END != >BLOCK_START )
-    ECHO "PAGE CROSSING @ ", BLOCK_START
-#endif
-        LIST ON
+    IF ( >BLOCK_END != >BLOCK_START )
+        ECHO "PAGE CROSSING @ ", BLOCK_START
+    ENDIF
+    LIST ON
     ENDM
 
     MAC CHECKPAGE
@@ -565,10 +570,13 @@ RND_EOR_VAL = $FE ;B4
 
     MAC COMMON_VARS_ALPHABETA
 
+        VAR __thinkbar, 1
+        VAR __toggle, 1
+
         VAR __bestMove, 1
         VAR __alpha, 2
         VAR __beta, 2
-        VAR __negamax, 2
+        VAR __negaMax, 2
         VAR __value, 2
 
         VAR __quiesceCapOnly, 1
@@ -583,17 +591,19 @@ RND_EOR_VAL = $FE ;B4
     include "Handler_MACROS.asm"
 
     include "BANK_GENERIC.asm"
+    include "BANK_GENERIC2.asm"
     include "BANK_ROM_SHADOW_SCREEN.asm"
     include "BANK_CHESS_INCLUDES.asm"
     include "BANK_StateMachine.asm"
     include "BANK_TEXT_OVERLAYS.asm"
+    include "BANK_PLIST.asm"
 
     include "titleScreen.asm"
     include "BANK_RECON.asm"
 
     ; The handlers for piece move generation
     include "Handler_BANK1.asm"
-    include "ply.asm"
+    include "BANK_PLY.asm"
     include "BANK_EVAL.asm"
     include "BANK_SPEAK.asm"
 

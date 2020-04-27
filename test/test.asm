@@ -1,4 +1,0 @@
-    processor 6502
-    org $1000
-
-    rts
