@@ -96,7 +96,6 @@ TEST_{1} = 0
 
 ;---------------------------------------------------------------------------------------------------
 
-    SEGTIME_C MINIMUM_SEGTIME, 95               ;✅ processing slice minimum requirement
     SEGTIME_C SEGTIME_MINIMUM_TIMESLICE, 54     ;✅ abort time maximum requirement for timeslice
 
         ; Note: we add 1 to the minimum because there's a bit of overhead at the start of the timeslice code which vectors

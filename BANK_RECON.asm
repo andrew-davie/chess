@@ -83,10 +83,6 @@
                     sta savedBank
                     rts
 
-restoreIndex        lda __aiMoveIndex
-                    sta aiMoveIndex
-                    jmp .skip
-
 
 ;---------------------------------------------------------------------------------------------------
 

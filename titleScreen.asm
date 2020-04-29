@@ -4,8 +4,8 @@ OverscanTime2
     .byte 26, 26
     .byte 32, 32
 
-colvec
-    .word colr_ntsc2, colr_pal
+;colvec
+;    .word colr_ntsc2, colr_pal
 
 
 VBlankTime  .byte 50,50

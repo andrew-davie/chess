@@ -44,7 +44,50 @@
     ELSE ; test position...
 
 
+    IF 0
+
+        .byte WHITE|K, 28
+        .byte WHITE|WP, 37
+        .byte WHITE|WP, 38
+        .byte WHITE|WP, 53
+        .byte WHITE|WP, 49
+        .byte WHITE|WP, 32
+        .byte WHITE|R, 27
+        .byte WHITE|B, 46
+        .byte WHITE|R, 54
+
+        .byte BLACK|BP, 56
+        .byte BLACK|BP, 87
+        .byte BLACK|BP, 88
+        .byte BLACK|BP, 89
+        .byte BLACK|BP, 84
+        .byte BLACK|B, 66
+        .byte BLACK|R, 69
+        .byte BLACK|K, 98
+
+        .byte BLACK|R, 92
+
+
+
+    ENDIF
+
+
     IF 1
+    ; En passant test
+
+        .byte BLACK|BP, 88
+        .byte BLACK|BP, 86
+
+        .byte WHITE|WP, 67
+        .byte WHITE|K, 52
+
+
+    ENDIF
+
+
+
+
+    IF 0
 
 
     ;.byte BLACK|R, 97

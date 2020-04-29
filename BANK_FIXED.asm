@@ -238,7 +238,7 @@ _rts                rts
 
 
                     lda #0
-                    sta __quiesceCapOnly
+                    sta __quiesceCapOnly                ; gen ALL moves
 
                     lda #RAMBANK_PLY+1
                     sta currentPly
@@ -269,7 +269,7 @@ _rts                rts
                     dex
                     bpl .scan
 
-elp                    rts
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -285,8 +285,6 @@ elp                    rts
         VAR __vector, 2
         VAR __masker, 2
         VAR __pieceFilter, 1
-        VAR __piecePointer, 16
-        VAR __ppIndex, 1
         VEND GenerateAllMoves
 
     ; Do the move generation in two passes - pawns then pieces
@@ -296,40 +294,14 @@ elp                    rts
                     sta SET_BANK_RAM
                     jsr NewPlyInitialise
     
-    IF 0
-                    lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM
-
-                    ldx #0
-                    sta _ppIndex
-
-                    ldx #100
-.next               dex
-                    cpx #22
-                    bcc .exit
-
-                    lda Board,x
-                    beq .next
-                    cmp #-1
-                    beq .next
-
-                    and #PIECE_MASK
-                    tay
-    ENDIF
-
-
-
                     lda #8                  ; pawns
                     sta __pieceFilter
-                    jsr MoveGenx
+                    jsr MoveGenX
                     lda #99
                     sta currentSquare
                     lda #0
                     sta __pieceFilter
-                    jsr MoveGenx
-
-
-
+                    jsr MoveGenX
 
                     lda currentPly
                     sta SET_BANK_RAM
@@ -337,8 +309,9 @@ elp                    rts
 
 
 
-
-MoveGenx
+    DEF MoveGenX
+    SUBROUTINE
+    
                     ldx #100
                     bne .next2
 
@@ -381,15 +354,12 @@ MoveReturn          ldx currentSquare
                     sta SET_BANK_RAM                ; switch in movelist
                     
                     lda #1
-                    sta CTRLPF
-                    ;lda #$e0
-                    ;sta COLUPF
+                    sta CTRLPF                      ; mirroring for thinkbars
 
                     jsr selectmove
 
                     lda #0
-                    sta CTRLPF
-                    sta PF0
+                    sta CTRLPF                      ; clear mirroring
                     sta PF1
                     sta PF2
 
@@ -398,8 +368,7 @@ MoveReturn          ldx currentSquare
 
     ; Computer could not find a valid move. It's checkmate or stalemate. Find which...
 
-
-                    clc
+                    SWAP
                     jsr GenerateAllMoves
                     lda flagCheck
                     beq .gameDrawn
@@ -417,8 +386,6 @@ MoveReturn          ldx currentSquare
                     lda #-1
                     sta cursorX12
 
-                    lda #50
-                    sta aiFlashDelay
                     PHASE AI_DelayAfterMove
 .halted             rts
 
@@ -552,11 +519,7 @@ MoveReturn          ldx currentSquare
 
 .cont
 
-                    ldx #1
-                    bit sideToMove
-                    bmi .setd
-                    ldx #75
-.setd               stx aiFlashDelay
+
                     PHASE AI_DelayAfterPlaced
 
 
@@ -597,8 +560,6 @@ MoveReturn          ldx currentSquare
     SUBROUTINE
 
         VEND AddMove
-
-    ; =57 including call
 
     ; add square in y register to movelist as destination (X12 format)
     ; [y]               to square (X12)
@@ -698,10 +659,7 @@ MoveReturn          ldx currentSquare
 
 .exit
 
-
-                    jsr ListPlayerMoves
-                    rts
-
+                    jmp ListPlayerMoves
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -722,14 +680,6 @@ MoveReturn          ldx currentSquare
                     lda Board,y
                     ldy savedBank
                     sty SET_BANK
-                    rts
-
-    DEF GetBoardRAM
-                    lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM
-                    lda Board,y
-                    ldy savedBank
-                    sty SET_BANK_RAM
                     rts
 
 ;---------------------------------------------------------------------------------------------------
@@ -1095,7 +1045,7 @@ MoveReturn          ldx currentSquare
     IF ENPASSANT_ENABLED    
                     JSROM EnPassantCheck
                     beq .notEnPassant
-EPK                 jsr EnPassantRemovePiece        ; y = origin X12
+                    jsr EnPassantRemovePiece        ; y = origin X12
 .notEnPassant
     ENDIF
 
@@ -1122,19 +1072,19 @@ EPK                 jsr EnPassantRemovePiece        ; y = origin X12
     ; restore the board evaluation to what it was at the start of this ply
     ; TODO: note: moved flag seems wrong on restoration
 
-                    lda savedEvaluation
+                    lda@PLY savedEvaluation
                     sta Evaluation
-                    lda savedEvaluation+1
+                    lda@PLY savedEvaluation+1
                     sta Evaluation+1
 
                     ldx movePtr
                     lda@PLY MoveFrom,x
                     sta fromX12
-                    ldy MoveTo,x
+                    ldy@PLY MoveTo,x
 
-                    lda restorePiece
+                    lda@PLY restorePiece
                     pha
-                    lda capturedPiece
+                    lda@PLY capturedPiece
 
                     ldx #RAMBANK_BOARD
                     stx SET_BANK_RAM
@@ -1195,80 +1145,36 @@ EPK                 jsr EnPassantRemovePiece        ; y = origin X12
 
     SUBROUTINE
 
-.doQ
-
-    ; PARAMS depth-1, -beta, -alpha
-    ; pased through temporary variables (__alpha, __beta) and X reg
-
-                    lda #-1
+.doQ                lda #-1
                     sta __quiesceCapOnly
                     jsr quiesce
                     inc __quiesceCapOnly
+                    rts
 
-                    jmp .jiggle
 
 .exit               lda@PLY value
                     sta __negaMax
                     lda@PLY value+1
                     sta __negaMax+1
                     rts
+                    
 
-.terminal
-                    cmp #0                          ; captured piece
+.terminal           cmp #0                          ; captured piece
                     bne .doQ                        ; last move was capture, so quiesce
-
-
 
                     lda Evaluation
                     sta __negaMax
                     lda Evaluation+1
                     sta __negaMax+1
 
+.inCheck2           rts
 
-
-
-                    rts
-
-.jiggle
-
-                    sec
-                    lda __negaMax
-                    sbc #0
-                    sta __negaMax
-                    lda __negaMax+1
-                    sbc #0
-                    sta __negaMax+1
-                    rts
-
-.inCheck2           lda #<(INFINITY-1000)
-                    sta __negaMax
-                    lda #<(INFINITY-1000)
-                    sta __negaMax+1
-                    rts
-
-
-
-spP1
-    .byte %11000001
-    .byte %01100000
-    .byte %00110000
-    .byte %00011000
-    .byte %00001100
-    .byte %00000110
-    .byte %10000011
-    .byte %11000001
-
-    .byte %10000011
-    .byte %00000110
-    .byte %00001100
-    .byte %00011000
-    .byte %00110000
-    .byte %01100000
-    .byte %11000001
-    .byte %10000011
 
 
     DEF negaMax
+
+    ; PARAMS depth-1, -beta, -alpha
+    ; pased through temporary variables (__alpha, __beta) and X reg
 
     ; pass...
     ; x = depthleft
@@ -1282,39 +1188,20 @@ spP1
         REFER selectmove
         VEND negaMax
 
+                    pha
 
+                    JSROM ThinkBar
+                    lda currentPly
+                    sta SET_BANK_RAM
 
-                    inc positionCount
-                    bne .p1
-                    inc positionCount+1
-                    bne .p1
-                    inc positionCount+2
-.p1
-
-    ; The 'thinkbar' pattern...
-
-                    lda positionCount
-                    and #15
-                    tay
-                    lda spP1,y
-                    sta PF2
-                    sta PF1
-                    sta PF0
-
-
-                    lda positionCount+1
-                    asl
-                    asl
-                    asl
-                    asl
-                    ora #2
-                    sta COLUPF
-
-    ;^
-
+                    pla
                     dex
                     bmi .terminal
                     stx@PLY depthLeft
+
+                    lda #$02 ;COLOUR_LINE_1
+                    sta COLUPF
+
 
     ; Allow the player to force computer to select a move. Press the SELECT switch
     ; This may have issues if no move has been selected yet. Still... if you wanna cheat....
@@ -1322,18 +1209,6 @@ spP1
                     lda SWCHB
                     and #2
                     beq .exit                       ; SELECT abort
-
-
-
-    IF 1
-                    NEXT_RANDOM                     ; for jiggle
-                    and #15
-                    adc Evaluation
-                    sta Evaluation
-                    lda Evaluation+1
-                    adc #0
-                    sta Evaluation+1
-    ENDIF
 
 
                     lda __alpha
@@ -1346,20 +1221,33 @@ spP1
                     lda __beta+1
                     sta@PLY beta+1
 
-                    jsr GenerateAllMoves
-                    ;lda flagCheck
-                    ;bne .inCheck2                           ; OTHER guy in check
-
 
     IF 1
-                    ;clc
+                    lda Evaluation
+                    adc randomness
+                    sta Evaluation
+                    bcc .evh
+                    inc Evaluation+1
+.evh
+    ENDIF
+
+                    jsr GenerateAllMoves
+                    lda flagCheck
+                    bne .inCheck2                           ; OTHER guy in check
+
+    IF 1
                     lda@PLY moveIndex
                     bmi .none
-                    adc@PLY savedEvaluation
-                    sta@PLY savedEvaluation
-                    lda@PLY savedEvaluation+1
+                    lsr
+                    lsr
+                    lsr
+                    lsr
+                    lsr
+                    adc Evaluation
+                    sta Evaluation
+                    lda Evaluation+1
                     adc #0
-                    sta@PLY savedEvaluation+1                ; + mobility (kind of odd/bad - happens every level)
+                    sta Evaluation+1
 .none
     ENDIF
 
@@ -1424,10 +1312,17 @@ spP1
                     sbc __negaMax+1
                     sta __negaMax+1                 ; -negaMax(...)
 
-                    ;lda flagCheck
-                    ;bne .inCheckX
+                    lda flagCheck
+                    beq .notCheck
+                    
+    ; at this point we've determined that the move was illegal, because the next ply detected
+    ; a king capture. So, the move should be totally discounted
 
-                    sec
+                    lda #0
+                    sta flagCheck                   ; so we don't retrigger in future - it's been handled!
+                    beq .nextMove                   ; unconditional - move is not considered!
+
+.notCheck           sec
                     lda@PLY value
                     sbc __negaMax
                     lda@PLY value+1
@@ -1485,13 +1380,6 @@ spP1
 
 .retrn              jmp .exit
 
-
-.inCheckX           
-        ; TODO - causes bad copypiece on move select for computer...!!
-                    ;lda #0
-                    ;sta@PLY MoveFrom,x              ; technically not needed but useful for UI
-                    ;sta flagCheck
-                    jmp .nextMove
 
 ;---------------------------------------------------------------------------------------------------
 

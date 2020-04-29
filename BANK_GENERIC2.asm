@@ -68,4 +68,63 @@
     ENDIF
     
 
+;---------------------------------------------------------------------------------------------------
+
+    DEF ThinkBar
+    SUBROUTINE
+
+        IF DIAGNOSTICS
+
+                    inc positionCount
+                    bne .p1
+                    inc positionCount+1
+                    bne .p1
+                    inc positionCount+2
+.p1
+        ENDIF
+
+    ; The 'thinkbar' pattern...
+
+                    lda #0
+                    ldy INPT4
+                    bmi .doThink
+    
+                    inc __thinkbar
+                    lda __thinkbar
+                    and #15
+                    tay
+                    lda SynapsePattern,y
+
+.doThink            sta PF2
+                    sta PF1
+                    rts
+
+
+
+SynapsePattern
+
+    .byte %11000001
+    .byte %01100000
+    .byte %00110000
+    .byte %00011000
+    .byte %00001100
+    .byte %00000110
+    .byte %10000011
+    .byte %11000001
+
+    .byte %10000011
+    .byte %00000110
+    .byte %00001100
+    .byte %00011000
+    .byte %00110000
+    .byte %01100000
+    .byte %11000001
+    .byte %10000011
+
+
+;---------------------------------------------------------------------------------------------------
+
             CHECK_BANK_SIZE "GENERIC_BANK_2 -- full 2K"
+
+;---------------------------------------------------------------------------------------------------
+;EOF

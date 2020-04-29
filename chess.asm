@@ -34,17 +34,18 @@ INFINITY                = $7000 ;32767
 
 ; assemble diagnostics. Remove for release.
 
-TEST_POSITION           = 0             ; 0=normal, 1 = setup test position
-DIAGNOSTICS             = 1
+TEST_POSITION           = 0                         ; 0=normal, 1 = setup test position
+DIAGNOSTICS             = 0
 QUIESCENCE              = 1
 ASSERTS                 = 0
-PVSP                    = 0                 ; player versus player =1
-ENPASSANT_ENABLED       = 0
+PVSP                    = 0                         ; player versus player =1
+ENPASSANT_ENABLED       = 1
 CASTLING_ENABLED        = 1
-;PIECELIST_ENABLED       = 0
 
-SEARCH_DEPTH            = 4
-QUIESCE_EXTRA_DEPTH     = 4
+SEARCH_DEPTH            = 5
+QUIESCE_EXTRA_DEPTH     = 8
+
+
 
 PLY_BANKS = SEARCH_DEPTH + QUIESCE_EXTRA_DEPTH
 MAX_PLY_DEPTH_BANK = RAMBANK_PLY + PLY_BANKS
@@ -393,6 +394,9 @@ MAXIMUM_REQUIRED_OVERLAY_SIZE SET OVERLAY_DELTA
         sbc {0}
     ENDM
 
+    MAC cmp@PLY ;{}
+        cmp {0}
+    ENDM
 
 ;---------------------------------------------------------------------------------------------------
 

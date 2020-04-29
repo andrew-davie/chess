@@ -72,7 +72,9 @@ ONCEPERFRAME = 40
         {1} CheckMate
         {1} Draw
         {1} DelayAfterMove
+        {1} DelayAfterMove2
         {1} DelayAfterPlaced
+        {1} DelayAfterPlaced2
 
     ENDM
 
@@ -194,6 +196,8 @@ ONCEPERFRAME = 40
                     lda #-1
                     sta fromX12
                     sta toX12
+
+                    ;lsr randomness
                     
                     PHASE AI_FlashComputerMove
                     rts
@@ -614,6 +618,7 @@ ONCEPERFRAME = 40
 
     ; Part (a) move cursor around the board waiting for joystick press
 
+                    ldx #0                  ; delay
 
                     lda SWCHA
                     lsr
@@ -640,16 +645,9 @@ ONCEPERFRAME = 40
                     sta cursorX12
 .invalid
 
-                    lda #CURSOR_MOVE_SPEED
-                    sta mdelay
+                    ldx #CURSOR_MOVE_SPEED
+.cursor             stx mdelay
                     jsr setCursorPriority
-                    rts
-
-
-.cursor             lda #0
-                    sta mdelay
-                    jsr setCursorPriority
-
 .delaym             rts
 
 
@@ -1002,6 +1000,19 @@ ONCEPERFRAME = 40
 
             VEND aiDelayAfterMove
 
+                    lda #50
+                    sta aiFlashDelay
+                    PHASE AI_DelayAfterMove2
+.exit               rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+        DEF aiDelayAfterMove2
+        SUBROUTINE
+
+            VEND aiDelayAfterMove
+
                     dec aiFlashDelay
                     bne .exit
                     PHASE AI_MoveIsSelected
@@ -1015,8 +1026,22 @@ ONCEPERFRAME = 40
 
             VEND aiDelayAfterPlaced
 
-                    lda #-1
-                    ;sta cursorX12
+                    ldx #75                         ; delay after human move
+                    lda sideToMove
+                    bmi .computer
+                    ldx #1                          ; delay after computer move
+.computer           stx aiFlashDelay
+
+                    PHASE AI_DelayAfterPlaced2
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+        DEF aiDelayAfterPlaced2
+        SUBROUTINE          
+
+        jsr debug
 
                     dec aiFlashDelay
                     bne .exit

@@ -221,17 +221,12 @@ STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
                     jsr AdjustMaterialPositionalValue
 
-                    lda #BLANK
+                    lda #0
                     sta previousPiece
-
-                    ;lda toSquare
-                    ;cmp fromSquare
-                    ;beq .idleErase
+                    sta drawDelay
 
                     lda #10                          ; on/off count
                     sta drawCount                   ; flashing for piece about to move
-                    lda #0
-                    sta drawDelay
 
                     PHASE AI_WriteStartPieceBlank
 .idleErase          rts
@@ -422,6 +417,9 @@ flashDone
                     sta CTRLPF
                     lda #BACKGCOL
                     sta COLUBK
+
+                    lda #255
+                    sta randomness
 
                     PHASE AI_StartClearBoard
                     rts

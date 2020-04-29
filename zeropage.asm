@@ -35,13 +35,6 @@ currentSquare                   ds 1
 enPassantPawn                   ds 1                ; TODO - this belongs in PLY bank
 currentPly                      ds 1
 
-;    IFCONST PIECELIST_ENABLED
-;piecelistIndex                  ds 1
-;    ELSE
-squareIndex                     ds 1
-;    ENDIF
-    
-
 sideToMove                      ds 1                ; d7 == side, 0=white, 128 = black
 fromPiece                       ds 1
 lastPiece                       ds 1
@@ -52,13 +45,12 @@ speech_addr                     ds 2
 bg                              ds 1
 
 capture                         ds 1
-captureLastPly                  ds 1
 
     IF DIAGNOSTICS
 positionCount                   ds 3
     ENDIF
 
 ;maxPly                          ds 1
-flagCheck                       ds 1
+flagCheck                       ds 1                ; -1 = no, #KING = yes
 protecting                      ds 1
-spiral                          ds 1
+randomness                      ds 1

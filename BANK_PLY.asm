@@ -56,8 +56,6 @@ MAX_MOVES =70
     VARIABLE secondaryPiece, 1                      ; original piece on secondary (castle, enpassant)
     VARIABLE secondarySquare, 1                     ; original square of secondary piece
     VARIABLE secondaryBlank, 1                      ; square to blank on secondary
-    VARIABLE quiescentEnabled, 1                    ; all child nodes to quiesce
-    VARIABLE captureMove, 1                         ; previous move was a capture
 
 ;---------------------------------------------------------------------------------------------------
 ; Move tables hold piece moves for this current ply
@@ -147,13 +145,13 @@ MAX_MOVES =70
     ; This fixes the move with/without castle flag
 
 
-                    ldy@RAM moveIndex
-                    bmi .fail               ; shouldn't happen
+                    ldy@PLY moveIndex
+                    ;bmi .fail               ; shouldn't happen
 .scan               lda fromX12
-                    cmp MoveFrom,y
+                    cmp@PLY MoveFrom,y
                     bne .next
                     lda toX12                    
-                    cmp MoveTo,y
+                    cmp@PLY MoveTo,y
                     beq .found
 .next               dey
                     bpl .scan
@@ -180,18 +178,14 @@ MAX_MOVES =70
     ; returns with RAM bank switched
 
 
-    IF DIAGNOSTICS
+        IF DIAGNOSTICS
+        
                     lda #0
                     sta positionCount
                     sta positionCount+1
                     sta positionCount+2
-
-;                    sta maxPly
-    ENDIF
-
-
-;(* Initial call for Player A's root node *)
-;negaMax(rootNode, depth, −∞, +∞, 1)
+                    ;sta maxPly
+        ENDIF
 
 
                     lda #<INFINITY
@@ -205,16 +199,11 @@ MAX_MOVES =70
                     sta __alpha+1                   ; player tries to maximise
 
                     ldx #SEARCH_DEPTH  
-                    lda #0                          ;no captured piece
-                    sta __quiesceCapOnly
+                    lda #0                          ; no captured piece
+                    sta __quiesceCapOnly            ; ALL moves to be generated
 
                     jsr negaMax
  
-                    ;NEGEVAL                ;????
-
-    ;lda #RAMBANK_PLY
-    ;sta SET_BANK_RAM
-
                     ldx@PLY bestMove
                     bmi .nomove
 
@@ -227,7 +216,7 @@ MAX_MOVES =70
 
                     jsr ListPlayerMoves
 
-                    lda #RAMBANK_PLY
+                    lda currentPly ;#RAMBANK_PLY
                     sta SET_BANK_RAM
                     
                     jsr unmakeMove
@@ -357,24 +346,8 @@ RSquareEnd          .byte 25,27,95,97
 .next               dey
                     bmi .exit
 
-    IF 0
-                    lda@PLY MoveCapture,y
-                    bne .swap
-                    lda@PLY MovePiece,y
-                    and #PIECE_MASK
-                    cmp #3
-                    bcc .next
-;                    lda@PLY MovePiece,y
-;                    and #PIECE_MASK
-;                    cmp #3
-;                    bcc .next
-
-.swap
-    ELSE
                     lda@PLY MoveCapture,y
                     beq .next
-
-    ENDIF
 
                     XCHG MoveFrom
                     XCHG MoveTo
@@ -430,16 +403,6 @@ RSquareEnd          .byte 25,27,95,97
 ;}
 
 
-.retBeta            lda beta
-                    sta __negaMax
-                    lda beta+1
-                    sta __negaMax+1
-
-
-                    rts                    
-
-
-
     DEF quiesce
     SUBROUTINE
 
@@ -459,32 +422,30 @@ RSquareEnd          .byte 25,27,95,97
                     cmp #MAX_PLY_DEPTH_BANK -1
                     bcs .retBeta
 
-    IF DIAGNOSTICS
-                    ;lda currentPly
-                    ;cmp maxPly
-                    ;bcc .notmax
-                    ;sta maxPly
-.notmax
+    ; The 'thinkbar' pattern...
 
+                    lda #0
+                    ldy INPT4
+                    bmi .doThink
+    
+                    lda __thinkbar
+                    asl
+                    asl
+                    asl
+                    asl
+                    ora #2
+                    sta COLUPF
 
-    ENDIF
-
-
-                    inc positionCount
-                    bne .p1
-                    inc positionCount+1
-                    bne .p1
-                    inc positionCount+2
-.p1
-
-
-                    lda positionCount
+                    inc __thinkbar
+                    lda __thinkbar
                     and #15
                     tay
-                    lda spP1,y
-                    sta PF2
-                    sta PF1
+                    lda SynapsePattern2,y
 
+.doThink            sta PF1
+                    sta PF2
+
+    ; ^
 
                     lda __beta
                     sta@PLY beta
@@ -508,7 +469,17 @@ RSquareEnd          .byte 25,27,95,97
                     sbc@PLY beta+1
                     bvc .spat0
                     eor #$80
-.spat0              bpl .retBeta                    ; branch if stand_pat >= beta
+.spat0              bmi .norb ;pl .retBeta                    ; branch if stand_pat >= beta
+
+.retBeta            lda beta
+                    sta __negaMax
+                    lda beta+1
+                    sta __negaMax+1
+
+.abort              rts                    
+
+.norb
+
 
     ;    if( alpha < stand_pat )
     ;        alpha = stand_pat;
@@ -520,7 +491,7 @@ RSquareEnd          .byte 25,27,95,97
                     sbc Evaluation+1
                     bvc .spat1
                     eor #$80
-.spat1              bpl .alpha                    ; branch if alpha >= stand_pat
+.spat1              bpl .alpha                      ; branch if alpha >= stand_pat
 
     ; alpha < stand_pat
 
@@ -531,37 +502,12 @@ RSquareEnd          .byte 25,27,95,97
 
 .alpha
                     jsr GenerateAllMoves
-
-                    ;lda flagCheck
-                    ;bne .inCheck
+                    lda flagCheck
+                    bne .abort                      ; pure abort
 
                     ldx@PLY moveIndex
-                    bpl .forChild
-                    jmp .exit
-                    ;bmi .exit
-
-.inCheck            lda #<(INFINITY-1000)
-                    sta __negaMax
-                    lda #>(INFINITY-1000)
-                    sta __negaMax
-                    rts
-
-
-.retBeta            lda beta
-                    sta __negaMax
-                    lda beta+1
-                    sta __negaMax+1
-                    rts                    
-
-
-;.inCheck            ldx@PLY movePtr
-;                    lda #0
-;                    sta@PLY MoveFrom,x
-;                    beq .nextMove
-
-
-
-
+                    bmi .exit
+                    
 .forChild           stx@PLY movePtr
 
     ; The movelist has captures ONLY (ref: __quiesceCapOnly != 0)
@@ -596,17 +542,18 @@ RSquareEnd          .byte 25,27,95,97
 
                     jsr unmakeMove
 
-
+                    lda flagCheck                   ; don't consider moves which leave us in check
+                    bne .inCheck
+                    
                     sec
-                    lda #0
+                    ;lda #0                         ; already 0
                     sbc __negaMax
                     sta __negaMax
                     lda #0
                     sbc __negaMax+1
                     sta __negaMax+1                 ; -negaMax(...)
 
-                    ;lda flagCheck                   ; don't consider moves which leave us in check
-                    ;bne .nextMove
+
 
 ;        if( score >= beta )
 ;            return beta;
@@ -619,7 +566,9 @@ RSquareEnd          .byte 25,27,95,97
                     sbc@PLY beta+1
                     bvc .lab0
                     eor #$80
-.lab0               bpl .retBeta                    ; branch if score >= beta
+.lab0               bmi .nrb2 ; .retBeta                    ; branch if score >= beta
+                    jmp .retBeta
+.nrb2
 
 ;        if( score > alpha )
 ;           alpha = score;
@@ -645,20 +594,40 @@ RSquareEnd          .byte 25,27,95,97
                     dex
                     bpl .forChild
 
-.exit
-
-
 ;    return alpha;
 
+.exit
                     lda@PLY alpha
                     sta __negaMax
                     lda@PLY alpha+1
                     sta __negaMax+1
                     rts
 
-.checker            lda #0
+.inCheck            lda #0
                     sta flagCheck
-                    jmp .nextMove
+                    beq .nextMove
+
+
+
+SynapsePattern2
+
+    .byte %11000001
+    .byte %01100000
+    .byte %00110000
+    .byte %00011000
+    .byte %00001100
+    .byte %00000110
+    .byte %10000011
+    .byte %11000001
+
+    .byte %10000011
+    .byte %00000110
+    .byte %00001100
+    .byte %00011000
+    .byte %00110000
+    .byte %01100000
+    .byte %11000001
+    .byte %10000011
 
 
 ;---------------------------------------------------------------------------------------------------
