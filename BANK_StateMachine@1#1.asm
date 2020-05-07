@@ -111,7 +111,6 @@ HOLD_DELAY                      = 40
     DEF aiFlashComputerMove
     SUBROUTINE
 
-
                     lda squareToDraw
                     bmi .initial                    ; startup - no computer move to show
 
@@ -150,10 +149,14 @@ HOLD_DELAY                      = 40
         REFER AiStateMachine
         VEND aiSelectStartSquare
 
+        ldx #1
+kk      cpx #0
+        ;bne kk
+
                     NEXT_RANDOM
                     
                     jsr moveCursor
-                    jsr IsValidMoveFromSquare
+                    ;jsr IsValidMoveFromSquare;@2
 
                     dec ccur                        ; pulse colour for valid squares
                     jsr setCursorColours
@@ -162,7 +165,7 @@ HOLD_DELAY                      = 40
                     ora INPT4
                     bmi .exit                       ; illegal square or no button press
 
-                    PHASE AI_StartSquareSelected
+                    ;PHASE AI_StartSquareSelected
 
 .exit               rts
 
@@ -181,8 +184,10 @@ HOLD_DELAY                      = 40
 
                     ldy cursorX12
                     bmi .under
-                    jsr GetBoard
-                    cmp #0
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
                     bne .under
                     ldx #0
 .under              stx CTRLPF                  ; UNDER
@@ -541,7 +546,10 @@ HOLD_DELAY                      = 40
                     adc JoyMoveCursor,y
                     sta __newCursor
                     tay
-                    jsr GetValid
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda ValidSquare,y
                     cmp #-1
                     beq .invalid
                     lda __newCursor

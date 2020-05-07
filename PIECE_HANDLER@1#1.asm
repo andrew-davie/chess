@@ -1,13 +1,13 @@
-; Chess
-; Copyright (c) 2019-2020 Andrew Davie
-; andrew@taswegian.com
+    SLOT 1
+    NEWBANK PIECE_HANDLER_1
 
-    SLOT 1 ; this code assembles for bank #1
-    NEWBANK GENMOVE2
+    include "PIECE_PAWN.asm"
+    include "PIECE_KNIGHT.asm"
+    include "PIECE_BISHOP.asm"
 
 ;---------------------------------------------------------------------------------------------------
 
-    CHECK_BANK_SIZE "GENMOVE2"
+        CHECK_BANK_SIZE "PIECE_HANDLER_1"
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

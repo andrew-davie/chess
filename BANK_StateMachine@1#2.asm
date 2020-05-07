@@ -244,7 +244,7 @@
     
     ; Player comes here at the start of making a move
     ; This generates a valid movelist by calling 'negaMax' (removing illegal moves)
- rts ;tmp
+
                     lda toX12
                     sta squareToDraw                    ; for showing move (display square)
 

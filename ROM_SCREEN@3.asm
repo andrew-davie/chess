@@ -129,7 +129,10 @@
                     dex
                     bcs .sub10
 
-                    stx SET_BANK_RAM
+                    txa
+                    adc #SLOT_DrawRow               ;cc implied
+                    sta SET_BANK_RAM
+
                     lda #<SpriteBuffer
                     sta@RAM SMSPRITE0_0+1
                     sta@RAM SMSPRITE8_0+1

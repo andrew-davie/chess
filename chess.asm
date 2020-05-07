@@ -604,7 +604,7 @@ RND_EOR_VAL = $FE ;B4
     ENDM
 
 
-;--------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------------------
 
     include "BANK_FIRST@0.asm"                        ; MUST be first in ROM - contains reset vectors
     include "BANK_GENERIC@1#1.asm"
@@ -626,33 +626,14 @@ RND_EOR_VAL = $FE ;B4
     include "GFX4.asm"
     include "NEGAMAX.asm"
 
-    include "Handler_MACROS.asm"
+    include "PIECE_MACROS.asm"
     include "GENMOVE.asm"
     include "GENMOVE2.asm"
 
     include "BANK_GENERIC@1#2.asm"
+    include "PIECE_HANDLER@1#1.asm"
+    include "PIECE_HANDLER@1#2.asm"
     include "BANK_3.asm"
 
-    ;include "Handler_MACROS.asm"
-
-    ;include "BANK_GENERIC.asm"
-    ;include "BANK_GENERIC2.asm"
-    ;include "BANK_ROM_SHADOW_SCREEN.asm"
-    ;include "BANK_CHESS_INCLUDES.asm"
-    ;include "BANK_StateMachine.asm"
-    ;include "BANK_TEXT_OVERLAYS.asm"
-    ;include "BANK_PLIST.asm"
-
-    ;include "titleScreen.asm"
-    ;include "BANK_RECON.asm"
-
-    ; The handlers for piece move generation
-    ;include "Handler_BANK1.asm"
-    ;include "BANK_PLY.asm"
-    ;include "BANK_EVAL.asm"
-    ;include "BANK_SPEAK.asm"
-
-    ; MUST BE LAST...
-    ;include "BANK_FIXED.asm"
-
-            ;END
+;---------------------------------------------------------------------------------------------------
+;EOF

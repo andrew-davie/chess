@@ -33,9 +33,6 @@ HandlerVectorHI     HANDLEVEC >
 HandlerVectorBANK   HANDLEVEC BANK_
 
 
-    include "Handler_BISHOP.asm"
-    include "Handler_KING.asm"
-    include "Handler_QUEEN.asm"
 
 ;---------------------------------------------------------------------------------------------------
 

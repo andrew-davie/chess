@@ -38,16 +38,10 @@ _ORIGIN             SET _FIRST_BANK
                     ldx #$FF
                     txs
 
-
-;                    ldx #0
-;joy                 cpx #0
-;                    beq joy
-
                     CALL CartInit
                     CALL SetupBanks
                     CALL InitialisePieceSquares
-                    
-                    ;CALL ListPlayerMoves
+                    ;jsr ListPlayerMoves;@0
 
 
 .StartFrame
@@ -105,16 +99,21 @@ _ORIGIN             SET _FIRST_BANK
                     CALL PositionSprites
 
 
-    IF 0
+    IF 1
     ; "draw" sprite shapes into row banks
 
-                    ldx #SLOT_DrawRow + 7
-zapem               stx SET_BANK_RAM
-                    jsr WriteBlank
+                    ldx #7
+zapem               txa
+                    clc
+                    adc #SLOT_DrawRow
+                    sta SET_BANK_RAM
+                    jsr WriteBlank;@3
                     dex
                     bpl zapem
 
-                    jsr WriteCursor
+                    lda #BANK_WriteCursor
+                    sta SET_BANK
+                    jsr WriteCursor;@3
     ENDIF
 
 .notnow
@@ -278,47 +277,47 @@ ONCEPERFRAME = 40
 
     MAC TABDEF ; {1} = macro to use
         
-        {1} FlashComputerMove
-        {1} BeginSelectMovePhase
-        {1} SelectStartSquare
-        {1} StartSquareSelected
-        {1} DrawMoves
-        {1} ShowMoveCaptures
-        {1} SlowFlash
-        {1} UnDrawTargetSquares
-        {1} SelectDestinationSquare
-        {1} Quiescent
-        {1} ReselectDebounce
-        {1} StartMoveGen
-        {1} StepMoveGen
-        {1} StartClearBoard
-        {1} ClearEachRow
-        {1} DrawEntireBoard
-        {1} DrawPart2
-        {1} DrawPart3
-        {1} GenerateMoves
-        {1} ComputerMove
-        {1} MoveIsSelected
-        {1} WriteStartPieceBlank
-        {1} MarchToTargetA
-        {1} MarchA2
-        {1} MarchB
-        {1} MarchToTargetB
-        {1} MarchB2
-        {1} FinalFlash
-        {1} SpecialMoveFixup
-        {1} InCheckBackup
-        {1} InCheckDelay
-        {1} PromotePawnStart
-        {1} RollPromotionPiece
-        {1} ChoosePromotePiece
-        {1} ChooseDebounce
-        {1} CheckMate
-        {1} Draw
-        {1} DelayAfterMove
-        {1} DelayAfterMove2
-        {1} DelayAfterPlaced
-        {1} DelayAfterPlaced2
+        {1} FlashComputerMove                       ; 0
+        {1} BeginSelectMovePhase                    ; 1
+        {1} SelectStartSquare                       ; 2
+        {1} StartSquareSelected                     ; 3
+        {1} DrawMoves                               ; 4
+        {1} ShowMoveCaptures                        ; 5
+        {1} SlowFlash                               ; 6
+        {1} UnDrawTargetSquares                     ; 7
+        {1} SelectDestinationSquare                 ; 8
+        {1} Quiescent                               ; 9
+        {1} ReselectDebounce                        ; 10
+        {1} StartMoveGen                            ; 11
+        {1} StepMoveGen                             ; 12
+        {1} StartClearBoard                         ; 13
+        {1} ClearEachRow                            ; 14
+        {1} DrawEntireBoard                         ; 15
+        {1} DrawPart2                               ; 16
+        {1} DrawPart3                               ; 17
+        {1} GenerateMoves                           ; 18
+        {1} ComputerMove                            ; 19
+        {1} MoveIsSelected                          ; 20
+        {1} WriteStartPieceBlank                    ; 21
+        {1} MarchToTargetA                          ; 22
+        {1} MarchA2                                 ; 23
+        {1} MarchB                                  ; 24
+        {1} MarchToTargetB                          ; 25
+        {1} MarchB2                                 ; 26
+        {1} FinalFlash                              ; 27
+        {1} SpecialMoveFixup                        ; 28
+        {1} InCheckBackup                           ; 29
+        {1} InCheckDelay                            ; 30
+        {1} PromotePawnStart                        ; 31
+        {1} RollPromotionPiece                      ; 32
+        {1} ChoosePromotePiece                      ; 33
+        {1} ChooseDebounce                          ; 34
+        {1} CheckMate                               ; 35
+        {1} Draw                                    ; 36
+        {1} DelayAfterMove                          ; 37
+        {1} DelayAfterMove2                         ; 38
+        {1} DelayAfterPlaced                        ; 39
+        {1} DelayAfterPlaced2                       ; 40
 
     ENDM
 
@@ -360,7 +359,139 @@ ONCEPERFRAME = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-    ECHO "FREE BYTES IN STARTUP BANK = ", $F0FC - *
+    DEF GenerateAllMoves
+    SUBROUTINE
+
+        REFER negaMax
+        REFER quiesce
+        REFER aiStepMoveGen
+        REFER aiGenerateMoves
+        REFER selectmove
+        VAR __vector, 2
+        VAR __masker, 2
+        VAR __pieceFilter, 1
+        VEND GenerateAllMoves
+
+    ; Do the move generation in two passes - pawns then pieces
+    ; This is an effort to get the alphabeta pruning happening with major pieces handled first in list
+
+                    lda currentPly
+                    sta SET_BANK_RAM;@2
+                    jsr NewPlyInitialise
+    
+                    lda #8                  ; pawns
+                    sta __pieceFilter
+                    jsr MoveGenX
+                    lda #99
+                    sta currentSquare
+                    lda #0
+                    sta __pieceFilter
+                    jsr MoveGenX
+
+                    lda currentPly
+                    sta SET_BANK_RAM
+                    jmp Sort
+
+
+
+    DEF MoveGenX
+    SUBROUTINE
+    
+                    ldx #100
+                    bne .next2
+
+    DEF MoveReturn
+
+
+                      ldx currentSquare
+
+.next2              lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+
+.next               dex
+                    cpx #22
+                    bcc .exit
+
+                    lda Board,x
+                    beq .next
+                    cmp #-1
+                    beq .next
+                    eor sideToMove
+                    bmi .next
+                    
+;    DEF handleIt
+;    SUBROUTINE
+
+
+                    stx currentSquare
+
+                    eor sideToMove
+                    and #~FLAG_CASTLE               ; todo: better part of the move, mmh?
+                    sta currentPiece
+                    and #PIECE_MASK
+                    ora __pieceFilter
+                    tay
+
+                    lda HandlerVectorHI,y
+                    sta __vector+1                    
+                    lda HandlerVectorLO,y
+                    sta __vector
+
+                    lda HandlerVectorBANK,y
+                    sta SET_BANK;@1
+
+                    jmp (__vector)
+
+
+
+.exit
+                    rts
+
+ 
+;---------------------------------------------------------------------------------------------------
+
+    DEF ListPlayerMoves
+    SUBROUTINE
+
+
+                    lda #0
+                    sta __quiesceCapOnly                ; gen ALL moves
+
+                    lda #RAMBANK_PLY+1
+                    sta currentPly
+                    jsr GenerateAllMoves
+
+                    ldx@PLY moveIndex
+.scan               stx@PLY movePtr
+
+                    jsr MakeMove
+
+                    inc currentPly
+                    jsr GenerateAllMoves
+
+                    dec currentPly
+                    lda currentPly
+                    sta SET_BANK_RAM
+
+                    jsr unmakeMove
+
+                    lda flagCheck
+                    beq .next
+
+                    ldx@PLY movePtr
+                    lda #0
+                    sta@PLY MoveFrom,x              ; invalidate move (still in check!)
+
+.next               ldx@PLY movePtr
+                    dex
+                    bpl .scan
+
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    ECHO "FREE BYTES IN STARTUP BANK = ", $F3FC - *
 
 ;---------------------------------------------------------------------------------------------------
     ; The reset vectors

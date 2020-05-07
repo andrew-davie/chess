@@ -17,7 +17,7 @@
                 ldx currentSquare               ; 3
                 bne .project                    ; 3   unconditional
 
-.empty          jsr AddMove                     ; 57
+.empty          jsr AddMoveSlider               ; 57
 .project        ldy ValidSquare+{1},x           ; 4
                 bmi .invalid                    ; 2/3 off board!
                 lda Board,y                     ; 4   piece @ destination

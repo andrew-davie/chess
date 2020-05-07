@@ -194,23 +194,6 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF GetValid
-    SUBROUTINE
-
-                    lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM
-                    lda ValidSquare,y
-                    ldy savedBank
-                    sty SET_BANK
-                    rts
-
-
-
-;---------------------------------------------------------------------------------------------------
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF CopySetupForMarker
     SUBROUTINE
 
@@ -252,11 +235,48 @@
                     tay
                     rts
 
-;---------------------------------------------------------------------------------------------------
-
-
 
 ;---------------------------------------------------------------------------------------------------
+
+    DEF AddMoveSlider
+    SUBROUTINE
+
+        VEND AddMoveSlider
+
+    ; add square in y register to movelist as destination (X12 format)
+    ; [y]               to square (X12)
+    ; currentSquare     from square (X12)
+    ; currentPiece      piece.
+    ;   ENPASSANT flag set if pawn double-moving off opening rank
+    ; capture           captured piece
+
+                    lda capture
+                    bne .always
+                    lda __quiesceCapOnly
+                    bne .abort
+
+.always
+                    tya
+                    
+                    ldy@PLY moveIndex
+                    iny
+                    sty@PLY moveIndex
+                    
+                    sta@PLY MoveTo,y
+                    tax                             ; used for continuation of sliding moves
+                    lda currentSquare
+                    sta@PLY MoveFrom,y
+                    lda currentPiece
+                    sta@PLY MovePiece,y
+                    lda capture
+                    sta@PLY MoveCapture,y
+
+                    rts
+                    
+.abort              tya
+                    tax
+                    rts
+
 
     DEF AddMove
     SUBROUTINE
@@ -275,144 +295,24 @@
                     lda __quiesceCapOnly
                     bne .abort
 
-.always             lda currentPly
-                    sta SET_BANK_RAM
-                    jsr AddMovePly
-                    lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM
-                    rts
+.always             ;lda currentPly
+                    ;sta SET_BANK_RAM
+
+                    tya
                     
-.abort              tya
-                    tax
-                    rts
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF GenerateAllMoves
-    SUBROUTINE
-
-        REFER negaMax
-        REFER quiesce
-        REFER aiStepMoveGen
-        REFER aiGenerateMoves
-        REFER selectmove
-        VAR __vector, 2
-        VAR __masker, 2
-        VAR __pieceFilter, 1
-        VEND GenerateAllMoves
-
-    ; Do the move generation in two passes - pawns then pieces
-    ; This is an effort to get the alphabeta pruning happening with major pieces handled first in list
-
-                    lda currentPly
-                    sta SET_BANK_RAM
-                    jsr NewPlyInitialise
-    
-                    lda #8                  ; pawns
-                    sta __pieceFilter
-                    jsr MoveGenX
-                    lda #99
-                    sta currentSquare
-                    lda #0
-                    sta __pieceFilter
-                    jsr MoveGenX
-
-                    lda currentPly
-                    sta SET_BANK_RAM
-                    jmp Sort
-
-
-
-    DEF MoveGenX
-    SUBROUTINE
-    
-                    ldx #100
-                    bne .next2
-
-    DEF MoveReturn
-
-
-                      ldx currentSquare
-
-.next2              lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM
-
-.next               dex
-                    cpx #22
-                    bcc .exit
-
-                    lda Board,x
-                    beq .next
-                    cmp #-1
-                    beq .next
-                    eor sideToMove
-                    bmi .next
+                    ldy@PLY moveIndex
+                    iny
+                    sty@PLY moveIndex
                     
-;    DEF handleIt
-;    SUBROUTINE
+                    sta@PLY MoveTo,y
+                    lda currentSquare
+                    sta@PLY MoveFrom,y
+                    lda currentPiece
+                    sta@PLY MovePiece,y
+                    lda capture
+                    sta@PLY MoveCapture,y
 
-
-                    stx currentSquare
-
-                    eor sideToMove
-                    and #~FLAG_CASTLE               ; todo: better part of the move, mmh?
-                    sta currentPiece
-                    and #PIECE_MASK
-                    ora __pieceFilter
-                    tay
-
-                    lda HandlerVectorHI,y
-                    sta __vector+1                    
-                    lda HandlerVectorLO,y
-                    sta __vector
-                    jmp (__vector)
-
-
-
-.exit
-                    rts
-
- 
-;---------------------------------------------------------------------------------------------------
-
-    DEF ListPlayerMoves
-    SUBROUTINE
-
-
-                    lda #0
-                    sta __quiesceCapOnly                ; gen ALL moves
-
-                    lda #RAMBANK_PLY+1
-                    sta currentPly
-                    jsr GenerateAllMoves
-
-                    ldx@PLY moveIndex
-.scan               stx@PLY movePtr
-
-                    jsr MakeMove
-
-                    inc currentPly
-                    jsr GenerateAllMoves
-
-                    dec currentPly
-                    lda currentPly
-                    sta SET_BANK_RAM
-
-                    jsr unmakeMove
-
-                    lda flagCheck
-                    beq .next
-
-                    ldx@PLY movePtr
-                    lda #0
-                    sta@PLY MoveFrom,x              ; invalidate move (still in check!)
-
-.next               ldx@PLY movePtr
-                    dex
-                    bpl .scan
-
-                    rts
-
+.abort              rts
 
 ;---------------------------------------------------------------------------------------------------
 ; TODO - is this valid?
@@ -611,7 +511,7 @@
                     lda #BLANK
                     sta@RAM Board,y
 
-                    ;jsr CopySinglePiece
+                    jsr CopySinglePiece
 
                     lda #RAMBANK_BOARD
                     sta SET_BANK_RAM
@@ -649,27 +549,6 @@
                     rts
 
 ;---------------------------------------------------------------------------------------------------
-
-
-    DEF IsValidMoveFromSquare
-    SUBROUTINE
-
-        REFER aiSelectStartSquare
-        VEND IsValidMoveFromSquare
-
-    ; Does the square exist in the movelist?
-    ; Return: y = -1 if NOT FOUND
-
-                    lda cursorX12
-                    sta fromX12
-
-                    ldy currentPly
-                    sty SET_BANK_RAM
-                    jsr CheckMoveListFromSquare
-
-                    lda savedBank
-                    sta SET_BANK
-                    rts
 
 
 ;---------------------------------------------------------------------------------------------------

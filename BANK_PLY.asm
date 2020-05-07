@@ -1,7 +1,7 @@
 ; Copyright (C)2020 Andrew Davie
 ; andrew@taswegian.com
 
-    SLOT 1      ;TODO
+    SLOT 2      ;TODO
     NEWBANK BANK_PLY                   ; ROM SHADOW
 
     
@@ -564,32 +564,6 @@ SynapsePattern2
     .byte %01100000
     .byte %11000001
     .byte %10000011
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF AddMovePly
-    SUBROUTINE
-
-        REFER AddMove
-        VEND AddMovePly
-
-                    tya
-                    
-                    ldy@PLY moveIndex
-                    iny
-                    sty@PLY moveIndex
-                    
-                    sta@PLY MoveTo,y
-                    tax                             ; used for continuation of sliding moves
-                    lda currentSquare
-                    sta@PLY MoveFrom,y
-                    lda currentPiece
-                    sta@PLY MovePiece,y
-                    lda capture
-                    sta@PLY MoveCapture,y
-
-                    rts
 
 
 ;---------------------------------------------------------------------------------------------------

@@ -121,8 +121,8 @@ def grab(pieces_bitmap, side_colour, square_colour, piece_type, wrapper, indexer
             for x_bitmap in range(0, SQUARE_WIDTH):
 
                 pixel_icc_colour = pieces_bitmap[x_start + x_bitmap, y_start + y_bitmap]
-                #if piece_type != PieceTypes.BLANK:
-                #    pixel_icc_colour ^= pieces_bitmap[x_bitmap, y_start + y_bitmap]
+                if piece_type != PieceTypes.BLANK:
+                    pixel_icc_colour ^= pieces_bitmap[x_bitmap, y_start + y_bitmap]
                 x_pf_pixel = x_bitmap + square_offset * SQUARE_WIDTH
 
                 if (pixel_icc_colour & 4) != 0:
