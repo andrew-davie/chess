@@ -1,73 +1,9 @@
 ; Copyright (C)2020 Andrew Davie
 ; andrew@taswegian.com
 
-
-;---------------------------------------------------------------------------------------------------
-; Define the RAM banks
-; A "PLY" bank represents all the data required on any single ply of the search tree.
-; The banks are organised sequentially, PLY_BANKS of them starting at RAMBANK_PLY
-; The startup code copies the ROM shadow into each of these PLY banks, and from then on
-; they act as independant switchable banks usable for data on each ply during the search.
-; A ply will hold the move list for that position
-
-
-    NEWRAMBANK PLY                                  ; RAM bank for holding the following ROM shadow
-    REPEAT PLY_BANKS-1
-        NEWRAMBANK .DUMMY_PLY
-    REPEND
-
-
-;---------------------------------------------------------------------------------------------------
-; and now the ROM shadow - this is copied to ALL of the RAM ply banks
-
+    SLOT 1      ;TODO
     NEWBANK BANK_PLY                   ; ROM SHADOW
 
-;---------------------------------------------------------------------------------------------------
-; The piece-lists
-; ONLY the very first bank piecelist is used - all other banks switch to the first for
-; piecelist usage. Note that this initialisation (below) comes from the shadow ROM/RAM copy
-; but this needs to be initialised programatically on new game.
-
-; We have TWO piecelists, in different banks
-; WHITE pieces in bank BANK_PLY
-; BLACK pieces in bank BANK_PLY+1
-
-    VARIABLE savedEvaluation, 2                     ; THIS node's evaluation - used for reverting moves!
-
-;---------------------------------------------------------------------------------------------------
-
-MAX_MOVES =70
-
-    VARIABLE MoveFrom, MAX_MOVES
-    VARIABLE MoveTo, MAX_MOVES
-    VARIABLE MovePiece, MAX_MOVES
-    VARIABLE MoveCapture, MAX_MOVES
-
-    VARIABLE kingSquare, 3                          ; traversing squares for castle/check
-
-;---------------------------------------------------------------------------------------------------
-
-; The X12 square at which a pawn CAN be taken en-passant. Normally 0.
-; This is set/cleared whenever a move is made. The flag is indicated in the move description.
-
-    VARIABLE enPassantSquare, 1
-    VARIABLE capturedPiece, 1
-    VARIABLE originalPiece, 1
-    VARIABLE secondaryPiece, 1                      ; original piece on secondary (castle, enpassant)
-    VARIABLE secondarySquare, 1                     ; original square of secondary piece
-    VARIABLE secondaryBlank, 1                      ; square to blank on secondary
-
-;---------------------------------------------------------------------------------------------------
-; Move tables hold piece moves for this current ply
-
-    VARIABLE moveIndex, 1                           ; points to first available 'slot' for move storage
-    VARIABLE movePtr, 1
-    VARIABLE bestMove, 1
-    VARIABLE alpha, 2
-    VARIABLE beta, 2
-    VARIABLE value, 2
-    VARIABLE depthLeft, 1
-    VARIABLE restorePiece, 1
     
 ;---------------------------------------------------------------------------------------------------
 
@@ -109,7 +45,7 @@ MAX_MOVES =70
     DEF CheckMoveListFromSquare
     SUBROUTINE
 
-        REFER IsValidP_MoveFromSquare
+        REFER IsValidMoveFromSquare
         VEND CheckMoveListFromSquare
 
     ; X12 in A
@@ -216,7 +152,7 @@ MAX_MOVES =70
 
                     jsr ListPlayerMoves
 
-                    lda currentPly ;#RAMBANK_PLY
+                    lda #RAMBANK_PLY
                     sta SET_BANK_RAM
                     
                     jsr unmakeMove
@@ -419,7 +355,7 @@ RSquareEnd          .byte 25,27,95,97
         VEND quiesce
 
                     lda currentPly
-                    cmp #MAX_PLY_DEPTH_BANK -1
+                    cmp #RAMBANK_PLY + MAX_PLY_DEPTH_BANK -1
                     bcs .retBeta
 
     ; The 'thinkbar' pattern...
@@ -658,15 +594,7 @@ SynapsePattern2
 
 ;---------------------------------------------------------------------------------------------------
 
-    CHECK_HALF_BANK_SIZE "PLY -- 1K"
-
-;---------------------------------------------------------------------------------------------------
-
-; There is space here (1K) for use as ROM
-; but NOT when the above bank is switched in as RAM, of course!
-
-
-
+    CHECK_BANK_SIZE "BANK_PLY"
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

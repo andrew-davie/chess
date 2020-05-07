@@ -1,11 +1,17 @@
+    SLOT 1
     NEWBANK RECON
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF InitPieceList
+    DEF SAFE_showMoveCaptures
     SUBROUTINE
 
-    include "setup_board.asm"
+        VEND SAFE_showMoveCaptures
+
+                    jsr UNSAFE_showMoveCaptures
+                    lda savedBank
+                    sta SET_BANK
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -77,7 +83,7 @@
                     lda __toSquareX12
                     sta squareToDraw
 
-                    jsr CopySinglePiece
+                    jsr CopySinglePiece;@0
 
 .skip               pla
                     sta savedBank
@@ -86,340 +92,25 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiMarchToTargetA
+    DEF showPromoteOptions
     SUBROUTINE
 
-        REFER AiStateMachine
-        VAR __fromRow, 1
-        VAR __boardIndex, 1
-        VAR __fromCol, 1
-        VAR __toCol, 1
-        VEND aiMarchToTargetA
+        REFER aiRollPromotionPiece
+        REFER aiChoosePromotePiece
+        VEND showPromoteOptions
 
+    ; X = character shape # (?/N/B/R/Q)
 
-    ; Now we calculate move to new square
-
-                    lda fromX12
-                    cmp toX12
-                    beq .unmovedx
-                    sta lastSquareX12
-
-                    sec
-                    ldx #-3
-.sub10              sbc #10
-                    inx
-                    bcs .sub10
-                    adc #8
-                    sta __fromCol
-                    stx __fromRow
-
-                    lda toX12
-                    sec
-                    ldx #-3
-.sub10b             sbc #10
-                    inx
-                    bcs .sub10b
-                    adc #8
-                    sta __toCol
-
-
-                    cpx __fromRow
-                    beq .rowDone
-
-                    bcs .incRow
-
-                    sec
-                    lda fromX12
-                    sbc #10
-                    sta fromX12
-                    jmp .rowDone
-
-.incRow             clc
-                    lda fromX12
-                    adc #10
-                    sta fromX12
-
-.rowDone
-
-                    lda __toCol
-                    cmp __fromCol
-                    beq .colDone
-
-                    bcs .incCol
-
-                    dec fromX12
-                    jmp .colDone
-
-.incCol             inc fromX12
-.colDone
-.unmovedx
-
-                    PHASE AI_MarchA2
-                    rts
-
-
-    DEF aiMarchA2
-    SUBROUTINE                    
-
-
-    ; erase object in new sqare --> blank
-
-                    ldy fromX12
+                    ldy toX12
                     sty squareToDraw
 
-                    jsr GetBoard
-                    cmp #0
-                    beq .skipbl
-                    jsr CopySinglePiece             ; erase next square along --> blank
+                    jsr CopySetupForMarker
+                    jmp InterceptMarkerCopy
 
-.skipbl
-                    ldy fromX12
-                    sty __boardIndex
-
-                    jsr GetBoard
-                    sta lastPiece                   ; what we are overwriting
-                    lda fromPiece
-                    ora #FLAG_MOVED                ; prevents usage in castling for K/R
-                    and #~FLAG_ENPASSANT
-                    ldy __boardIndex
-                    jsr PutBoard
-
-                    PHASE AI_MarchB
-                    rts
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiMarchB2
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiMarchB2
-
-                    ldy lastSquareX12
-                    sty squareToDraw
-
-                    jsr GetBoard
-                    cmp #0
-                    beq .skipbl2
-
-                    jsr CopySinglePiece             ; draw previous piece back in old position
-.skipbl2
-
-                    lda fromX12
-                    cmp toX12
-                    beq xhalt
-
-                    lda #0                          ; inter-move segment speed (can be 0)
-                    sta drawDelay
-                    PHASE AI_MarchToTargetA
-
-                    rts
-
-xhalt
-
-                    ;??? jsr FinaliseMove
-
-                    lda #4                          ; on/off count
-                    sta drawCount                   ; flashing for piece about to move
-                    lda #0
-                    sta drawDelay
-
-                    PHASE AI_FinalFlash
-                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiMarchToTargetB
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiMarchToTargetB
-
-    ; now we want to undraw the piece in the old square
-
-                    lda lastSquareX12
-                    sta squareToDraw
-
-                    jsr CopySinglePiece             ; erase whatever was on the previous square (completely blank)
-
-                    ldy lastSquareX12
-                    lda previousPiece
-                    jsr PutBoard
-
-                    lda lastPiece
-                    sta previousPiece
-
-                    PHASE AI_MarchB2
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF CopySetupForMarker
-    SUBROUTINE
-
-        REFER markerDraw
-        REFER showPromoteOptions
-        VAR __pieceColour, 1
-        VAR __oddeven, 1
-        VAR __pmcol, 1
-        VEND CopySetupForMarker
-
-                    lda squareToDraw
-                    sec
-                    ldy #10
-.sub10              sbc #10
-                    dey
-                    bcs .sub10
-                    sty __oddeven
-                    adc #8
-                    sta __pmcol
-                    adc __oddeven
-
-                    and #1
-                    eor #1
-                    beq .white
-                    lda #36
-.white
-                    sta __pieceColour               ; actually SQUARE black/white
-
-                    txa
-                    clc
-                    adc __pieceColour
-                    sta __pieceColour
-
-                    lda __pmcol
-                    and #3
-
-                    clc
-                    adc __pieceColour
-                    tay
-                    rts
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF CopySetup
-    SUBROUTINE
-
-        REFER CopySinglePiece
-        VAR __tmp, 1
-        VAR __shiftx, 1
-        VEND CopySetup
-
-                    lda savedBank
-                    pha
-                    lda #BANK_CopySetup
-                    sta savedBank
-
-    ; figure colouration of square
-
-                    lda squareToDraw
-
-    IF DIAGNOSTICS
-    ; Catch out-of-range piece square
-    ; will not catch off left/right edge
-
-.fail               cmp #100
-                    bcs .fail
-                    cmp #22
-                    bcc .fail
-    ENDIF
-
-
-                    ldx #10
-                    sec
-.sub10              sbc #10
-                    dex
-                    bcs .sub10
-                    adc #8
-                    sta __shiftx
-    IF DIAGNOSTICS
-.fail2              cmp #8
-                    bcs .fail2
-                    cpx #8
-                    bcs .fail2
-    ENDIF
-                    stx __tmp                    
-                    adc __tmp
-
-
-
-
-                    and #1
-                    ;eor #1
-                    beq .white
-                    lda #36
-.white              sta __pieceColour               ; actually SQUARE black/white
-
-    ; PieceColour = 0 for white square, 36 for black square
-
-                    ;lda #RAMBANK_BOARD
-                    ;sta SET_BANK_RAM
-
-                    ldy squareToDraw
-                    jsr GetBoard ;lda Board,x
-                    asl
-                    bcc .blackAdjust
-                    ora #16
-.blackAdjust        lsr
-                    and #%1111
-                    tax
-
-                    lda __shiftx
-                    and #3                          ; shift position in P
-
-                    clc
-                    adc PieceToShape,x
-                    clc
-                    adc __pieceColour
-                    tay
-
-                    pla
-                    sta savedBank
-                    rts
-
-PieceToShape
-
-    .byte INDEX_WHITE_BLANK_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_ROOK_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_KING_on_WHITE_SQUARE_0
-
-    .byte INDEX_BLACK_BLANK_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_PAWN_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_PAWN_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_KNIGHT_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_BISHOP_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_ROOK_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
-    .byte INDEX_BLACK_KING_on_WHITE_SQUARE_0
-
-;---------------------------------------------------------------------------------------------------
-
- include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_0.asm"
- include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_1.asm"
- include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_2.asm"
- include "gfx/BLACK_BISHOP_on_BLACK_SQUARE_3.asm"
- include "gfx/BLACK_ROOK_on_BLACK_SQUARE_0.asm"
- include "gfx/BLACK_ROOK_on_BLACK_SQUARE_1.asm"
- include "gfx/BLACK_ROOK_on_BLACK_SQUARE_2.asm"
- include "gfx/BLACK_ROOK_on_BLACK_SQUARE_3.asm"
- include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_0.asm"
- include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_1.asm"
- include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_2.asm"
- include "gfx/BLACK_QUEEN_on_BLACK_SQUARE_3.asm"
- include "gfx/BLACK_KING_on_BLACK_SQUARE_0.asm"
- include "gfx/BLACK_KING_on_BLACK_SQUARE_1.asm"
- include "gfx/BLACK_KING_on_BLACK_SQUARE_2.asm"
- include "gfx/BLACK_KING_on_BLACK_SQUARE_3.asm"
-
-
- include "gfx/WHITE_MARKER_on_WHITE_SQUARE_3.asm"
 
     CHECK_BANK_SIZE "BANK_RECON"
 

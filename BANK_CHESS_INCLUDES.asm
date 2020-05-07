@@ -36,6 +36,3 @@
 
     include "piece_graphics.asm"
 
-;    NEWBANK PIECE_VECTORS
-;    include "piece_vectors.asm"
-;    CHECK_BANK_SIZE "PIECE_VECTORS (2K)"

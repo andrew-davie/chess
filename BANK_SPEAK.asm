@@ -37,7 +37,7 @@ SERIAL_RDYMASK  equ     $02
     DEF ShutYourMouth
     SUBROUTINE
 
-        REFER Reset
+        REFER StartupBankReset
         VEND ShutYourMouth
 
                     SPEAK silence_speech
@@ -49,7 +49,7 @@ SERIAL_RDYMASK  equ     $02
     DEF GameSpeak
     SUBROUTINE
 
-        REFER Reset
+        REFER StartupBankReset
         VAR __speak_temp, 1
         VEND GameSpeak
 

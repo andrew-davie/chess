@@ -2,6 +2,7 @@
 
 ;---------------------------------------------------------------------------------------------------
 
+    SLOT 3
     NEWRAMBANK BOARD               ; RAM bank for holding the following ROM shadow
     NEWBANK MOVES                       ; copy the following bank to RAMBANK_BOARD
 
@@ -125,27 +126,9 @@ HandlerVectorHI     HANDLEVEC >
     ; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 99
 
 
-    DEF handleIt
-    SUBROUTINE
-
-
-                    stx currentSquare
-
-                    eor sideToMove
-                    and #~FLAG_CASTLE               ; todo: better part of the move, mmh?
-                    sta currentPiece
-                    and #PIECE_MASK
-                    ora __pieceFilter
-                    tay
-
-                    lda HandlerVectorHI,y
-                    sta __vector+1                    
-                    lda HandlerVectorLO,y
-                    sta __vector
-                    jmp (__vector)
-
 
 ;---------------------------------------------------------------------------------------------------
+; TODO: move to different bank
 
     include "Handler_QUEEN.asm"
     include "Handler_BISHOP.asm"
@@ -160,15 +143,6 @@ HandlerVectorHI     HANDLEVEC >
 ; There is space here (1K) for use as ROM
 ; but NOT when the above bank is switched in as RAM, of course!
 
-
- include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_0.asm"
- include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_1.asm"
- include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_2.asm"
- include "gfx/WHITE_PROMOTE_on_BLACK_SQUARE_3.asm"
- include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_0.asm"
- include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_1.asm"
- include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_2.asm"
- include "gfx/WHITE_PROMOTE_on_WHITE_SQUARE_3.asm"
 
 ;---------------------------------------------------------------------------------------------------
 

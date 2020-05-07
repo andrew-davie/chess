@@ -1,3 +1,7 @@
+    
+    SLOT 2
+
+
     NEWRAMBANK BANK_EVAL
     NEWBANK EVAL
 
@@ -38,146 +42,6 @@ VALUE_{1} = {2}
 
     DEF PieceValueHI
         VALUETABLE HIBYTE
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF EnPassantRemovePiece
-    SUBROUTINE
-
-        REFER MakeMove
-    IF ENPASSANT_ENABLED
-        REFER EnPassantCheck
-    ENDIF
-        VAR __y, 1
-        VAR __col, 1
-        VEND EnPassantRemovePiece
-
-
-    ; Based on piece square, adjust material and position value with piece deleted
-    ; y = piece square
-
-                    sty __y
-
-                    jsr GetBoard
-                    sta __col
-                    jsr AddPieceMaterialValue       ; adding for opponent = taking
-
-                    lda __col
-                    ldy __y
-                    jsr AddPiecePositionValue       ; adding for opponent = taking
-
-                    lda currentPly
-                    sta SET_BANK_RAM
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF AddPieceMaterialValue
-    SUBROUTINE
-
-        REFER AdjustMaterialPositionalValue
-        REFER InitialisePieceSquares
-        REFER EnPassantRemovePiece
-        VEND AddPieceMaterialValue
-
-    ; Adjust the material score based on the piece
-    ; a = piece type + flags
-
-                    and #PIECE_MASK
-                    tay
-
-                    clc
-                    lda PieceValueLO,y
-                    adc Evaluation
-                    sta Evaluation
-                    lda PieceValueHI,y
-                    adc Evaluation+1
-                    sta Evaluation+1
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF AddPiecePositionValue
-    SUBROUTINE
-
-        REFER AdjustMaterialPositionalValue
-        REFER negaMax
-        REFER quiesce
-        VAR __valPtr, 2
-        VEND AddPiecePositionValue
-
-
-    ; adds value of square piece is on to the evaluation
-    ; note to do the subtraction as -( -x + val) == x - val
-    
-    ; y = square
-    ; a = piece type (+flags)
-
-
-
-                    cmp #128                        ; black = CS
-                    and #PIECE_MASK
-                    tax
-
-    ; black pieces flip rows so we can use the same eval tables
-
-                    tya
-                    bcc .white
-                    lda FlipSquareIndex,y
-                    ;clc                    
-.white
-                    adc PosValVecLO,x
-                    sta __valPtr
-                    lda PosValVecHI,x
-                    adc #0
-                    sta __valPtr+1
-
-                    ldy #0
-                    lda (__valPtr),y
-
-                    ;clc
-                    adc Evaluation
-                    sta Evaluation
-                    bcc .noH
-                    inc Evaluation+1
-.noH                rts
-
-
-
-    DEF IncVal
-    SUBROUTINE
-
-        ldx #99
-.higher  clc
-        lda@RAM PositionalValue_PAWN_BLACK,x
-        adc #10
-        cmp #$7F
-        bcc .norm
-        lda #$7f
-.norm   sta@RAM PositionalValue_PAWN_BLACK,x
-        dex
-        bpl .higher
-        rts
-
-;---------------------------------------------------------------------------------------------------
-
-    ALLOCATE FlipSquareIndex, 100
-
-    .byte 0,0,0,0,0,0,0,0,0,0
-    .byte 0,0,0,0,0,0,0,0,0,0
-
-.SQBASE SET 90-1
-    REPEAT 8
-    .byte 0,0
-.SQX SET 2
-    REPEAT 8
-    .byte (.SQBASE+.SQX)
-.SQX SET .SQX + 1
-    REPEND
-.SQBASE SET .SQBASE - 10
-    REPEND
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -227,17 +91,6 @@ PositionalValue_PAWN
     PVAL  40,  50,  60,  70,  70,  60,  50,  40
     PVAL   0,   0,   0,   0,   0,   0,   0,   0
     
-PositionalValue_PAWN_BLACK
-
-    PVAL   0,   0,   0,   0,   0,   0,   0,   0
-    PVAL  40,  50,  60,  70,  70,  60,  60,  40
-    PVAL  30,  30,  40,  50,  50,  40,  30,  30
-    PVAL  15,  15,  10,  40,  40,  20,  15,  15
-    PVAL   0,   0,   0,  30,  30,   0,   0,   0
-    PVAL   5,  -5, -10,   0,   0, -10,  -5,   5
-    PVAL  15,  10,   0, -20, -20,   0,  10,  15
-    PVAL   0,   0,   0,   0,   0,   0,   0,   0
-
 ;---------------------------------------------------------------------------------------------------
 
 PositionalValue_KNIGHT

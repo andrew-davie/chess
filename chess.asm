@@ -18,10 +18,13 @@ ORIGIN_RAM      SET 0
 
                 include "segtime.asm"
 
+
+_FIRST_BANK          = 0                             ; 3E+ 1st bank holds reset vectors
+
 ;FIXED_BANK             = 3 * 2048           ;-->  8K ROM tested OK
 ;FIXED_BANK              = 7 * 2048          ;-->  16K ROM tested OK
 ;FIXED_BANK             = 15 * 2048           ; ->> 32K
-FIXED_BANK             = 31 * 2048           ; ->> 64K
+;FIXED_BANK             = 31 * 2048           ; ->> 64K
 ;FIXED_BANK             = 239 * 2048         ;--> 480K ROM tested OK (KK/CC2 compatibility)
 ;FIXED_BANK             = 127 * 2048         ;--> 256K ROM tested OK
 ;FIXED_BANK             = 255 * 2048         ;--> 512K ROM tested OK (CC2 can't handle this)
@@ -42,22 +45,21 @@ PVSP                    = 0                         ; player versus player =1
 ENPASSANT_ENABLED       = 1
 CASTLING_ENABLED        = 1
 
-SEARCH_DEPTH            = 5
-QUIESCE_EXTRA_DEPTH     = 8
-
+SEARCH_DEPTH            = 3
+QUIESCE_EXTRA_DEPTH     = 4
 
 
 PLY_BANKS = SEARCH_DEPTH + QUIESCE_EXTRA_DEPTH
-MAX_PLY_DEPTH_BANK = RAMBANK_PLY + PLY_BANKS
+MAX_PLY_DEPTH_BANK = PLY_BANKS   ;TODO -- RAMBANK_PLY + PLY_BANKS
 
-    IF MAX_PLY_DEPTH_BANK > 31
-        ERR "Not enough RAM for PLY banks"
-    ENDIF
-
-
+    ;IF RAMBANK_PLY + MAX_PLY_DEPTH_BANK > 31
+    ;    ERR "Not enough RAM for PLY banks"
+    ;ENDIF
 
 
-SWAP_SIDE               = 128 + (RAMBANK_PLY ^ (RAMBANK_PLY+1))
+
+
+SWAP_SIDE               = 128 ;TODO + (RAMBANK_PLY ^ (RAMBANK_PLY+1))
 
 
 
@@ -100,10 +102,9 @@ SET_BANK                    = $3F               ; write address to switch ROM ba
 SET_BANK_RAM                = $3E               ; write address to switch RAM banks
 
 
-RAM_3E                      = $1000
-RAM_SIZE                    = $400
-RAM_WRITE                   = $400              ; add this to RAM address when doing writes
-RAM                           = RAM_WRITE
+RAM_SIZE                    = $200
+RAM_WRITE                   = $200              ; add this to RAM address when doing writes
+RAM                         = RAM_WRITE
 
 
 
@@ -139,50 +140,52 @@ TIME_PART_2         = 46
 TIME_PART_1         = 46
 
 
+SLOT0               = 0
+SLOT1               = 64
+SLOT2               = 128
+SLOT3               = 192
+
 ;------------------------------------------------------------------------------
 ; MACRO definitions
 
 
-ROM_BANK_SIZE               = $800
+_ROM_BANK_SIZE               = $400
+_RAM_BANK_SIZE               = $200
 
             MAC NEWBANK ; bank name
                 SEG {1}
-                ORG ORIGIN
-                RORG $F000
-BANK_START      SET *
-{1}             SET ORIGIN / 2048
-ORIGIN          SET ORIGIN + 2048
-_CURRENT_BANK   SET {1}
+                ORG _ORIGIN
+                RORG _BANK_ADDRESS_ORIGIN
+_BANK_START     SET *
+{1}_START       SET *
+_CURRENT_BANK   SET _ORIGIN/1024
+{1}             SET _BANK_SLOT + _CURRENT_BANK
+_ORIGIN         SET _ORIGIN + 1024
             ENDM
 
-            MAC DEFINE_1K_SEGMENT ; {seg name}
-                ALIGN $400
-SEGMENT_{1}     SET *
-BANK_{1}        SET _CURRENT_BANK
-            ENDM
+;            MAC DEFINE_1K_SEGMENT ; {seg name}
+;                ALIGN $400
+;SEGMENT_{1}     SET *
+;BANK_{1}        SET _CURRENT_BANK
+;            ENDM
 
-            MAC CHECK_BANK_SIZE ; name
-.TEMP = * - BANK_START
-    ECHO {1}, "(2K) SIZE = ", .TEMP, ", FREE=", ROM_BANK_SIZE - .TEMP
-    IF ( .TEMP ) > ROM_BANK_SIZE
-        ECHO "BANK OVERFLOW @ ", * - ORIGIN
+    MAC CHECK_BANK_SIZE ; name
+.TEMP = * - _BANK_START
+    ECHO {1}, "(1K) SIZE = ", .TEMP, ", FREE=", _ROM_BANK_SIZE - .TEMP
+    IF ( .TEMP ) > _ROM_BANK_SIZE
+        ECHO "BANK OVERFLOW @ ", {1}, " size=", * - ORIGIN
         ERR
     ENDIF
+    ENDM
 
-            ENDM
-
-
-            MAC CHECK_HALF_BANK_SIZE ; name
-    ; This macro is for checking the first 1K of ROM bank data that is to be copied to RAM.
-    ; Note that these ROM banks can contain 2K, so this macro will generally go 'halfway'
-.TEMP = * - BANK_START
-    ECHO {1}, "(1K) SIZE = ", .TEMP, ", FREE=", ROM_BANK_SIZE/2 - .TEMP
-    IF ( .TEMP ) > ROM_BANK_SIZE/2
-        ECHO "HALF-BANK OVERFLOW @ ", * - ORIGIN
+    MAC CHECK_RAM_BANK_SIZE ; name
+.TEMP = * - _BANK_START
+    ECHO {1}, "(512 byte) SIZE = ", .TEMP, ", FREE=", _RAM_BANK_SIZE - .TEMP
+    IF ( .TEMP ) > _RAM_BANK_SIZE
+        ECHO "BANK OVERFLOW @ ", {1}, " size=", * - ORIGIN
         ERR
     ENDIF
-            ENDM
-
+    ENDM
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -247,13 +250,13 @@ EARLY_LOCATION  SET *
 ;---------------------------------------------------------------------------------------------------
 
     MAC DEF               ; name of subroutine
-BANK_{1}        SET _CURRENT_BANK         ; bank in which this subroutine resides
+SLOT_{1}        SET _BANK_SLOT
+BANK_{1}        SET SLOT_{1} + _CURRENT_BANK         ; bank in which this subroutine resides
 {1}                                     ; entry point
 TEMPORARY_VAR SET Overlay
 TEMPORARY_OFFSET SET 0
 VAR_BOUNDARY_{1} SET TEMPORARY_OFFSET
 FUNCTION_NAME SET {1}
-    SUBROUTINE
     ENDM
 
 
@@ -262,6 +265,17 @@ FUNCTION_NAME SET {1}
     MAC ALLOCATE
     OPTIONAL_PAGEBREAK "Table", {2}
     DEF {1}
+    ENDM
+
+;---------------------------------------------------------------------------------------------------
+
+    MAC SLOT ; {1}
+    IF ({1} < 0) || ({1} > 3)
+        ECHO "Illegal bank address/segment location", {1}
+        ERR
+    ENDIF
+_BANK_ADDRESS_ORIGIN SET $F000 + ({1} * _ROM_BANK_SIZE)
+_BANK_SLOT SET {1} * 64               ; D7/D6 selector
     ENDM
 
 
@@ -406,20 +420,11 @@ MAXIMUM_REQUIRED_OVERLAY_SIZE SET OVERLAY_DELTA
 
                 SEG.U {1}
                 ORG ORIGIN_RAM
-                RORG RAM_3E
-BANK_START      SET *
-RAMBANK_{1}     SET ORIGIN_RAM / RAM_SIZE
+                RORG _BANK_ADDRESS_ORIGIN
+_BANK_START     SET *
+RAMBANK_{1}     SET _BANK_SLOT + (ORIGIN_RAM / RAM_SIZE)
 _CURRENT_RAMBANK SET RAMBANK_{1}
 ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
-    ENDM
-
-; TODO - fix - this is faulty....
-    MAC VALIDATE_RAM_SIZE
-.RAM_BANK_SIZE SET * - RAM_3E
-        IF .RAM_BANK_SIZE > RAM_SIZE
-            ECHO "RAM BANK OVERFLOW @ ", (* - RAM_3E)
-            ERR
-        ENDIF
     ENDM
 
 ;---------------------------------------------------------------------------------------------------
@@ -465,30 +470,30 @@ ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
 
 ;---------------------------------------------------------------------------------------------------
 
-    MAC JSROM_SAFE ; {routine}
-    ; Saves bank of routine to variable for later restore.
-    ; Switches to the bank and does a JSR to the routine.
+;    MAC JSROM_SAFE ; {routine}
+;    ; Saves bank of routine to variable for later restore.
+;    ; Switches to the bank and does a JSR to the routine.
 
-                lda #BANK_{1}
-                sta savedBank
-                sta SET_BANK
-                jsr {1}
-    ENDM
-
-
-    MAC JSROM ; {routine}
-
-                lda #BANK_{1}
-                sta SET_BANK
-                jsr {1}
-    ENDM
+;                lda #BANK_{1}
+;                sta savedBank
+;                sta SET_BANK
+;                jsr {1}
+;    ENDM
 
 
-    MAC JSRAM
-                lda #BANK_{1}
-                sta SET_BANK_RAM
-                jsr {1}
-    ENDM
+;    MAC JSROM ; {routine}
+
+;                lda #BANK_{1}
+;                sta SET_BANK
+;                jsr {1}
+;    ENDM
+
+
+;    MAC JSRAM
+;                lda #BANK_{1}
+;                sta SET_BANK_RAM
+;                jsr {1}
+;    ENDM
 
 
 
@@ -502,6 +507,24 @@ ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
     MAC TIMING ; {label}, {cycles}
 SPEEDOF_{1} = ({2}/64) + 1
     ENDM
+
+
+;---------------------------------------------------------------------------------------------------
+
+    ; Failsafe call of function in another bank
+    ; This will check the slot #s for current, call to make sure they're not the same!
+
+    MAC CALL ; function name
+    IF SLOT_{1} == _BANK_SLOT
+        ECHO "ERROR: Incompatible call to function requiring same slot..."
+        ECHO "Cannot switch bank in use for", {0}
+        ERR
+    ENDIF
+    lda #BANK_{1}
+    sta SET_BANK
+    jsr {1}
+    ENDM
+
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -520,22 +543,18 @@ SPEEDOF_{1} = ({2}/64) + 1
     ;------------------------------------------------------------------------------
 
     ; NOW THE VERY INTERESTING '3E' RAM BANKS
-    ; EACH BANK HAS A READ-ADDRESS AND A WRITE-ADDRESS, WITH 1k TOTAL ACCESSIBLE
-    ; IN A 2K MEMORY SPACE
+    ; EACH BANK HAS A READ-ADDRESS AND A WRITE-ADDRESS, WITH 512 bytes TOTAL ACCESSIBLE
+    ; IN A 1K MEMORY SPACE
 
+    SLOT 0
     NEWRAMBANK CHESS_BOARD_ROW
     REPEAT (CHESSBOARD_ROWS) - 1
         NEWRAMBANK .DUMMY
-        VALIDATE_RAM_SIZE
     REPEND
 
     ; NOTE: THIS BANK JUST *LOOKS* EMPTY.
     ; It actually contains everything copied from the ROM copy of the ROW RAM banks.
     ; The variable definitions are also in that ROM bank (even though they're RAM :)
-
-    ; A neat feature of having multiple copies of the same code in different RAM banks
-    ; is that we can use that code to switch between banks, and the system will happily
-    ; execute the next instruction from the newly switched-in bank without a problem.
 
     ; Now we have the actual graphics data for each of the rows.  This consists of an
     ; actual bitmap (in exact PF-style format, 6 bytes per line) into which the
@@ -545,9 +564,6 @@ SPEEDOF_{1} = ({2}/64) + 1
 
     ; We have one bank for each chessboard row.  These banks are duplicates of the above,
     ; accessed via the above labels but with the appropriate bank switched in.
-
-    ;------------------------------------------------------------------------------
-
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -590,28 +606,53 @@ RND_EOR_VAL = $FE ;B4
 
 ;--------------------------------------------------------------------------------
 
-;ORIGIN      SET 0
+    include "BANK_FIRST@0.asm"                        ; MUST be first in ROM - contains reset vectors
+    include "BANK_GENERIC@1#1.asm"
+    include "BANK_ROM_SHADOW_SCREEN.asm"
+    include "ROM_SCREEN@3.asm"
+    include "BANK_PLY.asm"
+    include "SHADOW_PLY.asm"
+    include "SHADOW_BOARD.asm"
+    include "BANK_EVAL.asm"
+    include "BANK_StateMachine@1#1.asm"
+    include "BANK_StateMachine@1#2.asm"
+    include "BANK_RECON.asm"
+    include "piece_graphics.asm"
+    include "BANK_GENERIC@2.asm"
+    include "BANK_GENERIC@1#3.asm"
+    include "GFX1.asm"
+    include "GFX2.asm"
+    include "GFX3.asm"
+    include "GFX4.asm"
+    include "NEGAMAX.asm"
 
     include "Handler_MACROS.asm"
+    include "GENMOVE.asm"
+    include "GENMOVE2.asm"
 
-    include "BANK_GENERIC.asm"
-    include "BANK_GENERIC2.asm"
-    include "BANK_ROM_SHADOW_SCREEN.asm"
-    include "BANK_CHESS_INCLUDES.asm"
-    include "BANK_StateMachine.asm"
-    include "BANK_TEXT_OVERLAYS.asm"
-    include "BANK_PLIST.asm"
+    include "BANK_GENERIC@1#2.asm"
+    include "BANK_3.asm"
 
-    include "titleScreen.asm"
-    include "BANK_RECON.asm"
+    ;include "Handler_MACROS.asm"
+
+    ;include "BANK_GENERIC.asm"
+    ;include "BANK_GENERIC2.asm"
+    ;include "BANK_ROM_SHADOW_SCREEN.asm"
+    ;include "BANK_CHESS_INCLUDES.asm"
+    ;include "BANK_StateMachine.asm"
+    ;include "BANK_TEXT_OVERLAYS.asm"
+    ;include "BANK_PLIST.asm"
+
+    ;include "titleScreen.asm"
+    ;include "BANK_RECON.asm"
 
     ; The handlers for piece move generation
-    include "Handler_BANK1.asm"
-    include "BANK_PLY.asm"
-    include "BANK_EVAL.asm"
-    include "BANK_SPEAK.asm"
+    ;include "Handler_BANK1.asm"
+    ;include "BANK_PLY.asm"
+    ;include "BANK_EVAL.asm"
+    ;include "BANK_SPEAK.asm"
 
     ; MUST BE LAST...
-    include "BANK_FIXED.asm"
+    ;include "BANK_FIXED.asm"
 
             ;END

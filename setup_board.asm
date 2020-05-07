@@ -72,7 +72,7 @@
     ENDIF
 
 
-    IF 1
+    IF 0
     ; En passant test
 
         .byte BLACK|BP, 88
@@ -87,7 +87,7 @@
 
 
 
-    IF 0
+    IF 1
 
 
     ;.byte BLACK|R, 97

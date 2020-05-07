@@ -137,21 +137,6 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF CallClear
-    SUBROUTINE
-
-        REFER aiClearEachRow
-        VEND CallClear
-
-        ; No transient variable dependencies/calls
-
-                    sty SET_BANK_RAM
-                    jsr ClearRowBitmap
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF aiDrawEntireBoard
     SUBROUTINE
 
@@ -695,11 +680,11 @@ MoveReturn          ldx currentSquare
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF IsValidP_MoveFromSquare
+    DEF IsValidMoveFromSquare
     SUBROUTINE
 
         REFER aiSelectStartSquare
-        VEND IsValidP_MoveFromSquare
+        VEND IsValidMoveFromSquare
 
     ; Does the square exist in the movelist?
     ; Return: y = -1 if NOT FOUND
@@ -791,7 +776,9 @@ MoveReturn          ldx currentSquare
 
     DEF CopySinglePiece
     SUBROUTINE
-    TIMING COPYSINGLEPIECE, (2600)
+
+        VEND CopySinglePiece
+
 
         REFER aiDrawEntireBoard
         REFER aiSpecialMoveFixup
@@ -1162,6 +1149,17 @@ MoveReturn          ldx currentSquare
 .terminal           cmp #0                          ; captured piece
                     bne .doQ                        ; last move was capture, so quiesce
 
+
+    IF 0
+    ; king moves will also quiesce
+    ; theory is - we need to see if it was an illegal move
+
+                    lda fromPiece
+                    and #PIECE_MASK
+                    cmp #KING
+                    beq .doQ
+    ENDIF
+                        
                     lda Evaluation
                     sta __negaMax
                     lda Evaluation+1
@@ -1199,9 +1197,6 @@ MoveReturn          ldx currentSquare
                     bmi .terminal
                     stx@PLY depthLeft
 
-                    lda #$02 ;COLOUR_LINE_1
-                    sta COLUPF
-
 
     ; Allow the player to force computer to select a move. Press the SELECT switch
     ; This may have issues if no move has been selected yet. Still... if you wanna cheat....
@@ -1209,7 +1204,7 @@ MoveReturn          ldx currentSquare
                     lda SWCHB
                     and #2
                     beq .exit                       ; SELECT abort
-
+                    sta COLUPF                      ; grey thinkbars
 
                     lda __alpha
                     sta@PLY alpha

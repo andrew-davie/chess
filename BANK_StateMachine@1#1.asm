@@ -1,3 +1,4 @@
+    SLOT 1
     NEWBANK STATEMACHINE
 
 
@@ -10,106 +11,6 @@ HOLD_DELAY                      = 40
 
 
 ;---------------------------------------------------------------------------------------------------
-
-P SET 0
-    MAC AIN
-AI_{1} SET P
-P SET P+1
-    ENDM
-
-    MAC LO
-    .byte <ai{1}
-    ENDM
-
-    MAC HI
-    .byte >ai{1}
-    ENDM
-
-    MAC BK
-    .byte BANK_ai{1}
-    ENDM
-
-
-ONCEPERFRAME = 40
-
-    MAC TABDEF ; {1} = macro to use
-        
-        {1} FlashComputerMove
-        {1} BeginSelectMovePhase
-        {1} SelectStartSquare
-        {1} StartSquareSelected
-        {1} DrawMoves
-        {1} ShowMoveCaptures
-        {1} SlowFlash
-        {1} UnDrawTargetSquares
-        {1} SelectDestinationSquare
-        {1} Quiescent
-        {1} ReselectDebounce
-        {1} StartMoveGen
-        {1} StepMoveGen
-        {1} StartClearBoard
-        {1} ClearEachRow
-        {1} DrawEntireBoard
-        {1} DrawPart2
-        {1} DrawPart3
-        {1} GenerateMoves
-        {1} ComputerMove
-        {1} MoveIsSelected
-        {1} WriteStartPieceBlank
-        {1} MarchToTargetA
-        {1} MarchA2
-        {1} MarchB
-        {1} MarchToTargetB
-        {1} MarchB2
-        {1} FinalFlash
-        {1} SpecialMoveFixup
-        {1} InCheckBackup
-        {1} InCheckDelay
-        {1} PromotePawnStart
-        {1} RollPromotionPiece
-        {1} ChoosePromotePiece
-        {1} ChooseDebounce
-        {1} CheckMate
-        {1} Draw
-        {1} DelayAfterMove
-        {1} DelayAfterMove2
-        {1} DelayAfterPlaced
-        {1} DelayAfterPlaced2
-
-    ENDM
-
-    TABDEF AIN
-
-    DEF AiVectorLO
-        TABDEF LO
-
-    DEF AiVectorHI
-        TABDEF HI
-
-    DEF AiVectorBANK
-        TABDEF BK
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF AiSetupVectors
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND AiSetupVectors
-
-    ; State machine vector setup - points to current routine to execute
-
-                    ldx aiState
-                    lda AiVectorLO,x
-                    sta __ptr
-                    lda AiVectorHI,x
-                    sta __ptr+1
-
-                    lda AiVectorBANK,x
-                    sta savedBank
-
-                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -149,8 +50,10 @@ ONCEPERFRAME = 40
                     dec drawCount
                     bmi .exit                   ; done all rows
                     ldy drawCount
+    IF 0
                     jmp SAFE_BackupBitmaps
-
+    ENDIF
+    
 .exit               PHASE AI_InCheckDelay
                     rts
 
@@ -231,7 +134,7 @@ ONCEPERFRAME = 40
 
                     inc aiFlashPhase
 
-                    jsr CopySinglePiece
+                    jsr CopySinglePiece;@0
                     rts
 
 .initial            PHASE AI_SelectStartSquare
@@ -250,7 +153,7 @@ ONCEPERFRAME = 40
                     NEXT_RANDOM
                     
                     jsr moveCursor
-                    jsr IsValidP_MoveFromSquare
+                    jsr IsValidMoveFromSquare
 
                     dec ccur                        ; pulse colour for valid squares
                     jsr setCursorColours
@@ -304,7 +207,7 @@ ONCEPERFRAME = 40
     ; pass y=-1 if move is NOT in the movelist
     ; preserve y
 
-                    lda #$44
+                    lda #$40
 
                     cpy #-1
                     beq .writeCursorCol             ; NOT in the movelist
@@ -315,7 +218,7 @@ ONCEPERFRAME = 40
                     lsr
                     and #3
                     clc
-                    adc #$C0 ;COLOUR_LINE_1
+                    adc #$D0 ;COLOUR_LINE_1
 
 .writeCursorCol     sta COLUP0
                     rts
@@ -675,7 +578,7 @@ ONCEPERFRAME = 40
 
                     inc aiFlashPhase
 
-                    jsr CopySinglePiece
+                    jsr CopySinglePiece;@0
                     rts
 
 .exit
@@ -731,6 +634,8 @@ ONCEPERFRAME = 40
 .noButton           rts
 
 
+
+
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiReselectDebounce
@@ -778,36 +683,6 @@ ONCEPERFRAME = 40
 
 .promote            PHASE AI_PromotePawnStart
                     rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiPromotePawnStart
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiPromotePawnStart
-
-
-                    lda INTIM
-                    cmp #SPEEDOF_COPYSINGLEPIECE
-                    bcc .exit
-
-                    lda #0
-                    sta aiFlashPhase
-                    sta aiFlashDelay
-
-                    ldy toX12
-                    sty squareToDraw
-
-                    jsr GetBoard
-                    and #PIECE_MASK
-                    beq .empty
-
-                    jsr CopySinglePiece             ; remove any capturable piece for display purposes
-
-.empty              PHASE AI_RollPromotionPiece
-.exit               rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -874,255 +749,149 @@ ONCEPERFRAME = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiChoosePromotePiece
+    DEF aiMarchToTargetA
     SUBROUTINE
 
         REFER AiStateMachine
-        VEND aiChoosePromotePiece
-
-    ; Question-mark phase has exited via joystick direction
-    ; Now we cycle through the selectable pieces
-
-                    lda INTIM
-                    cmp #SPEEDOF_COPYSINGLEPIECE
-                    bcc .exit
-
-                    lda INPT4
-                    bmi .nobut                      ; no press
-
-    ; button pressed but make sure phase is correct for exit
-
-                    lda #0
-                    sta aiFlashDelay
-
-                    lda aiFlashPhase
-                    and #1
-                    beq .chosen                     ; button pressed --> selection made
-
-.nobut
-                    lda SWCHA
-                    and #$F0
-                    cmp #$F0
-                    beq .odd                        ; no direction pressed
-
-                    lsr
-                    lsr
-                    lsr
-                    lsr
-                    tay
-
-    ; joystick but make sure phase is correct
-
-                    lda aiFlashPhase
-                    lsr
-                    bcs .odd                        ; must wait until piece undrawn
-
-    ; cycle to the next promotable piece (N/B/R/Q)
-    ; TODO; use joy table for mod instead of just incrementing all the time
-
-                    ;clc
-                    lda fromPiece
-                    adc JoyCombined,y
-                    and #3
-                    sta fromPiece
-
-                    PHASE AI_ChooseDebounce         ; wait for release
-
-.odd                dec aiFlashDelay
-                    bpl .exit
-
-.force              lda #10
-                    sta aiFlashDelay
-
-                    inc aiFlashPhase
-
-                    ldy fromPiece
-                    ldx promotePiece,y
-                    jsr showPromoteOptions
-
-.exit               rts
+        VAR __fromRow, 1
+        VAR __boardIndex, 1
+        VAR __fromCol, 1
+        VAR __toCol, 1
+        VEND aiMarchToTargetA
 
 
-.chosen
-                    lda fromPiece
-                    and #PIECE_MASK
-                    tax
+    ; Now we calculate move to new square
 
-                    lda promoteType,x
-                    sta fromPiece
+                    lda fromX12
+                    cmp toX12
+                    beq .unmovedx
+                    sta lastSquareX12
 
-                    ldy toX12
-                    jsr GetBoard
-                    and #PIECE_MASK
-                    beq .nothing
-
-                    jsr CopySinglePiece                     ; put back whatever was there to start
-
-.nothing            PHASE AI_MoveIsSelected
-                    rts
-
-    ALLOCATE promotePiece, 4
-    .byte INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_ROOK_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
-
-    ALLOCATE promoteType,4
-    .byte KNIGHT, BISHOP, ROOK, QUEEN
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiChooseDebounce
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiChooseDebounce
-
-    ; We've changed promotion piece, but wait for joystick to be released
-
-                    lda SWCHA
-                    and #$F0
-                    cmp #$F0
-                    bne .exit                       ; wait while joystick still pressed
-
-                    lda #1
-                    sta aiFlashDelay
-
-                    PHASE AI_ChoosePromotePiece
-.exit               rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-        DEF aiDelayAfterMove
-        SUBROUTINE
-
-            VEND aiDelayAfterMove
-
-                    lda #50
-                    sta aiFlashDelay
-                    PHASE AI_DelayAfterMove2
-.exit               rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-        DEF aiDelayAfterMove2
-        SUBROUTINE
-
-            VEND aiDelayAfterMove
-
-                    dec aiFlashDelay
-                    bne .exit
-                    PHASE AI_MoveIsSelected
-.exit               rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-        DEF aiDelayAfterPlaced
-        SUBROUTINE
-
-            VEND aiDelayAfterPlaced
-
-                    ldx #75                         ; delay after human move
-                    lda sideToMove
-                    bmi .computer
-                    ldx #1                          ; delay after computer move
-.computer           stx aiFlashDelay
-
-                    PHASE AI_DelayAfterPlaced2
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-        DEF aiDelayAfterPlaced2
-        SUBROUTINE          
-
-        jsr debug
-
-                    dec aiFlashDelay
-                    bne .exit
-                    PHASE AI_GenerateMoves
-.exit               rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    align 256
-    DEF PositionSprites
-    SUBROUTINE
-
-        REFER Reset
-        VEND PositionSprites
-
-
-                    lda cursorX12
                     sec
+                    ldx #-3
 .sub10              sbc #10
+                    inx
                     bcs .sub10
                     adc #8
-                    tay
+                    sta __fromCol
+                    stx __fromRow
 
-                    sta WSYNC                ; 00     Sync to start of scanline.
+                    lda toX12
+                    sec
+                    ldx #-3
+.sub10b             sbc #10
+                    inx
+                    bcs .sub10b
+                    adc #8
+                    sta __toCol
 
-                    lda colToPixel,y
 
-                    sec                      ; 02     Set the carry flag so no borrow will be applied during the division.
-.divideby15         sbc #15                  ; 04     Waste the necessary amount of time dividing X-pos by 15!
-                    bcs .divideby15          ; 06/07  11/16/21/26/31/36/41/46/51/56/61/66
+                    cpx __fromRow
+                    beq .rowDone
 
-                    tay
-                    lda fineAdjustTable,y    ; 13 -> Consume 5 cycles by guaranteeing we cross a page boundary
-                    sta HMP0
-                    sta RESP0                ; 21/ 26/31/36/41/46/51/56/61/66/71 - Set the rough position.
+                    bcs .incRow
 
-                    sta WSYNC
-                    sta HMOVE
+                    sec
+                    lda fromX12
+                    sbc #10
+                    sta fromX12
+                    jmp .rowDone
 
+.incRow             clc
+                    lda fromX12
+                    adc #10
+                    sta fromX12
+
+.rowDone
+
+                    lda __toCol
+                    cmp __fromCol
+                    beq .colDone
+
+                    bcs .incCol
+
+                    dec fromX12
+                    jmp .colDone
+
+.incCol             inc fromX12
+.colDone
+.unmovedx
+
+                    PHASE AI_MarchA2
                     rts
 
-; This table converts the "remainder" of the division by 15 (-1 to -15) to the correct
-; fine adjustment value. This table is on a page boundary to guarantee the processor
-; will cross a page boundary and waste a cycle in order to be at the precise position
-; for a RESP0,x write
-
-fineAdjustBegin
-
-            DC.B %01110000; Left 7
-            DC.B %01100000; Left 6
-            DC.B %01010000; Left 5
-            DC.B %01000000; Left 4
-            DC.B %00110000; Left 3
-            DC.B %00100000; Left 2
-            DC.B %00010000; Left 1
-            DC.B %00000000; No movement.
-            DC.B %11110000; Right 1
-            DC.B %11100000; Right 2
-            DC.B %11010000; Right 3
-            DC.B %11000000; Right 4
-            DC.B %10110000; Right 5
-            DC.B %10100000; Right 6
-            DC.B %10010000; Right 7
-
-fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
-
-
-    ALLOCATE colToPixel, 8
-    .byte 0,20,40,60,80,100,120,140
 
 ;---------------------------------------------------------------------------------------------------
 
- include "gfx/BLACK_MARKER_on_BLACK_SQUARE_0.asm"
- include "gfx/BLACK_MARKER_on_BLACK_SQUARE_1.asm"
- include "gfx/BLACK_MARKER_on_BLACK_SQUARE_2.asm"
- include "gfx/BLACK_MARKER_on_BLACK_SQUARE_3.asm"
- include "gfx/BLACK_MARKER_on_WHITE_SQUARE_0.asm"
- include "gfx/BLACK_MARKER_on_WHITE_SQUARE_1.asm"
- include "gfx/BLACK_MARKER_on_WHITE_SQUARE_2.asm"
- include "gfx/BLACK_MARKER_on_WHITE_SQUARE_3.asm"
+    DEF aiMarchA2
+    SUBROUTINE                    
+
+
+    ; erase object in new sqare --> blank
+
+                    ldy fromX12
+                    sty squareToDraw
+
+                    jsr GetBoard
+                    cmp #0
+                    beq .skipbl
+                    jsr CopySinglePiece;@0          ; erase next square along --> blank
+
+.skipbl
+                    ldy fromX12
+                    sty __boardIndex
+
+                    jsr GetBoard
+                    sta lastPiece                   ; what we are overwriting
+                    lda fromPiece
+                    ora #FLAG_MOVED                 ; prevents usage in castling for K/R
+                    and #~FLAG_ENPASSANT
+                    ldy __boardIndex
+                    jsr PutBoard
+
+                    PHASE AI_MarchB
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiMarchB2
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiMarchB2
+
+                    ldy lastSquareX12
+                    sty squareToDraw
+
+                    jsr GetBoard
+                    cmp #0
+                    beq .skipbl2
+
+                    jsr CopySinglePiece;@0          ; draw previous piece back in old position
+.skipbl2
+
+                    lda fromX12
+                    cmp toX12
+                    beq xhalt
+
+                    lda #0                          ; inter-move segment speed (can be 0)
+                    sta drawDelay
+                    PHASE AI_MarchToTargetA
+
+                    rts
+
+xhalt
+
+                    ;??? jsr FinaliseMove
+
+                    lda #4                          ; on/off count
+                    sta drawCount                   ; flashing for piece about to move
+                    lda #0
+                    sta drawDelay
+
+                    PHASE AI_FinalFlash
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
