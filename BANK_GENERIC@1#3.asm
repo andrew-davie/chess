@@ -1,51 +1,6 @@
     SLOT 1
             NEWBANK GENERIC_BANK_2
 
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiWriteStartPieceBlank
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiWriteStartPieceBlank
-
-    ; Flash the piece in-place preparatory to moving it.
-    ; drawDelay = flash speed
-    ; drawCount = # of flashes
-
-                    lda originX12
-                    sta cursorX12
-
-                    lda #%100
-                    sta CTRLPF
-                    lda #2
-                    sta COLUP0
-
-
-                    lda drawDelay
-                    beq deCount
-                    dec drawDelay
-                    rts
-deCount
-
-                    lda drawCount
-                    beq flashDone
-                    dec drawCount
-
-                    lda #READY_TO_MOVE_FLASH
-                    sta drawDelay                   ; "getting ready to move" flash
-
-                    lda fromX12
-                    sta squareToDraw
-
-                    jsr CopySinglePiece;@0          ; EOR-draw = flash
-                    rts
-
-flashDone
-
-                    PHASE AI_MarchToTargetA
-                    rts
-
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -97,47 +52,12 @@ flashDone
 
                     jsr CopySinglePiece;@0          ; draw the moving piece into the new square
 
-                    lda #6                          ; snail trail delay
+                    lda #10                          ; snail trail delay ??
                     sta drawDelay
 
                     PHASE AI_MarchToTargetB
                     rts
 
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiFinalFlash
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiFinalFlash
-
-
-                    lda drawDelay
-                    beq .deCount
-                    dec drawDelay
-                    rts
-
-.deCount            lda drawCount
-                    beq .flashDone2
-                    dec drawCount
-
-                    lda #10
-                    sta drawDelay               ; "getting ready to move" flash
-
-                    lda fromX12
-                    sta squareToDraw
-
-                    jsr CopySinglePiece;@0
-                    rts
-
-.flashDone2
-
-                    lda #100
-                    sta aiFlashDelay
-
-                    PHASE AI_SpecialMoveFixup
-                    rts
 
 
 ;---------------------------------------------------------------------------------------------------

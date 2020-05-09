@@ -149,23 +149,37 @@ HOLD_DELAY                      = 40
         REFER AiStateMachine
         VEND aiSelectStartSquare
 
-        ldx #1
-kk      cpx #0
-        ;bne kk
-
                     NEXT_RANDOM
                     
                     jsr moveCursor
-                    ;jsr IsValidMoveFromSquare;@2
 
-                    dec ccur                        ; pulse colour for valid squares
+    ; Search the player's movelist for the square, so we can set cursor colour
+    
+                    lda currentPly
+                    sta SET_BANK_RAM;@2
+
+                    lda cursorX12
+                    sta fromX12
+
+                    ldy@PLY moveIndex
+                    bmi .done
+
+.scan               cmp MoveFrom,y
+                    beq .scanned
+                    dey
+                    bpl .scan
+
+.scanned            lda@PLY MovePiece,y
+                    sta fromPiece
+
+.done               dec ccur                        ; pulse colour for valid squares
                     jsr setCursorColours
 
                     tya
                     ora INPT4
                     bmi .exit                       ; illegal square or no button press
 
-                    ;PHASE AI_StartSquareSelected
+                    PHASE AI_StartSquareSelected
 
 .exit               rts
 
@@ -296,11 +310,14 @@ kk      cpx #0
 
                     lda aiMoveIndex
                     bpl .valid
-                    jsr SAFE_getMoveIndex
+
+                    lda #RAMBANK_PLY+1
+                    sta SET_BANK_RAM;@2
+                    lda@PLY moveIndex
                     sta aiMoveIndex
 .valid
 
-                    jsr SAFE_showMoveOptions            ; draw potential moves one at a time
+                    jsr showMoveOptions            ; draw potential moves one at a time
                     lda aiMoveIndex
                     bpl .unsure                         ; still drawing in this phase
 
@@ -334,14 +351,14 @@ kk      cpx #0
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF SAFE_showMoveOptions
+    DEF showMoveOptions
     SUBROUTINE
 
         REFER aiDrawMoves
         REFER aiUnDrawTargetSquares
         VAR __saveIdx, 1
         VAR __piece, 1
-        VEND SAFE_showMoveOptions
+        VEND showMoveOptions
 
     ; place a marker on the board for any square matching the piece
     ; EXCEPT for squares which are occupied (we'll flash those later)
@@ -356,25 +373,30 @@ kk      cpx #0
 
                     dec aiMoveIndex
 
-                    jsr GetP_MoveFrom
+                    lda #RAMBANK_PLY+1
+                    sta SET_BANK_RAM;@2
+
+                    lda@PLY MoveFrom,x
                     cmp fromX12
                     bne .next
 
-                    jsr GetP_MoveTo
+                    lda@PLY MoveTo,x
                     sta squareToDraw
 
-                    jsr GetP_MovePiece
+                    lda@PLY MovePiece,x
                     sta __piece
 
     ; If it's a pawn promote (duplicate "to" AND piece different (TODO) then skip others)
     ; TODO this could/will fail on sorted lists. MMh.
 
-.sk                 dex
+                    dex
                     bmi .prom
-                    jsr GetP_MoveTo
+
+                    lda@PLY MoveTo,x
                     cmp squareToDraw
                     bne .prom
-                    jsr GetP_MovePiece
+
+                    lda@PLY MovePiece,x
                     eor __piece
                     and #PIECE_MASK
                     beq .prom                       ; same piece type so not a promote
@@ -385,7 +407,10 @@ kk      cpx #0
 .prom
 
                     ldy squareToDraw
-                    jsr GetBoard
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
                     and #PIECE_MASK
                     bne .next                       ; don't draw dots on captures - they are flashed later
 
@@ -397,11 +422,68 @@ kk      cpx #0
                     ;lda aiMoveIndex
                     ;sta __saveIdx
 
-                    jsr markerDraw
+                    jsr markerDraw;@1
                     rts
 
 .skip               lda __saveIdx
                     sta aiMoveIndex
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF markerDraw
+    SUBROUTINE
+
+        REFER showMoveOptions
+        VEND markerDraw
+
+                    ldx #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
+                    jsr CopySetupForMarker;@1
+                    jmp InterceptMarkerCopy;@0
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CopySetupForMarker
+    SUBROUTINE
+
+        REFER markerDraw
+        REFER showPromoteOptions
+        VAR __pieceColour, 1
+        VAR __oddeven, 1
+        VAR __pmcol, 1
+        VEND CopySetupForMarker
+
+                    lda squareToDraw
+                    sec
+                    ldy #10
+.sub10              sbc #10
+                    dey
+                    bcs .sub10
+                    sty __oddeven
+                    adc #8
+                    sta __pmcol
+                    adc __oddeven
+
+                    and #1
+                    eor #1
+                    beq .white
+                    lda #36
+.white
+                    sta __pieceColour               ; actually SQUARE black/white
+
+                    txa
+                    clc
+                    adc __pieceColour
+                    sta __pieceColour
+
+                    lda __pmcol
+                    and #3
+
+                    clc
+                    adc __pieceColour
+                    tay
                     rts
 
 
@@ -424,11 +506,14 @@ kk      cpx #0
 
                     lda aiMoveIndex
                     bpl .valid
-                    jsr SAFE_getMoveIndex
+
+                    lda #RAMBANK_PLY+1
+                    sta SET_BANK_RAM;@2
+                    lda@PLY moveIndex
                     sta aiMoveIndex
 .valid
 
-                    jsr SAFE_showMoveOptions            ; draw potential moves one at a time
+                    jsr showMoveOptions            ; draw potential moves one at a time
                     lda aiMoveIndex
                     bpl .exit                           ; still drawing in this phase
 
@@ -456,11 +541,16 @@ kk      cpx #0
 
                     lda aiMoveIndex
                     bpl .valid                  ; guaranteed -1 on 1st call
-                    jsr SAFE_getMoveIndex
+                    lda #RAMBANK_PLY+1
+                    sta SET_BANK_RAM;@2
+                    lda@PLY moveIndex
                     sta aiMoveIndex
 .valid
 
-                    jsr SAFE_showMoveCaptures
+                    ;lda #BANK_showMoveCaptures
+                    ;sta SET_BANK;@0
+
+                    jsr showMoveCaptures;@0
                     lda aiMoveIndex
                     bpl .exit
 
@@ -600,7 +690,7 @@ kk      cpx #0
                     ldy cursorX12
                     sty toX12 
 
-                    jsr GetPiece
+                    CALL GetPiece;@3
                     jsr setCursorColours
 
 
@@ -677,11 +767,12 @@ kk      cpx #0
 
                     lda fromX12
                     sta originX12
-                    jsr GetPiece                    ; from the movelist
+                    CALL GetPiece;@3                ; from the movelist
 
                     ldy fromX12
-                    jsr GetBoard                    ; get the piece from the board itself
-
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
                     eor fromPiece
                     and #PIECE_MASK                 ; if not the same piece board/movelist...
                     bne .promote                    ; promote a pawn
@@ -755,79 +846,6 @@ kk      cpx #0
                     rts
 
 
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiMarchToTargetA
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VAR __fromRow, 1
-        VAR __boardIndex, 1
-        VAR __fromCol, 1
-        VAR __toCol, 1
-        VEND aiMarchToTargetA
-
-
-    ; Now we calculate move to new square
-
-                    lda fromX12
-                    cmp toX12
-                    beq .unmovedx
-                    sta lastSquareX12
-
-                    sec
-                    ldx #-3
-.sub10              sbc #10
-                    inx
-                    bcs .sub10
-                    adc #8
-                    sta __fromCol
-                    stx __fromRow
-
-                    lda toX12
-                    sec
-                    ldx #-3
-.sub10b             sbc #10
-                    inx
-                    bcs .sub10b
-                    adc #8
-                    sta __toCol
-
-
-                    cpx __fromRow
-                    beq .rowDone
-
-                    bcs .incRow
-
-                    sec
-                    lda fromX12
-                    sbc #10
-                    sta fromX12
-                    jmp .rowDone
-
-.incRow             clc
-                    lda fromX12
-                    adc #10
-                    sta fromX12
-
-.rowDone
-
-                    lda __toCol
-                    cmp __fromCol
-                    beq .colDone
-
-                    bcs .incCol
-
-                    dec fromX12
-                    jmp .colDone
-
-.incCol             inc fromX12
-.colDone
-.unmovedx
-
-                    PHASE AI_MarchA2
-                    rts
-
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -840,8 +858,9 @@ kk      cpx #0
                     ldy fromX12
                     sty squareToDraw
 
-                    jsr GetBoard
-                    cmp #0
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
                     beq .skipbl
                     jsr CopySinglePiece;@0          ; erase next square along --> blank
 
@@ -849,13 +868,16 @@ kk      cpx #0
                     ldy fromX12
                     sty __boardIndex
 
-                    jsr GetBoard
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
                     sta lastPiece                   ; what we are overwriting
                     lda fromPiece
                     ora #FLAG_MOVED                 ; prevents usage in castling for K/R
                     and #~FLAG_ENPASSANT
                     ldy __boardIndex
-                    jsr PutBoard
+                    sta@RAM Board,y                 ; and what's actually moving there
+
 
                     PHASE AI_MarchB
                     rts
@@ -872,8 +894,9 @@ kk      cpx #0
                     ldy lastSquareX12
                     sty squareToDraw
 
-                    jsr GetBoard
-                    cmp #0
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
                     beq .skipbl2
 
                     jsr CopySinglePiece;@0          ; draw previous piece back in old position
@@ -883,7 +906,7 @@ kk      cpx #0
                     cmp toX12
                     beq xhalt
 
-                    lda #0                          ; inter-move segment speed (can be 0)
+                    lda #100                          ;??? inter-move segment speed (can be 0)
                     sta drawDelay
                     PHASE AI_MarchToTargetA
 
@@ -900,6 +923,53 @@ xhalt
 
                     PHASE AI_FinalFlash
                     rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+
+    DEF aiWriteStartPieceBlank
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiWriteStartPieceBlank
+
+    ; Flash the piece in-place preparatory to moving it.
+    ; drawDelay = flash speed
+    ; drawCount = # of flashes
+
+                    lda originX12
+                    sta cursorX12
+
+                    lda #%100
+                    sta CTRLPF
+                    lda #2
+                    sta COLUP0
+
+
+                    lda drawDelay
+                    beq deCount
+                    dec drawDelay
+                    rts
+deCount
+
+                    lda drawCount
+                    beq flashDone
+                    dec drawCount
+
+                    lda #READY_TO_MOVE_FLASH
+                    sta drawDelay                   ; "getting ready to move" flash
+
+                    lda fromX12
+                    sta squareToDraw
+
+                    jmp CopySinglePiece;@0          ; EOR-draw = flash
+
+flashDone
+
+                    PHASE AI_MarchToTargetA
+                    rts
+
 
 ;---------------------------------------------------------------------------------------------------
 

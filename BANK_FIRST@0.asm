@@ -41,7 +41,7 @@ _ORIGIN             SET _FIRST_BANK
                     CALL CartInit
                     CALL SetupBanks
                     CALL InitialisePieceSquares
-                    ;jsr ListPlayerMoves;@0
+                    jsr ListPlayerMoves;@0
 
 
 .StartFrame
@@ -107,13 +107,13 @@ zapem               txa
                     clc
                     adc #SLOT_DrawRow
                     sta SET_BANK_RAM
-                    jsr WriteBlank;@3
+                    CALL WriteBlank;@3
                     dex
                     bpl zapem
 
                     lda #BANK_WriteCursor
                     sta SET_BANK
-                    jsr WriteCursor;@3
+                    CALL WriteCursor;@3
     ENDIF
 
 .notnow
@@ -190,7 +190,7 @@ SynapsePattern
         REFER aiDrawPart2
         REFER aiMarchB
         REFER aiFinalFlash
-        REFER UNSAFE_showMoveCaptures
+        REFER showMoveCaptures
         REFER aiMarchToTargetA
         REFER aiMarchB2
         REFER aiMarchToTargetB
@@ -248,7 +248,7 @@ SynapsePattern
                     ora #[SLOT2]
                     sta SET_BANK_RAM;@2             ; bank row
 
-                    CALL CopyPieceToRowBitmap;@3
+                    jsr CopyPieceToRowBitmap;@3
                     rts
 
 
@@ -351,8 +351,6 @@ ONCEPERFRAME = 40
                     sta __ptr+1
 
                     lda AiVectorBANK,x
-                    sta savedBank
-
                     sta SET_BANK
                     jmp (__ptr)                 ; NOTE: could branch back to squeeze cycles
 
@@ -377,7 +375,10 @@ ONCEPERFRAME = 40
 
                     lda currentPly
                     sta SET_BANK_RAM;@2
-                    jsr NewPlyInitialise
+
+                    lda #BANK_NewPlyInitialise
+                    sta SET_BANK
+                    jsr NewPlyInitialise;@1
     
                     lda #8                  ; pawns
                     sta __pieceFilter
@@ -388,26 +389,24 @@ ONCEPERFRAME = 40
                     sta __pieceFilter
                     jsr MoveGenX
 
-                    lda currentPly
-                    sta SET_BANK_RAM
-                    jmp Sort
+                    lda #BANK_Sort
+                    sta SET_BANK
+                    jmp Sort;@1
 
 
 
     DEF MoveGenX
     SUBROUTINE
     
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3             ; should be hardwired forever, right?
+
                     ldx #100
-                    bne .next2
+                    bne .next
 
     DEF MoveReturn
 
-
-                      ldx currentSquare
-
-.next2              lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM;@3
-
+                    ldx currentSquare
 .next               dex
                     cpx #22
                     bcc .exit
@@ -419,10 +418,6 @@ ONCEPERFRAME = 40
                     eor sideToMove
                     bmi .next
                     
-;    DEF handleIt
-;    SUBROUTINE
-
-
                     stx currentSquare
 
                     eor sideToMove
@@ -431,6 +426,9 @@ ONCEPERFRAME = 40
                     and #PIECE_MASK
                     ora __pieceFilter
                     tay
+
+                    lda #BANK_HandlerVectorLO
+                    sta SET_BANK
 
                     lda HandlerVectorHI,y
                     sta __vector+1                    
@@ -464,16 +462,19 @@ ONCEPERFRAME = 40
                     ldx@PLY moveIndex
 .scan               stx@PLY movePtr
 
-                    jsr MakeMove
+                    CALL MakeMove;@1
 
                     inc currentPly
                     jsr GenerateAllMoves
 
                     dec currentPly
                     lda currentPly
-                    sta SET_BANK_RAM
+                    sta SET_BANK_RAM;@2
 
                     jsr unmakeMove
+
+                    lda currentPly
+                    sta SET_BANK_RAM;@2
 
                     lda flagCheck
                     beq .next
@@ -488,6 +489,251 @@ ONCEPERFRAME = 40
 
                     rts
 
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF AddMove
+    SUBROUTINE
+
+        VEND AddMove
+
+    ; add square in y register to movelist as destination (X12 format)
+    ; [y]               to square (X12)
+    ; currentSquare     from square (X12)
+    ; currentPiece      piece.
+    ;   ENPASSANT flag set if pawn double-moving off opening rank
+    ; capture           captured piece
+
+                    lda capture
+                    bne .always
+                    lda __quiesceCapOnly
+                    bne .abort
+
+.always             tya
+                    
+                    ldy@PLY moveIndex
+                    iny
+                    sty@PLY moveIndex
+                    
+                    sta@PLY MoveTo,y
+                    lda currentSquare
+                    sta@PLY MoveFrom,y
+                    lda currentPiece
+                    sta@PLY MovePiece,y
+                    lda capture
+                    sta@PLY MoveCapture,y
+
+.abort              rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF debug
+    SUBROUTINE
+    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF unmakeMove
+    SUBROUTINE
+
+        REFER negaMax
+        VAR __unmake_capture, 1
+        VAR __secondaryBlank, 1
+        VEND unmakeMove
+
+    ; restore the board evaluation to what it was at the start of this ply
+    ; TODO: note: moved flag seems wrong on restoration
+
+                    lda currentPly
+                    sta SET_BANK_RAM;@2
+
+                    lda@PLY savedEvaluation
+                    sta Evaluation
+                    lda@PLY savedEvaluation+1
+                    sta Evaluation+1
+
+                    ldx movePtr
+                    lda@PLY MoveFrom,x
+                    sta fromX12
+                    ldy@PLY MoveTo,x
+
+                    lda@PLY restorePiece
+                    pha
+                    lda@PLY capturedPiece
+
+                    ldx #RAMBANK_BOARD
+                    stx SET_BANK_RAM;@3
+                    sta@RAM Board,y
+                    ldy fromX12
+                    pla
+                    sta@RAM Board,y
+
+
+                    ;lda currentPly
+                    ;sta SET_BANK_RAM
+
+    ; See if there are any 'secondary' pieces that moved
+    ; here we're dealing with reverting a castling or enPassant move
+
+                    lda@PLY secondaryPiece
+                    beq .noSecondary
+                    ldy@PLY secondaryBlank
+                    sty __secondaryBlank
+                    ldy@PLY secondarySquare
+                    sta@RAM Board,y                     ; put piece back
+
+                    ldy __secondaryBlank
+                    lda #0
+                    sta@RAM Board,y                     ; blank piece origin
+
+
+.noSecondary
+                    SWAP
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF showMoveCaptures
+    SUBROUTINE
+
+        REFER aiShowMoveCaptures
+
+        VAR __toSquareX12, 1
+        VAR __fromPiece, 1
+        VAR __aiMoveIndex, 1
+
+        VEND showMoveCaptures
+
+    ; place a marker on the board for any square matching the piece
+    ; EXCEPT for squares which are occupied (we'll flash those later)
+    ; x = movelist item # being checked
+
+
+.next               ldx aiMoveIndex
+                    stx __aiMoveIndex
+                    bmi .skip                       ; no moves in list
+
+                    lda INTIM
+                    cmp #20
+                    bcc .skip
+
+                    dec aiMoveIndex
+
+                    lda #RAMBANK_PLY+1
+                    sta SET_BANK_RAM
+                    lda@PLY MoveFrom,x
+                    cmp fromX12
+                    bne .next
+
+                    lda@PLY MoveTo,x
+                    sta __toSquareX12
+                    tay
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
+                    and #PIECE_MASK
+                    beq .next
+
+    ; There's something on the board at destination, so it's a capture
+    ; Let's see if we are doing a pawn promote...
+
+                    ldy fromX12
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
+                    sta __fromPiece
+
+                    lda #RAMBANK_PLY+1
+                    sta SET_BANK_RAM
+                    lda@PLY MovePiece,x
+                    eor __fromPiece
+                    and #PIECE_MASK
+                    beq .legit                  ; from == to, so not a promote
+
+    ; Have detected a promotion duplicate - skip all 3 of them
+
+                    dec aiMoveIndex                 ; skip "KBRQ" promotes
+                    dec aiMoveIndex
+                    dec aiMoveIndex
+
+.legit
+
+        ;TIMECHECK COPYSINGLEPIECE, restoreIndex     ; not enough time to draw
+
+                    lda __toSquareX12
+                    sta squareToDraw
+
+                    jsr CopySinglePiece;@0
+
+.skip               rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CopyPieceToRowBitmap;@3
+    SUBROUTINE
+
+        ;REFER CopySinglePiece           ; special-case due to 'intercept'
+        VEND CopyPieceToRowBitmap
+
+                    ldy #17
+                    bcs .rightSide
+
+.copyPiece          lda __pieceShapeBuffer,y
+                    beq .blank1
+                    eor ChessBitmap,y
+                    sta@RAM ChessBitmap,y
+
+.blank1             lda __pieceShapeBuffer+18,y
+                    beq .blank2
+                    eor ChessBitmap+18,y
+                    sta@RAM ChessBitmap+18,y
+
+.blank2             lda __pieceShapeBuffer+36,y
+                    beq .blank3
+                    eor ChessBitmap+36,y
+                    sta@RAM ChessBitmap+36,y
+
+.blank3             lda __pieceShapeBuffer+54,y
+                    beq .blank4
+                    eor ChessBitmap+54,y
+                    sta@RAM ChessBitmap+54,y
+
+.blank4             dey
+                    bpl .copyPiece
+                    rts
+
+.rightSide
+
+    SUBROUTINE
+
+.copyPieceR         lda __pieceShapeBuffer,y
+                    beq .blank1
+                    eor ChessBitmap+72,y
+                    sta@RAM ChessBitmap+72,y
+
+.blank1             lda __pieceShapeBuffer+18,y
+                    beq .blank2
+                    eor ChessBitmap+72+18,y
+                    sta@RAM ChessBitmap+72+18,y
+
+.blank2             lda __pieceShapeBuffer+36,y
+                    beq .blank3
+                    eor ChessBitmap+72+36,y
+                    sta@RAM ChessBitmap+72+36,y
+
+.blank3             lda __pieceShapeBuffer+54,y
+                    beq .blank4
+                    eor ChessBitmap+72+54,y
+                    sta@RAM ChessBitmap+72+54,y
+
+.blank4             dey
+                    bpl .copyPieceR
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 

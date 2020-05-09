@@ -12,21 +12,12 @@
 ; A ply will hold the move list for that position
 
 
-    SLOT 3
+    SLOT 2
     NEWRAMBANK PLY                                  ; RAM bank for holding the following ROM shadow
-    REPEAT PLY_BANKS-1
-        NEWRAMBANK .DUMMY_PLY
-    REPEND
-
-
-; and now the ROM shadow - this is copied to ALL of the RAM ply banks
-
-    SLOT 3
-    NEWBANK SHADOW_PLY
     
 ;---------------------------------------------------------------------------------------------------
 
-MAX_MOVES =150          ; big is good
+MAX_MOVES = 100          ; big is good
 
     VARIABLE MoveFrom, MAX_MOVES
     VARIABLE MoveTo, MAX_MOVES
@@ -56,6 +47,13 @@ MAX_MOVES =150          ; big is good
     VARIABLE restorePiece, 1
     VARIABLE kingSquare, 3                          ; traversing squares for castle/check
     
+
+    CHECK_RAM_BANK_SIZE "SHADOW_PLY"
+
+    REPEAT PLY_BANKS-1
+        NEWRAMBANK .DUMMY_PLY
+    REPEND
+
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

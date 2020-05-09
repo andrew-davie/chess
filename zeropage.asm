@@ -20,7 +20,6 @@ cursorX12                       ds 1
 
 mdelay                          ds 1
 ccur                            ds 1
-savedBank                       ds 1                ; switched-in bank for FIXED returns
 aiState                         ds 1                ; state
 aiFlashDelay                    ds 1
 

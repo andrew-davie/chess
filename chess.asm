@@ -42,7 +42,7 @@ DIAGNOSTICS             = 0
 QUIESCENCE              = 1
 ASSERTS                 = 0
 PVSP                    = 0                         ; player versus player =1
-ENPASSANT_ENABLED       = 1
+ENPASSANT_ENABLED       = 0
 CASTLING_ENABLED        = 1
 
 SEARCH_DEPTH            = 3
@@ -102,10 +102,12 @@ SET_BANK                    = $3F               ; write address to switch ROM ba
 SET_BANK_RAM                = $3E               ; write address to switch RAM banks
 
 
-RAM_SIZE                    = $200
+RAM_SIZE                    = $400              ; address space for write AND read
 RAM_WRITE                   = $200              ; add this to RAM address when doing writes
 RAM                         = RAM_WRITE
 
+_ROM_BANK_SIZE               = $400
+_RAM_BANK_SIZE               = $200
 
 
 ; Platform constants:
@@ -149,8 +151,6 @@ SLOT3               = 192
 ; MACRO definitions
 
 
-_ROM_BANK_SIZE               = $400
-_RAM_BANK_SIZE               = $200
 
             MAC NEWBANK ; bank name
                 SEG {1}
@@ -634,6 +634,8 @@ RND_EOR_VAL = $FE ;B4
     include "PIECE_HANDLER@1#1.asm"
     include "PIECE_HANDLER@1#2.asm"
     include "BANK_3.asm"
+
+    include "BANK_LAST.asm"
 
 ;---------------------------------------------------------------------------------------------------
 ;EOF

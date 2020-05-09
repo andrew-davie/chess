@@ -81,7 +81,9 @@
                     sta fromPiece
 
                     ldy toX12
-                    jsr GetBoard
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
                     and #PIECE_MASK
                     beq .nothing
 
@@ -195,7 +197,10 @@
 
                     ldy lastSquareX12
                     lda previousPiece
-                    jsr PutBoard
+
+                    ldx #RAMBANK_BOARD
+                    stx SET_BANK_RAM;@3
+                    sta@RAM Board,y                 ; and what's actually moving there
 
                     lda lastPiece
                     sta previousPiece
@@ -224,7 +229,9 @@
                     ldy toX12
                     sty squareToDraw
 
-                    jsr GetBoard
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
                     and #PIECE_MASK
                     beq .empty
 
@@ -337,6 +344,117 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
 
     ALLOCATE colToPixel, 8
     .byte 0,20,40,60,80,100,120,140
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiMarchToTargetA
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VAR __fromRow, 1
+        VAR __boardIndex, 1
+        VAR __fromCol, 1
+        VAR __toCol, 1
+        VEND aiMarchToTargetA
+
+
+    ; Now we calculate move to new square
+
+                    lda fromX12
+                    cmp toX12
+                    beq .unmovedx
+                    sta lastSquareX12
+
+                    sec
+                    ldx #-3
+.sub10              sbc #10
+                    inx
+                    bcs .sub10
+                    adc #8
+                    sta __fromCol
+                    stx __fromRow
+
+                    lda toX12
+                    sec
+                    ldx #-3
+.sub10b             sbc #10
+                    inx
+                    bcs .sub10b
+                    adc #8
+                    sta __toCol
+
+
+                    cpx __fromRow
+                    beq .rowDone
+
+                    bcs .incRow
+
+                    sec
+                    lda fromX12
+                    sbc #10
+                    sta fromX12
+                    jmp .rowDone
+
+.incRow             clc
+                    lda fromX12
+                    adc #10
+                    sta fromX12
+
+.rowDone
+
+                    lda __toCol
+                    cmp __fromCol
+                    beq .colDone
+
+                    bcs .incCol
+
+                    dec fromX12
+                    jmp .colDone
+
+.incCol             inc fromX12
+.colDone
+.unmovedx
+
+                    PHASE AI_MarchA2
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiFinalFlash
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiFinalFlash
+
+
+                    lda drawDelay
+                    beq .deCount
+                    dec drawDelay
+                    rts
+
+.deCount            lda drawCount
+                    beq .flashDone2
+                    dec drawCount
+
+                    lda #10
+                    sta drawDelay               ; "getting ready to move" flash
+
+                    lda fromX12
+                    sta squareToDraw
+
+                    jsr CopySinglePiece;@0
+                    rts
+
+.flashDone2
+
+                    lda #100
+                    sta aiFlashDelay
+
+                    PHASE AI_SpecialMoveFixup
+                    rts
+
 
 ;---------------------------------------------------------------------------------------------------
 

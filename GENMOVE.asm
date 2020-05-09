@@ -28,10 +28,12 @@
 
 ;    .byte 0     ; dummy to prevent page cross access on index 0
 
-HandlerVectorLO     HANDLEVEC <
-HandlerVectorHI     HANDLEVEC >
-HandlerVectorBANK   HANDLEVEC BANK_
-
+    DEF HandlerVectorLO
+    HANDLEVEC <
+    DEF HandlerVectorHI
+    HANDLEVEC >
+    DEF HandlerVectorBANK
+    HANDLEVEC BANK_
 
 
 ;---------------------------------------------------------------------------------------------------

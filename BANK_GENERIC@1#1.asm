@@ -103,14 +103,14 @@
     ; copy the PLY banks
     ; If there's no content (only variable decs) then we don't really need to do this.
 
-.PLY SET 0
-    REPEAT PLY_BANKS
+;.PLY SET 0
+;    REPEAT PLY_BANKS
 
-                    ldx #SHADOW_PLY
-                    ldy #RAMBANK_PLY + .PLY   
-                    jsr CopyShadowROMtoRAM
-.PLY SET .PLY + 1                    
-    REPEND
+;                    ldx #SHADOW_PLY
+;                    ldy #RAMBANK_PLY + .PLY   
+                    ;jsr CopyShadowROMtoRAM
+;.PLY SET .PLY + 1                    
+;    REPEND
 
     ; copy the evaluation code/tables
     ; 3E+ moved from RAM to ROM
@@ -223,9 +223,6 @@
     ; Add the material value of the piece to the evaluation
 
                     lda __originalPiece
-
-                    ;lda #RAMBANK_BANK_EVAL ;BANK_AddPiecePositionValue
-                    ;sta SET_BANK_RAM 
                     jsr AddPieceMaterialValue
 
                     stx __initListPtr
@@ -234,9 +231,6 @@
 
                     ldy __initSquare
                     lda __originalPiece
-
-                    ;ldx #BANK_AddPiecePositionValue
-                    ;stx SET_BANK
                     jsr AddPiecePositionValue
 
                     lda __originalPiece             ; type/colour
@@ -376,8 +370,6 @@ InitPieceList
     ENDIF
 
 
-
-
 ;---------------------------------------------------------------------------------------------------
 
     DEF AdjustMaterialPositionalValue
@@ -404,7 +396,7 @@ InitPieceList
     ; get the piece types from the board
 
                     lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM
+                    sta SET_BANK_RAM;@3
                     ldy originX12
                     lda Board,y
                     sta __originalPiece
@@ -415,11 +407,11 @@ InitPieceList
     ; {
     ;   adjust the positional value  (originX12 --> fromX12)
 
-                    lda #RAMBANK_BANK_EVAL ;BANK_AddPiecePositionValue
-                    sta SET_BANK_RAM 
+                    lda #RAMBANK_BANK_EVAL
+                    sta SET_BANK_RAM;@3
 
 
-                    ;ldy toX12
+                    ;ldy toX12                      ; already loaded
                     lda fromPiece
                     jsr AddPiecePositionValue       ; add pos value for new position
 
@@ -430,8 +422,6 @@ InitPieceList
                     beq .same1                      ; unchanged, so skip
 
                     lda fromPiece                   ; new piece
-                    ;and #PIECE_MASK
-                    ;tay
                     jsr AddPieceMaterialValue
 
 .same1
@@ -451,8 +441,6 @@ InitPieceList
                     beq .same2                      ; unchanged, so skip
 
                     lda __originalPiece
-                    ;and #PIECE_MASK
-                    ;tay
                     jsr AddPieceMaterialValue       ; remove material for original type
 .same2
 
@@ -468,13 +456,10 @@ InitPieceList
                     lda __capturedPiece
                     and #PIECE_MASK
                     beq .noCapture
-                    ;tay
                     jsr AddPieceMaterialValue       ; -other colour = + my colour!
 .noCapture
 
     ; }
-                    lda savedBank
-                    sta SET_BANK
                     rts
 
 
@@ -506,6 +491,9 @@ InitPieceList
                     and #PIECE_MASK
                     tax
 
+                    lda #EVAL
+                    sta SET_BANK;@3
+
     ; black pieces flip rows so we can use the same eval tables
 
                     tya
@@ -534,7 +522,6 @@ InitPieceList
                     rts
 
 
-
 ;---------------------------------------------------------------------------------------------------
 
     DEF EnPassantRemovePiece
@@ -555,7 +542,7 @@ InitPieceList
                     sty __y
 
                     lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM
+                    sta SET_BANK_RAM;@3
                     lda Board,y
                     sta __col
                     jsr AddPieceMaterialValue       ; adding for opponent = taking
@@ -583,6 +570,9 @@ InitPieceList
 
                     and #PIECE_MASK
                     tay
+
+                    lda #EVAL
+                    sta SET_BANK;@3
 
                     clc
                     lda PieceValueLO,y
@@ -633,7 +623,175 @@ InitPieceList
 
 ;---------------------------------------------------------------------------------------------------
 
-    CHECK_BANK_SIZE "BANK_1"
+    DEF MakeMove
+    SUBROUTINE
+
+        REFER negaMax
+        VAR __capture, 1
+        VAR __restore, 1
+        VEND MakeMove
+
+    ; Do a move without any GUI stuff
+    ; This function is ALWAYS paired with "unmakeMove" - a call to both will leave board
+    ; and all relevant flags in original state. This is NOT used for the visible move on the
+    ; screen.
+
+
+    ; fromPiece     piece doing the move
+    ; fromX12       current square X12
+    ; originX12     starting square X12
+    ; toX12         ending square X12
+
+    ; BANK:SLOT2 = currentPly
+
+
+    ; There are potentially "two" moves, with the following
+    ; a) Castling, moving both rook and king
+    ; b) en-Passant, capturing pawn on "odd" square
+    ; These both set "secondary" movers which are used for restoring during unmakeMove
+
+                    lda #0
+                    sta@PLY secondaryPiece
+
+                    ldx@PLY movePtr
+                    lda@PLY MoveFrom,x
+                    sta fromX12
+                    sta originX12
+                    lda@PLY MoveTo,x
+                    sta toX12
+                    lda@PLY MovePiece,x
+                    sta fromPiece                   
+
+.move               jsr AdjustMaterialPositionalValue
+
+    ; Modify the board
+    
+                    ldy #RAMBANK_BOARD
+                    sty SET_BANK_RAM;@3
+                    ldy originX12
+                    lda@RAM Board,y
+                    sta __restore
+                    lda #0
+                    sta@RAM Board,y
+                    ldy toX12
+                    lda@RAM Board,y
+                    sta __capture
+                    lda fromPiece
+                    and #PIECE_MASK|FLAG_COLOUR
+                    ora #FLAG_MOVED
+                    sta@RAM Board,y
+
+                    lda currentPly
+                    sta SET_BANK_RAM;@2
+                    lda __capture
+                    sta@PLY capturedPiece
+                    lda __restore
+                    sta@PLY restorePiece
+
+    IF CASTLING_ENABLED
+
+        ; If the FROM piece has the castle bit set (i.e., it's a king that's just moved 2 squares)
+        ; then we find the appropriate ROOK, set the secondary piece "undo" information, and then
+        ; redo the moving code (for the rook, this time).
+
+                    jsr GenCastleMoveForRook
+                    bcs .move                       ; move the rook!
+    ENDIF
+
+
+    IF ENPASSANT_ENABLED    
+                    jsr EnPassantCheck
+                    beq .notEnPassant
+                    jsr EnPassantRemovePiece        ; y = origin X12
+.notEnPassant
+    ENDIF
+
+    ; Swap over sides
+
+                    NEGEVAL
+                    SWAP
+                    rts
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CastleFixupDraw
+    SUBROUTINE
+
+        REFER aiSpecialMoveFixup
+        VEND CastleFixupDraw
+
+    ; fixup any castling issues
+    ; at this point the king has finished his two-square march
+    ; based on the finish square, we determine which rook we're interacting with
+    ; and generate a 'move' for the rook to position on the other side of the king
+
+
+    IF CASTLING_ENABLED
+                    jsr GenCastleMoveForRook
+                    bcs .phase
+    ENDIF
+    
+                SWAP
+                rts
+
+.phase
+
+    ; in this siutation (castle, rook moving) we do not change sides yet!
+
+                    PHASE AI_MoveIsSelected
+                    rts
+
+
+
+KSquare             .byte 24,28,94,98
+RSquareStart        .byte 22,29,92,99
+RSquareEnd          .byte 25,27,95,97
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF GenCastleMoveForRook
+    SUBROUTINE
+
+        REFER MakeMove
+        REFER CastleFixupDraw
+        VEND GenCastleMoveForRook
+
+                    clc
+
+                    lda fromPiece
+                    and #FLAG_CASTLE
+                    beq .exit                       ; NOT involved in castle!
+
+                    ldx #4
+                    lda fromX12                     ; *destination*
+.findCast           clc
+                    dex
+                    bmi .exit
+                    cmp KSquare,x
+                    bne .findCast
+
+                    lda RSquareEnd,x
+                    sta toX12
+                    sta@PLY secondaryBlank
+                    ldy RSquareStart,x
+                    sty fromX12
+                    sty originX12
+                    sty@PLY secondarySquare
+
+                    lda fromPiece
+                    and #128                        ; colour bit
+                    ora #ROOK                       ; preserve colour
+                    sta fromPiece
+                    sta@PLY secondaryPiece
+
+                    sec
+.exit               rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    CHECK_BANK_SIZE "BANK_GENERIC@1#1"
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

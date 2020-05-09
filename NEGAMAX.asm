@@ -191,7 +191,7 @@
                     lda currentPly
                     sta SET_BANK_RAM
 
-                    jsr unmakeMove
+                    jsr unmakeMove;@0
 
                     sec
                     lda #0

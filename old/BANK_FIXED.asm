@@ -863,7 +863,7 @@ MoveReturn          ldx currentSquare
     DEF markerDraw
     SUBROUTINE
 
-        REFER SAFE_showMoveOptions
+        REFER showMoveOptions
         VEND markerDraw
 
                     ldx #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0

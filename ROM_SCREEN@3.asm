@@ -22,67 +22,6 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF CopyPieceToRowBitmap;@3
-    SUBROUTINE
-
-        ;REFER CopySinglePiece           ; special-case due to 'intercept'
-        VEND CopyPieceToRowBitmap
-
-                    ldy #17
-                    bcs .rightSide
-
-.copyPiece          lda __pieceShapeBuffer,y
-                    beq .blank1
-                    eor ChessBitmap,y
-                    sta@RAM ChessBitmap,y
-
-.blank1             lda __pieceShapeBuffer+18,y
-                    beq .blank2
-                    eor ChessBitmap+18,y
-                    sta@RAM ChessBitmap+18,y
-
-.blank2             lda __pieceShapeBuffer+36,y
-                    beq .blank3
-                    eor ChessBitmap+36,y
-                    sta@RAM ChessBitmap+36,y
-
-.blank3             lda __pieceShapeBuffer+54,y
-                    beq .blank4
-                    eor ChessBitmap+54,y
-                    sta@RAM ChessBitmap+54,y
-
-.blank4             dey
-                    bpl .copyPiece
-                    rts
-
-.rightSide
-
-    SUBROUTINE
-
-.copyPieceR         lda __pieceShapeBuffer,y
-                    beq .blank1
-                    eor ChessBitmap+72,y
-                    sta@RAM ChessBitmap+72,y
-
-.blank1             lda __pieceShapeBuffer+18,y
-                    beq .blank2
-                    eor ChessBitmap+72+18,y
-                    sta@RAM ChessBitmap+72+18,y
-
-.blank2             lda __pieceShapeBuffer+36,y
-                    beq .blank3
-                    eor ChessBitmap+72+36,y
-                    sta@RAM ChessBitmap+72+36,y
-
-.blank3             lda __pieceShapeBuffer+54,y
-                    beq .blank4
-                    eor ChessBitmap+72+54,y
-                    sta@RAM ChessBitmap+72+54,y
-
-.blank4             dey
-                    bpl .copyPieceR
-                    rts
-
 
 ;---------------------------------------------------------------------------------------------------
 

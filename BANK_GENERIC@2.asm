@@ -14,27 +14,6 @@
 ;STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
 
 
-;---------------------------------------------------------------------------------------------------
-
-    DEF IsValidMoveFromSquare
-    SUBROUTINE
-
-        REFER aiSelectStartSquare
-        VEND IsValidMoveFromSquare
-
-    ; Does the square exist in the movelist?
-    ; Return: y = -1 if NOT FOUND
-
-                    lda cursorX12
-                    sta fromX12
-
-                    lda currentPly
-                    sta SET_BANK_RAM
-                    jsr CheckMoveListFromSquare
-
-                    ;lda savedBank
-                    ;sta SET_BANK
-                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -143,9 +122,7 @@ _rts                rts
     ; originX12     starting square X12
     ; toX12         ending square X12
 
-
-
-                    jsr AdjustMaterialPositionalValue
+                    CALL AdjustMaterialPositionalValue;@1
 
                     lda #0
                     sta previousPiece
@@ -252,7 +229,6 @@ PieceToShape
     .byte INDEX_BLACK_ROOK_on_WHITE_SQUARE_0
     .byte INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
     .byte INDEX_BLACK_KING_on_WHITE_SQUARE_0
-
 
 
 ;---------------------------------------------------------------------------------------------------

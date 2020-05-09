@@ -1,7 +1,7 @@
 ; Copyright (C)2020 Andrew Davie
 ; andrew@taswegian.com
 
-    SLOT 2      ;TODO
+    SLOT 1
     NEWBANK BANK_PLY                   ; ROM SHADOW
 
     
@@ -40,217 +40,6 @@
                     rts
 
 
-;---------------------------------------------------------------------------------------------------
-
-    DEF CheckMoveListFromSquare
-    SUBROUTINE
-
-        REFER IsValidMoveFromSquare
-        VEND CheckMoveListFromSquare
-
-    ; X12 in A
-    ; y = -1 on return if NOT FOUND
-
-                    ldy@RAM moveIndex
-                    bmi .exit
-
-.scan               cmp MoveFrom,y
-                    beq .scanned
-                    dey
-                    bpl .scan
-.exit               rts
-
-.scanned            lda@PLY MovePiece,y
-                    sta fromPiece
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF GetPieceGivenFromToSquares
-    SUBROUTINE
-
-        REFER GetPiece
-        VEND GetPieceGivenFromToSquares
-
-    ; returns piece in A+fromPiece
-    ; or Y=-1 if not found
-
-    ; We need to get the piece from the movelist because it contains flags (e.g., castling) about
-    ; the move. We need to do from/to checks because moves can have multiple origin/desinations.
-    ; This fixes the move with/without castle flag
-
-
-                    ldy@PLY moveIndex
-                    ;bmi .fail               ; shouldn't happen
-.scan               lda fromX12
-                    cmp@PLY MoveFrom,y
-                    bne .next
-                    lda toX12                    
-                    cmp@PLY MoveTo,y
-                    beq .found
-.next               dey
-                    bpl .scan
-.fail               rts
-
-.found              lda@PLY MovePiece,y
-                    sta fromPiece
-                    rts
-
-
-
-;---------------------------------------------------------------------------------------------------
-    
-    DEF selectmove
-    SUBROUTINE
-
-        COMMON_VARS_ALPHABETA
-        REFER aiComputerMove
-        VEND selectmove
-
-
-
-    ; RAM bank already switched in!!!
-    ; returns with RAM bank switched
-
-
-        IF DIAGNOSTICS
-        
-                    lda #0
-                    sta positionCount
-                    sta positionCount+1
-                    sta positionCount+2
-                    ;sta maxPly
-        ENDIF
-
-
-                    lda #<INFINITY
-                    sta __beta
-                    lda #>INFINITY
-                    sta __beta+1
-
-                    lda #<-INFINITY
-                    sta __alpha
-                    lda #>-INFINITY
-                    sta __alpha+1                   ; player tries to maximise
-
-                    ldx #SEARCH_DEPTH  
-                    lda #0                          ; no captured piece
-                    sta __quiesceCapOnly            ; ALL moves to be generated
-
-                    jsr negaMax
- 
-                    ldx@PLY bestMove
-                    bmi .nomove
-
-    ; Generate player's moves in reply
-    ; Make the computer move, list player moves (PLY+1), unmake computer move
-
-
-                    stx@PLY movePtr
-                    jsr MakeMove
-
-                    jsr ListPlayerMoves
-
-                    lda #RAMBANK_PLY
-                    sta SET_BANK_RAM
-                    
-                    jsr unmakeMove
-
-    ; Grab the computer move details for the UI animation
-
-                    lda #RAMBANK_PLY
-                    sta SET_BANK_RAM
-
-                    ldx@PLY bestMove
-                    lda@PLY MoveTo,x
-                    sta toX12
-                    lda@PLY MoveFrom,x
-                    sta originX12
-                    sta fromX12
-                    lda@PLY MovePiece,x
-                    sta fromPiece
-
-.nomove
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF GenCastleMoveForRook
-    SUBROUTINE
-
-        REFER MakeMove
-        REFER CastleFixupDraw
-        VEND GenCastleMoveForRook
-
-                    clc
-
-                    lda fromPiece
-                    and #FLAG_CASTLE
-                    beq .exit                       ; NOT involved in castle!
-
-                    ldx #4
-                    lda fromX12                     ; *destination*
-.findCast           clc
-                    dex
-                    bmi .exit
-                    cmp KSquare,x
-                    bne .findCast
-
-                    lda RSquareEnd,x
-                    sta toX12
-                    sta@PLY secondaryBlank
-                    ldy RSquareStart,x
-                    sty fromX12
-                    sty originX12
-                    sty@PLY secondarySquare
-
-                    lda fromPiece
-                    and #128                        ; colour bit
-                    ora #ROOK                       ; preserve colour
-                    sta fromPiece
-                    sta@PLY secondaryPiece
-
-                    sec
-.exit               rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF CastleFixupDraw
-    SUBROUTINE
-
-        REFER aiSpecialMoveFixup
-        VEND CastleFixupDraw
-
-    ; fixup any castling issues
-    ; at this point the king has finished his two-square march
-    ; based on the finish square, we determine which rook we're interacting with
-    ; and generate a 'move' for the rook to position on the other side of the king
-
-
-    IF CASTLING_ENABLED
-                    jsr GenCastleMoveForRook
-                    bcs .phase
-    ENDIF
-    
-                SWAP
-                rts
-
-.phase
-
-    ; in this siutation (castle, rook moving) we do not change sides yet!
-
-                    PHASE AI_MoveIsSelected
-                    rts
-
-
-
-KSquare             .byte 24,28,94,98
-RSquareStart        .byte 22,29,92,99
-RSquareEnd          .byte 25,27,95,97
-
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -270,9 +59,6 @@ RSquareEnd          .byte 25,27,95,97
         REFER GenerateAllMoves
         VAR __xchg, 1
         VEND Sort
-
-                    ;lda currentPly
-                    ;sta savedBank           ; ??
 
                     lda __quiesceCapOnly
                     bmi .exit                       ; only caps present so already sorted!
@@ -473,10 +259,10 @@ RSquareEnd          .byte 25,27,95,97
                     jsr quiesce
 
                     dec currentPly
-                    lda currentPly
-                    sta SET_BANK_RAM
+                    ;lda currentPly
+                    ;sta SET_BANK_RAM
 
-                    jsr unmakeMove
+                    jsr unmakeMove;@0
 
                     lda flagCheck                   ; don't consider moves which leave us in check
                     bne .inCheck
