@@ -129,6 +129,9 @@ zapem               txa
     DEF ThinkBar
     SUBROUTINE
 
+        REFER negaMax
+        VEND ThinkBar
+
         IF DIAGNOSTICS
 
                     inc positionCount
@@ -144,6 +147,8 @@ zapem               txa
                     lda #0
                     ldy INPT4
                     bmi .doThink
+    
+    DEF ThinkBarDebug
     
                     inc __thinkbar
                     lda __thinkbar
@@ -184,19 +189,24 @@ SynapsePattern
     SUBROUTINE
     TIMING COPYSINGLEPIECE, (2600)
 
+        REFER showMoveCaptures
         REFER aiDrawEntireBoard
-        REFER aiSpecialMoveFixup
-        REFER aiWriteStartPieceBlank
         REFER aiDrawPart2
         REFER aiMarchB
-        REFER aiFinalFlash
-        REFER showMoveCaptures
-        REFER aiMarchToTargetA
-        REFER aiMarchB2
-        REFER aiMarchToTargetB
+        REFER aiFlashComputerMove
         REFER aiSelectDestinationSquare
-        REFER aiPromotePawnStart
+        REFER aiMarchA2
+        REFER aiMarchB2
+        REFER aiWriteStartPieceBlank
         REFER aiChoosePromotePiece
+        REFER aiMarchToTargetB
+        REFER aiPromotePawnStart
+        REFER aiFinalFlash
+
+    IF ENPASSANT_ENABLED
+        REFER EnPassantCheck
+    ENDIF
+
         VEND CopySinglePiece
 
     ; WARNING: CANNOT USE VAR/OVERLAY IN ANY ROUTINE CALLING THIS!!
@@ -214,6 +224,10 @@ SynapsePattern
     DEF InterceptMarkerCopy
     SUBROUTINE
 
+        REFER CopySinglePiece
+        REFER showPromoteOptions
+        REFER showMoveOptions
+        VEND InterceptMarkerCopy
 
     ; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
     ; y = piece index
@@ -360,26 +374,50 @@ ONCEPERFRAME = 40
     DEF GenerateAllMoves
     SUBROUTINE
 
-        REFER negaMax
+        REFER ListPlayerMoves
+        REFER aiComputerMove
         REFER quiesce
-        REFER aiStepMoveGen
-        REFER aiGenerateMoves
-        REFER selectmove
+        REFER negaMax
+
         VAR __vector, 2
         VAR __masker, 2
         VAR __pieceFilter, 1
+
         VEND GenerateAllMoves
 
     ; Do the move generation in two passes - pawns then pieces
     ; This is an effort to get the alphabeta pruning happening with major pieces handled first in list
 
+    ;...
+    ; This MUST be called at the start of a new ply
+    ; It initialises the movelist to empty
+    ; x must be preserved
+
                     lda currentPly
                     sta SET_BANK_RAM;@2
 
-                    lda #BANK_NewPlyInitialise
-                    sta SET_BANK
-                    jsr NewPlyInitialise;@1
-    
+    ; note that 'alpha' and 'beta' are set externally!!
+
+                    lda #-1
+                    sta@PLY moveIndex           ; no valid moves
+                    sta@PLY bestMove
+
+                    lda enPassantPawn               ; flag/square from last actual move made
+                    sta@PLY enPassantSquare         ; used for backtracking, to reset the flag
+
+
+    ; The value of the material (signed, 16-bit) is restored to the saved value at the reversion
+    ; of a move. It's quicker to restore than to re-sum. So we save the current evaluation at the
+    ; start of each new ply.
+
+                    lda Evaluation
+                    sta@PLY savedEvaluation
+                    lda Evaluation+1
+                    sta@PLY savedEvaluation+1
+    ;^
+
+
+
                     lda #8                  ; pawns
                     sta __pieceFilter
                     jsr MoveGenX
@@ -442,8 +480,7 @@ ONCEPERFRAME = 40
 
 
 
-.exit
-                    rts
+.exit               jmp fixBank
 
  
 ;---------------------------------------------------------------------------------------------------
@@ -451,27 +488,38 @@ ONCEPERFRAME = 40
     DEF ListPlayerMoves
     SUBROUTINE
 
+        REFER selectmove
+        REFER StartupBankReset
+
+        VEND ListPlayerMoves
+
 
                     lda #0
                     sta __quiesceCapOnly                ; gen ALL moves
 
                     lda #RAMBANK_PLY+1
                     sta currentPly
-                    jsr GenerateAllMoves
+                    
+                    ;inc currentPly ;tmp
+                    jsr GenerateAllMoves;@this
 
                     ldx@PLY moveIndex
 .scan               stx@PLY movePtr
 
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM
+
                     CALL MakeMove;@1
 
                     inc currentPly
-                    jsr GenerateAllMoves
+                    jsr GenerateAllMoves;@this
 
                     dec currentPly
                     lda currentPly
                     sta SET_BANK_RAM;@2
 
-                    jsr unmakeMove
+                    jsr unmakeMove;@this
 
                     lda currentPly
                     sta SET_BANK_RAM;@2
@@ -489,11 +537,25 @@ ONCEPERFRAME = 40
 
                     rts
 
+    DEF fixBank
+    SUBROUTINE
+
+                    lda #BANK_negaMax
+                    sta SET_BANK
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF AddMove
     SUBROUTINE
+
+        REFER Handle_KING
+        REFER Handle_QUEEN
+        REFER Handle_ROOK
+        REFER Handle_BISHOP
+        REFER Handle_KNIGHT
+        REFER Handle_WHITE_PAWN
+        REFER Handle_BLACK_PAWN
 
         VEND AddMove
 
@@ -504,13 +566,15 @@ ONCEPERFRAME = 40
     ;   ENPASSANT flag set if pawn double-moving off opening rank
     ; capture           captured piece
 
+
                     lda capture
                     bne .always
                     lda __quiesceCapOnly
                     bne .abort
 
 .always             tya
-                    
+                    tax
+
                     ldy@PLY moveIndex
                     iny
                     sty@PLY moveIndex
@@ -522,14 +586,19 @@ ONCEPERFRAME = 40
                     sta@PLY MovePiece,y
                     lda capture
                     sta@PLY MoveCapture,y
+                    rts
+                    
+.abort              tya
+                    tax
+                    rts
 
-.abort              rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF debug
     SUBROUTINE
-    rts
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -537,9 +606,14 @@ ONCEPERFRAME = 40
     DEF unmakeMove
     SUBROUTINE
 
+        REFER selectmove
+        REFER ListPlayerMoves
+        REFER quiesce
         REFER negaMax
+
         VAR __unmake_capture, 1
         VAR __secondaryBlank, 1
+
         VEND unmakeMove
 
     ; restore the board evaluation to what it was at the start of this ply
@@ -589,6 +663,7 @@ ONCEPERFRAME = 40
 
 
 .noSecondary
+                    ;NEGEVAL
                     SWAP
                     rts
 
@@ -677,7 +752,7 @@ ONCEPERFRAME = 40
     DEF CopyPieceToRowBitmap;@3
     SUBROUTINE
 
-        ;REFER CopySinglePiece           ; special-case due to 'intercept'
+        REFER InterceptMarkerCopy
         VEND CopyPieceToRowBitmap
 
                     ldy #17

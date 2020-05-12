@@ -38,15 +38,19 @@ INFINITY                = $7000 ;32767
 ; assemble diagnostics. Remove for release.
 
 TEST_POSITION           = 0                         ; 0=normal, 1 = setup test position
-DIAGNOSTICS             = 0
+DIAGNOSTICS             = 1
 QUIESCENCE              = 1
 ASSERTS                 = 0
 PVSP                    = 0                         ; player versus player =1
 ENPASSANT_ENABLED       = 0
-CASTLING_ENABLED        = 1
+CASTLING_ENABLED        = 0
 
-SEARCH_DEPTH            = 3
-QUIESCE_EXTRA_DEPTH     = 4
+; NOTE: SEARCH_DEPTH cannot be < 3, because the player's moves are generated from PLY+1, and use
+; PLY+2 for computer response (thus, 3). The bank allocation gets stomped!
+
+
+SEARCH_DEPTH            = 4
+QUIESCE_EXTRA_DEPTH     = 0
 
 
 PLY_BANKS = SEARCH_DEPTH + QUIESCE_EXTRA_DEPTH
@@ -297,6 +301,8 @@ _BANK_SLOT SET {1} * 64               ; D7/D6 selector
                     lda sideToMove
                     eor #SWAP_SIDE
                     sta sideToMove
+
+                    ;NEGEVAL
     ENDM
 
 
@@ -610,13 +616,11 @@ RND_EOR_VAL = $FE ;B4
     include "BANK_GENERIC@1#1.asm"
     include "BANK_ROM_SHADOW_SCREEN.asm"
     include "ROM_SCREEN@3.asm"
-    include "BANK_PLY.asm"
     include "SHADOW_PLY.asm"
     include "SHADOW_BOARD.asm"
     include "BANK_EVAL.asm"
     include "BANK_StateMachine@1#1.asm"
     include "BANK_StateMachine@1#2.asm"
-    include "BANK_RECON.asm"
     include "piece_graphics.asm"
     include "BANK_GENERIC@2.asm"
     include "BANK_GENERIC@1#3.asm"
@@ -624,7 +628,7 @@ RND_EOR_VAL = $FE ;B4
     include "GFX2.asm"
     include "GFX3.asm"
     include "GFX4.asm"
-    include "NEGAMAX.asm"
+    include "NEGAMAX@1.asm"
 
     include "PIECE_MACROS.asm"
     include "GENMOVE.asm"

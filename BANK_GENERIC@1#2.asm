@@ -12,6 +12,7 @@
     DEF SAFE_BackupBitmaps
     SUBROUTINE
 
+        REFER aiInCheckBackup
         VEND SAFE_BackupBitmaps
 
                     sty SET_BANK_RAM
@@ -25,6 +26,9 @@
     DEF AddMoveSlider
     SUBROUTINE
 
+        REFER Handle_BISHOP
+        REFER Handle_ROOK
+        REFER Handle_QUEEN
         VEND AddMoveSlider
 
     ; add square in y register to movelist as destination (X12 format)
@@ -62,58 +66,6 @@
                     rts
 
 
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiComputerMove
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiComputerMove
-
-                    lda #RAMBANK_PLY
-                    sta currentPly                    
-                    sta SET_BANK_RAM;@2             ; switch in movelist
-                    
-                    lda #1
-                    sta CTRLPF                      ; mirroring for thinkbars
-
-                    CALL selectmove;@3
- 
-                    lda #0
-                    sta CTRLPF                      ; clear mirroring
-                    sta PF1
-                    sta PF2
- jmp .notComputer ;tmp
-                    lda@PLY bestMove
-                    bpl .notComputer
-
-    ; Computer could not find a valid move. It's checkmate or stalemate. Find which...
-
-                    SWAP
-                    jsr GenerateAllMoves
-                    lda flagCheck
-                    beq .gameDrawn
-
-                    PHASE AI_CheckMate
-                    rts
-
-
-.gameDrawn          PHASE AI_Draw
-                    rts
-                    
-.notComputer
-
-
-                    lda #-1
-                    sta cursorX12
-
-                    ;tmpPHASE AI_DelayAfterMove
-.halted             rts
-
-
-
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiSpecialMoveFixup
@@ -131,6 +83,7 @@
 
 .cont
 
+    jsr debug ;tmp
 
                     PHASE AI_DelayAfterPlaced
 
@@ -151,12 +104,49 @@
 
                     lda currentPly
                     sta SET_BANK_RAM
+
                     jsr  CastleFixupDraw
 
                     lda fromX12
                     sta squareToDraw
 
                     rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CastleFixupDraw
+    SUBROUTINE
+
+        REFER aiSpecialMoveFixup
+        VEND CastleFixupDraw
+
+    ; fixup any castling issues
+    ; at this point the king has finished his two-square march
+    ; based on the finish square, we determine which rook we're interacting with
+    ; and generate a 'move' for the rook to position on the other side of the king
+
+
+    IF CASTLING_ENABLED
+                    jsr GenCastleMoveForRook
+                    bcs .phase
+    ENDIF
+    
+                SWAP
+                rts
+
+.phase
+
+    ; in this siutation (castle, rook moving) we do not change sides yet!
+
+                    PHASE AI_MoveIsSelected
+                    rts
+
+
+
+KSquare             .byte 24,28,94,98
+RSquareStart        .byte 22,29,92,99
+RSquareEnd          .byte 25,27,95,97
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -186,7 +176,7 @@
                     lda #BLANK
                     sta@RAM Board,y
 
-                    jsr CopySinglePiece
+                    jsr CopySinglePiece;@0
 
                     lda #RAMBANK_BOARD
                     sta SET_BANK_RAM

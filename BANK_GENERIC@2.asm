@@ -21,6 +21,9 @@
     DEF tidySc
     SUBROUTINE
 
+        REFER StartupBankReset
+        VEND tidySc
+
                     lda #0
                     sta PF0
                     sta PF1
@@ -113,7 +116,6 @@ _rts                rts
         REFER AiStateMachine
         VEND aiMoveIsSelected
 
-    
     ; Both computer and human have now seleted a move, and converge here
 
 
@@ -122,7 +124,7 @@ _rts                rts
     ; originX12     starting square X12
     ; toX12         ending square X12
 
-                    CALL AdjustMaterialPositionalValue;@1
+                    jsr AdjustMaterialPositionalValue;@this
 
                     lda #0
                     sta previousPiece
@@ -137,13 +139,15 @@ _rts                rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF CopySetup;@2 - uses @3
+    DEF CopySetup
     SUBROUTINE
 
         REFER CopySinglePiece
+
         VAR __tmp, 1
         VAR __shiftx, 1
         VAR __pieceColour2, 1
+
         VEND CopySetup
 
     ; figure colouration of square
@@ -229,6 +233,196 @@ PieceToShape
     .byte INDEX_BLACK_ROOK_on_WHITE_SQUARE_0
     .byte INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
     .byte INDEX_BLACK_KING_on_WHITE_SQUARE_0
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF AdjustMaterialPositionalValue
+    SUBROUTINE
+
+    ; A move is about to be made, so  adjust material and positional values based on from/to and
+    ; capture.
+
+    ; First, nominate referencing subroutines so that local variables can be adjusted properly
+
+        REFER MakeMove
+        REFER aiMoveIsSelected
+
+        VAR __originalPiece, 1
+        VAR __capturedPiece, 1
+        
+        VEND AdjustMaterialPositionalValue
+
+    ; fromPiece     piece doing the move (promoted type)
+    ; fromX12       current square
+    ; originX12     starting square
+    ; toX12         ending square
+
+
+    ; get the piece types from the board
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    ldy originX12
+                    lda Board,y
+                    sta __originalPiece
+                    ldy toX12
+                    lda Board,y
+                    sta __capturedPiece
+
+    ; {
+    ;   adjust the positional value  (originX12 --> fromX12)
+
+                    lda #RAMBANK_BANK_EVAL
+                    sta SET_BANK_RAM;@3
+
+
+                    ;ldy toX12                      ; already loaded
+                    lda fromPiece
+                    jsr AddPiecePositionValue       ; add pos value for new position
+
+
+                    lda __originalPiece
+                    eor fromPiece                   ; the new piece
+                    and #PIECE_MASK
+                    beq .same1                      ; unchanged, so skip
+
+                    lda fromPiece                   ; new piece
+
+                    ldx #BANK_AddPieceMaterialValue
+                    stx SET_BANK;@2
+
+                    jsr AddPieceMaterialValue
+
+.same1
+
+    ; and now the 'subtracts'
+
+                    NEGEVAL
+
+                    ldy originX12
+                    lda __originalPiece
+                    jsr AddPiecePositionValue       ; remove pos value for original position
+
+
+                    lda __originalPiece
+                    eor fromPiece                   ; the new piece
+                    and #PIECE_MASK
+                    beq .same2                      ; unchanged, so skip
+
+                    lda __originalPiece
+                    ldx #BANK_AddPieceMaterialValue
+                    stx SET_BANK;@2
+                    jsr AddPieceMaterialValue       ; remove material for original type
+.same2
+
+                    NEGEVAL
+
+    ; If there's a capture, we adjust the material value    
+
+;                    lda __capturedPiece
+;                    eor __originalPiece
+;                    bpl .noCapture                  ; special-case capture rook castling onto king
+
+
+                    lda __capturedPiece
+                    and #PIECE_MASK
+                    beq .noCapture
+                    ldx #BANK_AddPieceMaterialValue
+                    stx SET_BANK;@2
+                    jsr AddPieceMaterialValue       ; -other colour = + my colour!
+.noCapture
+
+    ; }
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF AddPieceMaterialValue
+    SUBROUTINE
+
+        REFER InitialisePieceSquares
+        REFER AdjustMaterialPositionalValue
+        REFER EnPassantRemovePiece
+
+        VEND AddPieceMaterialValue
+
+    ; Adjust the material score based on the piece
+    ; a = piece type + flags
+
+                    and #PIECE_MASK
+                    tay
+
+                    lda #EVAL
+                    sta SET_BANK;@3
+
+                    clc
+                    lda PieceValueLO,y
+                    adc Evaluation
+                    sta Evaluation
+                    lda PieceValueHI,y
+                    adc Evaluation+1
+                    sta Evaluation+1
+                    rts
+
+;---------------------------------------------------------------------------------------------------
+
+
+    DEF AddPiecePositionValue
+    SUBROUTINE
+
+        REFER InitialisePieceSquares
+        REFER AdjustMaterialPositionalValue
+        REFER EnPassantRemovePiece
+
+        VAR __valPtr, 2
+        VAR __valHi, 1
+
+        VEND AddPiecePositionValue
+
+
+    ; adds value of square piece is on to the evaluation
+    ; note to do the subtraction as -( -x + val) == x - val
+    
+    ; y = square
+    ; a = piece type (+flags)
+
+
+
+                    cmp #128                        ; black = CS
+                    and #PIECE_MASK
+                    tax
+
+                    lda #EVAL
+                    sta SET_BANK;@3
+
+    ; black pieces flip rows so we can use the same eval tables
+
+                    tya
+                    bcc .white
+                    lda FlipSquareIndex,y
+                    ;clc                    
+.white
+                    adc PosValVecLO,x
+                    sta __valPtr
+                    lda PosValVecHI,x
+                    adc #0
+                    sta __valPtr+1
+
+                    ldy #0
+                    sty __valHi
+                    lda (__valPtr),y
+                    bpl .sum
+                    dec __valHi
+
+.sum                clc
+                    adc Evaluation
+                    sta Evaluation
+                    lda Evaluation+1
+                    adc __valHi
+                    sta Evaluation+1
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------

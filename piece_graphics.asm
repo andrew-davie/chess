@@ -15,7 +15,7 @@
  include "gfx/WHITE_KNIGHT_on_WHITE_SQUARE_1.asm"
  include "gfx/WHITE_KNIGHT_on_WHITE_SQUARE_2.asm"
  include "gfx/WHITE_KNIGHT_on_WHITE_SQUARE_3.asm"
-    CHECK_BANK_SIZE "PIECE_0 (1K)"
+    CHECK_BANK_SIZE "PIECES_0 (1K)"
 
    SLOT 2
    NEWBANK PIECES_1
@@ -31,7 +31,7 @@
  include "gfx/WHITE_QUEEN_on_WHITE_SQUARE_1.asm"
  include "gfx/WHITE_QUEEN_on_WHITE_SQUARE_2.asm"
  include "gfx/WHITE_QUEEN_on_WHITE_SQUARE_3.asm"
-   CHECK_BANK_SIZE "PIECE_1 (1K)"
+   CHECK_BANK_SIZE "PIECES_1 (1K)"
    SLOT 2
    NEWBANK PIECES_2
  include "gfx/WHITE_KING_on_WHITE_SQUARE_0.asm"
@@ -46,7 +46,7 @@
  include "gfx/WHITE_PAWN_on_BLACK_SQUARE_1.asm"
  include "gfx/WHITE_PAWN_on_BLACK_SQUARE_2.asm"
  include "gfx/WHITE_PAWN_on_BLACK_SQUARE_3.asm"
-    CHECK_BANK_SIZE "PIECE_2 (1K)"
+    CHECK_BANK_SIZE "PIECES_2 (1K)"
    SLOT 2
     NEWBANK PIECES_3
  include "gfx/WHITE_KNIGHT_on_BLACK_SQUARE_0.asm"
@@ -61,7 +61,7 @@
  include "gfx/WHITE_ROOK_on_BLACK_SQUARE_1.asm"
  include "gfx/WHITE_ROOK_on_BLACK_SQUARE_2.asm"
  include "gfx/WHITE_ROOK_on_BLACK_SQUARE_3.asm"
-    CHECK_BANK_SIZE "PIECE_3 (1K)"
+    CHECK_BANK_SIZE "PIECES_3 (1K)"
    SLOT 2
     NEWBANK PIECE_4
  include "gfx/WHITE_QUEEN_on_BLACK_SQUARE_0.asm"
@@ -76,7 +76,7 @@
  include "gfx/BLACK_BLANK_on_WHITE_SQUARE_1.asm"
  include "gfx/BLACK_BLANK_on_WHITE_SQUARE_2.asm"
  include "gfx/BLACK_BLANK_on_WHITE_SQUARE_3.asm"
-    CHECK_BANK_SIZE "PIECE_4 (1K)"
+    CHECK_BANK_SIZE "PIECES_4 (1K)"
    SLOT 2
     NEWBANK PIECE_5
  include "gfx/BLACK_PAWN_on_WHITE_SQUARE_0.asm"
@@ -91,7 +91,7 @@
  include "gfx/BLACK_BISHOP_on_WHITE_SQUARE_1.asm"
  include "gfx/BLACK_BISHOP_on_WHITE_SQUARE_2.asm"
  include "gfx/BLACK_BISHOP_on_WHITE_SQUARE_3.asm"
-    CHECK_BANK_SIZE "PIECE_5 (1K)"
+    CHECK_BANK_SIZE "PIECES_5 (1K)"
    SLOT 2
     NEWBANK PIECE_6
  include "gfx/BLACK_ROOK_on_WHITE_SQUARE_0.asm"
@@ -105,7 +105,7 @@
  include "gfx/BLACK_KING_on_WHITE_SQUARE_0.asm"
  include "gfx/BLACK_KING_on_WHITE_SQUARE_1.asm"
  include "gfx/BLACK_KING_on_WHITE_SQUARE_2.asm"
-    CHECK_BANK_SIZE "PIECE_6 (1K)"
+    CHECK_BANK_SIZE "PIECES_6 (1K)"
    SLOT 2
     NEWBANK PIECE_7
  include "gfx/BLACK_KING_on_WHITE_SQUARE_3.asm"
@@ -122,10 +122,10 @@
  include "gfx/BLACK_KNIGHT_on_BLACK_SQUARE_2.asm"
     CHECK_BANK_SIZE "PIECE_7 (1K)"
    SLOT 2
-    NEWBANK PIECE_7
+    NEWBANK PIECE_8
  include "gfx/BLACK_KNIGHT_on_BLACK_SQUARE_3.asm"
 
-;    CHECK_BANK_SIZE "PIECES_4 (2K)"
+    CHECK_BANK_SIZE "PIECES_8 (1K)"
 
 ;    NEWBANK PIECES_5
 

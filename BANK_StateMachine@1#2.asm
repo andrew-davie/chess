@@ -126,10 +126,11 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-        DEF aiDelayAfterMove
-        SUBROUTINE
+    DEF aiDelayAfterMove
+    SUBROUTINE
 
-            VEND aiDelayAfterMove
+        REFER AiStateMachine
+        VEND aiDelayAfterMove
 
                     lda #50
                     sta aiFlashDelay
@@ -139,10 +140,11 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-        DEF aiDelayAfterMove2
-        SUBROUTINE
+    DEF aiDelayAfterMove2
+    SUBROUTINE
 
-            VEND aiDelayAfterMove
+        REFER AiStateMachine
+        VEND aiDelayAfterMove
 
                     dec aiFlashDelay
                     bne .exit
@@ -152,10 +154,11 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-        DEF aiDelayAfterPlaced
-        SUBROUTINE
+    DEF aiDelayAfterPlaced
+    SUBROUTINE
 
-            VEND aiDelayAfterPlaced
+        REFER AiStateMachine
+        VEND aiDelayAfterPlaced
 
                     ldx #75                         ; delay after human move
                     lda sideToMove
@@ -169,13 +172,17 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-        DEF aiDelayAfterPlaced2
-        SUBROUTINE          
+    DEF aiDelayAfterPlaced2
+    SUBROUTINE          
 
-        ;jsr debug
+        REFER AiStateMachine
+        VEND aiDelayAfterPlaced2
 
                     dec aiFlashDelay
                     bne .exit
+
+                    ;SWAP
+
                     PHASE AI_GenerateMoves
 .exit               rts
 
@@ -249,9 +256,6 @@
         REFER AiStateMachine
         VEND aiGenerateMoves
     
-    ; Player comes here at the start of making a move
-    ; This generates a valid movelist by calling 'negaMax' (removing illegal moves)
-
                     lda toX12
                     sta squareToDraw                    ; for showing move (display square)
 
@@ -283,7 +287,7 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    align 256
+    align 256       ; TODO?
     DEF PositionSprites
     SUBROUTINE
 
@@ -352,10 +356,12 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
     SUBROUTINE
 
         REFER AiStateMachine
+
         VAR __fromRow, 1
         VAR __boardIndex, 1
         VAR __fromCol, 1
         VAR __toCol, 1
+
         VEND aiMarchToTargetA
 
 
@@ -428,6 +434,8 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
         REFER AiStateMachine
         VEND aiFinalFlash
 
+    ; Piece has finished the animated move and is now in destination square.
+    ; Flash the piece
 
                     lda drawDelay
                     beq .deCount

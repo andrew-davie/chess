@@ -17,7 +17,8 @@
     ; Retrieve the piece+flags from the movelist, given from/to squares
     ; Required as moves have different flags but same origin squares (e.g., castling)
 
-                    lda currentPly
+                    lda #RAMBANK_PLY+1 ;currentPly
+                    ;lda currentPly
                     sta SET_BANK_RAM;@2
 
     ; returns piece in A+fromPiece
@@ -49,74 +50,24 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    
-    DEF selectmove
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF showPromoteOptions
     SUBROUTINE
 
-        COMMON_VARS_ALPHABETA
-        REFER aiComputerMove
-        VEND selectmove
+        REFER aiRollPromotionPiece
+        REFER aiChoosePromotePiece
+        VEND showPromoteOptions
 
+    ; X = character shape # (?/N/B/R/Q)
 
+                    ldy toX12
+                    sty squareToDraw
 
-    ; RAM bank already switched in!!!
-    ; returns with RAM bank switched
-
-
-        IF DIAGNOSTICS
-        
-                    lda #0
-                    sta positionCount
-                    sta positionCount+1
-                    sta positionCount+2
-                    ;sta maxPly
-        ENDIF
-
-
-                    lda #<INFINITY
-                    sta __beta
-                    lda #>INFINITY
-                    sta __beta+1
-
-                    lda #<-INFINITY
-                    sta __alpha
-                    lda #>-INFINITY
-                    sta __alpha+1                   ; player tries to maximise
-
-                    ldx #SEARCH_DEPTH  
-                    lda #0                          ; no captured piece
-                    sta __quiesceCapOnly            ; ALL moves to be generated
-
-                    ;tmp jsr negaMax
- 
-                    ldx@PLY bestMove
-                    bmi .nomove
-
-    ; Generate player's moves in reply
-    ; Make the computer move, list player moves (PLY+1), unmake computer move
-
-                    stx@PLY movePtr
-                    CALL MakeMove;@1
-                    jsr ListPlayerMoves;@0
-                    jsr unmakeMove;@0
-
-    ; Grab the computer move details for the UI animation
-
-                    lda #RAMBANK_PLY
-                    sta SET_BANK_RAM
-
-                    ldx@PLY bestMove
-                    lda@PLY MoveTo,x
-                    sta toX12
-                    lda@PLY MoveFrom,x
-                    sta originX12
-                    sta fromX12
-                    lda@PLY MovePiece,x
-                    sta fromPiece
-
-.nomove
-                    rts
-
+                    jsr CopySetupForMarker;@1       ; TODO: WRONG
+                    jmp InterceptMarkerCopy;@0
 
 
 ;---------------------------------------------------------------------------------------------------

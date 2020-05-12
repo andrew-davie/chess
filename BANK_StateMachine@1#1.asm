@@ -84,6 +84,7 @@ HOLD_DELAY                      = 40
         REFER AiStateMachine
         VEND aiBeginSelectMovePhase
 
+
                     lda #$2
                     sta COLUP0
                     ldx #%100
@@ -100,19 +101,22 @@ HOLD_DELAY                      = 40
                     sta fromX12
                     sta toX12
 
-                    ;lsr randomness
+                    lsr randomness
+
                     
                     PHASE AI_FlashComputerMove
                     rts
-
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiFlashComputerMove
     SUBROUTINE
 
+        REFER AiStateMachine
+        VEND aiFlashComputerMove
+
                     lda squareToDraw
-                    bmi .initial                    ; startup - no computer move to show
+                    bmi .initial2                    ; startup - no computer move to show
 
     ; "squareToDraw" is the piece that should flash while human waits
 
@@ -136,7 +140,10 @@ HOLD_DELAY                      = 40
                     jsr CopySinglePiece;@0
                     rts
 
-.initial            PHASE AI_SelectStartSquare
+.initial
+
+                    ;SWAP
+.initial2           PHASE AI_SelectStartSquare
 
 .exit               rts
 
@@ -155,7 +162,7 @@ HOLD_DELAY                      = 40
 
     ; Search the player's movelist for the square, so we can set cursor colour
     
-                    lda currentPly
+                    lda #RAMBANK_PLY+1 ;currentPly
                     sta SET_BANK_RAM;@2
 
                     lda cursorX12
@@ -356,8 +363,10 @@ HOLD_DELAY                      = 40
 
         REFER aiDrawMoves
         REFER aiUnDrawTargetSquares
+
         VAR __saveIdx, 1
         VAR __piece, 1
+        
         VEND showMoveOptions
 
     ; place a marker on the board for any square matching the piece
@@ -422,8 +431,13 @@ HOLD_DELAY                      = 40
                     ;lda aiMoveIndex
                     ;sta __saveIdx
 
-                    jsr markerDraw;@1
-                    rts
+    ; Draw the marker...?
+
+                    ldx #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
+                    jsr CopySetupForMarker;@1
+                    jmp InterceptMarkerCopy;@0
+
+
 
 .skip               lda __saveIdx
                     sta aiMoveIndex
@@ -432,27 +446,16 @@ HOLD_DELAY                      = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF markerDraw
-    SUBROUTINE
-
-        REFER showMoveOptions
-        VEND markerDraw
-
-                    ldx #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
-                    jsr CopySetupForMarker;@1
-                    jmp InterceptMarkerCopy;@0
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF CopySetupForMarker
     SUBROUTINE
 
-        REFER markerDraw
+        REFER showMoveOptions
         REFER showPromoteOptions
+
         VAR __pieceColour, 1
         VAR __oddeven, 1
         VAR __pmcol, 1
+        
         VEND CopySetupForMarker
 
                     lda squareToDraw
@@ -611,7 +614,9 @@ HOLD_DELAY                      = 40
 
         REFER aiSelectStartSquare
         REFER aiSelectDestinationSquare
+
         VAR __newCursor, 1
+        
         VEND moveCursor
 
     ; Part (a) move cursor around the board waiting for joystick press
@@ -852,6 +857,9 @@ HOLD_DELAY                      = 40
     DEF aiMarchA2
     SUBROUTINE                    
 
+        REFER AiStateMachine
+
+        VEND aiMarchA2
 
     ; erase object in new sqare --> blank
 
