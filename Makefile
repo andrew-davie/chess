@@ -1,4 +1,4 @@
-all: chess3E+.3E+
+all: chess.bin
 
 .PHONY: characters
 .PHONY: gfx
@@ -6,12 +6,12 @@ all: chess3E+.3E+
 characters:
 #	cd charset && python icc.py
 
-chess3E+.3E+: *.asm Makefile FORCE
+chess.bin: *.asm Makefile FORCE
 	osascript -e 'quit app "Stella"'
 	(cd ./gfx && python ConvertChessPieces.py)
 #		python tools/grid.py
-	../dasm/bin/dasm ./chess.asm -l./chess3E+.lst -f3 -s./chess3E+.sym -o./chess3E+.3E+ || (echo "mycommand failed $$?"; exit 1)
-	open -a /Applications/Stella.app ./chess3E+.3E+
+	../dasm/bin/dasm ./chess.asm -l./chess.lst -f3 -s./chess.sym -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
+	open -a /Applications/Stella.app ./chess.bin
 
 force:
 #	echo "force"

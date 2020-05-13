@@ -179,7 +179,7 @@
                     lda@PLY MovePiece,x
                     sta fromPiece                   
 
-.move               CALL AdjustMaterialPositionalValue;@2
+.move               CALL AdjustMaterialPositionalValue
 
     ; Modify the board
     
@@ -219,7 +219,7 @@
     IF ENPASSANT_ENABLED    
                     jsr EnPassantCheck
                     beq .notEnPassant
-                    jsr EnPassantRemovePiece        ; TODO will crash wrong bank!!!  y = origin X12
+                    jsr EnPassantRemovePiece        ; y = origin X12
 .notEnPassant
     ENDIF
 
@@ -227,9 +227,6 @@
 
                     NEGEVAL
                     SWAP
-
-                    lda currentPly
-                    sta SET_BANK_RAM
                     rts
 
 
@@ -316,15 +313,15 @@
 
     ; Allow the player to force computer to select a move. Press the SELECT switch
 
-                    lda@PLY bestMove
+                    lda@PLY moveIndex
                     bmi .noCheat                    ; can't force if no move chosen!
                     lda SWCHB
                     and #2
                     beq .exit                       ; SELECT abort
 .noCheat
 
-                    ;lda #2
-                    ;sta COLUPF                      ; grey thinkbars
+                    lda #2
+                    sta COLUPF                      ; grey thinkbars
 
                     lda __alpha
                     sta@PLY alpha
@@ -338,7 +335,6 @@
 
 
     IF 0
-                    NEXT_RANDOM
                     lda Evaluation
                     adc randomness
                     sta Evaluation
@@ -350,8 +346,8 @@
 
                     jsr GenerateAllMoves;@0
 
-                    lda flagCheck
-                    bne .inCheck2                           ; OTHER guy in check
+                    ;tmp lda flagCheck
+                    ;tmp bne .inCheck2                           ; OTHER guy in check
 
     IF 0
                     lda@PLY moveIndex
@@ -429,7 +425,7 @@
                     sbc __negaMax+1
                     sta __negaMax+1                 ; -negaMax(...)
 
-    IF 1
+    IF 0
                     lda flagCheck
                     beq .notCheck
                     
@@ -604,8 +600,6 @@
                     lda currentPly
                     cmp #RAMBANK_PLY + PLY_BANKS  -1
                     bcs .retBeta
-    sta SET_BANK_RAM ;tmp
-
 
                     jsr ThinkBar;@0
 

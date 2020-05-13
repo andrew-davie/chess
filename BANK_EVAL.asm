@@ -10,40 +10,6 @@
 
 
 
-    MAC VEQU
-VALUE_{1} = {2}
-    ENDM
-
-    MAC LOBYTE
-    .byte <{2}
-    ENDM
-
-    MAC HIBYTE
-    .byte >{2}
-    ENDM
-
-
-    MAC VALUETABLE
-    {1} BLANK,    0
-    {1} PAWN,   100 ; white
-    {1} PAWN,   100 ; black
-    {1} KNIGHT, 320
-    {1} BISHOP, 375
-    {1} ROOK,   575
-    {1} QUEEN,  900
-    {1} KING, 10000
-    ENDM
-
-
-    VALUETABLE VEQU
-
-    DEF PieceValueLO
-        VALUETABLE LOBYTE
-
-    DEF PieceValueHI
-        VALUETABLE HIBYTE
-
-
 ;---------------------------------------------------------------------------------------------------
 ; Vectors to the position value tables for each piece
 
@@ -123,11 +89,11 @@ PositionalValue_BISHOP
 
 PositionalValue_ROOK
 
-    PVAL -120, -10,  10,  25,  25,  10, -10, -200
-    PVAL  -75,   0,   0,   0,   0,   0,   0,  -200
-    PVAL  -75,   0,   0,   0,   0,   0,   0,  -150
-    PVAL  -50,   0,   0,   0,   0,   0,   0,  -100
-    PVAL  -5,   0,   0,   0,   0,   0,   0,  -50
+    PVAL -40, -40,  10,  25,  25,  10, 0, -40
+    PVAL  -60,   0,   0,   0,   0,   0,   0,  -60
+    PVAL  -50,   0,   0,   0,   0,   0,   0,  -50
+    PVAL  -0,   0,   0,   0,   0,   0,   0,  0
+    PVAL  -50,   0,   0,   0,   0,   0,   0,  -50
     PVAL  -5,   0,  30,  30,  30,  30,   0,  -5
     PVAL   5,  10,  50,  50,  50,  50,  10,   5
     PVAL   0,   0,   0,   0,   0,   0,   0,   0

@@ -11,9 +11,7 @@
     ENDIF
     ENDIF
 
-;STELLA_AUTODETECT .byte $85,$3e,$a9,$00 ; 3E
-
-
+STELLA_AUTODETECT dc "TJ3E" ; 3E+ autodetect
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -21,7 +19,7 @@
     DEF tidySc
     SUBROUTINE
 
-        REFER StartupBankReset
+        REFER StartupBankReset ;✅
         VEND tidySc
 
                     lda #0
@@ -48,6 +46,9 @@
     DEF longD
     SUBROUTINE
 
+        REFER StartupBankReset ;✅
+        VEND longD
+
                     sta WSYNC
 
                     jsr _rts
@@ -59,21 +60,13 @@
                     stx VBLANK
 _rts                rts
 
-    IF 0
-    DEF Resync
-    SUBROUTINE
-
-                    RESYNC
-                    rts
-    ENDIF
-
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiStartClearBoard
     SUBROUTINE
 
-        REFER AiStateMachine
+        REFER AiStateMachine ;✅
         VEND aiStartClearBoard
 
                     ldx #8
@@ -85,12 +78,13 @@ _rts                rts
                     PHASE AI_ClearEachRow
                     rts
 
+
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiClearEachRow
     SUBROUTINE
 
-        REFER AiStateMachine
+        REFER AiStateMachine ;✅
         VEND aiClearEachRow
 
                     dec drawCount
@@ -107,13 +101,12 @@ _rts                rts
                     rts
 
 
-
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiMoveIsSelected
     SUBROUTINE
 
-        REFER AiStateMachine
+        REFER AiStateMachine ;✅
         VEND aiMoveIsSelected
 
     ; Both computer and human have now seleted a move, and converge here
@@ -142,7 +135,7 @@ _rts                rts
     DEF CopySetup
     SUBROUTINE
 
-        REFER CopySinglePiece
+        REFER CopySinglePiece ;✅
 
         VAR __tmp, 1
         VAR __shiftx, 1
@@ -245,8 +238,8 @@ PieceToShape
 
     ; First, nominate referencing subroutines so that local variables can be adjusted properly
 
-        REFER MakeMove
-        REFER aiMoveIsSelected
+        REFER MakeMove ;✅
+        REFER aiMoveIsSelected ;✅
 
         VAR __originalPiece, 1
         VAR __capturedPiece, 1
@@ -273,10 +266,6 @@ PieceToShape
     ; {
     ;   adjust the positional value  (originX12 --> fromX12)
 
-                    lda #RAMBANK_BANK_EVAL
-                    sta SET_BANK_RAM;@3
-
-
                     ;ldy toX12                      ; already loaded
                     lda fromPiece
                     jsr AddPiecePositionValue       ; add pos value for new position
@@ -288,10 +277,6 @@ PieceToShape
                     beq .same1                      ; unchanged, so skip
 
                     lda fromPiece                   ; new piece
-
-                    ldx #BANK_AddPieceMaterialValue
-                    stx SET_BANK;@2
-
                     jsr AddPieceMaterialValue
 
 .same1
@@ -311,8 +296,6 @@ PieceToShape
                     beq .same2                      ; unchanged, so skip
 
                     lda __originalPiece
-                    ldx #BANK_AddPieceMaterialValue
-                    stx SET_BANK;@2
                     jsr AddPieceMaterialValue       ; remove material for original type
 .same2
 
@@ -328,8 +311,6 @@ PieceToShape
                     lda __capturedPiece
                     and #PIECE_MASK
                     beq .noCapture
-                    ldx #BANK_AddPieceMaterialValue
-                    stx SET_BANK;@2
                     jsr AddPieceMaterialValue       ; -other colour = + my colour!
 .noCapture
 
@@ -342,9 +323,9 @@ PieceToShape
     DEF AddPieceMaterialValue
     SUBROUTINE
 
-        REFER InitialisePieceSquares
-        REFER AdjustMaterialPositionalValue
-        REFER EnPassantRemovePiece
+        REFER InitialisePieceSquares ;✅
+        REFER AdjustMaterialPositionalValue ;✅
+        REFER EnPassantRemovePiece ;✅
 
         VEND AddPieceMaterialValue
 
@@ -353,9 +334,6 @@ PieceToShape
 
                     and #PIECE_MASK
                     tay
-
-                    lda #EVAL
-                    sta SET_BANK;@3
 
                     clc
                     lda PieceValueLO,y
@@ -366,15 +344,50 @@ PieceToShape
                     sta Evaluation+1
                     rts
 
-;---------------------------------------------------------------------------------------------------
 
+
+    MAC VEQU
+VALUE_{1} = {2}
+    ENDM
+
+    MAC LOBYTE
+    .byte <{2}
+    ENDM
+
+    MAC HIBYTE
+    .byte >{2}
+    ENDM
+
+
+    MAC VALUETABLE
+    {1} BLANK,    0
+    {1} PAWN,   100 ; white
+    {1} PAWN,   100 ; black
+    {1} KNIGHT, 320
+    {1} BISHOP, 375
+    {1} ROOK,   575
+    {1} QUEEN,  900
+    {1} KING, 10000
+    ENDM
+
+
+    VALUETABLE VEQU
+
+    DEF PieceValueLO
+        VALUETABLE LOBYTE
+
+    DEF PieceValueHI
+        VALUETABLE HIBYTE
+
+
+;---------------------------------------------------------------------------------------------------
 
     DEF AddPiecePositionValue
     SUBROUTINE
 
-        REFER InitialisePieceSquares
-        REFER AdjustMaterialPositionalValue
-        REFER EnPassantRemovePiece
+        REFER InitialisePieceSquares ;✅
+        REFER AdjustMaterialPositionalValue ;✅
+        REFER EnPassantRemovePiece ;✅
 
         VAR __valPtr, 2
         VAR __valHi, 1

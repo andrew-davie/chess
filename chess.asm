@@ -43,7 +43,7 @@ QUIESCENCE              = 1
 ASSERTS                 = 0
 PVSP                    = 0                         ; player versus player =1
 ENPASSANT_ENABLED       = 0
-CASTLING_ENABLED        = 0
+CASTLING_ENABLED        = 1
 
 ; NOTE: SEARCH_DEPTH cannot be < 3, because the player's moves are generated from PLY+1, and use
 ; PLY+2 for computer response (thus, 3). The bank allocation gets stomped!
@@ -51,6 +51,13 @@ CASTLING_ENABLED        = 0
 
 SEARCH_DEPTH            = 4
 QUIESCE_EXTRA_DEPTH     = 0
+
+
+    IF SEARCH_DEPTH < 3
+    ECHO "ERROR: Search depth nust be >= 3"
+    ERR
+    ENDIF
+
 
 
 PLY_BANKS = SEARCH_DEPTH + QUIESCE_EXTRA_DEPTH
@@ -623,7 +630,6 @@ RND_EOR_VAL = $FE ;B4
     include "BANK_StateMachine@1#2.asm"
     include "piece_graphics.asm"
     include "BANK_GENERIC@2.asm"
-    include "BANK_GENERIC@1#3.asm"
     include "GFX1.asm"
     include "GFX2.asm"
     include "GFX3.asm"
@@ -631,10 +637,7 @@ RND_EOR_VAL = $FE ;B4
     include "NEGAMAX@1.asm"
 
     include "PIECE_MACROS.asm"
-    include "GENMOVE.asm"
-    include "GENMOVE2.asm"
 
-    include "BANK_GENERIC@1#2.asm"
     include "PIECE_HANDLER@1#1.asm"
     include "PIECE_HANDLER@1#2.asm"
     include "BANK_3.asm"

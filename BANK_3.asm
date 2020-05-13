@@ -10,8 +10,8 @@
     DEF GetPiece
     SUBROUTINE
 
-        REFER aiSelectDestinationSquare
-        REFER aiQuiescent
+        REFER aiSelectDestinationSquare ;✅
+        REFER aiQuiescent ;✅
         VEND GetPiece
 
     ; Retrieve the piece+flags from the movelist, given from/to squares
@@ -50,6 +50,43 @@
 
 ;---------------------------------------------------------------------------------------------------
 
+    DEF GenCastleMoveForRook
+    SUBROUTINE
+
+        REFER MakeMove ;✅
+        REFER CastleFixupDraw ;✅
+        VEND GenCastleMoveForRook
+
+                    clc
+
+                    lda fromPiece
+                    and #FLAG_CASTLE
+                    beq .exit                       ; NOT involved in castle!
+
+                    ldx #4
+                    lda fromX12                     ; *destination*
+.findCast           clc
+                    dex
+                    bmi .exit
+                    cmp KSquare,x
+                    bne .findCast
+
+                    lda RSquareEnd,x
+                    sta toX12
+                    sta@PLY secondaryBlank
+                    ldy RSquareStart,x
+                    sty fromX12
+                    sty originX12
+                    sty@PLY secondarySquare
+
+                    lda fromPiece
+                    and #128                        ; colour bit
+                    ora #ROOK                       ; preserve colour
+                    sta fromPiece
+                    sta@PLY secondaryPiece
+
+                    sec
+.exit               rts
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -57,8 +94,8 @@
     DEF showPromoteOptions
     SUBROUTINE
 
-        REFER aiRollPromotionPiece
-        REFER aiChoosePromotePiece
+        REFER aiRollPromotionPiece ;✅
+        REFER aiChoosePromotePiece ;✅
         VEND showPromoteOptions
 
     ; X = character shape # (?/N/B/R/Q)

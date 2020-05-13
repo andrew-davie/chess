@@ -129,7 +129,8 @@ zapem               txa
     DEF ThinkBar
     SUBROUTINE
 
-        REFER negaMax
+        REFER negaMax ;✅
+        REFER quiesce ;✅
         VEND ThinkBar
 
         IF DIAGNOSTICS
@@ -148,19 +149,25 @@ zapem               txa
                     ldy INPT4
                     bmi .doThink
     
-    DEF ThinkBarDebug
-    
                     inc __thinkbar
                     lda __thinkbar
                     and #15
                     tay
-                    lda SynapsePattern,y
+                    lda TBcol,y
+                    sta COLUPF
 
+                    lda SynapsePattern,y
 .doThink            sta PF2
                     sta PF1
                     rts
 
 
+TBcol
+.TBC SET 2
+    REPEAT 16
+    .byte .TBC
+.TBC SET .TBC + 16
+    REPEND
 
 SynapsePattern
 
@@ -185,26 +192,27 @@ SynapsePattern
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF CopySinglePiece;@0 - uses @2
+    DEF CopySinglePiece
     SUBROUTINE
+
     TIMING COPYSINGLEPIECE, (2600)
 
-        REFER showMoveCaptures
-        REFER aiDrawEntireBoard
-        REFER aiDrawPart2
-        REFER aiMarchB
-        REFER aiFlashComputerMove
-        REFER aiSelectDestinationSquare
-        REFER aiMarchA2
-        REFER aiMarchB2
-        REFER aiWriteStartPieceBlank
-        REFER aiChoosePromotePiece
-        REFER aiMarchToTargetB
-        REFER aiPromotePawnStart
-        REFER aiFinalFlash
+        REFER showMoveCaptures ;✅
+        REFER aiDrawEntireBoard ;✅
+        REFER aiDrawPart2 ;✅
+        REFER aiMarchB ;✅
+        REFER aiFlashComputerMove ;✅
+        REFER aiSelectDestinationSquare ;✅
+        REFER aiMarchA2 ;✅
+        REFER aiMarchB2 ;✅
+        REFER aiWriteStartPieceBlank ;✅
+        REFER aiChoosePromotePiece ;✅
+        REFER aiMarchToTargetB ;✅
+        REFER aiPromotePawnStart ;✅
+        REFER aiFinalFlash ;✅
 
     IF ENPASSANT_ENABLED
-        REFER EnPassantCheck
+        REFER EnPassantCheck ;✅
     ENDIF
 
         VEND CopySinglePiece
@@ -224,9 +232,10 @@ SynapsePattern
     DEF InterceptMarkerCopy
     SUBROUTINE
 
-        REFER CopySinglePiece
-        REFER showPromoteOptions
-        REFER showMoveOptions
+        REFER CopySinglePiece ;✅✅
+        REFER showPromoteOptions ;✅
+        REFER showMoveOptions ;✅
+
         VEND InterceptMarkerCopy
 
     ; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
@@ -352,7 +361,7 @@ ONCEPERFRAME = 40
     DEF AiStateMachine
     SUBROUTINE
 
-        REFER StartupBankReset
+        REFER StartupBankReset ;✅
         VEND AiStateMachine
 
 
@@ -374,10 +383,10 @@ ONCEPERFRAME = 40
     DEF GenerateAllMoves
     SUBROUTINE
 
-        REFER ListPlayerMoves
-        REFER aiComputerMove
-        REFER quiesce
-        REFER negaMax
+        REFER ListPlayerMoves ;✅
+        REFER aiComputerMove ;✅
+        REFER quiesce ;✅
+        REFER negaMax ;✅
 
         VAR __vector, 2
         VAR __masker, 2
@@ -465,9 +474,6 @@ ONCEPERFRAME = 40
                     ora __pieceFilter
                     tay
 
-                    lda #BANK_HandlerVectorLO
-                    sta SET_BANK
-
                     lda HandlerVectorHI,y
                     sta __vector+1                    
                     lda HandlerVectorLO,y
@@ -479,17 +485,60 @@ ONCEPERFRAME = 40
                     jmp (__vector)
 
 
+.exit               lda #BANK_negaMax
+                    sta SET_BANK
+                    rts
 
-.exit               jmp fixBank
+   MAC HANDLEVEC
 
- 
+        .byte {1}MoveReturn
+        .byte {1}MoveReturn ;byte {1}Handle_WHITE_PAWN        ; 1
+        .byte {1}MoveReturn ;.byte {1}Handle_BLACK_PAWN        ; 2
+        .byte {1}Handle_KNIGHT            ; 3
+        .byte {1}Handle_BISHOP            ; 4
+        .byte {1}Handle_ROOK              ; 5
+        .byte {1}Handle_QUEEN             ; 6
+        .byte {1}Handle_KING              ; 7
+
+        .byte {1}MoveReturn
+        .byte {1}Handle_WHITE_PAWN        ; 1
+        .byte {1}Handle_BLACK_PAWN        ; 2
+        .byte {1}MoveReturn;.byte {1}Handle_KNIGHT            ; 3
+        .byte {1}MoveReturn;.byte {1}Handle_BISHOP            ; 4
+        .byte {1}MoveReturn;.byte {1}Handle_ROOK              ; 5
+        .byte {1}MoveReturn;.byte {1}Handle_QUEEN             ; 6
+        .byte {1}MoveReturn;.byte {1}Handle_KING              ; 7
+    ENDM
+
+
+;    .byte 0     ; dummy to prevent page cross access on index 0
+
+    DEF HandlerVectorLO
+    HANDLEVEC <
+    DEF HandlerVectorHI
+    HANDLEVEC >
+    DEF HandlerVectorBANK
+    HANDLEVEC BANK_
+
+
 ;---------------------------------------------------------------------------------------------------
 
     DEF ListPlayerMoves
     SUBROUTINE
 
-        REFER selectmove
-        REFER StartupBankReset
+    ; Build a list of (mostly) valid player moves. The list of all moves is generated, and then
+    ; these are each verified by making the move and listing all opponent moves. If the opponent
+    ; can capture the king, the move is invalidated by setting its "from" square to zero.
+
+    ; The movelist is built in the second ply so as not to stomp on the movelist from the computer
+    ; on the previous response. This allows the player movelist to be generated BEFORE the 
+    ; computer's move has been visually shown on the screen. 
+
+    ; This in turn requires the minimum memory for PLY banks to be 3 (computer, player, response)
+
+        COMMON_VARS_ALPHABETA ;✅
+        REFER selectmove ;✅
+        REFER StartupBankReset ;✅
 
         VEND ListPlayerMoves
 
@@ -500,15 +549,12 @@ ONCEPERFRAME = 40
                     lda #RAMBANK_PLY+1
                     sta currentPly
                     
-                    ;inc currentPly ;tmp
                     jsr GenerateAllMoves;@this
+
+                    inc __quiesceCapOnly                ; only interested in captures now...
 
                     ldx@PLY moveIndex
 .scan               stx@PLY movePtr
-
-
-                    lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM
 
                     CALL MakeMove;@1
 
@@ -516,13 +562,8 @@ ONCEPERFRAME = 40
                     jsr GenerateAllMoves;@this
 
                     dec currentPly
-                    lda currentPly
-                    sta SET_BANK_RAM;@2
 
                     jsr unmakeMove;@this
-
-                    lda currentPly
-                    sta SET_BANK_RAM;@2
 
                     lda flagCheck
                     beq .next
@@ -537,25 +578,19 @@ ONCEPERFRAME = 40
 
                     rts
 
-    DEF fixBank
-    SUBROUTINE
-
-                    lda #BANK_negaMax
-                    sta SET_BANK
-                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF AddMove
     SUBROUTINE
 
-        REFER Handle_KING
-        REFER Handle_QUEEN
-        REFER Handle_ROOK
-        REFER Handle_BISHOP
-        REFER Handle_KNIGHT
-        REFER Handle_WHITE_PAWN
-        REFER Handle_BLACK_PAWN
+        REFER Handle_KING ;✅
+        REFER Handle_QUEEN ;✅
+        REFER Handle_ROOK ;✅
+        REFER Handle_BISHOP ;✅
+        REFER Handle_KNIGHT ;✅
+        REFER Handle_WHITE_PAWN ;✅
+        REFER Handle_BLACK_PAWN ;✅
 
         VEND AddMove
 
@@ -606,65 +641,47 @@ ONCEPERFRAME = 40
     DEF unmakeMove
     SUBROUTINE
 
-        REFER selectmove
-        REFER ListPlayerMoves
-        REFER quiesce
-        REFER negaMax
-
-        VAR __unmake_capture, 1
-        VAR __secondaryBlank, 1
-
+        REFER selectmove ;✅
+        REFER ListPlayerMoves ;✅
+        REFER quiesce ;✅
+        REFER negaMax ;✅
         VEND unmakeMove
 
     ; restore the board evaluation to what it was at the start of this ply
-    ; TODO: note: moved flag seems wrong on restoration
+    ; TODO: note: moved flag seems wrong on restoration??
 
                     lda currentPly
                     sta SET_BANK_RAM;@2
+                    ldx #RAMBANK_BOARD
+                    stx SET_BANK_RAM;@3
 
                     lda@PLY savedEvaluation
                     sta Evaluation
                     lda@PLY savedEvaluation+1
                     sta Evaluation+1
 
-                    ldx movePtr
-                    lda@PLY MoveFrom,x
-                    sta fromX12
-                    ldy@PLY MoveTo,x
-
+                    ldx@PLY movePtr
+                    ldy@PLY MoveFrom,x
                     lda@PLY restorePiece
-                    pha
+                    sta@RAM Board,y
+
+                    ldy@PLY MoveTo,x
                     lda@PLY capturedPiece
-
-                    ldx #RAMBANK_BOARD
-                    stx SET_BANK_RAM;@3
-                    sta@RAM Board,y
-                    ldy fromX12
-                    pla
                     sta@RAM Board,y
 
-
-                    ;lda currentPly
-                    ;sta SET_BANK_RAM
 
     ; See if there are any 'secondary' pieces that moved
     ; here we're dealing with reverting a castling or enPassant move
 
                     lda@PLY secondaryPiece
                     beq .noSecondary
+                    ldx@PLY secondarySquare
+                    sta@RAM Board,x                     ; put piece back
                     ldy@PLY secondaryBlank
-                    sty __secondaryBlank
-                    ldy@PLY secondarySquare
-                    sta@RAM Board,y                     ; put piece back
-
-                    ldy __secondaryBlank
                     lda #0
                     sta@RAM Board,y                     ; blank piece origin
 
-
-.noSecondary
-                    ;NEGEVAL
-                    SWAP
+.noSecondary        SWAP
                     rts
 
 
@@ -673,7 +690,7 @@ ONCEPERFRAME = 40
     DEF showMoveCaptures
     SUBROUTINE
 
-        REFER aiShowMoveCaptures
+        REFER aiShowMoveCaptures ;✅
 
         VAR __toSquareX12, 1
         VAR __fromPiece, 1
@@ -749,10 +766,11 @@ ONCEPERFRAME = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF CopyPieceToRowBitmap;@3
+    DEF CopyPieceToRowBitmap
     SUBROUTINE
 
-        REFER InterceptMarkerCopy
+        REFER InterceptMarkerCopy ;✅
+
         VEND CopyPieceToRowBitmap
 
                     ldy #17
@@ -812,7 +830,7 @@ ONCEPERFRAME = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-    ECHO "FREE BYTES IN STARTUP BANK = ", $F3FC - *
+    ECHO "FREE BYTES IN BANK_FIRST@0 BANK = ", $F3FC - *
 
 ;---------------------------------------------------------------------------------------------------
     ; The reset vectors

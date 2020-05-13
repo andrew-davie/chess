@@ -15,7 +15,8 @@
     DEF CartInit
     SUBROUTINE
 
-        REFER StartupBankReset
+        REFER StartupBankReset ;✅
+
         VEND CartInit
 
                     sei
@@ -69,8 +70,10 @@
     ; Move a copy of the row bank template to the first 8 banks of RAM
     ; and then terminate the draw subroutine by substituting in a RTS on the last one
 
-        REFER StartupBankReset
+        REFER StartupBankReset ;✅
+
         VAR __plyBank, 1
+        
         VEND SetupBanks
     
     ; Copy the bitmap shadow into the first 8 RAM banks via x(SLOT3)-->y(SLOT2)
@@ -132,7 +135,8 @@
     DEF CopyShadowROMtoRAM
     SUBROUTINE
 
-        REFER SetupBanks
+        REFER SetupBanks ;✅
+
         VEND CopyShadowROMtoRAM
 
     ; Copy a whole ROM SHADOW into a destination RAM 512 byte bank
@@ -160,8 +164,9 @@
     SUBROUTINE
 
     IF 0
-        REFER aiClearEachRow
+        REFER aiClearEachRow    ;TODO
     ENDIF
+
         VEND CallClear
 
     IF 0
@@ -178,10 +183,12 @@
     DEF InitialisePieceSquares
     SUBROUTINE
 
-        REFER StartupBankReset
+        REFER StartupBankReset ;✅
+
         VAR __initPiece, 1
         VAR __initSquare, 1
         VAR __initListPtr, 1
+        
         VEND InitialisePieceSquares
 
                     lda #0
@@ -290,6 +297,16 @@ InitPieceList
 
     ELSE ; test position...
 
+    IF 1
+
+    .byte WHITE|N, 28
+    .byte WHITE|K, 26
+
+    .byte BLACK|Q, 29
+
+    .byte 0 ;end
+
+    ENDIF
 
     IF 0
 
@@ -334,7 +351,7 @@ InitPieceList
 
 
 
-    IF 1
+    IF 0
 
 
     ;.byte BLACK|R, 97
@@ -374,7 +391,7 @@ InitPieceList
         REFER MakeMove
 
     IF ENPASSANT_ENABLED
-        REFER EnPassantCheck
+        REFER EnPassantCheck ;✅
     ENDIF
 
         VAR __y, 1
@@ -398,7 +415,7 @@ InitPieceList
 
                     lda __col
                     ldy __y
-                    jsr AddPiecePositionValue       ; adding for opponent = taking
+                    jsr AddPiecePositionValue       ; (same bank) adding for opponent = taking
                     
                     rts
 
@@ -424,44 +441,322 @@ InitPieceList
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF GenCastleMoveForRook
+    IF 0
+    DEF SAFE_BackupBitmaps
     SUBROUTINE
 
-        REFER MakeMove
-        REFER CastleFixupDraw
-        VEND GenCastleMoveForRook
+        REFER aiInCheckBackup
+        VEND SAFE_BackupBitmaps
 
-                    clc
+                    sty SET_BANK_RAM
+                    jsr SaveBitmap
+                    rts
+    ENDIF
 
-                    lda fromPiece
-                    and #FLAG_CASTLE
-                    beq .exit                       ; NOT involved in castle!
 
-                    ldx #4
-                    lda fromX12                     ; *destination*
-.findCast           clc
-                    dex
-                    bmi .exit
-                    cmp KSquare,x
-                    bne .findCast
+;---------------------------------------------------------------------------------------------------
 
-                    lda RSquareEnd,x
-                    sta toX12
-                    sta@PLY secondaryBlank
-                    ldy RSquareStart,x
-                    sty fromX12
-                    sty originX12
-                    sty@PLY secondarySquare
+    DEF AddMoveSimple
+    SUBROUTINE
 
-                    lda fromPiece
-                    and #128                        ; colour bit
-                    ora #ROOK                       ; preserve colour
-                    sta fromPiece
-                    sta@PLY secondaryPiece
+        VEND AddMoveSimple
 
-                    sec
+    ; add square in y register to movelist as destination (X12 format)
+    ; [y]               to square (X12)
+    ; currentSquare     from square (X12)
+    ; currentPiece      piece.
+    ;   ENPASSANT flag set if pawn double-moving off opening rank
+    ; capture           captured piece
+
+                    lda capture
+                    bne .always
+                    lda __quiesceCapOnly
+                    bne .abort
+
+.always             tya
+
+                    ldy@PLY moveIndex
+                    iny
+                    sty@PLY moveIndex
+                    
+                    sta@PLY MoveTo,y
+                    lda currentSquare
+                    sta@PLY MoveFrom,y
+                    lda currentPiece
+                    sta@PLY MovePiece,y
+                    lda capture
+                    sta@PLY MoveCapture,y
+
+.abort              rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiSpecialMoveFixup
+    SUBROUTINE
+
+        COMMON_VARS_ALPHABETA
+        
+        REFER AiStateMachine ;✅
+
+        VEND aiSpecialMoveFixup
+
+                    lda INTIM
+                    cmp #SPEEDOF_COPYSINGLEPIECE+4
+                    bcs .cont
+                    rts
+
+
+.cont
+
+                    PHASE AI_DelayAfterPlaced
+
+
+    ; Special move fixup
+
+    IF ENPASSANT_ENABLED
+
+    ; Handle en-passant captures
+    ; The (dual-use) FLAG_ENPASSANT will have been cleared if it was set for a home-rank move
+    ; but if we're here and the flag is still set, then it's an actual en-passant CAPTURE and we
+    ; need to do the appropriate things...
+
+                    jsr EnPassantCheck
+
+    ENDIF
+
+
+                    lda currentPly
+                    sta SET_BANK_RAM
+
+                    jsr  CastleFixupDraw
+
+                    lda fromX12
+                    sta squareToDraw
+
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF CastleFixupDraw
+    SUBROUTINE
+
+        REFER aiSpecialMoveFixup ;✅
+
+        VEND CastleFixupDraw
+
+    ; fixup any castling issues
+    ; at this point the king has finished his two-square march
+    ; based on the finish square, we determine which rook we're interacting with
+    ; and generate a 'move' for the rook to position on the other side of the king
+
+
+    IF CASTLING_ENABLED
+                    CALL GenCastleMoveForRook;@3
+                    bcs .phase
+    ENDIF
+    
+                SWAP
+                rts
+
+.phase
+
+    ; in this siutation (castle, rook moving) we do not change sides yet!
+
+                    PHASE AI_MoveIsSelected
+                    rts
+
+
+
+KSquare             .byte 24,28,94,98
+RSquareStart        .byte 22,29,92,99
+RSquareEnd          .byte 25,27,95,97
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiDrawEntireBoard
+    SUBROUTINE
+
+        REFER AiStateMachine ;✅
+
+        VEND aiDrawEntireBoard
+
+
+                    lda INTIM
+                    cmp #SPEEDOF_COPYSINGLEPIECE+4
+                    bcc .exit
+
+    ; We use [SLOT3] for accessing board
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM
+                    ldy squareToDraw
+                    lda ValidSquare,y
+                    bmi .isablank2
+
+                    lda Board,y
+                    beq .isablank
+                    pha
+                    lda #BLANK
+                    sta@RAM Board,y
+
+                    jsr CopySinglePiece;@0
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM
+
+                    ldy squareToDraw
+                    pla
+                    sta@RAM Board,y
+
+.isablank           PHASE AI_DrawPart2
+                    rts
+
+.isablank2          PHASE AI_DrawPart3
 .exit               rts
 
+
+;---------------------------------------------------------------------------------------------------
+
+    IF ENPASSANT_ENABLED
+
+    DEF EnPassantCheck
+    SUBROUTINE
+
+        REFER MakeMove ;✅
+        REFER aiSpecialMoveFixup ;✅
+        VEND EnPassantCheck
+
+    ; {
+    ; With en-passant flag, it is essentially dual-use.
+    ; First, it marks if the move is *involved* somehow in an en-passant
+    ; if the piece has MOVED already, then it's an en-passant capture
+    ; if it has NOT moved, then it's a pawn leaving home rank, and sets the en-passant square
+
+                    ldy enPassantPawn               ; save from previous side move
+
+                    ldx #0                          ; (probably) NO en-passant this time
+                    lda fromPiece
+                    and #FLAG_ENPASSANT|FLAG_MOVED
+                    cmp #FLAG_ENPASSANT
+                    bne .noep                       ; HAS moved, or not en-passant
+
+                    eor fromPiece                   ; clear FLAG_ENPASSANT
+                    sta fromPiece
+
+                    ldx fromX12                     ; this IS an en-passantable opening, so record the square
+.noep               stx enPassantPawn               ; capturable square for en-passant move (or none)
+
+    ; }
+
+
+    ; Check to see if we are doing an actual en-passant capture...
+
+    ; NOTE: If using test boards for debugging, the FLAG_MOVED flag is IMPORTANT
+    ;  as the en-passant will fail if the taking piece does not have this flag set correctly
+
+                    lda fromPiece
+                    and #FLAG_ENPASSANT
+                    beq .notEnPassant               ; not an en-passant, or it's enpassant by a MOVED piece
+
+
+    ; {
+
+    ; Here we are the aggressor and we need to take the pawn 'en passant' fashion
+    ; y = the square containing the pawn to capture (i.e., previous value of 'enPassantPawn')
+
+    ; Remove the pawn from the board and piecelist, and undraw
+
+                    sty squareToDraw
+                    jsr CopySinglePiece;@0          ; undraw captured pawn
+
+                    lda #EVAL
+                    sta SET_BANK;@3
+
+                    ldy originX12                   ; taken pawn's square
+                    jsr EnPassantRemovePiece
+
+.notEnPassant
+    ; }
+
+                    rts
+
+    ENDIF
+    
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiDrawPart2
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiDrawPart2
+
+                    jsr CopySinglePiece;@0
+
+    DEF aiDrawPart3
+    SUBROUTINE
+
+                    dec squareToDraw
+                    lda squareToDraw
+                    cmp #22
+                    bcc .comp
+
+                    PHASE AI_DrawEntireBoard
+                    rts
+
+.comp
+
+                    lda #-1
+                    sta toX12                        ; becomes startup flash square
+                    lda #36                         ; becomes cursor position
+                    sta originX12
+
+
+                    PHASE AI_GenerateMoves
+                    rts
+                    
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiMarchB
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiMarchB
+
+    ; Draw the piece in the new square
+
+                    lda fromX12
+                    sta squareToDraw
+
+                    jsr CopySinglePiece;@0          ; draw the moving piece into the new square
+
+                    lda #10                          ; snail trail delay ??
+                    sta drawDelay
+
+                    PHASE AI_MarchToTargetB
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiDraw
+    SUBROUTINE
+                    lda #$C0
+                    sta COLUBK
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiCheckMate
+    SUBROUTINE
+                    lda #$44
+                    sta COLUBK
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 

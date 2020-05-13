@@ -21,7 +21,7 @@ ChessBitmap5 = SHADOW_ChessBitmap5
 ; we effectively have 1K
 ;---------------------------------------------------------------------------------------------------
 
-COLOUR_LINE_1 = $84
+COLOUR_LINE_1 = $82
 COLOUR_LINE_2 = $36
 COLOUR_LINE_3 = $28
 BACKGCOL      = $00
