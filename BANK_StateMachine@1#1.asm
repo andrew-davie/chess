@@ -914,7 +914,7 @@ HOLD_DELAY                      = 40
                     cmp toX12
                     beq xhalt
 
-                    lda #100                          ;??? inter-move segment speed (can be 0)
+                    lda #2                          ;??? inter-move segment speed (can be 0)
                     sta drawDelay
                     PHASE AI_MarchToTargetA
 
@@ -946,8 +946,6 @@ xhalt
     ; drawDelay = flash speed
     ; drawCount = # of flashes
 
-                    lda originX12
-                    sta cursorX12
 
                     lda #%100
                     sta CTRLPF
@@ -975,6 +973,8 @@ deCount
 
 flashDone
 
+                    ;lda #2
+                    ;sta drawDelay
                     PHASE AI_MarchToTargetA
                     rts
 

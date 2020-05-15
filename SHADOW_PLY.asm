@@ -33,7 +33,7 @@ MAX_MOVES = 100          ; big is good
     VARIABLE savedEvaluation, 2                     ; THIS node's evaluation - used for reverting moves!
     VARIABLE enPassantSquare, 1
     VARIABLE capturedPiece, 1
-    VARIABLE originalPiece, 1
+    ;VARIABLE originalPiece, 1
     VARIABLE secondaryPiece, 1                      ; original piece on secondary (castle, enpassant)
     VARIABLE secondarySquare, 1                     ; original square of secondary piece
     VARIABLE secondaryBlank, 1                      ; square to blank on secondary

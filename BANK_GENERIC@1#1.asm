@@ -28,7 +28,7 @@
                     ldy #$9A
 .toR                sty rnd
 
-                    lda #255
+                    lda #63
                     sta randomness
 
                     lda #0
@@ -37,21 +37,15 @@
                     sta HMCLR
 
     ; cleanup remains of title screen
-                    sta GRP0
-                    sta GRP1
+                    ;sta GRP0
+                    ;sta GRP1
 
-                    lda #%00010000                  ; double width missile, double width player
-                    sta NUSIZ0
-                    sta NUSIZ1
-
-                    lda #%100                       ; players/missiles BEHIND BG
-                    sta CTRLPF
                     lda #%111
                     sta NUSIZ0
                     sta NUSIZ1              ; quad-width
 
-                    lda #%00000100
-                    sta CTRLPF
+                    ;lda #%00000100
+                    ;sta CTRLPF
                     lda #BACKGCOL
                     sta COLUBK
 
@@ -71,9 +65,6 @@
     ; and then terminate the draw subroutine by substituting in a RTS on the last one
 
         REFER StartupBankReset ;✅
-
-        VAR __plyBank, 1
-        
         VEND SetupBanks
     
     ; Copy the bitmap shadow into the first 8 RAM banks via x(SLOT3)-->y(SLOT2)
@@ -183,11 +174,13 @@
     DEF InitialisePieceSquares
     SUBROUTINE
 
+        COMMON_VARS
         REFER StartupBankReset ;✅
 
         VAR __initPiece, 1
         VAR __initSquare, 1
         VAR __initListPtr, 1
+        VAR __op, 1
         
         VEND InitialisePieceSquares
 
@@ -205,13 +198,13 @@
 
                     lda InitPieceList,x             ; colour/-1
                     beq .exit
-                    sta __originalPiece             ; type
+                    sta __op             ; type
                     ldy InitPieceList+1,x           ; square
                     sty __initSquare
 
                     lda #RAMBANK_BOARD
                     sta SET_BANK_RAM
-                    lda __originalPiece
+                    lda __op
                     sta@RAM Board,y
                     bpl .white
 
@@ -222,7 +215,7 @@
 
     ; Add the material value of the piece to the evaluation
 
-                    lda __originalPiece
+                    lda __op
                     ldx #BANK_AddPieceMaterialValue
                     stx SET_BANK;@2
                     jsr AddPieceMaterialValue
@@ -231,12 +224,12 @@
     ; add the positional value of the piece to the evaluation 
 
                     ldy __initSquare
-                    lda __originalPiece
+                    lda __op
                     ldx #BANK_AddPiecePositionValue
                     stx SET_BANK
                     jsr AddPiecePositionValue
 
-                    lda __originalPiece             ; type/colour
+                    lda __op             ; type/colour
                     bpl .white2
                     NEGEVAL
 .white2
@@ -422,25 +415,6 @@ InitPieceList
 
 ;---------------------------------------------------------------------------------------------------
 
-    ALLOCATE FlipSquareIndex, 100
-
-    .byte 0,0,0,0,0,0,0,0,0,0
-    .byte 0,0,0,0,0,0,0,0,0,0
-
-.SQBASE SET 90-1
-    REPEAT 8
-    .byte 0,0
-.SQX SET 2
-    REPEAT 8
-    .byte (.SQBASE+.SQX)
-.SQX SET .SQX + 1
-    REPEND
-.SQBASE SET .SQBASE - 10
-    REPEND
-
-
-;---------------------------------------------------------------------------------------------------
-
     IF 0
     DEF SAFE_BackupBitmaps
     SUBROUTINE
@@ -495,10 +469,8 @@ InitPieceList
     DEF aiSpecialMoveFixup
     SUBROUTINE
 
-        COMMON_VARS_ALPHABETA
-        
+        COMMON_VARS
         REFER AiStateMachine ;✅
-
         VEND aiSpecialMoveFixup
 
                     lda INTIM
@@ -734,7 +706,7 @@ RSquareEnd          .byte 25,27,95,97
 
                     jsr CopySinglePiece;@0          ; draw the moving piece into the new square
 
-                    lda #10                          ; snail trail delay ??
+                    lda #2                          ; snail trail delay
                     sta drawDelay
 
                     PHASE AI_MarchToTargetB

@@ -65,12 +65,7 @@ END_OF_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
 
-    ; Some overlays are used across multiple routines/calls, and they will need to be defined
-    ; "globally" in this file.
-
-    VAR __pieceShapeBuffer, PIECE_SHAPE_SIZE
-    VAR __ptr, 2
-    VAR __ptr2, 2
+__pieceShapeBuffer = Overlay ; size = PIECE_SHAPE_SIZE
 
 ;---------------------------------------------------------------------------------------------------
 

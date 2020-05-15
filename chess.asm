@@ -16,7 +16,7 @@ VERBOSE                 = 0                         ; set to 1 for compile messa
 ORIGIN          SET 0
 ORIGIN_RAM      SET 0
 
-                include "segtime.asm"
+                ;include "segtime.asm"
 
 
 _FIRST_BANK          = 0                             ; 3E+ 1st bank holds reset vectors
@@ -49,8 +49,8 @@ CASTLING_ENABLED        = 1
 ; PLY+2 for computer response (thus, 3). The bank allocation gets stomped!
 
 
-SEARCH_DEPTH            = 4
-QUIESCE_EXTRA_DEPTH     = 0
+SEARCH_DEPTH            = 3
+QUIESCE_EXTRA_DEPTH     = 6
 
 
     IF SEARCH_DEPTH < 3
@@ -601,7 +601,7 @@ RND_EOR_VAL = $FE ;B4
 
 ;--------------------------------------------------------------------------------
 
-    MAC COMMON_VARS_ALPHABETA
+    MAC COMMON_VARS
 
         VAR __thinkbar, 1
         VAR __toggle, 1
@@ -614,9 +614,10 @@ RND_EOR_VAL = $FE ;B4
 
         VAR __quiesceCapOnly, 1
 
+        VAR __originalPiece, 1
+        VAR __capturedPiece, 1
+        
     ENDM
-
-
 ;---------------------------------------------------------------------------------------------------
 
     include "BANK_FIRST@0.asm"                        ; MUST be first in ROM - contains reset vectors

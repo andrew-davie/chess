@@ -111,8 +111,6 @@ zapem               txa
                     dex
                     bpl zapem
 
-                    lda #BANK_WriteCursor
-                    sta SET_BANK
                     CALL WriteCursor;@3
     ENDIF
 
@@ -129,6 +127,7 @@ zapem               txa
     DEF ThinkBar
     SUBROUTINE
 
+        COMMON_VARS
         REFER negaMax ;✅
         REFER quiesce ;✅
         VEND ThinkBar
@@ -235,7 +234,6 @@ SynapsePattern
         REFER CopySinglePiece ;✅✅
         REFER showPromoteOptions ;✅
         REFER showMoveOptions ;✅
-
         VEND InterceptMarkerCopy
 
     ; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
@@ -245,14 +243,14 @@ SynapsePattern
                     sta SET_BANK;@2
 
                     lda PIECE_VECTOR_LO,y
-                    sta __ptr
+                    sta __psb
                     lda PIECE_VECTOR_HI,y
-                    sta __ptr+1
+                    sta __psb+1
                     lda PIECE_VECTOR_BANK,y
                     sta SET_BANK;@2
 
                     ldy #PIECE_SHAPE_SIZE-1
-.copy               lda (__ptr),y
+.copy               lda (__psb),y
                     sta __pieceShapeBuffer,y
                     dey
                     bpl .copy
@@ -362,6 +360,7 @@ ONCEPERFRAME = 40
     SUBROUTINE
 
         REFER StartupBankReset ;✅
+        VAR __aiVec, 2
         VEND AiStateMachine
 
 
@@ -369,13 +368,13 @@ ONCEPERFRAME = 40
 
                     ldx aiState
                     lda AiVectorLO,x
-                    sta __ptr
+                    sta __aiVec
                     lda AiVectorHI,x
-                    sta __ptr+1
+                    sta __aiVec+1
 
                     lda AiVectorBANK,x
                     sta SET_BANK
-                    jmp (__ptr)                 ; NOTE: could branch back to squeeze cycles
+                    jmp (__aiVec)                 ; NOTE: could branch back to squeeze cycles
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -389,7 +388,6 @@ ONCEPERFRAME = 40
         REFER negaMax ;✅
 
         VAR __vector, 2
-        VAR __masker, 2
         VAR __pieceFilter, 1
 
         VEND GenerateAllMoves
@@ -430,8 +428,8 @@ ONCEPERFRAME = 40
                     lda #8                  ; pawns
                     sta __pieceFilter
                     jsr MoveGenX
-                    lda #99
-                    sta currentSquare
+                    ;lda #99
+                    ;sta currentSquare
                     lda #0
                     sta __pieceFilter
                     jsr MoveGenX
@@ -536,7 +534,7 @@ ONCEPERFRAME = 40
 
     ; This in turn requires the minimum memory for PLY banks to be 3 (computer, player, response)
 
-        COMMON_VARS_ALPHABETA ;✅
+        COMMON_VARS
         REFER selectmove ;✅
         REFER StartupBankReset ;✅
 

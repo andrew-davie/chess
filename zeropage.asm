@@ -53,3 +53,4 @@ positionCount                   ds 3
 flagCheck                       ds 1                ; -1 = no, #KING = yes
 protecting                      ds 1
 randomness                      ds 1
+__psb                           ds 2

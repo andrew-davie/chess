@@ -7,7 +7,7 @@
     DEF Handle_BISHOP
     SUBROUTINE
 
-        REFER GenerateAllMoves
+        REFER GenerateAllMoves ;✅
         VEND Handle_BISHOP
         
     ; x = currentSquare (square the piece is on)

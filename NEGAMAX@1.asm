@@ -10,7 +10,7 @@
     DEF aiComputerMove
     SUBROUTINE
 
-        REFER AiStateMachine
+        REFER AiStateMachine ;✅
         VEND aiComputerMove
 
 
@@ -64,8 +64,8 @@
     DEF selectmove
     SUBROUTINE
 
-        COMMON_VARS_ALPHABETA
-        REFER aiComputerMove
+        COMMON_VARS
+        REFER aiComputerMove ;✅
         VEND selectmove
 
 
@@ -138,14 +138,11 @@
     DEF MakeMove
     SUBROUTINE
 
-        REFER selectmove
-        REFER ListPlayerMoves
-        REFER quiesce
-        REFER negaMax
-
-        VAR __capture, 1
-        VAR __restore, 1
-
+        COMMON_VARS
+        REFER selectmove ;✅
+        REFER ListPlayerMoves ;✅
+        REFER quiesce ;✅
+        REFER negaMax ;✅
         VEND MakeMove
 
     ; Do a move without any GUI stuff
@@ -167,43 +164,39 @@
     ; b) en-Passant, capturing pawn on "odd" square
     ; These both set "secondary" movers which are used for restoring during unmakeMove
 
-                    lda #0
-                    sta@PLY secondaryPiece
-
-                    ldx@PLY movePtr
-                    lda@PLY MoveFrom,x
-                    sta fromX12
-                    sta originX12
-                    lda@PLY MoveTo,x
-                    sta toX12
-                    lda@PLY MovePiece,x
-                    sta fromPiece                   
-
-.move               CALL AdjustMaterialPositionalValue;@2
-
-    ; Modify the board
-    
                     ldy #RAMBANK_BOARD
                     sty SET_BANK_RAM;@3
-                    ldy originX12
+
+                    ldx@PLY movePtr
+                    ldy@PLY MoveFrom,x
+                    sty fromX12
+                    sty originX12
+
                     lda@RAM Board,y
-                    sta __restore
+                    sta __originalPiece
+                    sta@PLY restorePiece
+
                     lda #0
                     sta@RAM Board,y
-                    ldy toX12
+                    sta@PLY secondaryPiece
+
+                    ldy@PLY MoveTo,x
+                    sty toX12
+
                     lda@RAM Board,y
-                    sta __capture
-                    lda fromPiece
+                    sta __capturedPiece
+                    sta@PLY capturedPiece
+
+                    lda@PLY MovePiece,x
+                    sta fromPiece            
+
                     and #PIECE_MASK|FLAG_COLOUR
                     ora #FLAG_MOVED
                     sta@RAM Board,y
 
-                    lda currentPly
-                    sta SET_BANK_RAM;@2
-                    lda __capture
-                    sta@PLY capturedPiece
-                    lda __restore
-                    sta@PLY restorePiece
+
+.move               CALL AdjustMaterialPositionalValue;@2
+
 
     IF CASTLING_ENABLED
 
@@ -275,6 +268,7 @@
                     bne .doQ                        ; last move was capture, so quiesce
     ENDIF
                         
+
                     lda Evaluation
                     sta __negaMax
                     lda Evaluation+1
@@ -297,8 +291,8 @@
     ; __beta[2] = param beta
 
 
-        COMMON_VARS_ALPHABETA
-        REFER selectmove
+        COMMON_VARS
+        REFER selectmove ;✅
         VEND negaMax
 
                     pha
@@ -323,6 +317,17 @@
                     beq .exit                       ; SELECT abort
 .noCheat
 
+
+                    NEXT_RANDOM
+                    and randomness
+                    adc Evaluation
+                    sta Evaluation                  ; since it's random we don't care about HI
+                    ;bcc .evOK
+                    ;inc Evaluation+1
+.evOK
+
+
+
                     ;lda #2
                     ;sta COLUPF                      ; grey thinkbars
 
@@ -337,38 +342,10 @@
                     sta@PLY beta+1
 
 
-    IF 0
-                    NEXT_RANDOM
-                    lda Evaluation
-                    adc randomness
-                    sta Evaluation
-                    bcc .evh
-                    inc Evaluation+1
-.evh
-    ENDIF
-
-
                     jsr GenerateAllMoves;@0
 
                     lda flagCheck
                     bne .inCheck2                           ; OTHER guy in check
-
-    IF 0
-                    lda@PLY moveIndex
-                    bmi .none
-                    lsr
-                    lsr
-                    lsr
-                    lsr
-                    lsr
-                    adc Evaluation
-                    sta Evaluation
-                    lda Evaluation+1
-                    adc #0
-                    sta Evaluation+1
-.none
-    ENDIF
-
 
                     lda #<-INFINITY
                     sta@PLY value
@@ -547,6 +524,7 @@
     ; Scan for capture of king
 
                     ldx@PLY moveIndex
+                    bmi .notCheck                   ; OK if no captures in quiesce!
 
 .scanCheck          lda@PLY MoveCapture,x
                     beq .check                      ; since they're sorted with captures "first" we can exit
@@ -556,7 +534,7 @@
                     dex
                     bpl .scanCheck
 
-                    lda #0
+.notCheck           lda #0
 .check              sta flagCheck
                     rts
 
@@ -597,14 +575,14 @@
     ; __beta[2] = param beta
 
 
-        COMMON_VARS_ALPHABETA
+        COMMON_VARS
         REFER negaMax
         VEND quiesce
 
                     lda currentPly
                     cmp #RAMBANK_PLY + PLY_BANKS  -1
                     bcs .retBeta
-    sta SET_BANK_RAM ;tmp
+    ;sta SET_BANK_RAM ;tmp
 
 
                     jsr ThinkBar;@0

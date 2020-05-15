@@ -67,7 +67,7 @@
 
                     ldy fromPiece
                     ldx promotePiece,y
-                    jsr showPromoteOptions
+                    CALL showPromoteOptions;@3
 
 .exit               rts
 
@@ -197,6 +197,12 @@
 
     ; now we want to undraw the piece in the old square
 
+                    lda drawDelay
+                    beq .stepOne
+                    dec drawDelay
+                    rts
+
+.stepOne
                     lda lastSquareX12
                     sta squareToDraw
 
@@ -365,6 +371,12 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
         VEND aiMarchToTargetA
 
 
+                    lda drawDelay
+                    beq .nodelay
+                    dec drawDelay
+                    rts
+.nodelay
+
     ; Now we calculate move to new square
 
                     lda fromX12
@@ -421,6 +433,9 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
 .incCol             inc fromX12
 .colDone
 .unmovedx
+
+                    lda originX12
+                    sta cursorX12
 
                     PHASE AI_MarchA2
                     rts

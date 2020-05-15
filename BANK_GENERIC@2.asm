@@ -106,6 +106,7 @@ _rts                rts
     DEF aiMoveIsSelected
     SUBROUTINE
 
+        COMMON_VARS
         REFER AiStateMachine ;✅
         VEND aiMoveIsSelected
 
@@ -116,6 +117,18 @@ _rts                rts
     ; fromX12       current square X12
     ; originX12     starting square X12
     ; toX12         ending square X12
+
+        ; get the piece types from the board
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    ldy originX12
+                    lda Board,y
+                    sta __originalPiece
+                    ldy toX12
+                    lda Board,y
+                    sta __capturedPiece
+
 
                     jsr AdjustMaterialPositionalValue;@this
 
@@ -238,12 +251,9 @@ PieceToShape
 
     ; First, nominate referencing subroutines so that local variables can be adjusted properly
 
+        COMMON_VARS
         REFER MakeMove ;✅
         REFER aiMoveIsSelected ;✅
-
-        VAR __originalPiece, 1
-        VAR __capturedPiece, 1
-        
         VEND AdjustMaterialPositionalValue
 
     ; fromPiece     piece doing the move (promoted type)
@@ -252,21 +262,10 @@ PieceToShape
     ; toX12         ending square
 
 
-    ; get the piece types from the board
-
-                    lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM;@3
-                    ldy originX12
-                    lda Board,y
-                    sta __originalPiece
-                    ldy toX12
-                    lda Board,y
-                    sta __capturedPiece
-
     ; {
     ;   adjust the positional value  (originX12 --> fromX12)
 
-                    ;ldy toX12                      ; already loaded
+                    ldy toX12                      ; already loaded
                     lda fromPiece
                     jsr AddPiecePositionValue       ; add pos value for new position
 
@@ -323,10 +322,10 @@ PieceToShape
     DEF AddPieceMaterialValue
     SUBROUTINE
 
+        COMMON_VARS
         REFER InitialisePieceSquares ;✅
         REFER AdjustMaterialPositionalValue ;✅
         REFER EnPassantRemovePiece ;✅
-
         VEND AddPieceMaterialValue
 
     ; Adjust the material score based on the piece
@@ -345,39 +344,22 @@ PieceToShape
                     rts
 
 
-
-    MAC VEQU
-VALUE_{1} = {2}
-    ENDM
-
-    MAC LOBYTE
-    .byte <{2}
-    ENDM
-
-    MAC HIBYTE
-    .byte >{2}
-    ENDM
-
-
     MAC VALUETABLE
-    {1} BLANK,    0
-    {1} PAWN,   100 ; white
-    {1} PAWN,   100 ; black
-    {1} KNIGHT, 320
-    {1} BISHOP, 375
-    {1} ROOK,   575
-    {1} QUEEN,  900
-    {1} KING, 10000
+    .byte {1}0      ; blank
+    .byte {1}100    ; white P
+    .byte {1}100    ; black P
+    .byte {1}320    ; N
+    .byte {1}375    ; B
+    .byte {1}575    ; R
+    .byte {1}900    ; Q
+    .byte {1}10000  ; K
     ENDM
 
+PieceValueLO
+        VALUETABLE <
 
-    VALUETABLE VEQU
-
-    DEF PieceValueLO
-        VALUETABLE LOBYTE
-
-    DEF PieceValueHI
-        VALUETABLE HIBYTE
+PieceValueHI
+        VALUETABLE >
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -388,10 +370,7 @@ VALUE_{1} = {2}
         REFER InitialisePieceSquares ;✅
         REFER AdjustMaterialPositionalValue ;✅
         REFER EnPassantRemovePiece ;✅
-
         VAR __valPtr, 2
-        VAR __valHi, 1
-
         VEND AddPiecePositionValue
 
 
@@ -424,19 +403,34 @@ VALUE_{1} = {2}
                     sta __valPtr+1
 
                     ldy #0
-                    sty __valHi
                     lda (__valPtr),y
                     bpl .sum
-                    dec __valHi
+                    dey
 
 .sum                clc
                     adc Evaluation
                     sta Evaluation
-                    lda Evaluation+1
-                    adc __valHi
+                    tya
+                    adc Evaluation+1
                     sta Evaluation+1
                     rts
 
+
+FlipSquareIndex
+
+    .byte 0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0,0,0
+
+.SQBASE SET 90-1
+    REPEAT 8
+    .byte 0,0
+.SQX SET 2
+    REPEAT 8
+    .byte (.SQBASE+.SQX)
+.SQX SET .SQX + 1
+    REPEND
+.SQBASE SET .SQBASE - 10
+    REPEND
 
 ;---------------------------------------------------------------------------------------------------
 

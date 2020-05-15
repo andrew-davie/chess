@@ -7,7 +7,7 @@
     DEF ClearRowBitmap
     SUBROUTINE
 
-        REFER CallClear
+        REFER CallClear ;✅
         VEND ClearRowBitmap
 
             ; No transient variable dependencies/calls
@@ -26,7 +26,7 @@
     DEF WriteBlank
     SUBROUTINE
 
-        REFER StartupBankReset
+        REFER StartupBankReset ;✅
         VEND WriteBlank
 
                     lda #<BlankSprite
@@ -54,7 +54,7 @@
     DEF WriteCursor
     SUBROUTINE
 
-        REFER StartupBankReset
+        REFER StartupBankReset ;✅
         VEND WriteCursor
 
                     sec
@@ -88,7 +88,7 @@
     DEF SaveBitmap
     SUBROUTINE
 
-        REFER SAFE_BackupBitmaps
+        REFER SAFE_BackupBitmaps ;✅
         VEND SaveBitmap
 
                     ldy #71
