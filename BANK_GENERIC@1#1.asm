@@ -28,7 +28,7 @@
                     ldy #$9A
 .toR                sty rnd
 
-                    lda #63
+                    lda #31
                     sta randomness
 
                     lda #0
@@ -290,7 +290,8 @@ InitPieceList
 
     ELSE ; test position...
 
-    IF 1
+    IF 0
+    ; make sure illegal moves leaving K in check are removed
 
     .byte WHITE|N, 28
     .byte WHITE|K, 26
@@ -329,7 +330,8 @@ InitPieceList
     ENDIF
 
 
-    IF 0
+
+    IF TEST_POSITION & 0
     ; En passant test
 
         .byte BLACK|BP, 88
@@ -341,6 +343,19 @@ InitPieceList
 
     ENDIF
 
+    IF TEST_POSITION & 1
+    ; promote test
+
+        .byte BLACK|K, 22
+        .byte BLACK|N, 96
+
+        .byte WHITE|WP, 87
+        .byte WHITE|R,95
+        .byte WHITE|R,94
+        .byte WHITE|K, 52
+
+
+    ENDIF
 
 
 
@@ -574,6 +589,7 @@ RSquareEnd          .byte 25,27,95,97
                     lda #BLANK
                     sta@RAM Board,y
 
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0
 
                     lda #RAMBANK_BOARD
@@ -642,6 +658,8 @@ RSquareEnd          .byte 25,27,95,97
     ; Remove the pawn from the board and piecelist, and undraw
 
                     sty squareToDraw
+
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0          ; undraw captured pawn
 
                     lda #EVAL
@@ -666,6 +684,7 @@ RSquareEnd          .byte 25,27,95,97
         REFER AiStateMachine
         VEND aiDrawPart2
 
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0
 
     DEF aiDrawPart3
@@ -704,6 +723,7 @@ RSquareEnd          .byte 25,27,95,97
                     lda fromX12
                     sta squareToDraw
 
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0          ; draw the moving piece into the new square
 
                     lda #2                          ; snail trail delay
@@ -729,6 +749,39 @@ RSquareEnd          .byte 25,27,95,97
                     lda #$44
                     sta COLUBK
                     rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiQuiescent
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiQuiescent
+
+    ; Move has been selected
+
+                    lda #-1
+                    sta cursorX12
+
+                    lda fromX12
+                    sta originX12
+                    CALL GetPiece;@3                ; from the movelist
+
+                    ldy fromX12
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
+                    eor fromPiece
+                    and #PIECE_MASK                 ; if not the same piece board/movelist...
+                    bne .promote                    ; promote a pawn
+
+                    PHASE AI_MoveIsSelected
+                    rts
+
+.promote            PHASE AI_PromotePawnStart
+                    rts
+
 
 ;---------------------------------------------------------------------------------------------------
 

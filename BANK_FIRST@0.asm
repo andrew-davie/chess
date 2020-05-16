@@ -222,16 +222,13 @@ SynapsePattern
     ; @2150 max
     ; = 33 TIM64T
 
-    ; Board is [SLOT3]
-
-
                     CALL CopySetup;@2
 
 
     DEF InterceptMarkerCopy
     SUBROUTINE
 
-        REFER CopySinglePiece ;✅✅
+        REFER CopySinglePiece ;✅
         REFER showPromoteOptions ;✅
         REFER showMoveOptions ;✅
         VEND InterceptMarkerCopy
@@ -757,6 +754,7 @@ ONCEPERFRAME = 40
                     lda __toSquareX12
                     sta squareToDraw
 
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0
 
 .skip               rts

@@ -91,24 +91,6 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF showPromoteOptions
-    SUBROUTINE
-
-        REFER aiRollPromotionPiece ;✅
-        REFER aiChoosePromotePiece ;✅
-        VEND showPromoteOptions
-
-    ; X = character shape # (?/N/B/R/Q)
-
-                    ldy toX12
-                    sty squareToDraw
-
-                    jsr CopySetupForMarker;@1       ; TODO: WRONG
-                    jmp InterceptMarkerCopy;@0
-
-
-;---------------------------------------------------------------------------------------------------
-
     CHECK_BANK_SIZE "BANK_3"
 
 ;---------------------------------------------------------------------------------------------------

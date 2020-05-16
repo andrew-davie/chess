@@ -1,106 +1,6 @@
     SLOT 1
     NEWBANK STATEMACHINE2
 
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiChoosePromotePiece
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiChoosePromotePiece
-
-    ; Question-mark phase has exited via joystick direction
-    ; Now we cycle through the selectable pieces
-
-                    lda INTIM
-                    cmp #SPEEDOF_COPYSINGLEPIECE
-                    bcc .exit
-
-                    lda INPT4
-                    bmi .nobut                      ; no press
-
-    ; button pressed but make sure phase is correct for exit
-
-                    lda #0
-                    sta aiFlashDelay
-
-                    lda aiFlashPhase
-                    and #1
-                    beq .chosen                     ; button pressed --> selection made
-
-.nobut
-                    lda SWCHA
-                    and #$F0
-                    cmp #$F0
-                    beq .odd                        ; no direction pressed
-
-                    lsr
-                    lsr
-                    lsr
-                    lsr
-                    tay
-
-    ; joystick but make sure phase is correct
-
-                    lda aiFlashPhase
-                    lsr
-                    bcs .odd                        ; must wait until piece undrawn
-
-    ; cycle to the next promotable piece (N/B/R/Q)
-    ; TODO; use joy table for mod instead of just incrementing all the time
-
-                    ;clc
-                    lda fromPiece
-                    adc JoyCombined,y
-                    and #3
-                    sta fromPiece
-
-                    PHASE AI_ChooseDebounce         ; wait for release
-
-.odd                dec aiFlashDelay
-                    bpl .exit
-
-.force              lda #10
-                    sta aiFlashDelay
-
-                    inc aiFlashPhase
-
-                    ldy fromPiece
-                    ldx promotePiece,y
-                    CALL showPromoteOptions;@3
-
-.exit               rts
-
-
-.chosen
-                    lda fromPiece
-                    and #PIECE_MASK
-                    tax
-
-                    lda promoteType,x
-                    sta fromPiece
-
-                    ldy toX12
-                    lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM;@3
-                    lda Board,y
-                    and #PIECE_MASK
-                    beq .nothing
-
-                    jsr CopySinglePiece;@0          ; put back whatever was there to start
-
-.nothing            PHASE AI_MoveIsSelected
-                    rts
-
-    ALLOCATE promotePiece, 4
-    .byte INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_ROOK_on_WHITE_SQUARE_0
-    .byte INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
-
-    ALLOCATE promoteType,4
-    .byte KNIGHT, BISHOP, ROOK, QUEEN
-
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -110,7 +10,8 @@
         REFER AiStateMachine
         VEND aiChooseDebounce
 
-    ; We've changed promotion piece, but wait for joystick to be released
+    ; We've changed promotion piece, and drawn it
+    ; wait for joystick to be released before continuing
 
                     lda SWCHA
                     and #$F0
@@ -119,8 +20,27 @@
 
                     lda #1
                     sta aiFlashDelay
+                    sta aiFlashPhase
 
                     PHASE AI_ChoosePromotePiece
+.exit               rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiReselectDebounce
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiReselectDebounce
+
+    ; We've just cancelled the move. Wait for the button to be released
+    ; and then go back to selecting a piece to move
+
+                    lda INPT4
+                    bpl .exit                       ; button still pressed, so wait
+
+                    PHASE AI_SelectStartSquare
 .exit               rts
 
 
@@ -206,6 +126,7 @@
                     lda lastSquareX12
                     sta squareToDraw
 
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0          ; erase whatever was on the previous square (completely blank)
 
                     ldy lastSquareX12
@@ -248,6 +169,7 @@
                     and #PIECE_MASK
                     beq .empty
 
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0          ; remove any capturable piece for display purposes
 
 .empty              PHASE AI_RollPromotionPiece
@@ -467,6 +389,7 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
                     lda fromX12
                     sta squareToDraw
 
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0
                     rts
 
@@ -481,9 +404,44 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
 
 ;---------------------------------------------------------------------------------------------------
 
+    DEF aiStartSquareSelected
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiStartSquareSelected
+
+
+    ; Mark all the valid moves for the selected piece on the board
+    ; and then start pulsing the piece
+    ; AND start choosing for selection of TO square
+
+    ; Iterate the movelist and for all from squares which = drawPieceNumber
+    ; then draw a BLANK at that square
+    ; do 1 by one, when none found then increment state
+
+                    lda cursorX12
+                    sta squareToDraw
+
+                    lda #10
+                    sta aiFlashDelay
+
+                    lda #0
+                    sta toX12 ;aiToSquareX12
+                    sta aiFlashPhase                ; for debounce exit timing
+
+                    lda #-1
+                    sta aiMoveIndex
+
+                    lda #HOLD_DELAY
+                    sta mdelay                      ; hold-down delay before moves are shown
+
+                    PHASE AI_DrawMoves
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
 
     CHECK_BANK_SIZE "BANK_StateMachine2"
-
 
 ;---------------------------------------------------------------------------------------------------
 

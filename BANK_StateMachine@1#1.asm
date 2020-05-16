@@ -137,6 +137,7 @@ HOLD_DELAY                      = 40
 
                     inc aiFlashPhase
 
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0
                     rts
 
@@ -263,41 +264,6 @@ HOLD_DELAY                      = 40
 
 
 ;---------------------------------------------------------------------------------------------------
-
-    DEF aiStartSquareSelected
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiStartSquareSelected
-
-
-    ; Mark all the valid moves for the selected piece on the board
-    ; and then start pulsing the piece
-    ; AND start choosing for selection of TO square
-
-    ; Iterate the movelist and for all from squares which = drawPieceNumber
-    ; then draw a BLANK at that square
-    ; do 1 by one, when none found then increment state
-
-                    lda cursorX12
-                    sta squareToDraw
-
-                    lda #10
-                    sta aiFlashDelay
-
-                    lda #0
-                    sta toX12 ;aiToSquareX12
-                    sta aiFlashPhase                ; for debounce exit timing
-
-                    lda #-1
-                    sta aiMoveIndex
-
-                    lda #HOLD_DELAY
-                    sta mdelay                      ; hold-down delay before moves are shown
-
-                    PHASE AI_DrawMoves
-                    rts
-
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -431,10 +397,11 @@ HOLD_DELAY                      = 40
                     ;lda aiMoveIndex
                     ;sta __saveIdx
 
-    ; Draw the marker...?
+    ; Draw the marker..."?
+    ; WARNING - local variables will not survive the following call...!
 
-                    ldx #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
-                    jsr CopySetupForMarker;@1
+                    ldy #INDEX_WHITE_MARKER_on_WHITE_SQUARE_0
+                    jsr CopySetupForMarker;@this
                     jmp InterceptMarkerCopy;@0
 
 
@@ -452,40 +419,53 @@ HOLD_DELAY                      = 40
         REFER showMoveOptions
         REFER showPromoteOptions
 
-        VAR __pieceColour, 1
-        VAR __oddeven, 1
-        VAR __pmcol, 1
+        VAR __pieceColour2b, 1
+        VAR __tmpb, 1
+        VAR __shiftxb, 1
         
         VEND CopySetupForMarker
 
+
+    ; y = base shape
+    ; figure colouration of square
+
                     lda squareToDraw
+
+                    ldx #10
                     sec
-                    ldy #10
 .sub10              sbc #10
-                    dey
+                    dex
                     bcs .sub10
-                    sty __oddeven
                     adc #8
-                    sta __pmcol
-                    adc __oddeven
+                    sta __shiftxb
+                    stx __tmpb
+                    adc __tmpb
+
 
                     and #1
-                    eor #1
+                    ;eor #1
                     beq .white
                     lda #36
 .white
-                    sta __pieceColour               ; actually SQUARE black/white
+                    sta __pieceColour2b             ; actually SQUARE black/white
 
-                    txa
+                    lda sideToMove
+                    asl
+                    bcc .blackAdjust
+                    ora #16                         ; switch white pieces
+.blackAdjust        lsr
+                    and #%1111
+                    tax
+
+                    lda __shiftxb
+                    and #3                          ; shift position in P
+                    sta __shiftxb
+
+                    tya
                     clc
-                    adc __pieceColour
-                    sta __pieceColour
-
-                    lda __pmcol
-                    and #3
-
+                    adc __shiftxb
                     clc
-                    adc __pieceColour
+                    adc __pieceColour2b
                     tay
                     rts
 
@@ -681,6 +661,7 @@ HOLD_DELAY                      = 40
 
                     inc aiFlashPhase
 
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0
                     rts
 
@@ -739,55 +720,6 @@ HOLD_DELAY                      = 40
 
 
 
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiReselectDebounce
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiReselectDebounce
-
-    ; We've just cancelled the move. Wait for the button to be released
-    ; and then go back to selecting a piece to move
-
-                    lda INPT4
-                    bpl .exit                       ; button still pressed, so wait
-
-                    PHASE AI_SelectStartSquare
-.exit               rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-    DEF aiQuiescent
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiQuiescent
-
-    ; Move has been selected
-
-                    lda #-1
-                    sta cursorX12
-
-                    lda fromX12
-                    sta originX12
-                    CALL GetPiece;@3                ; from the movelist
-
-                    ldy fromX12
-                    lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM;@3
-                    lda Board,y
-                    eor fromPiece
-                    and #PIECE_MASK                 ; if not the same piece board/movelist...
-                    bne .promote                    ; promote a pawn
-
-                    PHASE AI_MoveIsSelected
-                    rts
-
-.promote            PHASE AI_PromotePawnStart
-                    rts
-
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -815,18 +747,22 @@ HOLD_DELAY                      = 40
                     and #1
                     beq .even
 
-.nojoy              dec aiFlashDelay
-                    bpl .exit
+.nojoy              lda aiFlashDelay
+                    beq .do
+                    dec aiFlashDelay
+                    rts
 
-                    lda #10
-                    sta aiFlashDelay
+.do
+                    lda #30
+                    sta aiFlashDelay                ; speed of "?" flashing
+
 
                     ldx #INDEX_WHITE_PROMOTE_on_WHITE_SQUARE_0
                     lda sideToMove
                     bpl .wtm
                     ldx #INDEX_BLACK_PROMOTE_on_WHITE_SQUARE_0
 .wtm
-                    jsr showPromoteOptions
+                    jsr showPromoteOptions          ; draw the "?"
 
                     inc aiFlashPhase
 
@@ -836,20 +772,156 @@ HOLD_DELAY                      = 40
 .even               lda #3                          ; QUEEN
                     sta fromPiece                   ; cycles as index to NBRQ
 
-                    inc aiFlashPhase
+                    ;inc aiFlashPhase
 
-
-                    ldx #INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0        ;TODO: fix for colour
+                    ldx #INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
                     lda sideToMove
-                    bpl .whiteToMove
+                    bpl .blackStuff
                     ldx #INDEX_BLACK_QUEEN_on_WHITE_SQUARE_0
-.whiteToMove
+.blackStuff
 
-                    jsr showPromoteOptions
+                    jsr showPromoteOptions          ; draw the initial Q
 
                     PHASE AI_ChooseDebounce
                     rts
 
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF showPromoteOptions
+    SUBROUTINE
+
+        REFER aiRollPromotionPiece ;✅
+        REFER aiChoosePromotePiece ;✅
+        VEND showPromoteOptions
+
+    ; X = character shape # (?/N/B/R/Q)
+
+                    ldy toX12
+                    sty squareToDraw
+
+                    txa
+                    tay
+
+                    jsr CopySetupForMarker;@this
+                    jmp InterceptMarkerCopy;@0
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiChoosePromotePiece
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiChoosePromotePiece
+
+    ; Question-mark phase has exited via joystick direction
+    ; Now we cycle through the selectable pieces
+
+                    lda INTIM
+                    cmp #SPEEDOF_COPYSINGLEPIECE
+                    bcc .exit
+
+                    lda INPT4
+                    bmi .nobut                      ; no press
+
+    ; button pressed but make sure phase is correct for exit
+
+                    lda #1
+                    sta aiFlashDelay                ; force quick rehash to this if phase incorrect
+
+                    lda aiFlashPhase
+                    and #1
+                    beq .chosen                     ; button pressed --> selection made
+.nobut
+
+                    lda SWCHA
+                    and #$F0
+                    cmp #$F0
+                    beq .nodir                      ; no direction pressed
+
+
+                    lda #1
+                    sta aiFlashDelay
+
+
+.nodir              dec aiFlashDelay
+                    bne .exit
+
+                    lda #30
+                    sta aiFlashDelay
+
+                    lda aiFlashPhase
+                    lsr
+                    bcs .odd                        ; must wait until piece undrawn
+
+                    lda SWCHA
+                    and #$F0
+                    cmp #$F0
+                    beq .odd                        ; no direction pressed
+
+                    lsr
+                    lsr
+                    lsr
+                    lsr
+                    tay
+
+
+    ; cycle to the next promotable piece (N/B/R/Q)
+    ; TODO; use joy table for mod instead of just incrementing all the time
+
+                    clc
+                    lda fromPiece
+                    adc JoyCombined,y
+                    and #3
+                    sta fromPiece
+
+                    PHASE AI_ChooseDebounce         ; after draw, wait for release
+
+.odd
+
+.force
+                    inc aiFlashPhase                ; on/off toggle
+
+                    ldy fromPiece
+                    ldx promotePiece,y
+                    jsr showPromoteOptions;@this
+
+.exit               rts
+
+
+
+
+
+
+.chosen
+                    lda fromPiece
+                    and #PIECE_MASK
+                    tax
+
+                    lda promoteType,x
+                    sta fromPiece
+
+                    ldy toX12
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+                    lda Board,y
+                    and #PIECE_MASK
+                    beq .nothing
+
+                    jsr CopySinglePiece;@0          ; put back whatever was there to start
+
+.nothing            PHASE AI_MoveIsSelected
+                    rts
+
+    ALLOCATE promotePiece, 4
+    .byte INDEX_WHITE_KNIGHT_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_BISHOP_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_ROOK_on_WHITE_SQUARE_0
+    .byte INDEX_WHITE_QUEEN_on_WHITE_SQUARE_0
+
+    ALLOCATE promoteType,4
+    .byte KNIGHT, BISHOP, ROOK, QUEEN
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -858,7 +930,6 @@ HOLD_DELAY                      = 40
     SUBROUTINE                    
 
         REFER AiStateMachine
-
         VEND aiMarchA2
 
     ; erase object in new sqare --> blank
@@ -870,6 +941,8 @@ HOLD_DELAY                      = 40
                     sta SET_BANK_RAM;@3
                     lda Board,y
                     beq .skipbl
+
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0          ; erase next square along --> blank
 
 .skipbl
@@ -907,6 +980,7 @@ HOLD_DELAY                      = 40
                     lda Board,y
                     beq .skipbl2
 
+    ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0          ; draw previous piece back in old position
 .skipbl2
 
@@ -969,6 +1043,7 @@ deCount
                     lda fromX12
                     sta squareToDraw
 
+    ; WARNING - local variables will not survive the following call...!
                     jmp CopySinglePiece;@0          ; EOR-draw = flash
 
 flashDone
