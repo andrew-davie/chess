@@ -37,7 +37,7 @@ INFINITY                = $7000 ;32767
 
 ; assemble diagnostics. Remove for release.
 
-TEST_POSITION           = 0                         ; 0=normal, 1 = setup test position
+TEST_POSITION           = 1                         ; 0=normal, 1 = setup test position
 DIAGNOSTICS             = 1
 QUIESCENCE              = 1
 ASSERTS                 = 0

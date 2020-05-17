@@ -180,6 +180,9 @@
                     sta@RAM Board,y
                     sta@PLY secondaryPiece
 
+                    sta vkSquare
+                    sta vkSquare+1
+
                     ldy@PLY MoveTo,x
                     sty toX12
 
@@ -200,21 +203,39 @@
 
     IF CASTLING_ENABLED
 
-        ; If the FROM piece has the castle bit set (i.e., it's a king that's just moved 2 squares)
-        ; then we find the appropriate ROOK, set the secondary piece "undo" information, and then
-        ; redo the moving code (for the rook, this time).
+    ; If the FROM piece has the castle bit set (i.e., it's a king that's just moved 2 squares)
+    ; then we find the appropriate ROOK, set the secondary piece "undo" information, and then
+    ; redo the moving code (for the rook, this time).
+
+    ; Set the squares that need to be checked for "virtual check" - preventing the king
+    ; from castling from/across check.
+
+                    lda fromPiece
+                    and #FLAG_CASTLE|KING
+                    cmp #FLAG_CASTLE|KING
+                    bne .exit                       ; NOT involved in castle!
+
+    ; Must be a king, castling. Calculate the virtual squares which need to be checked for
+    ; invalid castling. Prevents moving in/across check.
+
+                    clc
+                    lda originX12
+                    sta vkSquare+1                  ; king origin
+                    adc toX12
+                    lsr
+                    sta vkSquare                    ; intermediate square
+
+
+    ; Now generate a new move for the rook
 
                     CALL GenCastleMoveForRook;@3
                     bcs .move                       ; move the rook!
+
+.exit                    
     ENDIF
 
 
-    IF ENPASSANT_ENABLED    
-                    jsr EnPassantCheck
-                    beq .notEnPassant
-                    jsr EnPassantRemovePiece        ; TODO will crash wrong bank!!!  y = origin X12
-.notEnPassant
-    ENDIF
+
 
     ; Swap over sides
 
@@ -522,16 +543,26 @@
 
 
     ; Scan for capture of king
+    ; Also scan for virtual king captures (squares involved in castling)
 
                     ldx@PLY moveIndex
                     bmi .notCheck                   ; OK if no captures in quiesce!
 
 .scanCheck          lda@PLY MoveCapture,x
-                    beq .check                      ; since they're sorted with captures "first" we can exit
                     and #PIECE_MASK
                     cmp #KING
                     beq .check
-                    dex
+
+    ; If the squares the king is crossing for castling are capturable, then that's an illegal
+    ; castle move and it's treated as if the king were in check.
+
+                    lda@PLY MoveTo,x
+                    cmp@PLY virtualKingSquare
+                    beq .check
+                    cmp@PLY virtualKingSquare+1
+                    beq .check
+
+.nextScan           dex
                     bpl .scanCheck
 
 .notCheck           lda #0

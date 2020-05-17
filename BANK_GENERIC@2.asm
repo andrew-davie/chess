@@ -325,7 +325,7 @@ PieceToShape
         COMMON_VARS
         REFER InitialisePieceSquares ;✅
         REFER AdjustMaterialPositionalValue ;✅
-        REFER EnPassantRemovePiece ;✅
+        ;REFER EnPassantRemovePiece ;✅
         VEND AddPieceMaterialValue
 
     ; Adjust the material score based on the piece
@@ -369,7 +369,7 @@ PieceValueHI
 
         REFER InitialisePieceSquares ;✅
         REFER AdjustMaterialPositionalValue ;✅
-        REFER EnPassantRemovePiece ;✅
+        ;REFER EnPassantRemovePiece ;✅
         VAR __valPtr, 2
         VEND AddPiecePositionValue
 
@@ -435,6 +435,7 @@ FlipSquareIndex
 ;---------------------------------------------------------------------------------------------------
 
     include "piece_vectors.asm"
+
 
 ;---------------------------------------------------------------------------------------------------
 

@@ -210,9 +210,6 @@ SynapsePattern
         REFER aiPromotePawnStart ;✅
         REFER aiFinalFlash ;✅
 
-    IF ENPASSANT_ENABLED
-        REFER EnPassantCheck ;✅
-    ENDIF
 
         VEND CopySinglePiece
 
@@ -409,6 +406,12 @@ ONCEPERFRAME = 40
                     lda enPassantPawn               ; flag/square from last actual move made
                     sta@PLY enPassantSquare         ; used for backtracking, to reset the flag
 
+                    lda vkSquare
+                    sta@PLY virtualKingSquare
+                    lda vkSquare+1
+                    sta@PLY virtualKingSquare+1     ; traversal squares of king for castling
+
+    jsr debug
 
     ; The value of the material (signed, 16-bit) is restored to the saved value at the reversion
     ; of a move. It's quicker to restore than to re-sum. So we save the current evaluation at the
@@ -545,8 +548,6 @@ ONCEPERFRAME = 40
                     sta currentPly
                     
                     jsr GenerateAllMoves;@this
-
-                    inc __quiesceCapOnly                ; only interested in captures now...
 
                     ldx@PLY moveIndex
 .scan               stx@PLY movePtr

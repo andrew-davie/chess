@@ -45,7 +45,7 @@ MAX_MOVES = 100          ; big is good
     VARIABLE value, 2
     VARIABLE depthLeft, 1
     VARIABLE restorePiece, 1
-    VARIABLE kingSquare, 3                          ; traversing squares for castle/check
+    VARIABLE virtualKingSquare, 2                   ; traversing squares for castle/check
     
 
     CHECK_RAM_BANK_SIZE "SHADOW_PLY"

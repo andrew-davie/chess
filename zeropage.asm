@@ -41,7 +41,7 @@ previousPiece                   ds 1
 
 Platform                        ds 1                ; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
 speech_addr                     ds 2
-bg                              ds 1
+;bg                              ds 1
 
 capture                         ds 1
 
@@ -54,3 +54,5 @@ flagCheck                       ds 1                ; -1 = no, #KING = yes
 protecting                      ds 1
 randomness                      ds 1
 __psb                           ds 2
+
+vkSquare                        ds 2                ; current move's king traversal squares during castling
