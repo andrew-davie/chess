@@ -1,5 +1,5 @@
     SLOT 1
-    NEWBANK STATEMACHINE2
+    ROMBANK STATEMACHINE2
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -82,9 +82,10 @@
 
                     ldx #75                         ; delay after human move
                     lda sideToMove
-                    bmi .computer
+                    asl
+                    bmi .human
                     ldx #1                          ; delay after computer move
-.computer           stx aiFlashDelay
+.human              stx aiFlashDelay
 
                     PHASE AI_DelayAfterPlaced2
                     rts
@@ -97,6 +98,16 @@
 
         REFER AiStateMachine
         VEND aiDelayAfterPlaced2
+
+
+                    lda SWCHB
+                    and #SELECT_SWITCH
+                    bne .noSwapside
+
+                    PHASE AI_DebounceSelect
+                    rts
+.noSwapside
+
 
                     dec aiFlashDelay
                     bne .exit
@@ -187,8 +198,9 @@
                     lda toX12
                     sta squareToDraw                    ; for showing move (display square)
 
-                    ldx sideToMove
-                    bpl .player
+                    lda sideToMove
+                    asl
+                    bmi .player
 
 
 .computer           PHASE AI_ComputerMove               ; computer select move
@@ -374,6 +386,11 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
     ; Piece has finished the animated move and is now in destination square.
     ; Flash the piece
 
+
+    ; TODO: if en-passant, we can remove the piece being taken
+    ; check movePiece for enPassant flag set (x)
+
+
                     lda drawDelay
                     beq .deCount
                     dec drawDelay
@@ -436,6 +453,52 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
                     sta mdelay                      ; hold-down delay before moves are shown
 
                     PHASE AI_DrawMoves
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiWriteStartPieceBlank
+    SUBROUTINE
+
+        REFER AiStateMachine
+        VEND aiWriteStartPieceBlank
+
+    ; Flash the piece in-place preparatory to moving it.
+    ; drawDelay = flash speed
+    ; drawCount = # of flashes
+
+
+                    lda #%100
+                    sta CTRLPF
+                    lda #4
+                    sta COLUP0
+
+
+                    lda drawDelay
+                    beq deCount
+                    dec drawDelay
+                    rts
+deCount
+
+                    lda drawCount
+                    beq flashDone
+                    dec drawCount
+
+                    lda #READY_TO_MOVE_FLASH
+                    sta drawDelay                   ; "getting ready to move" flash
+
+                    lda fromX12
+                    sta squareToDraw
+
+    ; WARNING - local variables will not survive the following call...!
+                    jmp CopySinglePiece;@0          ; EOR-draw = flash
+
+flashDone
+
+                    ;lda #2
+                    ;sta drawDelay
+                    PHASE AI_MarchToTargetA
                     rts
 
 

@@ -31,19 +31,24 @@ _FIRST_BANK          = 0                             ; 3E+ 1st bank holds reset 
 
 YES                     = 1
 NO                      = 0
+HUMAN                   = 64
 
 INFINITY                = $7000 ;32767
 
 
 ; assemble diagnostics. Remove for release.
 
-TEST_POSITION           = 1                         ; 0=normal, 1 = setup test position
+TEST_POSITION           = 0                         ; 0=normal, 1 = setup test position
 DIAGNOSTICS             = 1
 QUIESCENCE              = 1
 ASSERTS                 = 0
 PVSP                    = 0                         ; player versus player =1
-ENPASSANT_ENABLED       = 0
+ENPASSANT_ENABLED       = 1
 CASTLING_ENABLED        = 1
+
+
+SELECT_SWITCH           = 2                         ; (SWCHB & SELECT_SWITCH)  0 == PRESSED
+
 
 ; NOTE: SEARCH_DEPTH cannot be < 3, because the player's moves are generated from PLY+1, and use
 ; PLY+2 for computer response (thus, 3). The bank allocation gets stomped!
@@ -54,7 +59,7 @@ QUIESCE_EXTRA_DEPTH     = 6
 
 
     IF SEARCH_DEPTH < 3
-    ECHO "ERROR: Search depth nust be >= 3"
+    ECHO "ERROR: Search depth must be >= 3"
     ERR
     ENDIF
 
@@ -163,7 +168,7 @@ SLOT3               = 192
 
 
 
-            MAC NEWBANK ; bank name
+            MAC ROMBANK ; bank name
                 SEG {1}
                 ORG _ORIGIN
                 RORG _BANK_ADDRESS_ORIGIN
@@ -306,7 +311,7 @@ _BANK_SLOT SET {1} * 64               ; D7/D6 selector
 
     MAC SWAP
                     lda sideToMove
-                    eor #SWAP_SIDE
+                    eor #SWAP_SIDE|HUMAN
                     sta sideToMove
 
                     ;NEGEVAL
@@ -440,31 +445,7 @@ _CURRENT_RAMBANK SET RAMBANK_{1}
 ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
     ENDM
 
-;---------------------------------------------------------------------------------------------------
 
-    MAC RESYNC
-; resync screen, X and Y == 0 afterwards
-                lda #%10                        ; make sure VBLANK is ON
-                sta VBLANK
-
-                ldx #8                          ; 5 or more RESYNC_FRAMES
-.loopResync
-                VERTICAL_SYNC
-
-                ldy #SCANLINES_NTSC/2 - 2
-                lda Platform
-                eor #PAL_50                     ; PAL-50?
-                bne .ntsc
-                ldy #SCANLINES_PAL/2 - 2
-.ntsc
-.loopWait
-                sta WSYNC
-                sta WSYNC
-                dey
-                bne .loopWait
-                dex
-                bne .loopResync
-    ENDM
 
     MAC SET_PLATFORM
 ; 00 = NTSC
@@ -581,18 +562,6 @@ SPEEDOF_{1} = ({2}/64) + 1
 ;---------------------------------------------------------------------------------------------------
 
 
-RND_EOR_VAL = $FE ;B4
-
-    MAC	NEXT_RANDOM
-        lda	rnd
-        lsr
-        bcc .skipEOR
-        eor #RND_EOR_VAL
-.skipEOR    sta rnd
-    ENDM
-
-;--------------------------------------------------------------------------------
-
     MAC PHASE ;#
         lda #{1}
         sta aiState
@@ -620,7 +589,11 @@ RND_EOR_VAL = $FE ;B4
     ENDM
 ;---------------------------------------------------------------------------------------------------
 
-    include "BANK_FIRST@0.asm"                        ; MUST be first in ROM - contains reset vectors
+    include "MACROS.asm"
+
+    include "STARTBANK@3.asm"                       ; MUST be first ROM bank
+
+    include "BANK_FIRST@0.asm"
     include "BANK_GENERIC@1#1.asm"
     include "BANK_ROM_SHADOW_SCREEN.asm"
     include "ROM_SCREEN@3.asm"
@@ -630,7 +603,8 @@ RND_EOR_VAL = $FE ;B4
     include "BANK_StateMachine@1#1.asm"
     include "BANK_StateMachine@1#2.asm"
     include "piece_graphics.asm"
-    include "BANK_GENERIC@2.asm"
+    include "BANK_GENERIC@2#1.asm"
+    include "BANK_GENERIC@2#2.asm"
     include "GFX1.asm"
     include "GFX2.asm"
     include "GFX3.asm"
@@ -642,6 +616,9 @@ RND_EOR_VAL = $FE ;B4
     include "PIECE_HANDLER@1#1.asm"
     include "PIECE_HANDLER@1#2.asm"
     include "BANK_3.asm"
+
+    include "TitleScreen.asm"
+    include "TitleScreen@2.asm"
 
     include "BANK_LAST.asm"
 

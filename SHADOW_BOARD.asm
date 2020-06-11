@@ -9,7 +9,7 @@ ValidSquare = ShadowValidSquare + $400
 Board = ShadowBoard + $400
 
     SLOT 2
-    NEWBANK SHADOW_BOARD           ; copy the following bank to RAMBANK_BOARD
+    ROMBANK SHADOW_BOARD           ; copy the following bank to RAMBANK_BOARD
 
 ; Board is a 10 x 12 object which simplifies the generation of moves
 ; The squares marked '░░░' are illegal. The ("X12") index of each square is the left

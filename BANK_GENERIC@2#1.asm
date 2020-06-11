@@ -1,6 +1,6 @@
 
             SLOT 2
-            NEWBANK GENERIC_BANK@2
+            ROMBANK GENERIC_BANK@2#1
 
 ;    DEFINE_1K_SEGMENT DECODE_LEVEL_SHADOW
 
@@ -27,7 +27,6 @@ STELLA_AUTODETECT dc "TJ3E" ; 3E+ autodetect
                     sta PF1
                     sta PF2
                     sta GRP0
-                    sta GRP1
 
                     lda #%01000010                  ; bit6 is not required
                     ;sta VBLANK                      ; end of screen - enter blanking
@@ -118,6 +117,8 @@ _rts                rts
     ; originX12     starting square X12
     ; toX12         ending square X12
 
+                    jsr EnPassantFixupDraw
+
         ; get the piece types from the board
 
                     lda #RAMBANK_BOARD
@@ -142,6 +143,43 @@ _rts                rts
                     PHASE AI_WriteStartPieceBlank
 .idleErase          rts
 
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF EnPassantFixupDraw
+    SUBROUTINE
+
+    ; {
+    ; With en-passant flag, it is essentially dual-use.
+    ; First, it marks if the move is *involved* somehow in an en-passant
+    ; if the piece has MOVED already, then it's an en-passant capture
+    ; if it has NOT moved, then it's a pawn leaving home rank, and sets the en-passant square
+
+                    ldx #0                          ; (probably) NO en-passant this time
+                    lda fromPiece
+                    tay
+
+                    and #FLAG_ENPASSANT|FLAG_MOVED
+                    cmp #FLAG_ENPASSANT
+                    bne .noep                       ; HAS moved, or not en-passant
+
+                    eor fromPiece                   ; clear FLAG_ENPASSANT
+                    sta fromPiece
+
+                    ldx toX12                       ; this IS an en-passantable opening, so record the square
+                    stx enPassantPawn               ; capturable square for en-passant move (or none)
+
+    ; set the secondary piece movement info - this allows move/unmakemove to work for enpassant
+
+                    lda #0
+                    sta@PLY secondaryBlank
+                    stx@PLY secondarySquare
+                    sty@PLY secondaryPiece
+
+.noep
+    ; }
+
+                    rts
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -432,6 +470,7 @@ FlipSquareIndex
 .SQBASE SET .SQBASE - 10
     REPEND
 
+
 ;---------------------------------------------------------------------------------------------------
 
     include "piece_vectors.asm"
@@ -439,7 +478,7 @@ FlipSquareIndex
 
 ;---------------------------------------------------------------------------------------------------
 
-            CHECK_BANK_SIZE "BANK_GENERIC@2"
+            CHECK_BANK_SIZE "BANK_GENERIC@2#1"
 
 ;---------------------------------------------------------------------------------------------------
 ;EOF

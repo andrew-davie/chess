@@ -19,9 +19,9 @@
 ;#########################################  FIXED BANK  ############################################
 ;---------------------------------------------------------------------------------------------------
 
-_ORIGIN             SET _FIRST_BANK
+;_ORIGIN             SET _FIRST_BANK
 
-                    NEWBANK THE_FIRST_BANK
+                    ROMBANK THE_FIRST_BANK
                     RORG $f000
 
 ;---------------------------------------------------------------------------------------------------
@@ -37,6 +37,8 @@ _ORIGIN             SET _FIRST_BANK
 
                     ldx #$FF
                     txs
+
+                    CALL TitleScreen
 
                     CALL CartInit
                     CALL SetupBanks
@@ -152,12 +154,15 @@ zapem               txa
                     lda __thinkbar
                     and #15
                     tay
-                    lda TBcol,y
+                    lda rnd
+                    and #4
+                    ora TBcol,y
                     sta COLUPF
 
                     lda SynapsePattern,y
 .doThink            sta PF2
                     sta PF1
+                    sta PF0
                     rts
 
 
@@ -333,6 +338,9 @@ ONCEPERFRAME = 40
         {1} DelayAfterMove2                         ; 38
         {1} DelayAfterPlaced                        ; 39
         {1} DelayAfterPlaced2                       ; 40
+        {1} EPHandler                               ; 41
+        {1} EPFlash                                 ; 42
+        {1} DebounceSelect                          ; 43
 
     ENDM
 
@@ -389,7 +397,8 @@ ONCEPERFRAME = 40
     ; Do the move generation in two passes - pawns then pieces
     ; This is an effort to get the alphabeta pruning happening with major pieces handled first in list
 
-    ;...
+    ;{
+
     ; This MUST be called at the start of a new ply
     ; It initialises the movelist to empty
     ; x must be preserved
@@ -411,8 +420,6 @@ ONCEPERFRAME = 40
                     lda vkSquare+1
                     sta@PLY virtualKingSquare+1     ; traversal squares of king for castling
 
-    jsr debug
-
     ; The value of the material (signed, 16-bit) is restored to the saved value at the reversion
     ; of a move. It's quicker to restore than to re-sum. So we save the current evaluation at the
     ; start of each new ply.
@@ -421,7 +428,7 @@ ONCEPERFRAME = 40
                     sta@PLY savedEvaluation
                     lda Evaluation+1
                     sta@PLY savedEvaluation+1
-    ;^
+    ;}
 
 
 
@@ -656,6 +663,14 @@ ONCEPERFRAME = 40
                     lda@PLY savedEvaluation+1
                     sta Evaluation+1
 
+                    lda@PLY virtualKingSquare
+                    sta vkSquare
+                    lda@PLY virtualKingSquare+1
+                    sta vkSquare+1
+
+                    lda@PLY enPassantSquare
+                    sta enPassantPawn
+
                     ldx@PLY movePtr
                     ldy@PLY MoveFrom,x
                     lda@PLY restorePiece
@@ -674,6 +689,7 @@ ONCEPERFRAME = 40
                     ldx@PLY secondarySquare
                     sta@RAM Board,x                     ; put piece back
                     ldy@PLY secondaryBlank
+                    beq .noSecondary                    ; enpassant - no blanker square
                     lda #0
                     sta@RAM Board,y                     ; blank piece origin
 
@@ -743,6 +759,7 @@ ONCEPERFRAME = 40
                     beq .legit                  ; from == to, so not a promote
 
     ; Have detected a promotion duplicate - skip all 3 of them
+    ; TODO: this will need reworking once moves are sorted
 
                     dec aiMoveIndex                 ; skip "KBRQ" promotes
                     dec aiMoveIndex
@@ -825,21 +842,53 @@ ONCEPERFRAME = 40
                     bpl .copyPieceR
                     rts
 
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF EnPassantRemoveCapturedPawn
+    SUBROUTINE
+
+        REFER aiSpecialMoveFixup
+        VEND EnPassantRemoveCapturedPawn
+
+                    ldy enPassantPawn
+                    beq .exit
+
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+
+    ; Account for the opponent pawn being removed
+    ; Effectively ADD the values to our current score
+
+                    lda sideToMove
+                    eor #128
+                    and #128
+                    ora #WP                         ; == BP in this usage
+                    
+                    ldx #BANK_AddPiecePositionValue
+                    stx SET_BANK;@2
+                    jsr AddPiecePositionValue       ; remove pos value for original position
+
+                    lda #WP                         ; == BP
+                    ldx #BANK_AddPieceMaterialValue
+                    stx SET_BANK;@2
+                    jsr AddPieceMaterialValue       ; remove material for original type
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@3
+
+                    ldx enPassantPawn
+                    lda #0
+                    sta@RAM Board,x
+
+
+.exit               rts
+
+
 ;---------------------------------------------------------------------------------------------------
 
     ECHO "FREE BYTES IN BANK_FIRST@0 BANK = ", $F3FC - *
-
-;---------------------------------------------------------------------------------------------------
-    ; The reset vectors
-    ; these must live in the first 1K bank of the ROM
-    
-    SEG StartupInterruptVectors
-    ORG _FIRST_BANK + $3FC
-
-                    .word StartupBankReset            ; RESET
-                    .word StartupBankReset            ; IRQ        (not used)
-
-;---------------------------------------------------------------------------------------------------
 
 
 ; EOF

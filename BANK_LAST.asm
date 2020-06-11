@@ -3,7 +3,7 @@
 ; andrew@taswegian.com
 
     SLOT 3
-    NEWBANK LAST
+    ROMBANK LAST
 
 
     ds 1024

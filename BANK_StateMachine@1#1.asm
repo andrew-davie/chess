@@ -1,5 +1,5 @@
     SLOT 1
-    NEWBANK STATEMACHINE
+    ROMBANK STATEMACHINE
 
 
 ; Banks holding data (ply 0 doubles as WHITE, and ply 1 as BLACK)
@@ -85,7 +85,7 @@ HOLD_DELAY                      = 40
         VEND aiBeginSelectMovePhase
 
 
-                    lda #$2
+                    lda #$4
                     sta COLUP0
                     ldx #%100
                     stx CTRLPF              ; under
@@ -118,12 +118,26 @@ HOLD_DELAY                      = 40
                     lda squareToDraw
                     bmi .initial2                    ; startup - no computer move to show
 
+                    lda aiFlashPhase
+                    lsr
+                    bcs .noSwapside                 ; only check for SELECT/exit if piece is drawn
+
+                    lda SWCHB
+                    and #SELECT_SWITCH
+                    bne .noSwapside
+
+                    PHASE AI_DebounceSelect
+                    rts
+.noSwapside
+
     ; "squareToDraw" is the piece that should flash while human waits
 
                     lda SWCHA
-                    and #$F0
-                    cmp #$F0
+                    and #$F0                        ; UDLR bits
+                    cmp #$F0                        ; all NOT pressed
                     beq .nodir
+
+    ; direction has been pressed, so transition out of flashing
 
                     lda #1
                     sta aiFlashDelay
@@ -158,8 +172,12 @@ HOLD_DELAY                      = 40
         VEND aiSelectStartSquare
 
                     NEXT_RANDOM
+
+                    lda SWCHB
+                    and #SELECT_SWITCH
+                    beq .swapside
                     
-                    jsr moveCursor
+                    CALL moveCursor;@2
 
     ; Search the player's movelist for the square, so we can set cursor colour
     
@@ -181,7 +199,7 @@ HOLD_DELAY                      = 40
                     sta fromPiece
 
 .done               dec ccur                        ; pulse colour for valid squares
-                    jsr setCursorColours
+                    CALL setCursorColours
 
                     tya
                     ora INPT4
@@ -191,79 +209,31 @@ HOLD_DELAY                      = 40
 
 .exit               rts
 
-;---------------------------------------------------------------------------------------------------
 
-    DEF setCursorPriority
-    SUBROUTINE
 
-        REFER moveCursor
-        VEND setCursorPriority
+.swapside
 
-                    tya
-                    pha
-
-                    ldx #%100
-
-                    ldy cursorX12
-                    bmi .under
-
-                    lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM;@3
-                    lda Board,y
-                    bne .under
-                    ldx #0
-.under              stx CTRLPF                  ; UNDER
-
-                    pla
-                    tay
+                    PHASE AI_DebounceSelect
                     rts
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF setCursorColours
+    DEF aiDebounceSelect
     SUBROUTINE
 
-        REFER aiSelectStartSquare
-        REFER aiDrawMoves
-        REFER aiUnDrawTargetSquares
-        REFER aiShowMoveCaptures
-        REFER aiSlowFlash
-        REFER aiSelectDestinationSquare
-        VEND setCursorColours
+                    lda SWCHB
+                    and #SELECT_SWITCH
+                    beq .exit                       ; SELECT still pressed
 
-    ; pass y=-1 if move is NOT in the movelist
-    ; preserve y
+                    lda sideToMove
+                    eor #HUMAN
+                    sta sideToMove
 
-                    lda #$40
+                    NEGEVAL
 
-                    cpy #-1
-                    beq .writeCursorCol             ; NOT in the movelist
+                    PHASE AI_ComputerMove  
+.exit               rts
 
-                    lda ccur
-                    lsr
-                    lsr
-                    lsr
-                    and #3
-                    clc
-                    adc #$D0 ;COLOUR_LINE_1
-
-.writeCursorCol     sta COLUP0
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
-;          RLDU RLD  RL U RL   R DU R D  R  U R     LDU  LD   L U  L     DU   D     U
-;          0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111
-
-    ALLOCATE JoyCombined, 16
-    .byte     0,   0,   0,   0,   0,   1,   1,   1,   0,  -1,  -1,  -1,   0,   1,  -1,   0
-
-    ALLOCATE JoyMoveCursor, 16
-    .byte     0,   0,   0,   0,   0,  -9,  11,   1,   0, -11,  9,  -1,   0,  -10,  10,   0
-
-
-;---------------------------------------------------------------------------------------------------
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -274,7 +244,7 @@ HOLD_DELAY                      = 40
         VEND aiDrawMoves
 
                     dec ccur
-                    jsr setCursorColours
+                    CALL setCursorColours
 
                     dec mdelay
                     bne .exit
@@ -480,7 +450,7 @@ HOLD_DELAY                      = 40
 
 
                     dec ccur
-                    jsr setCursorColours
+                    CALL setCursorColours
 
                     dec mdelay
                     bne .exit
@@ -518,7 +488,7 @@ HOLD_DELAY                      = 40
     ; we should do this an even number of times so that pieces don't disappEOR
 
                     dec ccur
-                    jsr setCursorColours
+                    CALL setCursorColours
 
                     dec mdelay                  ; flash speed UNVARYING despite draw happening
 
@@ -556,7 +526,7 @@ HOLD_DELAY                      = 40
     ; They have all been drawn, so now we "slow" flash any pieces that can be captures
 
                     dec ccur
-                    jsr setCursorColours
+                    CALL setCursorColours
 
                     lda aiFlashPhase
                     and #1
@@ -589,56 +559,6 @@ HOLD_DELAY                      = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF moveCursor
-    SUBROUTINE
-
-        REFER aiSelectStartSquare
-        REFER aiSelectDestinationSquare
-
-        VAR __newCursor, 1
-        
-        VEND moveCursor
-
-    ; Part (a) move cursor around the board waiting for joystick press
-
-                    ldx #0                  ; delay
-
-                    lda SWCHA
-                    lsr
-                    lsr
-                    lsr
-                    lsr
-                    tay
-
-                    cmp #15
-                    beq .cursor             ; nothing pressed - skip delays
-
-                    dec mdelay
-                    bpl .delaym
-
-                    clc
-                    lda cursorX12
-                    adc JoyMoveCursor,y
-                    sta __newCursor
-                    tay
-
-                    lda #RAMBANK_BOARD
-                    sta SET_BANK_RAM;@3
-                    lda ValidSquare,y
-                    cmp #-1
-                    beq .invalid
-                    lda __newCursor
-                    sta cursorX12
-.invalid
-
-                    ldx #CURSOR_MOVE_SPEED
-.cursor             stx mdelay
-                    jsr setCursorPriority
-.delaym             rts
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF aiSelectDestinationSquare
     SUBROUTINE
 
@@ -666,7 +586,7 @@ HOLD_DELAY                      = 40
                     rts
 
 .exit
-                    jsr moveCursor
+                    CALL moveCursor;@2
 
         lda INTIM
         cmp #20
@@ -677,7 +597,7 @@ HOLD_DELAY                      = 40
                     sty toX12 
 
                     CALL GetPiece;@3
-                    jsr setCursorColours
+                    CALL setCursorColours
 
 
     ; y = valid square
@@ -994,11 +914,48 @@ HOLD_DELAY                      = 40
 
                     rts
 
-xhalt
+xhalt               PHASE AI_EPHandler
+                    rts
 
-                    ;??? jsr FinaliseMove
 
-                    lda #4                          ; on/off count
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiEPHandler
+    SUBROUTINE
+
+                    ;CALL EnPassantFixupDraw         ; set enPassantPawn
+
+
+                    lda fromPiece
+                    and #FLAG_ENPASSANT|FLAG_MOVED
+                    cmp #FLAG_ENPASSANT|FLAG_MOVED
+                    bne .exit
+
+    ; we have deteced a piece DOING an en passant capture
+    ; so do the actual removal of the captured pawn...
+    ; calculate the captured pawn's square based on piece colour
+
+                    lda #-10
+                    ldx fromPiece
+                    bpl .white
+                    lda #10
+.white
+                    clc
+                    adc fromX12                     ; attacker destination square
+                    sta enPassantPawn               ; now this is the pawn to ERASE
+
+                    lda #5                          ; on/off count (leave undrawn)
+                    sta drawCount                   ; flashing for piece about to move
+                    lda #0
+                    sta drawDelay
+
+                    PHASE AI_EPFlash
+                    rts
+
+
+.exit
+            
+                    lda #4                          ; on/off count (leave undrawn)
                     sta drawCount                   ; flashing for piece about to move
                     lda #0
                     sta drawDelay
@@ -1010,53 +967,9 @@ xhalt
 ;---------------------------------------------------------------------------------------------------
 
 
-    DEF aiWriteStartPieceBlank
-    SUBROUTINE
-
-        REFER AiStateMachine
-        VEND aiWriteStartPieceBlank
-
-    ; Flash the piece in-place preparatory to moving it.
-    ; drawDelay = flash speed
-    ; drawCount = # of flashes
-
-
-                    lda #%100
-                    sta CTRLPF
-                    lda #2
-                    sta COLUP0
-
-
-                    lda drawDelay
-                    beq deCount
-                    dec drawDelay
-                    rts
-deCount
-
-                    lda drawCount
-                    beq flashDone
-                    dec drawCount
-
-                    lda #READY_TO_MOVE_FLASH
-                    sta drawDelay                   ; "getting ready to move" flash
-
-                    lda fromX12
-                    sta squareToDraw
-
-    ; WARNING - local variables will not survive the following call...!
-                    jmp CopySinglePiece;@0          ; EOR-draw = flash
-
-flashDone
-
-                    ;lda #2
-                    ;sta drawDelay
-                    PHASE AI_MarchToTargetA
-                    rts
-
-
 ;---------------------------------------------------------------------------------------------------
 
-    CHECK_BANK_SIZE "BANK_StateMachine"
+    CHECK_BANK_SIZE "BANK_StateMachine@1#1"
 
 
 ;---------------------------------------------------------------------------------------------------

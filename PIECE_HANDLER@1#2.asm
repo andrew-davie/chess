@@ -1,5 +1,5 @@
     SLOT 1
-    NEWBANK PIECE_HANDLER_2
+    ROMBANK PIECE_HANDLER_2
 
     include "PIECE_ROOK.asm"
     include "PIECE_QUEEN.asm"

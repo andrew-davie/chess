@@ -3,7 +3,7 @@
 ; andrew@taswegian.com
 
     SLOT 3 ; this code assembles for bank #1
-    NEWBANK THREE
+    ROMBANK THREE
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -149,8 +149,9 @@
                     and #FLAG_CASTLE
                     beq .exit                       ; NOT involved in castle!
 
+    jsr debug ;tmp
                     ldx #4
-                    lda fromX12                     ; *destination*
+                    lda toX12                     ; *destination*
 .findCast           clc
                     dex
                     bmi .exit

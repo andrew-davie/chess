@@ -3,7 +3,7 @@
 
 
     NEWRAMBANK BANK_EVAL
-    NEWBANK EVAL
+    ROMBANK EVAL
 
 
 ; see https://www.chessprogramming.org/Simplified_Evaluation_Function

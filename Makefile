@@ -9,7 +9,7 @@ characters:
 chess.bin: *.asm Makefile FORCE
 	osascript -e 'quit app "Stella"'
 	(cd ./gfx && python ConvertChessPieces.py)
-#		python tools/grid.py
+	python tools/grid.py
 	../dasm/bin/dasm ./chess.asm -l./chess.lst -f3 -s./chess.sym -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
 	open -a /Applications/Stella.app ./chess.bin
 

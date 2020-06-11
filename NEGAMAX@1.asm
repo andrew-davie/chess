@@ -3,7 +3,7 @@
 ; andrew@taswegian.com
 
     SLOT 1
-    NEWBANK NEGAMAX
+    ROMBANK NEGAMAX
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -13,6 +13,8 @@
         REFER AiStateMachine ;✅
         VEND aiComputerMove
 
+    ; Computer is about to select a move
+
 
                     lda #RAMBANK_PLY
                     sta currentPly                    
@@ -21,9 +23,7 @@
                     lda #1
                     sta CTRLPF                      ; mirroring for thinkbars
 
-
                     jsr selectmove;@this
-
 
                     lda #0
                     sta CTRLPF                      ; clear mirroring
@@ -81,8 +81,7 @@
                     sta positionCount+2
                     ;sta maxPly
         ENDIF
-
-
+                    
                     lda #<INFINITY
                     sta __beta
                     lda #>INFINITY
@@ -99,8 +98,8 @@
 
                     jsr negaMax
 
-                    ;lda currentPly
-                    ;sta SET_BANK_RAM ;tmp?
+                    lda currentPly
+                    sta SET_BANK_RAM ;tmp?
 
                     ldx@PLY bestMove
                     bmi .nomove
@@ -235,6 +234,13 @@
     ENDIF
 
 
+    IF ENPASSANT_ENABLED
+
+                    CALL EnPassantFixupDraw          ; generate enPassantPawn value
+                    ;CALL EnPassantRemoveCapturedPawn
+
+    ENDIF
+
 
 
     ; Swap over sides
@@ -334,7 +340,7 @@
                     lda@PLY bestMove
                     bmi .noCheat                    ; can't force if no move chosen!
                     lda SWCHB
-                    and #2
+                    and #SELECT_SWITCH
                     beq .exit                       ; SELECT abort
 .noCheat
 

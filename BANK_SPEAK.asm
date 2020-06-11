@@ -1,4 +1,4 @@
-    NEWBANK SPEAK
+    ROMBANK SPEAK
 
 ;
 ; speakjet.inc

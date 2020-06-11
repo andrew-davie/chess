@@ -39,7 +39,7 @@ fromPiece                       ds 1
 lastPiece                       ds 1
 previousPiece                   ds 1
 
-Platform                        ds 1                ; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
+;Platform                        ds 1                ; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
 speech_addr                     ds 2
 ;bg                              ds 1
 
@@ -56,3 +56,4 @@ randomness                      ds 1
 __psb                           ds 2
 
 vkSquare                        ds 2                ; current move's king traversal squares during castling
+human                           ds 1                ; colour of human

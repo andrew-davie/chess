@@ -1,0 +1,12 @@
+pawn capture not undrawing source pawn square on en-passant
+en-passant flag is not cleared after move
+'bestmove' null error
+swap evaluation value between moves
+computer not castling?!
+
+
+
+
+DONE
+"select" force move needs to wait for correct flash phase
+

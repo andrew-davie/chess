@@ -1,6 +1,6 @@
 
     SLOT 2
-    NEWBANK BITMAP
+    ROMBANK BITMAP
 
 ; These equates allow revectoring (address offset) if the RAM slot is not the same as the SHADOW slot
 
@@ -22,8 +22,8 @@ ChessBitmap5 = SHADOW_ChessBitmap5
 ;---------------------------------------------------------------------------------------------------
 
 COLOUR_LINE_1 = $84
-COLOUR_LINE_2 = $36
-COLOUR_LINE_3 = $28
+COLOUR_LINE_2 = $48
+COLOUR_LINE_3 = $2e
 BACKGCOL      = $00
 
 

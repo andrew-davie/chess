@@ -3,7 +3,7 @@
 ; andrew@taswegian.com
 
     SLOT 1           ; which bank this code switches to
-    NEWBANK ONE
+    ROMBANK ONE
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -36,6 +36,12 @@
                     sta SWACNT                      ; set controller I/O to INPUT
                     sta HMCLR
 
+                    sta GRP0
+                    sta GRP1
+                    sta ENAM0
+                    sta ENAM1
+                    sta ENABL
+
     ; cleanup remains of title screen
                     ;sta GRP0
                     ;sta GRP1
@@ -50,7 +56,7 @@
                     sta COLUBK
 
                     
-                    lda #WHITE          ;tmp+RAMBANK_PLY
+                    lda #WHITE|HUMAN
                     sta sideToMove
 
                     rts
@@ -329,8 +335,9 @@ InitPieceList
 
     ENDIF
 
-    IF TEST_POSITION & 1
+    IF TEST_POSITION & 0
     ; Castling across/into check
+    ; pawn promotion
 
         .byte WHITE|K, 26
         .byte WHITE|R, 29
@@ -349,11 +356,45 @@ InitPieceList
         .byte BLACK|BP, 88
         .byte BLACK|BP, 86
 
-        .byte WHITE|WP, 67
+        .byte WHITE|WP|FLAG_MOVED, 67
         .byte WHITE|K, 52
 
 
     ENDIF
+
+    IF TEST_POSITION & 0
+    ; En passant test (white)
+
+        .byte BLACK|BP|FLAG_MOVED, 53
+
+        .byte WHITE|WP, 34
+        .byte WHITE|K, 52
+
+
+        .byte BLACK|BP, 88
+        .byte WHITE|WP|FLAG_MOVED, 67
+
+
+    ENDIF
+
+
+    IF TEST_POSITION & 1
+    ; castle
+
+        .byte BLACK|R, 99
+        .byte BLACK|K, 96
+        .byte BLACK|BP, 89
+
+        .byte WHITE|WP, 37
+        .byte WHITE|WP, 38
+        .byte WHITE|WP, 39
+        .byte WHITE|R,29
+        .byte WHITE|K, 26
+
+    ENDIF
+
+
+
 
     IF TEST_POSITION & 0
     ; promote test
@@ -402,8 +443,6 @@ InitPieceList
 
     ENDIF
 
-
-;---------------------------------------------------------------------------------------------------
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -482,22 +521,58 @@ InitPieceList
                     sta SET_BANK_RAM
 
                     jsr CastleFixupDraw
-                    jsr CastleFixupDraw_ENPASSANT
 
                     lda fromX12
                     sta squareToDraw
 
                     rts
 
+
 ;---------------------------------------------------------------------------------------------------
 
-    DEF CastleFixupDraw_ENPASSANT
+
+
+    DEF aiEPFlash
     SUBROUTINE
 
-        REFER aiSpecialMoveFixup ;✅
-        VEND CastleFixupDraw_ENPASSANT
-    
+        REFER AiStateMachine
+        VEND aiEPFlash
+
+                    lda drawDelay
+                    beq .deCount
+                    dec drawDelay
                     rts
+
+.deCount            lda drawCount
+                    beq .flashDone2
+                    dec drawCount
+
+                    lda #10
+                    sta drawDelay               ; "getting ready to move" flash
+
+                    lda enPassantPawn
+                    sta squareToDraw
+
+    ; WARNING - local variables will not survive the following call...!
+                    jsr CopySinglePiece;@0
+                    rts
+
+.flashDone2
+
+
+                    lda #0                          ; on/off count
+                    sta drawCount                   ; flashing for piece about to move
+                    lda #0
+                    sta drawDelay
+
+                    jsr EnPassantRemoveCapturedPawn
+
+                    ;lda #100
+                    ;sta aiFlashDelay ;???
+
+                    PHASE AI_FinalFlash
+                    rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -506,6 +581,20 @@ InitPieceList
 
         REFER aiSpecialMoveFixup ;✅
         VEND CastleFixupDraw
+
+    ; guarantee flags for piece, post-move, are correct
+
+
+                    lda #RAMBANK_BOARD
+                    sta SET_BANK_RAM;@2
+
+                    lda fromPiece
+                    and #~FLAG_ENPASSANT
+                    ora #FLAG_MOVED
+
+                    ldy fromX12                 ; destinatino
+                    sta@RAM Board,y
+
 
     ; fixup any castling issues
     ; at this point the king has finished his two-square march

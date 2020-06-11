@@ -1,14 +1,15 @@
-  NEWBANK TITLESCREEN
+  SLOT 1
+  ROMBANK TITLESCREEN
 
 OverscanTime2
-    .byte 26, 26
-    .byte 32, 32
+    .byte 39, 26
+    .byte 16, 32
 
 ;colvec
 ;    .word colr_ntsc2, colr_pal
 
 
-VBlankTime  .byte 50,50
+VBlankTime  .byte 42,50
 
     DEF TitleScreen
     SUBROUTINE
@@ -21,8 +22,15 @@ VBlankTime  .byte 50,50
 
 TitleSequence
 
+
+                lda #BANK_TitleData
+                sta SET_BANK
+
+
                 lda #%00000000
                 sta CTRLPF
+
+                lda #$C0
                 sta COLUBK
 
                 ldx #0 ;Platform
@@ -73,7 +81,7 @@ finxc
 
       ;------------------------------------------------------------------
 
-                ldx Platform
+                ldx #0 ;Platform
                 ldy VBlankTime,x
                 sty TIM64T
 
@@ -85,9 +93,9 @@ finxc
                 rol
                 and #%11
                 eor #PAL
-                cmp Platform
+                cmp #0 ;Platform
                 beq platOK
-                sta Platform
+                ;sta Platform
                 jmp TitleSequence
 platOK
     ENDIF
@@ -101,16 +109,19 @@ VerticalBlank   sta WSYNC
                 bne VerticalBlank
                 sta VBLANK
 
-                ;sta COLUBK
+                lda #$0
+                sta COLUBK
 
       ;------------------------------------------------------------------
 
       ; Do X scanlines of color-changing (our picture)
 
-                ldy #210-1  ; this counts our scanline number
-SokoLogo        ldx #3
-triplet         lda (__colour_table),y
-;    eor digit-1,x
+                ldy #67*3  ; this counts our scanline number
+SokoLogo
+
+
+                lda #$24
+
                 sta WSYNC
                 sta COLUPF         ; 3
 
@@ -121,20 +132,77 @@ triplet         lda (__colour_table),y
                 lda COL_2,y  ; 5
                 sta PF2      ; 3   @27
 
-                lda COL_3,y  ; 5
+                lda COL_0,y  ; 5
+                asl
+                asl
+                asl
+                asl
                 sta PF0      ; 3   @35
-                SLEEP 2      ; @37
-                lda COL_4,y  ; 5
+;                SLEEP 2      ; @37
+                lda COL_3,y  ; 5
                 sta PF1      ; 3   @45
-                SLEEP 3      ; @45
-                lda COL_5,y  ; 5
+;                SLEEP 3      ; @45
+                lda COL_4,y  ; 5
                 sta PF2      ; 3
 
-                dey          ; 2
-                dex          ; 2
-                bne triplet  ; 2(3)
+                dey
 
-                cpy #-1      ; 2
+                lda #$68
+
+                sta WSYNC
+                sta COLUPF         ; 3
+
+                lda COL_0,y  ; 5
+                sta PF0      ; 3   @11
+                lda COL_1,y  ; 5
+                sta PF1      ; 3   @19
+                lda COL_2,y  ; 5
+                sta PF2      ; 3   @27
+
+                lda COL_0,y  ; 5
+                asl
+                asl
+                asl
+                asl
+                sta PF0      ; 3   @35
+;                SLEEP 2      ; @37
+                lda COL_3,y  ; 5
+                sta PF1      ; 3   @45
+;                SLEEP 3      ; @45
+                lda COL_4,y  ; 5
+                sta PF2      ; 3
+
+                dey
+
+
+                lda #$D6
+
+                sta WSYNC
+                sta COLUPF         ; 3
+
+                lda COL_0,y  ; 5
+                sta PF0      ; 3   @11
+                lda COL_1,y  ; 5
+                sta PF1      ; 3   @19
+                lda COL_2,y  ; 5
+                sta PF2      ; 3   @27
+
+                lda COL_0,y  ; 5
+                asl
+                asl
+                asl
+                asl
+                sta PF0      ; 3   @35
+;                SLEEP 2      ; @37
+                lda COL_3,y  ; 5
+                sta PF1      ; 3   @45
+;                SLEEP 3      ; @45
+                lda COL_4,y  ; 5
+                sta PF2      ; 3
+
+
+
+                dey          ; 2
                 bne SokoLogo ; 2(3)
 
                 ;lda #0
@@ -142,7 +210,17 @@ triplet         lda (__colour_table),y
                 ;sta PF1
                 ;sta PF2
 
-                ldx Platform
+                ldx #0 ;Platform
+                stx PF0
+                stx PF1
+                stx PF2
+
+                sta WSYNC
+                sta WSYNC
+                sta WSYNC
+                sta WSYNC
+
+                stx COLUBK
                 lda OverscanTime2,x
                 sta TIM64T
 
@@ -253,7 +331,7 @@ ret
     align 256
 ;    ECHO "NTSC LUMS"
 colr_ntsc2
-   LUMTABLE $40,$20,$90,$4,$6,$8,$4,$6,$8
+   LUMTABLE $90,$10,$20,$4,$6,$8,$4,$6,$8
 ;colr_ntsc   LUMTABLE $70,$40,$a0,$A,$2,$E,$8,$E,$8
 
 ;    ECHO "PAL LUMS"
@@ -261,7 +339,6 @@ colr_ntsc2
 colr_pal        LUMTABLE $60, $80, $10, $6,$4,$8,$6,$4,$8
 ;colr_pal        LUMTABLE $90, $20, $60, $6,$A,$a,$C,$6,$8
 
-    include "titleData.asm"
 ;    include "pizza.asm"
 
  CHECK_BANK_SIZE "TITLESCREEN"

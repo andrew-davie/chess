@@ -15,6 +15,7 @@
     ; x = currentSquare (square the piece is on)
     ; currentPiece (with flags/colour attached)
 
+
                 MOVE_TOWARDS _DOWN
                 MOVE_TOWARDS _RIGHT
                 MOVE_TOWARDS _UP
