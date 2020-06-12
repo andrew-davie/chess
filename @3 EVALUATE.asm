@@ -2,13 +2,14 @@
     SLOT 3
 
 
-    NEWRAMBANK BANK_EVAL
+    RAMBANK BANK_EVAL
     ROMBANK EVAL
 
 
 ; see https://www.chessprogramming.org/Simplified_Evaluation_Function
 
 
+    ;ds 22
 
 ;---------------------------------------------------------------------------------------------------
 ; Vectors to the position value tables for each piece
@@ -24,7 +25,7 @@
     .byte {1}(PositionalValue_BISHOP - 22)
     .byte {1}(PositionalValue_ROOK - 22)
     .byte {1}(PositionalValue_QUEEN - 22) 
-    .byte {1}(PositionalValue_KING_ENDGAME - 22)
+    .byte {1}(PositionalValue_KING_MIDGAME - 22)
     ENDM
 
     ALLOCATE PosValVecLO, 8
@@ -55,39 +56,6 @@
         EVAL8 0
     ENDM
 
-
-    IF 0
-        MAC POSVAL
-    .byte 0
-    .byte {1}(PositionalValue_PAWN - 22)
-    .byte {1}(PositionalValue_PAWN - 22)
-    .byte {1}(PositionalValue_KNIGHT - 22)
-    .byte {1}(PositionalValue_BISHOP - 22)
-    .byte {1}(PositionalValue_ROOK - 22)
-    .byte {1}(PositionalValue_QUEEN - 22)
-    .byte {1}(PositionalValue_KING_MIDGAME - 22)
-    ENDM
-
-    ALLOCATE PosValVecLO, 8
-    POSVAL <
-    ALLOCATE PosValVecHI, 8
-    POSVAL >
-
-BZ = 0
-
-    MAC PVAL ;{ 10 entries }
-        .byte BZ + {1}
-        .byte BZ + {2}
-        .byte BZ + {3}
-        .byte BZ + {4}
-        .byte BZ + {5}
-        .byte BZ + {6}
-        .byte BZ + {7}
-        .byte BZ + {8}
-        .byte BZ
-        .byte BZ
-    ENDM
-    ENDIF
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -134,7 +102,7 @@ PositionalValue_BISHOP
 
 PositionalValue_ROOK
 
-    PVAL   -25, -20,  10,  55,  55,  50, -20,  -25
+    PVAL   -25, -20,  10,  0,  55, 0, -20,  -25
     PVAL  -120,   0,   0,   0,   0,   0,   0, -128
     PVAL  -128,   0,   0,   0,   0,   0,   0, -100
     PVAL   -100,   0,   0,   0,   0,   0,   0, -100
@@ -162,7 +130,7 @@ PositionalValue_QUEEN
 
 PositionalValue_KING_MIDGAME
 
-    PVAL   0,   0,  40, -60, -30,   0,  50,  0
+    PVAL   0,   0,  40, -120, -60, -120,  70,  0
     PVAL   0,   0,  -80, -80, -70, -70,  0,  0
     PVAL -10, -20, -20, -50, -60, -60, -20, -10
     PVAL -20, -30, -30, -40, -40, -30, -30, -20

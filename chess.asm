@@ -432,21 +432,6 @@ MAXIMUM_REQUIRED_OVERLAY_SIZE SET OVERLAY_DELTA
 
 ;---------------------------------------------------------------------------------------------------
 
-    MAC NEWRAMBANK ; bank name
-    ; {1}       bank name
-    ; {2}       RAM bank number
-
-                SEG.U {1}
-                ORG ORIGIN_RAM
-                RORG _BANK_ADDRESS_ORIGIN
-_BANK_START     SET *
-RAMBANK_{1}     SET _BANK_SLOT + (ORIGIN_RAM / RAM_SIZE)
-_CURRENT_RAMBANK SET RAMBANK_{1}
-ORIGIN_RAM      SET ORIGIN_RAM + RAM_SIZE
-    ENDM
-
-
-
     MAC SET_PLATFORM
 ; 00 = NTSC
 ; 01 = NTSC
@@ -505,24 +490,6 @@ SPEEDOF_{1} = ({2}/64) + 1
 
 ;---------------------------------------------------------------------------------------------------
 
-    ; Failsafe call of function in another bank
-    ; This will check the slot #s for current, call to make sure they're not the same!
-
-    MAC CALL ; function name
-    IF SLOT_{1} == _BANK_SLOT
-        ECHO "ERROR: Incompatible call to function requiring same slot..."
-        ECHO "Cannot switch bank in use for", {0}
-        ERR
-    ENDIF
-    lda #BANK_{1}
-    sta SET_BANK
-    jsr {1}
-    ENDM
-
-
-
-;---------------------------------------------------------------------------------------------------
-
     #include "zeropage.asm"
     #include "overlays.asm"
     #include "stack.asm"
@@ -540,24 +507,6 @@ SPEEDOF_{1} = ({2}/64) + 1
     ; EACH BANK HAS A READ-ADDRESS AND A WRITE-ADDRESS, WITH 512 bytes TOTAL ACCESSIBLE
     ; IN A 1K MEMORY SPACE
 
-    SLOT 0
-    NEWRAMBANK CHESS_BOARD_ROW
-    REPEAT (CHESSBOARD_ROWS) - 1
-        NEWRAMBANK .DUMMY
-    REPEND
-
-    ; NOTE: THIS BANK JUST *LOOKS* EMPTY.
-    ; It actually contains everything copied from the ROM copy of the ROW RAM banks.
-    ; The variable definitions are also in that ROM bank (even though they're RAM :)
-
-    ; Now we have the actual graphics data for each of the rows.  This consists of an
-    ; actual bitmap (in exact PF-style format, 6 bytes per line) into which the
-    ; character shapes are masked/copied. The depth of the character shapes may be
-    ; changed by changing the #LINES_PER_CHAR value.  Note that this depth should be
-    ; a multiple of 3, so that the RGB scanlines match at character joins.
-
-    ; We have one bank for each chessboard row.  These banks are duplicates of the above,
-    ; accessed via the above labels but with the appropriate bank switched in.
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -589,38 +538,43 @@ SPEEDOF_{1} = ({2}/64) + 1
     ENDM
 ;---------------------------------------------------------------------------------------------------
 
-    include "MACROS.asm"
+    include "_ MACROS.asm"
+    include "_ PIECE MACROS.asm"
 
-    include "STARTBANK@3.asm"                       ; MUST be first ROM bank
+    include "@3 STARTBANK.asm"                       ; MUST be first ROM bank
 
-    include "BANK_FIRST@0.asm"
-    include "BANK_GENERIC@1#1.asm"
-    include "BANK_ROM_SHADOW_SCREEN.asm"
-    include "ROM_SCREEN@3.asm"
-    include "SHADOW_PLY.asm"
+    include "@0 HOME.asm"
+
+    include "@1 GENERIC #1.asm"
+
+    include "@2 SCREEN RAM.asm"
+    include "@2 PLY.asm"
+    include "@2 GENERIC #3.asm"
+    include "@2 GFX1.asm"
+    include "@2 GFX2.asm"
+    include "@2 GFX3.asm"
+    include "@2 GFX4.asm"
+
+    include "@3 GENERIC #2.asm"
+    include "@3 SCREEN ROM.asm"
+    include "@3 EVALUATE.asm"
+
     include "SHADOW_BOARD.asm"
-    include "BANK_EVAL.asm"
     include "BANK_StateMachine@1#1.asm"
     include "BANK_StateMachine@1#2.asm"
     include "piece_graphics.asm"
-    include "BANK_GENERIC@2#1.asm"
     include "BANK_GENERIC@2#2.asm"
-    include "GFX1.asm"
-    include "GFX2.asm"
-    include "GFX3.asm"
-    include "GFX4.asm"
     include "NEGAMAX@1.asm"
 
-    include "PIECE_MACROS.asm"
 
     include "PIECE_HANDLER@1#1.asm"
     include "PIECE_HANDLER@1#2.asm"
-    include "BANK_3.asm"
 
     include "TitleScreen.asm"
     include "TitleScreen@2.asm"
 
-    include "BANK_LAST.asm"
+
+    ALIGN _ROM_BANK_SIZE
 
 ;---------------------------------------------------------------------------------------------------
 ;EOF

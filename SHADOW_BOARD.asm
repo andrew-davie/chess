@@ -3,7 +3,7 @@
 
 ;---------------------------------------------------------------------------------------------------
     SLOT 3
-    NEWRAMBANK BOARD               ; RAM bank for holding the following ROM shadow
+    RAMBANK BOARD               ; RAM bank for holding the following ROM shadow
 
 ValidSquare = ShadowValidSquare + $400
 Board = ShadowBoard + $400

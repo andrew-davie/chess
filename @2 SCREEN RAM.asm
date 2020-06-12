@@ -1,5 +1,21 @@
-
     SLOT 2
+    REPEAT (CHESSBOARD_ROWS)
+        RAMBANK .DUMMY
+    REPEND
+
+    ; NOTE: THIS BANK JUST *LOOKS* EMPTY.
+    ; It actually contains everything copied from the ROM copy of the ROW RAM banks.
+    ; The variable definitions are also in that ROM bank (even though they're RAM :)
+
+    ; Now we have the actual graphics data for each of the rows.  This consists of an
+    ; actual bitmap (in exact PF-style format, 6 bytes per line) into which the
+    ; character shapes are masked/copied. The depth of the character shapes may be
+    ; changed by changing the #LINES_PER_CHAR value.  Note that this depth should be
+    ; a multiple of 3, so that the RGB scanlines match at character joins.
+
+    ; We have one bank for each chessboard row.  These banks are duplicates of the above,
+    ; accessed via the above labels but with the appropriate bank switched in.
+
     ROMBANK BITMAP
 
 ; These equates allow revectoring (address offset) if the RAM slot is not the same as the SHADOW slot
@@ -21,11 +37,17 @@ ChessBitmap5 = SHADOW_ChessBitmap5
 ; we effectively have 1K
 ;---------------------------------------------------------------------------------------------------
 
-COLOUR_LINE_1 = $84
-COLOUR_LINE_2 = $48
-COLOUR_LINE_3 = $2e
-BACKGCOL      = $00
+COLOUR_LINE_1 = $82
+COLOUR_LINE_2 = $38
+COLOUR_LINE_3 = $2A
+BACKGCOL      = $0
 
+    IF 0
+COLOUR_LINE_1 = $84
+COLOUR_LINE_2 = $38
+COLOUR_LINE_3 = $2A
+BACKGCOL      = $00
+    ENDIF
 
 ROW_BITMAP_SIZE = 6 * 24            ; PF0/PF1/PF2/(PF0)/(PF1)/(PF2) x 8 ICC pixels
 

@@ -187,6 +187,20 @@ FNAME SETSTR {1}
     ENDM
 
 
+    MAC JUMP ; function name
+        IF SLOT_{1} == _BANK_SLOT
+FNAME SETSTR {1}
+            ECHO ""
+            ECHO "ERROR: Incompatible slot for jump to function", FNAME
+            ECHO "Cannot switch bank in use for ", FNAME
+            ERR
+        ENDIF
+        lda #BANK_{1}
+        sta SET_BANK
+        jsr {1}
+    ENDM
+
+
 ;---------------------------------------------------------------------------------------------------
 ; RAM accessor macros
 ; ALL RAM usage (reads and writes) should use these

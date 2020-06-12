@@ -227,7 +227,7 @@ _rts                rts
 
 
                     and #1
-                    eor #1
+                    ;eor #1
                     beq .white
                     lda #36
 .white

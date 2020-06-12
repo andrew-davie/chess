@@ -109,7 +109,7 @@
                     lsr
                     and #6
                     clc
-                    adc #$D2 ;COLOUR_LINE_1
+                    adc #$D0 ;COLOUR_LINE_1
 
 .writeCursorCol     sta COLUP0
                     rts

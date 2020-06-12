@@ -31,14 +31,8 @@
 
         VEND StartupBankReset
 
-    ; On startup, 3E+ switches banks 0 and 3 to the 1st ROM bank (1K), from which the reset
-    ; vector is obtained from bank 0 (+$FFC). Chess3E+ (maybe) will leave this bank (3) alone
-    ; so that a system reset will always have the reset vectors available at FFFC, where expected
 
-                    ldx #$FF
-                    txs
-
-                    CALL TitleScreen
+                    ;CALL TitleScreen
 
                     CALL CartInit
                     CALL SetupBanks

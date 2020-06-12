@@ -19,8 +19,7 @@
 
         VEND CartInit
 
-                    sei
-                    cld
+
     ; See if we can come up with something 'random' for startup
 
                     ldy INTIM

@@ -13,7 +13,7 @@
 
 
     SLOT 2
-    NEWRAMBANK PLY                                  ; RAM bank for holding the following ROM shadow
+    RAMBANK PLY                                  ; RAM bank for holding the following ROM shadow
     
 ;---------------------------------------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ MAX_MOVES = 100          ; big is good
     CHECK_RAM_BANK_SIZE "SHADOW_PLY"
 
     REPEAT PLY_BANKS-1
-        NEWRAMBANK .DUMMY_PLY
+        RAMBANK .DUMMY_PLY
     REPEND
 
 
