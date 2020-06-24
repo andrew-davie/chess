@@ -1,16 +1,24 @@
+;---------------------------------------------------------------------------------------------------
+; @2 GENERIC #4.asm
 
-            SLOT 2
-            ROMBANK GENERIC_BANK@2#2
+; Atari 2600 Chess
+; Copyright (c) 2019-2020 Andrew Davie
+; andrew@taswegian.com
 
 
 ;---------------------------------------------------------------------------------------------------
 
+    SLOT 2
+    ROMBANK GENERIC_BANK@2#2
+
+
+;---------------------------------------------------------------------------------------------------
 
     DEF moveCursor
     SUBROUTINE
 
-        REFER aiSelectStartSquare
-        REFER aiSelectDestinationSquare
+        REF aiSelectStartSquare
+        REF aiSelectDestinationSquare
 
         VAR __newCursor, 1
         
@@ -59,7 +67,7 @@
     DEF setCursorPriority
     SUBROUTINE
 
-        REFER moveCursor
+        REF moveCursor
         VEND setCursorPriority
 
                     tya
@@ -87,18 +95,18 @@
     DEF setCursorColours
     SUBROUTINE
 
-        REFER aiSelectStartSquare
-        REFER aiDrawMoves
-        REFER aiUnDrawTargetSquares
-        REFER aiShowMoveCaptures
-        REFER aiSlowFlash
-        REFER aiSelectDestinationSquare
+        REF aiSelectStartSquare
+        REF aiDrawMoves
+        REF aiUnDrawTargetSquares
+        REF aiShowMoveCaptures
+        REF aiSlowFlash
+        REF aiSelectDestinationSquare
         VEND setCursorColours
 
     ; pass y=-1 if move is NOT in the movelist
     ; preserve y
 
-                    lda #$42
+                    lda #$42                        ; red
 
                     cpy #-1
                     beq .writeCursorCol             ; NOT in the movelist
@@ -109,7 +117,7 @@
                     lsr
                     and #6
                     clc
-                    adc #$D0 ;COLOUR_LINE_1
+                    adc #$D0 ;COLOUR_LINE_1         ; pulsing green
 
 .writeCursorCol     sta COLUP0
                     rts
@@ -129,7 +137,7 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-            CHECK_BANK_SIZE "BANK_GENERIC@2#2"
+    END_BANK
 
 ;---------------------------------------------------------------------------------------------------
 ;EOF

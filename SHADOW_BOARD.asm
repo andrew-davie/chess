@@ -2,11 +2,17 @@
 
 
 ;---------------------------------------------------------------------------------------------------
+
     SLOT 3
     RAMBANK BOARD               ; RAM bank for holding the following ROM shadow
 
 ValidSquare = ShadowValidSquare + $400
 Board = ShadowBoard + $400
+
+    END_BANK
+
+
+;---------------------------------------------------------------------------------------------------
 
     SLOT 2
     ROMBANK SHADOW_BOARD           ; copy the following bank to RAMBANK_BOARD

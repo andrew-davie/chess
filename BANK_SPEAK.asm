@@ -37,7 +37,7 @@ SERIAL_RDYMASK  equ     $02
     DEF ShutYourMouth
     SUBROUTINE
 
-        REFER StartupBankReset
+        REF StartupBankReset
         VEND ShutYourMouth
 
                     SPEAK silence_speech
@@ -49,7 +49,7 @@ SERIAL_RDYMASK  equ     $02
     DEF GameSpeak
     SUBROUTINE
 
-        REFER StartupBankReset
+        REF StartupBankReset
         VAR __speak_temp, 1
         VEND GameSpeak
 
@@ -215,7 +215,7 @@ silence_speech
 
         dc.b    $ff
 
-    CHECK_BANK_SIZE "BANK_SPEAK"
+    END_BANK
 
     IF 0
 typedef enum
@@ -388,4 +388,11 @@ typedef enum
   348      CommandCodes;
   349 
 
-ENDIF
+    ENDIF
+
+;---------------------------------------------------------------------------------------------------
+
+    END_BANK
+
+;---------------------------------------------------------------------------------------------------
+;EOF

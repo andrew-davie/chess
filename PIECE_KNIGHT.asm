@@ -8,7 +8,7 @@
     DEF Handle_KNIGHT
     SUBROUTINE
 
-        REFER GenerateAllMoves ;✅
+        REF GenerateAllMoves ;✅
         VEND Handle_KNIGHT
 
     ; x = currentSquare (square the piece is on)

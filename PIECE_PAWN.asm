@@ -114,7 +114,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
     DEF PromoteWhitePawn
     SUBROUTINE
 
-        REFER Handle_WHITE_PAWN
+        REF Handle_WHITE_PAWN
         VAR __temp, 1
         VEND PromoteWhitePawn
 
@@ -126,7 +126,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
     DEF Handle_WHITE_PAWN
     SUBROUTINE
 
-        REFER GenerateAllMoves
+        REF GenerateAllMoves
         VEND Handle_WHITE_PAWN
         
                     ldy ValidSquare+_UP,x           ; square above must be blank (WILL NOT EVER be off-board!)
@@ -188,7 +188,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
     DEF PromoteBlackPawn
     SUBROUTINE
     
-        REFER Handle_BLACK_PAWN
+        REF Handle_BLACK_PAWN
         VAR __temp, 1
         VEND PromoteBlackPawn
 
@@ -198,7 +198,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
     DEF Handle_BLACK_PAWN
     SUBROUTINE
 
-        REFER GenerateAllMoves
+        REF GenerateAllMoves
         VEND Handle_BLACK_PAWN
 
                 ldy ValidSquare+_DOWN,x         ; square below must be blank (WILL NOT EVER be off-board!)

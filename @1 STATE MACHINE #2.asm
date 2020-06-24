@@ -1,3 +1,13 @@
+;---------------------------------------------------------------------------------------------------
+; @1 STATE MACHINE #2.asm
+
+; Atari 2600 Chess
+; Copyright (c) 2019-2020 Andrew Davie
+; andrew@taswegian.com
+
+
+;---------------------------------------------------------------------------------------------------
+
     SLOT 1
     ROMBANK STATEMACHINE2
 
@@ -7,7 +17,7 @@
     DEF aiChooseDebounce
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiChooseDebounce
 
     ; We've changed promotion piece, and drawn it
@@ -22,7 +32,7 @@
                     sta aiFlashDelay
                     sta aiFlashPhase
 
-                    PHASE AI_ChoosePromotePiece
+                    PHASE ChoosePromotePiece
 .exit               rts
 
 
@@ -31,7 +41,7 @@
     DEF aiReselectDebounce
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiReselectDebounce
 
     ; We've just cancelled the move. Wait for the button to be released
@@ -40,7 +50,7 @@
                     lda INPT4
                     bpl .exit                       ; button still pressed, so wait
 
-                    PHASE AI_SelectStartSquare
+                    PHASE SelectStartSquare
 .exit               rts
 
 
@@ -49,12 +59,12 @@
     DEF aiDelayAfterMove
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiDelayAfterMove
 
                     lda #50
                     sta aiFlashDelay
-                    PHASE AI_DelayAfterMove2
+                    PHASE DelayAfterMove2
 .exit               rts
 
 
@@ -63,12 +73,12 @@
     DEF aiDelayAfterMove2
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiDelayAfterMove
 
                     dec aiFlashDelay
                     bne .exit
-                    PHASE AI_MoveIsSelected
+                    PHASE MoveIsSelected
 .exit               rts
 
 
@@ -77,7 +87,7 @@
     DEF aiDelayAfterPlaced
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiDelayAfterPlaced
 
                     ldx #75                         ; delay after human move
@@ -87,7 +97,7 @@
                     ldx #1                          ; delay after computer move
 .human              stx aiFlashDelay
 
-                    PHASE AI_DelayAfterPlaced2
+                    PHASE DelayAfterPlaced2
                     rts
 
 
@@ -96,7 +106,7 @@
     DEF aiDelayAfterPlaced2
     SUBROUTINE          
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiDelayAfterPlaced2
 
 
@@ -104,7 +114,7 @@
                     and #SELECT_SWITCH
                     bne .noSwapside
 
-                    PHASE AI_DebounceSelect
+                    PHASE DebounceSelect
                     rts
 .noSwapside
 
@@ -114,7 +124,7 @@
 
                     ;SWAP
 
-                    PHASE AI_GenerateMoves
+                    PHASE GenerateMoves
 .exit               rts
 
 
@@ -123,7 +133,8 @@
     DEF aiMarchToTargetB
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiMarchToTargetB
 
     ; now we want to undraw the piece in the old square
@@ -150,7 +161,7 @@
                     lda lastPiece
                     sta previousPiece
 
-                    PHASE AI_MarchB2
+                    PHASE MarchB2
                     rts
 
 
@@ -159,12 +170,13 @@
     DEF aiPromotePawnStart
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiPromotePawnStart
 
 
                     lda INTIM
-                    cmp #SPEEDOF_COPYSINGLEPIECE
+                    cmp #SPEEDOF_CopySinglePiece
                     bcc .exit
 
                     lda #0
@@ -183,7 +195,7 @@
     ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0          ; remove any capturable piece for display purposes
 
-.empty              PHASE AI_RollPromotionPiece
+.empty              PHASE RollPromotionPiece
 .exit               rts
 
 
@@ -192,7 +204,7 @@
     DEF aiGenerateMoves
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiGenerateMoves
     
                     lda toX12
@@ -203,11 +215,11 @@
                     bmi .player
 
 
-.computer           PHASE AI_ComputerMove               ; computer select move
+.computer           PHASE ComputerMove               ; computer select move
                     rts
 
                     
-.player             PHASE AI_StartMoveGen
+.player             PHASE StartMoveGen
                     rts
 
 
@@ -216,22 +228,24 @@
     DEF aiStepMoveGen
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiStepMoveGen
 
                     lda originX12                       ; location of cursor (show move)
                     sta cursorX12
-                    PHASE AI_BeginSelectMovePhase
+                    PHASE BeginSelectMovePhase
                     rts
 
 
 ;---------------------------------------------------------------------------------------------------
 
     align 256       ; TODO?
+
+
     DEF PositionSprites
     SUBROUTINE
 
-        REFER StartupBankReset
+        REF StartupBankReset
         VEND PositionSprites
 
 
@@ -295,7 +309,7 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
     DEF aiMarchToTargetA
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
 
         VAR __fromRow, 1
         VAR __boardIndex, 1
@@ -371,7 +385,7 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
                     lda originX12
                     sta cursorX12
 
-                    PHASE AI_MarchA2
+                    PHASE MarchA2
                     rts
 
 
@@ -380,7 +394,8 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
     DEF aiFinalFlash
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiFinalFlash
 
     ; Piece has finished the animated move and is now in destination square.
@@ -415,7 +430,7 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
                     lda #100
                     sta aiFlashDelay
 
-                    PHASE AI_SpecialMoveFixup
+                    PHASE SpecialMoveFixup
                     rts
 
 
@@ -424,7 +439,7 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
     DEF aiStartSquareSelected
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiStartSquareSelected
 
 
@@ -452,7 +467,7 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
                     lda #HOLD_DELAY
                     sta mdelay                      ; hold-down delay before moves are shown
 
-                    PHASE AI_DrawMoves
+                    PHASE DrawMoves
                     rts
 
 
@@ -461,7 +476,8 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
     DEF aiWriteStartPieceBlank
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiWriteStartPieceBlank
 
     ; Flash the piece in-place preparatory to moving it.
@@ -471,7 +487,7 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
 
                     lda #%100
                     sta CTRLPF
-                    lda #4
+                    lda #$40
                     sta COLUP0
 
 
@@ -498,14 +514,59 @@ flashDone
 
                     ;lda #2
                     ;sta drawDelay
-                    PHASE AI_MarchToTargetA
+                    PHASE MarchToTargetA
                     rts
 
 
 ;---------------------------------------------------------------------------------------------------
 
-    CHECK_BANK_SIZE "BANK_StateMachine2"
+    DEF aiEPHandler
+    SUBROUTINE
+
+                    ;CALL EnPassantFixupDraw         ; set enPassantPawn
+
+
+                    lda fromPiece
+                    and #FLAG_ENPASSANT|FLAG_MOVED
+                    cmp #FLAG_ENPASSANT|FLAG_MOVED
+                    bne .exit
+
+    ; we have deteced a piece DOING an en passant capture
+    ; so do the actual removal of the captured pawn...
+    ; calculate the captured pawn's square based on piece colour
+
+                    lda #-10
+                    ldx fromPiece
+                    bpl .white
+                    lda #10
+.white
+                    clc
+                    adc fromX12                     ; attacker destination square
+                    sta enPassantPawn               ; now this is the pawn to ERASE
+
+                    lda #5                          ; on/off count (leave undrawn)
+                    sta drawCount                   ; flashing for piece about to move
+                    lda #0
+                    sta drawDelay
+
+                    PHASE EPFlash
+                    rts
+
+
+.exit
+            
+                    lda #4                          ; on/off count (leave undrawn)
+                    sta drawCount                   ; flashing for piece about to move
+                    lda #0
+                    sta drawDelay
+
+                    PHASE FinalFlash
+                    rts
+
 
 ;---------------------------------------------------------------------------------------------------
 
+    END_BANK
+    
+;---------------------------------------------------------------------------------------------------
 ; EOF

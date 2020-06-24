@@ -1,4 +1,7 @@
-; Chess
+;---------------------------------------------------------------------------------------------------
+; @2 PLY.asm
+
+; Atari 2600 Chess
 ; Copyright (c) 2019-2020 Andrew Davie
 ; andrew@taswegian.com
 
@@ -47,11 +50,12 @@ MAX_MOVES = 100          ; big is good
     VARIABLE restorePiece, 1
     VARIABLE virtualKingSquare, 2                   ; traversing squares for castle/check
     
+    END_BANK
 
-    CHECK_RAM_BANK_SIZE "SHADOW_PLY"
 
     REPEAT PLY_BANKS-1
         RAMBANK .DUMMY_PLY
+        END_BANK
     REPEND
 
 

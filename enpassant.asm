@@ -6,8 +6,8 @@
 ;     DEF EnPassantCheck
 ;     SUBROUTINE
 
-;         REFER MakeMove ;✅
-;         REFER aiSpecialMoveFixup ;✅
+;         REF MakeMove ;✅
+;         REF aiSpecialMoveFixup ;✅
 ;         VEND EnPassantCheck
 
 
@@ -79,7 +79,7 @@
 
 ;     ; in this siutation (en passant, capture happening) we do not change sides yet!
 
-;                     PHASE AI_MoveIsSelected
+;                     PHASE MoveIsSelected
                     
 ; .notEnPassant       rts
 
@@ -123,10 +123,10 @@
     DEF EnPassantRemovePiece
     SUBROUTINE
 
-        REFER MakeMove
+        REF MakeMove
 
     IF ENPASSANT_ENABLED
-        ; REFER EnPassantCheck ;✅
+        ; REF EnPassantCheck ;✅
     ENDIF
 
         VAR __y, 1

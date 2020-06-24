@@ -1,14 +1,21 @@
+;---------------------------------------------------------------------------------------------------
+; @2 GENERIC #3.asm
 
-            SLOT 2
-            ROMBANK GENERIC_BANK@2#1
+; Atari 2600 Chess
+; Copyright (c) 2019-2020 Andrew Davie
+; andrew@taswegian.com
+
+
+;---------------------------------------------------------------------------------------------------
+
+    SLOT 2
+    ROMBANK GENERIC_BANK@2#1
 
 ;    DEFINE_1K_SEGMENT DECODE_LEVEL_SHADOW
 
-    IF 0
     IF PLUSCART = YES
             .byte "ChessAPI.php", #0      //TODO: change!
 	        .byte "pluscart.firmaplus.de", #0
-    ENDIF
     ENDIF
 
 STELLA_AUTODETECT dc "TJ3E" ; 3E+ autodetect
@@ -19,7 +26,7 @@ STELLA_AUTODETECT dc "TJ3E" ; 3E+ autodetect
     DEF tidySc
     SUBROUTINE
 
-        REFER StartupBankReset ;✅
+        REF StartupBankReset ;✅
         VEND tidySc
 
                     lda #0
@@ -45,7 +52,7 @@ STELLA_AUTODETECT dc "TJ3E" ; 3E+ autodetect
     DEF longD
     SUBROUTINE
 
-        REFER StartupBankReset ;✅
+        REF StartupBankReset ;✅
         VEND longD
 
                     sta WSYNC
@@ -65,7 +72,7 @@ _rts                rts
     DEF aiStartClearBoard
     SUBROUTINE
 
-        REFER AiStateMachine ;✅
+        REF AiStateMachine ;✅
         VEND aiStartClearBoard
 
                     ldx #8
@@ -74,7 +81,7 @@ _rts                rts
                     lda #-1
                     sta cursorX12
 
-                    PHASE AI_ClearEachRow
+                    PHASE ClearEachRow
                     rts
 
 
@@ -83,20 +90,27 @@ _rts                rts
     DEF aiClearEachRow
     SUBROUTINE
 
-        REFER AiStateMachine ;✅
+        REF AiStateMachine ;✅
         VEND aiClearEachRow
 
                     dec drawCount
                     bmi .bitmapCleared
-                    ;TODOldy drawCount
-                    ;TODO jmp CallClear
+
+    ; switch in RAM bank for ROW
+
+                    lda drawCount
+                    ora #SLOT1
+                    sta SET_BANK_RAM;@1
+
+                    CALL ClearRowBitmap;@3
+                    rts
 
 .bitmapCleared
 
                     lda #99
                     sta squareToDraw
 
-                    PHASE AI_DrawEntireBoard
+                    PHASE DrawEntireBoard
                     rts
 
 
@@ -105,8 +119,8 @@ _rts                rts
     DEF aiMoveIsSelected
     SUBROUTINE
 
-        COMMON_VARS
-        REFER AiStateMachine ;✅
+        REF COMMON_VARS
+        REF AiStateMachine ;✅
         VEND aiMoveIsSelected
 
     ; Both computer and human have now seleted a move, and converge here
@@ -140,7 +154,7 @@ _rts                rts
                     lda #10                          ; on/off count
                     sta drawCount                   ; flashing for piece about to move
 
-                    PHASE AI_WriteStartPieceBlank
+                    PHASE WriteStartPieceBlank
 .idleErase          rts
 
 
@@ -186,7 +200,7 @@ _rts                rts
     DEF CopySetup
     SUBROUTINE
 
-        REFER CopySinglePiece ;✅
+        REF CopySinglePiece ;✅
 
         VAR __tmp, 1
         VAR __shiftx, 1
@@ -289,9 +303,9 @@ PieceToShape
 
     ; First, nominate referencing subroutines so that local variables can be adjusted properly
 
-        COMMON_VARS
-        REFER MakeMove ;✅
-        REFER aiMoveIsSelected ;✅
+        REF COMMON_VARS
+        REF MakeMove ;✅
+        REF aiMoveIsSelected ;✅
         VEND AdjustMaterialPositionalValue
 
     ; fromPiece     piece doing the move (promoted type)
@@ -360,10 +374,10 @@ PieceToShape
     DEF AddPieceMaterialValue
     SUBROUTINE
 
-        COMMON_VARS
-        REFER InitialisePieceSquares ;✅
-        REFER AdjustMaterialPositionalValue ;✅
-        ;REFER EnPassantRemovePiece ;✅
+        REF COMMON_VARS
+        REF InitialisePieceSquares ;✅
+        REF AdjustMaterialPositionalValue ;✅
+        ;REF EnPassantRemovePiece ;✅
         VEND AddPieceMaterialValue
 
     ; Adjust the material score based on the piece
@@ -405,9 +419,9 @@ PieceValueHI
     DEF AddPiecePositionValue
     SUBROUTINE
 
-        REFER InitialisePieceSquares ;✅
-        REFER AdjustMaterialPositionalValue ;✅
-        ;REFER EnPassantRemovePiece ;✅
+        REF InitialisePieceSquares ;✅
+        REF AdjustMaterialPositionalValue ;✅
+        ;REF EnPassantRemovePiece ;✅
         VAR __valPtr, 2
         VEND AddPiecePositionValue
 
@@ -424,7 +438,7 @@ PieceValueHI
                     and #PIECE_MASK
                     tax
 
-                    lda #EVAL
+                    lda #ROMBANK_EVALUATE
                     sta SET_BANK;@3
 
     ; black pieces flip rows so we can use the same eval tables
@@ -478,7 +492,7 @@ FlipSquareIndex
 
 ;---------------------------------------------------------------------------------------------------
 
-            CHECK_BANK_SIZE "BANK_GENERIC@2#1"
+    END_BANK
 
 ;---------------------------------------------------------------------------------------------------
 ;EOF

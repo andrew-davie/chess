@@ -11,23 +11,24 @@
 
     ; = 76 for single square (empty/take)
 
-                lda #0
-                sta capture
+                    lda #0
+                    sta capture
 
-                ldx currentSquare               ; 3
-                bne .project                    ; 3   unconditional
+                    ldx currentSquare               ; 3
+                    bne .project                    ; 3   unconditional
 
-.empty          jsr AddMove               ; 57
-.project        ldy ValidSquare+{1},x           ; 4
-                bmi .invalid                    ; 2/3 off board!
-                lda Board,y                     ; 4   piece @ destination
-                beq .empty                      ; 2/3
-                sta capture
-                eor currentPiece                ; 3
-                bpl .invalid                    ; 2/3 same colour
-                jsr AddMove                     ; 57  and exit
+.empty              jsr AddMove                     ; 57
+.project            ldy ValidSquare+{1},x           ; 4
+                    bmi .invalid                    ; 2/3 off board!
+                    lda Board,y                     ; 4   piece @ destination
+                    beq .empty                      ; 2/3
+                    sta capture
+                    eor currentPiece                ; 3
+                    bpl .invalid                    ; 2/3 same colour
+                    jsr AddMove                     ; 57  and exit
 
 .invalid
+
     ENDM
 
 
@@ -35,23 +36,25 @@
 
     MAC MOVE_TO
     SUBROUTINE
-                ldy ValidSquare+{1},x
-                bmi .invalid                    ; off board!
-                lda Board,y                     ; piece @ destination
-                sta capture
-                beq .squareEmpty
-                eor currentPiece
-                bpl .invalid                    ; same colour
-.squareEmpty    jsr AddMove
+
+                    ldy ValidSquare+{1},x
+                    bmi .invalid                    ; off board!
+                    lda Board,y                     ; piece @ destination
+                    sta capture
+                    beq .squareEmpty
+                    eor currentPiece
+                    bpl .invalid                    ; same colour
+.squareEmpty        jsr AddMove
 .invalid
+
     ENDM
 
 
 ;---------------------------------------------------------------------------------------------------
 
     MAC MOVE_TO_X
-                ldx currentSquare
-                MOVE_TO {1}
+                    ldx currentSquare
+                    MOVE_TO {1}
     ENDM
 
 

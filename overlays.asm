@@ -17,30 +17,6 @@
 ; ensure this by using the VALIDATE_OVERLAY macro
 ;---------------------------------------------------------------------------------------------------
 
-    MAC OVERLAY ; {name}
-OVERLAY_NAME SET {1}
-    SEG.U OVERLAY_{1}
-        org Overlay
-    ENDM
-
-;---------------------------------------------------------------------------------------------------
-
-    MAC VALIDATE_OVERLAY
-        LIST OFF
-OVERLAY_DELTA SET * - Overlay
-        IF OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-MAXIMUM_REQUIRED_OVERLAY_SIZE SET OVERLAY_DELTA
-        ENDIF
-        IF OVERLAY_DELTA > OVERLAY_SIZE
-            ECHO "Overlay", OVERLAY_NAME, "is too big!"
-            ECHO "REQUIRED SIZE =", OVERLAY_DELTA
-            ERR
-        ENDIF
-        LIST ON
-        ECHO OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-    ENDM
-
-;---------------------------------------------------------------------------------------------------
 
 OVERLAY_SIZE    SET $4C           ; maximum size
 MAXIMUM_REQUIRED_OVERLAY_SIZE       SET 0
@@ -65,7 +41,9 @@ END_OF_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
 
-__pieceShapeBuffer = Overlay ; size = PIECE_SHAPE_SIZE
+    DEF Variable_PieceShapeBuffer
+    VAR __pieceShapeBuffer, PIECE_SHAPE_SIZE
+    VEND Variable_PieceShapeBuffer
 
 ;---------------------------------------------------------------------------------------------------
 

@@ -1,3 +1,13 @@
+;---------------------------------------------------------------------------------------------------
+; @1 STATE MACHINE #1.asm
+
+; Atari 2600 Chess
+; Copyright (c) 2019-2020 Andrew Davie
+; andrew@taswegian.com
+
+
+;---------------------------------------------------------------------------------------------------
+
     SLOT 1
     ROMBANK STATEMACHINE
 
@@ -12,13 +22,10 @@ HOLD_DELAY                      = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-
-;---------------------------------------------------------------------------------------------------
-
     DEF aiStartMoveGen
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiStartMoveGen
 
     ; To assist with castling, generate the moves for the opponent, giving us effectively
@@ -32,7 +39,22 @@ HOLD_DELAY                      = 40
                     ;inc currentPly
                     ;jsr InitialiseMoveGeneration
 
-                    PHASE AI_StepMoveGen
+                    PHASE StepMoveGen
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiInCheckBackupStart
+    SUBROUTINE
+
+        REF AiStateMachine
+        VEND aiInCheckBackupStart
+
+                    lda #8
+                    sta drawCount                   ; row to draw
+
+                    PHASE InCheckBackup
                     rts
 
 
@@ -41,21 +63,76 @@ HOLD_DELAY                      = 40
     DEF aiInCheckBackup
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiInCheckBackup
+
+    jsr debug
 
     ; We're about to draw some large text on the screen
     ; Make a backup copy of all of the row bitmaps, so that we can restore once text is done
 
                     dec drawCount
-                    bmi .exit                   ; done all rows
-                    ldy drawCount
-    IF 0
-                    jmp SAFE_BackupBitmaps
-    ENDIF
+                    bmi .exit                       ; done all rows
+
+                    JUMP BackupBitmaps;@3
     
-.exit               PHASE AI_InCheckDelay
+.exit
+
+                    lda #8
+                    sta drawCount                   ; ROW
+
+                    PHASE DrawBitmapBackground
                     rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiWaitBitmap
+    SUBROUTINE
+
+        REF AiStateMachine
+        VEND aiWaitBitmap
+
+;                    lda INPT4
+;                    bmi .noButton
+    ;PHASE DrawBitmap
+    ;rts
+                    dec drawCount
+                    lda drawCount
+                    cmp #220
+                    bne .noButton
+
+
+.button
+                    lda #8
+                    sta drawCount                   ; ROW#
+                    
+                    PHASE RestoreBitmaps
+.noButton           rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF aiRestoreBitmaps
+    SUBROUTINE
+
+                    dec drawCount
+                    bmi .exit                       ; done all rows
+
+                    JUMP RestoreBitmaps;@3
+    
+.exit
+
+                    lda INPT4
+                    bmi .noButton
+                    PHASE SelectStartSquare
+                    rts
+.noButton
+;                    PHASE InCheckDelay
+           ;PHASE SelectStartSquare
+           PHASE InCheckBackupStart
+                    rts
+
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -63,7 +140,7 @@ HOLD_DELAY                      = 40
     DEF aiInCheckDelay
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiInCheckDelay
 
                     dec mdelay
@@ -72,7 +149,7 @@ HOLD_DELAY                      = 40
                     lda #0
                     sta COLUBK
 
-                    PHASE AI_BeginSelectMovePhase
+                    PHASE BeginSelectMovePhase
 .exit               rts
 
 
@@ -81,9 +158,8 @@ HOLD_DELAY                      = 40
     DEF aiBeginSelectMovePhase
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiBeginSelectMovePhase
-
 
                     lda #$4
                     sta COLUP0
@@ -104,7 +180,7 @@ HOLD_DELAY                      = 40
                     lsr randomness
 
                     
-                    PHASE AI_FlashComputerMove
+                    PHASE FlashComputerMove
                     rts
 
 ;---------------------------------------------------------------------------------------------------
@@ -112,7 +188,8 @@ HOLD_DELAY                      = 40
     DEF aiFlashComputerMove
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiFlashComputerMove
 
                     lda squareToDraw
@@ -126,7 +203,7 @@ HOLD_DELAY                      = 40
                     and #SELECT_SWITCH
                     bne .noSwapside
 
-                    PHASE AI_DebounceSelect
+                    PHASE DebounceSelect
                     rts
 .noSwapside
 
@@ -158,7 +235,14 @@ HOLD_DELAY                      = 40
 .initial
 
                     ;SWAP
-.initial2           PHASE AI_SelectStartSquare
+.initial2
+
+
+    PHASE InCheckBackupStart ;tmp
+    rts
+
+
+           PHASE SelectStartSquare
 
 .exit               rts
 
@@ -168,7 +252,7 @@ HOLD_DELAY                      = 40
     DEF aiSelectStartSquare
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiSelectStartSquare
 
                     NEXT_RANDOM
@@ -205,7 +289,7 @@ HOLD_DELAY                      = 40
                     ora INPT4
                     bmi .exit                       ; illegal square or no button press
 
-                    PHASE AI_StartSquareSelected
+                    PHASE StartSquareSelected
 
 .exit               rts
 
@@ -213,7 +297,7 @@ HOLD_DELAY                      = 40
 
 .swapside
 
-                    PHASE AI_DebounceSelect
+                    PHASE DebounceSelect
                     rts
 
 ;---------------------------------------------------------------------------------------------------
@@ -231,7 +315,7 @@ HOLD_DELAY                      = 40
 
                     NEGEVAL
 
-                    PHASE AI_ComputerMove  
+                    PHASE ComputerMove  
 .exit               rts
 
 
@@ -240,7 +324,7 @@ HOLD_DELAY                      = 40
     DEF aiDrawMoves
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiDrawMoves
 
                     dec ccur
@@ -270,7 +354,7 @@ HOLD_DELAY                      = 40
                     lda #0
                     sta aiFlashPhase                    ; controls odd/even exit of flashing
 
-                    PHASE AI_ShowMoveCaptures
+                    PHASE ShowMoveCaptures
                     rts
 
 .exit
@@ -287,7 +371,7 @@ HOLD_DELAY                      = 40
                     lda #6*4
                     sta ccur                            ; bright green square for selection
 
-                    PHASE AI_SelectDestinationSquare
+                    PHASE SelectDestinationSquare
 
 .unsure             rts
 
@@ -297,8 +381,8 @@ HOLD_DELAY                      = 40
     DEF showMoveOptions
     SUBROUTINE
 
-        REFER aiDrawMoves
-        REFER aiUnDrawTargetSquares
+        REF aiDrawMoves
+        REF aiUnDrawTargetSquares
 
         VAR __saveIdx, 1
         VAR __piece, 1
@@ -313,7 +397,7 @@ HOLD_DELAY                      = 40
                     bmi .skip
 
                     lda INTIM
-                    cmp #2+SPEEDOF_COPYSINGLEPIECE
+                    cmp #2+SPEEDOF_CopySinglePiece
                     bcc .skip
 
                     dec aiMoveIndex
@@ -361,7 +445,7 @@ HOLD_DELAY                      = 40
 
 
                     ;lda INTIM
-                    ;cmp #SPEEDOF_COPYSINGLEPIECE
+                    ;cmp #SPEEDOF_CopySinglePiece
                     ;bcc .skip
 
                     ;lda aiMoveIndex
@@ -386,8 +470,8 @@ HOLD_DELAY                      = 40
     DEF CopySetupForMarker
     SUBROUTINE
 
-        REFER showMoveOptions
-        REFER showPromoteOptions
+        REF showMoveOptions
+        REF showPromoteOptions
 
         VAR __pieceColour2b, 1
         VAR __tmpb, 1
@@ -445,7 +529,7 @@ HOLD_DELAY                      = 40
     DEF aiUnDrawTargetSquares
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiUnDrawTargetSquares
 
 
@@ -470,7 +554,7 @@ HOLD_DELAY                      = 40
                     lda aiMoveIndex
                     bpl .exit                           ; still drawing in this phase
 
-                    PHASE AI_SelectStartSquare
+                    PHASE SelectStartSquare
 
 .exit               rts
 
@@ -481,7 +565,7 @@ HOLD_DELAY                      = 40
     DEF aiShowMoveCaptures
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiShowMoveCaptures
 
     ; draw/undraw ALL captured pieces
@@ -509,7 +593,7 @@ HOLD_DELAY                      = 40
 
                     inc aiFlashPhase
 
-                    PHASE AI_SlowFlash
+                    PHASE SlowFlash
 
 .exit               rts
 
@@ -519,7 +603,7 @@ HOLD_DELAY                      = 40
     DEF aiSlowFlash
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiSlowFlash
 
     ; Joystick button is held down, so we're displaying the available moves
@@ -545,7 +629,7 @@ HOLD_DELAY                      = 40
                     lda #CAP_SPEED
                     sta mdelay
 
-                    PHASE AI_ShowMoveCaptures       ; go back and rEORdraw all captures again
+                    PHASE ShowMoveCaptures       ; go back and rEORdraw all captures again
 
 .slowWait           rts
 
@@ -553,7 +637,7 @@ HOLD_DELAY                      = 40
 .butpress           lda #1
                     sta mdelay
 
-                    PHASE AI_UnDrawTargetSquares
+                    PHASE UnDrawTargetSquares
                     rts
 
 
@@ -562,7 +646,8 @@ HOLD_DELAY                      = 40
     DEF aiSelectDestinationSquare
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiSelectDestinationSquare
 
     ; Piece is selected and now we're looking for a button press on a destination square
@@ -631,10 +716,10 @@ HOLD_DELAY                      = 40
                     rts
 
 
-.doCancel           PHASE AI_ReselectDebounce
+.doCancel           PHASE ReselectDebounce
                     rts
 
-.done               PHASE AI_Quiescent              ; destination selected!
+.done               PHASE Quiescent              ; destination selected!
 .noButton           rts
 
 
@@ -646,13 +731,13 @@ HOLD_DELAY                      = 40
     DEF aiRollPromotionPiece
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiRollPromotionPiece
 
     ; Flash the '?' and wait for an UDLR move
 
                     lda INTIM
-                    cmp #SPEEDOF_COPYSINGLEPIECE
+                    cmp #SPEEDOF_CopySinglePiece
                     bcc .exit
 
                     lda SWCHA
@@ -702,7 +787,7 @@ HOLD_DELAY                      = 40
 
                     jsr showPromoteOptions          ; draw the initial Q
 
-                    PHASE AI_ChooseDebounce
+                    PHASE ChooseDebounce
                     rts
 
 
@@ -711,8 +796,8 @@ HOLD_DELAY                      = 40
     DEF showPromoteOptions
     SUBROUTINE
 
-        REFER aiRollPromotionPiece ;✅
-        REFER aiChoosePromotePiece ;✅
+        REF aiRollPromotionPiece ;✅
+        REF aiChoosePromotePiece ;✅
         VEND showPromoteOptions
 
     ; X = character shape # (?/N/B/R/Q)
@@ -732,14 +817,15 @@ HOLD_DELAY                      = 40
     DEF aiChoosePromotePiece
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiChoosePromotePiece
 
     ; Question-mark phase has exited via joystick direction
     ; Now we cycle through the selectable pieces
 
                     lda INTIM
-                    cmp #SPEEDOF_COPYSINGLEPIECE
+                    cmp #SPEEDOF_CopySinglePiece
                     bcc .exit
 
                     lda INPT4
@@ -796,7 +882,7 @@ HOLD_DELAY                      = 40
                     and #3
                     sta fromPiece
 
-                    PHASE AI_ChooseDebounce         ; after draw, wait for release
+                    PHASE ChooseDebounce         ; after draw, wait for release
 
 .odd
 
@@ -831,7 +917,7 @@ HOLD_DELAY                      = 40
 
                     jsr CopySinglePiece;@0          ; put back whatever was there to start
 
-.nothing            PHASE AI_MoveIsSelected
+.nothing            PHASE MoveIsSelected
                     rts
 
     ALLOCATE promotePiece, 4
@@ -849,7 +935,8 @@ HOLD_DELAY                      = 40
     DEF aiMarchA2
     SUBROUTINE                    
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiMarchA2
 
     ; erase object in new sqare --> blank
@@ -880,7 +967,7 @@ HOLD_DELAY                      = 40
                     sta@RAM Board,y                 ; and what's actually moving there
 
 
-                    PHASE AI_MarchB
+                    PHASE MarchB
                     rts
 
 
@@ -889,7 +976,8 @@ HOLD_DELAY                      = 40
     DEF aiMarchB2
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiMarchB2
 
                     ldy lastSquareX12
@@ -910,68 +998,19 @@ HOLD_DELAY                      = 40
 
                     lda #2                          ;??? inter-move segment speed (can be 0)
                     sta drawDelay
-                    PHASE AI_MarchToTargetA
+                    PHASE MarchToTargetA
 
                     rts
 
-xhalt               PHASE AI_EPHandler
+xhalt               PHASE EPHandler
                     rts
+
+
 
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiEPHandler
-    SUBROUTINE
-
-                    ;CALL EnPassantFixupDraw         ; set enPassantPawn
-
-
-                    lda fromPiece
-                    and #FLAG_ENPASSANT|FLAG_MOVED
-                    cmp #FLAG_ENPASSANT|FLAG_MOVED
-                    bne .exit
-
-    ; we have deteced a piece DOING an en passant capture
-    ; so do the actual removal of the captured pawn...
-    ; calculate the captured pawn's square based on piece colour
-
-                    lda #-10
-                    ldx fromPiece
-                    bpl .white
-                    lda #10
-.white
-                    clc
-                    adc fromX12                     ; attacker destination square
-                    sta enPassantPawn               ; now this is the pawn to ERASE
-
-                    lda #5                          ; on/off count (leave undrawn)
-                    sta drawCount                   ; flashing for piece about to move
-                    lda #0
-                    sta drawDelay
-
-                    PHASE AI_EPFlash
-                    rts
-
-
-.exit
-            
-                    lda #4                          ; on/off count (leave undrawn)
-                    sta drawCount                   ; flashing for piece about to move
-                    lda #0
-                    sta drawDelay
-
-                    PHASE AI_FinalFlash
-                    rts
-
+    END_BANK
 
 ;---------------------------------------------------------------------------------------------------
-
-
-;---------------------------------------------------------------------------------------------------
-
-    CHECK_BANK_SIZE "BANK_StateMachine@1#1"
-
-
-;---------------------------------------------------------------------------------------------------
-
 ; EOF

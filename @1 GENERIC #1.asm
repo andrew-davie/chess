@@ -1,21 +1,22 @@
-; Chess
+;---------------------------------------------------------------------------------------------------
+; @1 GENERIC #1.asm
+
+; Atari 2600 Chess
 ; Copyright (c) 2019-2020 Andrew Davie
 ; andrew@taswegian.com
+
+;---------------------------------------------------------------------------------------------------
 
     SLOT 1           ; which bank this code switches to
     ROMBANK ONE
 
 
 ;---------------------------------------------------------------------------------------------------
-; ... the above is a (potentially) RAM-copied section -- the following is ROM-only.  Note that
-; we do not configure a 1K boundary, as we con't really care when the above 'RAM'
-; bank finishes.  Just continue on from where it left off...
-;---------------------------------------------------------------------------------------------------
 
     DEF CartInit
     SUBROUTINE
 
-        REFER StartupBankReset ;✅
+        REF StartupBankReset ;✅
 
         VEND CartInit
 
@@ -69,7 +70,7 @@
     ; Move a copy of the row bank template to the first 8 banks of RAM
     ; and then terminate the draw subroutine by substituting in a RTS on the last one
 
-        REFER StartupBankReset ;✅
+        REF StartupBankReset ;✅
         VEND SetupBanks
     
     ; Copy the bitmap shadow into the first 8 RAM banks via x(SLOT3)-->y(SLOT2)
@@ -94,7 +95,7 @@
 
     ; copy the BOARD/MOVES bank
 
-                    ldx #SHADOW_BOARD
+                    ldx #ROMBANK_SHADOW_BOARD
                     ldy #RAMBANK_BOARD
                     jsr CopyShadowROMtoRAM              ; this auto-initialises Board too
 
@@ -131,7 +132,7 @@
     DEF CopyShadowROMtoRAM
     SUBROUTINE
 
-        REFER SetupBanks ;✅
+        REF SetupBanks ;✅
 
         VEND CopyShadowROMtoRAM
 
@@ -156,31 +157,11 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF CallClear
-    SUBROUTINE
-
-    IF 0
-        REFER aiClearEachRow    ;TODO
-    ENDIF
-
-        VEND CallClear
-
-    IF 0
-        ; No transient variable dependencies/calls
-
-                    sty SET_BANK_RAM
-                    jsr ClearRowBitmap
-    ENDIF                    
-                    rts
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF InitialisePieceSquares
     SUBROUTINE
 
-        COMMON_VARS
-        REFER StartupBankReset ;✅
+        REF COMMON_VARS
+        REF StartupBankReset ;✅
 
         VAR __initPiece, 1
         VAR __initSquare, 1
@@ -195,7 +176,7 @@
                     sta enPassantPawn               ; no en-passant
 
 
-                    PHASE AI_StartClearBoard
+                    PHASE StartClearBoard
 
                     ldx #0
 .fillPieceLists
@@ -445,21 +426,6 @@ InitPieceList
 
 ;---------------------------------------------------------------------------------------------------
 
-    IF 0
-    DEF SAFE_BackupBitmaps
-    SUBROUTINE
-
-        REFER aiInCheckBackup
-        VEND SAFE_BackupBitmaps
-
-                    sty SET_BANK_RAM
-                    jsr SaveBitmap
-                    rts
-    ENDIF
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF AddMoveSimple
     SUBROUTINE
 
@@ -499,19 +465,19 @@ InitPieceList
     DEF aiSpecialMoveFixup
     SUBROUTINE
 
-        COMMON_VARS
-        REFER AiStateMachine ;✅
+        REF COMMON_VARS
+        REF AiStateMachine ;✅
         VEND aiSpecialMoveFixup
 
                     lda INTIM
-                    cmp #SPEEDOF_COPYSINGLEPIECE+4
+                    cmp #SPEEDOF_CopySinglePiece+4
                     bcs .cont
                     rts
 
 
 .cont
 
-                    PHASE AI_DelayAfterPlaced
+                    PHASE DelayAfterPlaced
 
 
     ; Special move fixup
@@ -529,12 +495,11 @@ InitPieceList
 
 ;---------------------------------------------------------------------------------------------------
 
-
-
     DEF aiEPFlash
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiEPFlash
 
                     lda drawDelay
@@ -569,7 +534,7 @@ InitPieceList
                     ;lda #100
                     ;sta aiFlashDelay ;???
 
-                    PHASE AI_FinalFlash
+                    PHASE FinalFlash
                     rts
 
 
@@ -578,7 +543,7 @@ InitPieceList
     DEF CastleFixupDraw
     SUBROUTINE
 
-        REFER aiSpecialMoveFixup ;✅
+        REF aiSpecialMoveFixup ;✅
         VEND CastleFixupDraw
 
     ; guarantee flags for piece, post-move, are correct
@@ -613,9 +578,8 @@ InitPieceList
 
     ; in this siutation (castle, rook moving) we do not change sides yet!
 
-                    PHASE AI_MoveIsSelected
+                    PHASE MoveIsSelected
                     rts
-
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -623,13 +587,14 @@ InitPieceList
     DEF aiDrawEntireBoard
     SUBROUTINE
 
-        REFER AiStateMachine ;✅
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine ;✅
 
         VEND aiDrawEntireBoard
 
 
                     lda INTIM
-                    cmp #SPEEDOF_COPYSINGLEPIECE+4
+                    cmp #SPEEDOF_CopySinglePiece+4
                     bcc .exit
 
     ; We use [SLOT3] for accessing board
@@ -656,10 +621,10 @@ InitPieceList
                     pla
                     sta@RAM Board,y
 
-.isablank           PHASE AI_DrawPart2
+.isablank           PHASE DrawPart2
                     rts
 
-.isablank2          PHASE AI_DrawPart3
+.isablank2          PHASE DrawPart3
 .exit               rts
 
 
@@ -668,7 +633,8 @@ InitPieceList
     DEF aiDrawPart2
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiDrawPart2
 
     ; WARNING - local variables will not survive the following call...!
@@ -682,7 +648,7 @@ InitPieceList
                     cmp #22
                     bcc .comp
 
-                    PHASE AI_DrawEntireBoard
+                    PHASE DrawEntireBoard
                     rts
 
 .comp
@@ -693,7 +659,7 @@ InitPieceList
                     sta originX12
 
 
-                    PHASE AI_GenerateMoves
+                    PHASE GenerateMoves
                     rts
                     
 
@@ -702,7 +668,8 @@ InitPieceList
     DEF aiMarchB
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF Variable_PieceShapeBuffer
+        REF AiStateMachine
         VEND aiMarchB
 
     ; Draw the piece in the new square
@@ -716,7 +683,7 @@ InitPieceList
                     lda #2                          ; snail trail delay
                     sta drawDelay
 
-                    PHASE AI_MarchToTargetB
+                    PHASE MarchToTargetB
                     rts
 
 
@@ -743,7 +710,7 @@ InitPieceList
     DEF aiQuiescent
     SUBROUTINE
 
-        REFER AiStateMachine
+        REF AiStateMachine
         VEND aiQuiescent
 
     ; Move has been selected
@@ -763,16 +730,16 @@ InitPieceList
                     and #PIECE_MASK                 ; if not the same piece board/movelist...
                     bne .promote                    ; promote a pawn
 
-                    PHASE AI_MoveIsSelected
+                    PHASE MoveIsSelected
                     rts
 
-.promote            PHASE AI_PromotePawnStart
+.promote            PHASE PromotePawnStart
                     rts
 
 
 ;---------------------------------------------------------------------------------------------------
 
-    CHECK_BANK_SIZE "BANK_GENERIC@1#1"
+    END_BANK
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

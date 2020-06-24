@@ -1,8 +1,14 @@
-; Chess
+;---------------------------------------------------------------------------------------------------
+; @3 GENERIC #2.asm
+
+; Atari 2600 Chess
 ; Copyright (c) 2019-2020 Andrew Davie
 ; andrew@taswegian.com
 
-    SLOT 3 ; this code assembles for bank #1
+
+;---------------------------------------------------------------------------------------------------
+
+    SLOT 3
     ROMBANK THREE
 
 ;---------------------------------------------------------------------------------------------------
@@ -10,8 +16,8 @@
     DEF GetPiece
     SUBROUTINE
 
-        REFER aiSelectDestinationSquare ;✅
-        REFER aiQuiescent ;✅
+        REF aiSelectDestinationSquare ;✅
+        REF aiQuiescent ;✅
         VEND GetPiece
 
     ; Retrieve the piece+flags from the movelist, given from/to squares
@@ -53,8 +59,8 @@
 ;     DEF GenCastleMoveForRook_ENPASSANT
 ;     SUBROUTINE
 
-;         REFER MakeMove ;✅
-;         REFER CastleFixupDraw_ENPASSANT ;✅
+;         REF MakeMove ;✅
+;         REF CastleFixupDraw_ENPASSANT ;✅
 ;         VEND GenCastleMoveForRook_ENPASSANT
 
 ;         rts ;tmp
@@ -133,8 +139,8 @@
     DEF GenCastleMoveForRook
     SUBROUTINE
 
-        REFER MakeMove ;✅
-        REFER CastleFixupDraw ;✅
+        REF MakeMove ;✅
+        REF CastleFixupDraw ;✅
         VEND GenCastleMoveForRook
 
     ; Generate secondary move for the rook, involved in a castling move
@@ -149,7 +155,6 @@
                     and #FLAG_CASTLE
                     beq .exit                       ; NOT involved in castle!
 
-    jsr debug ;tmp
                     ldx #4
                     lda toX12                     ; *destination*
 .findCast           clc
@@ -187,8 +192,8 @@ virtualSquare1      .byte 25,27,95,97
     ; DEF GenEnPassantMove
     ; SUBROUTINE
 
-    ;     REFER EnPassantCheck
-    ;     REFER MakeMove
+    ;     REF EnPassantCheck
+    ;     REF MakeMove
     ;     VEND GenEnPassantMove
 
 
@@ -198,7 +203,7 @@ virtualSquare1      .byte 25,27,95,97
 
 ;---------------------------------------------------------------------------------------------------
 
-    CHECK_BANK_SIZE "BANK_3"
+    END_BANK
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

@@ -6,10 +6,11 @@
 
 TIA_BASE_ADDRESS = $40
 
-                processor 6502
-                include "vcs.h"
-                include "macro.h"
-                include "piece_defines.h"
+    processor 6502
+    include "vcs.h"
+    include "macro.h"
+    include "_ MACROS.asm"
+    include "piece_defines.h"
 
 VERBOSE                 = 0                         ; set to 1 for compile messages
 
@@ -55,12 +56,12 @@ SELECT_SWITCH           = 2                         ; (SWCHB & SELECT_SWITCH)  0
 
 
 SEARCH_DEPTH            = 3
-QUIESCE_EXTRA_DEPTH     = 6
+QUIESCE_EXTRA_DEPTH     = 4
 
 
     IF SEARCH_DEPTH < 3
-    ECHO "ERROR: Search depth must be >= 3"
-    ERR
+        ECHO "ERROR: Search depth must be >= 3"
+        ERR
     ENDIF
 
 
@@ -105,7 +106,7 @@ DIRECTION_BITS              = %111              ; for ManLastDirection
 
 ;------------------------------------------------------------------------------
 
-PLUSCART = YES
+PLUSCART = NO
 
 ;------------------------------------------------------------------------------
 
@@ -132,27 +133,6 @@ PAL_50              = PAL|0
 PAL_60              = PAL|1
 
 
-    IF L276
-VBLANK_TIM_NTSC     = 48                        ; NTSC 276 (Desert Falcon does 280, so this should be pretty safe)
-    ELSE
-VBLANK_TIM_NTSC     = 50                        ; NTSC 262
-    ENDIF
-VBLANK_TIM_PAL      = 85 ;85                        ; PAL 312 (we could increase this too, if we want to, but I suppose the used vertical screen size would become very small then)
-
-    IF L276
-OVERSCAN_TIM_NTSC   = 35 ;24 ;51                        ; NTSC 276 (Desert Falcon does 280, so this should be pretty safe)
-    ELSE
-OVERSCAN_TIM_NTSC   = 8 ;51                        ; NTSC 262
-    ENDIF
-OVERSCAN_TIM_PAL    = 41                        ; PAL 312 (we could increase this too, if we want to, but I suppose the used vertical screen size would become very small then)
-
-    IF L276
-SCANLINES_NTSC      = 276                       ; NTSC 276 (Desert Falcon does 280, so this should be pretty safe)
-    ELSE
-SCANLINES_NTSC      = 262                       ; NTSC 262
-    ENDIF
-SCANLINES_PAL       = 312
-
 
 TIME_PART_2         = 46
 TIME_PART_1         = 46
@@ -162,330 +142,6 @@ SLOT0               = 0
 SLOT1               = 64
 SLOT2               = 128
 SLOT3               = 192
-
-;------------------------------------------------------------------------------
-; MACRO definitions
-
-
-
-            MAC ROMBANK ; bank name
-                SEG {1}
-                ORG _ORIGIN
-                RORG _BANK_ADDRESS_ORIGIN
-_BANK_START     SET *
-{1}_START       SET *
-_CURRENT_BANK   SET _ORIGIN/1024
-{1}             SET _BANK_SLOT + _CURRENT_BANK
-_ORIGIN         SET _ORIGIN + 1024
-            ENDM
-
-;            MAC DEFINE_1K_SEGMENT ; {seg name}
-;                ALIGN $400
-;SEGMENT_{1}     SET *
-;BANK_{1}        SET _CURRENT_BANK
-;            ENDM
-
-    MAC CHECK_BANK_SIZE ; name
-.TEMP = * - _BANK_START
-    ECHO {1}, "(1K) SIZE = ", .TEMP, ", FREE=", _ROM_BANK_SIZE - .TEMP
-    IF ( .TEMP ) > _ROM_BANK_SIZE
-        ECHO "BANK OVERFLOW @ ", {1}, " size=", * - ORIGIN
-        ERR
-    ENDIF
-    ENDM
-
-    MAC CHECK_RAM_BANK_SIZE ; name
-.TEMP = * - _BANK_START
-    ECHO {1}, "(512 byte) SIZE = ", .TEMP, ", FREE=", _RAM_BANK_SIZE - .TEMP
-    IF ( .TEMP ) > _RAM_BANK_SIZE
-        ECHO "BANK OVERFLOW @ ", {1}, " size=", * - ORIGIN
-        ERR
-    ENDIF
-    ENDM
-
-;---------------------------------------------------------------------------------------------------
-
-    ; Macro inserts a page break if the object would overlap a page
-
-    MAC OPTIONAL_PAGEBREAK ; { string, size }
-        LIST OFF
-        IF (>( * + {2} -1 )) > ( >* )
-EARLY_LOCATION  SET *
-            ALIGN 256
-            IF VERBOSE=1
-            ECHO "PAGE BREAK INSERTED FOR", {1}
-            ECHO "REQUESTED SIZE =", {2}
-            ECHO "WASTED SPACE =", *-EARLY_LOCATION
-            ECHO "PAGEBREAK LOCATION =", *
-            ENDIF
-        ENDIF
-        LIST ON
-    ENDM
-
-
-    MAC CHECK_PAGE_CROSSING
-        LIST OFF
-    IF ( >BLOCK_END != >BLOCK_START )
-        ECHO "PAGE CROSSING @ ", BLOCK_START
-    ENDIF
-    LIST ON
-    ENDM
-
-    MAC CHECKPAGE
-        LIST OFF
-        IF >. != >{1}
-            ECHO ""
-            ECHO "ERROR: different pages! (", {1}, ",", ., ")"
-            ECHO ""
-        ERR
-        ENDIF
-        LIST ON
-    ENDM
-
-    MAC CHECKPAGEX
-        LIST OFF
-        IF >. != >{1}
-            ECHO ""
-            ECHO "ERROR: different pages! (", {1}, ",", ., ") @ {0}"
-            ECHO {2}
-            ECHO ""
-        ERR
-        ENDIF
-        LIST ON
-    ENDM
-
-;---------------------------------------------------------------------------------------------------
-
-    ; Defines a variable of the given size, making sure it doesn't cross a page
-    MAC VARIABLE ; {name, size}
-    OPTIONAL_PAGEBREAK "Variable", {2}
-{1} ds {2}
-    ENDM
-
-
-;---------------------------------------------------------------------------------------------------
-
-    MAC DEF               ; name of subroutine
-SLOT_{1}        SET _BANK_SLOT
-BANK_{1}        SET SLOT_{1} + _CURRENT_BANK         ; bank in which this subroutine resides
-{1}                                     ; entry point
-TEMPORARY_VAR SET Overlay
-TEMPORARY_OFFSET SET 0
-VAR_BOUNDARY_{1} SET TEMPORARY_OFFSET
-FUNCTION_NAME SET {1}
-    ENDM
-
-
-;---------------------------------------------------------------------------------------------------
-
-    MAC ALLOCATE
-    OPTIONAL_PAGEBREAK "Table", {2}
-    DEF {1}
-    ENDM
-
-;---------------------------------------------------------------------------------------------------
-
-    MAC SLOT ; {1}
-    IF ({1} < 0) || ({1} > 3)
-        ECHO "Illegal bank address/segment location", {1}
-        ERR
-    ENDIF
-_BANK_ADDRESS_ORIGIN SET $F000 + ({1} * _ROM_BANK_SIZE)
-_BANK_SLOT SET {1} * 64               ; D7/D6 selector
-    ENDM
-
-
-;---------------------------------------------------------------------------------------------------
-
-    MAC NEGEVAL
-
-                    sec
-                    lda #0
-                    sbc Evaluation
-                    sta Evaluation
-                    lda #0
-                    sbc Evaluation+1
-                    sta Evaluation+1
-    ENDM
-
-
-    MAC SWAP
-                    lda sideToMove
-                    eor #SWAP_SIDE|HUMAN
-                    sta sideToMove
-
-                    ;NEGEVAL
-    ENDM
-
-
-;---------------------------------------------------------------------------------------------------
-
-TEMPORARY_OFFSET SET 0
-
-
-    MAC VEND ; {1}
-    IFNCONST {1}
-        ECHO "Incorrect VEND label", {1}
-        ERR
-    ENDIF
-VAREND_{1} = TEMPORARY_VAR
-    ENDM
-
-
-    MAC REFER ; {1}
-        IF VAREND_{1} > TEMPORARY_VAR
-TEMPORARY_VAR SET VAREND_{1}
-        ENDIF
-    ENDM
-
-
-
-    ; Define a temporary variable for use in a subroutine
-    ; Will allocate appropriate bytes, and also check for overflow of the available overlay buffer
-
-    MAC VAR ; { name, size }
-{1} = TEMPORARY_VAR
-TEMPORARY_VAR SET TEMPORARY_VAR + TEMPORARY_OFFSET + {2}
-
-OVERLAY_DELTA SET TEMPORARY_VAR - Overlay
-        IF OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-MAXIMUM_REQUIRED_OVERLAY_SIZE SET OVERLAY_DELTA
-        ENDIF
-        IF OVERLAY_DELTA > OVERLAY_SIZE
-            ECHO "Temporary Variable", {1}, "overflow!"
-            ERR
-        ENDIF
-        LIST ON
-    ENDM
-
-
-;---------------------------------------------------------------------------------------------------
-
-    MAC TAG ; {ident/tag}
-; {0}
-    ENDM
-
-;---------------------------------------------------------------------------------------------------
-
-    MAC sta@RAM ;{}
-        sta [RAM]+{0}
-    ENDM
-
-    MAC stx@RAM
-        stx [RAM]+{0}
-    ENDM
-
-    MAC sty@RAM
-        sty [RAM]+{0}
-    ENDM
-
-    MAC sta@PLY ;{}
-        sta [RAM]+{0}
-    ENDM
-
-    MAC stx@PLY
-        stx [RAM]+{0}
-    ENDM
-
-    MAC sty@PLY
-        sty [RAM]+{0}
-    ENDM
-
-
-    MAC lda@RAM ;{}
-        lda {0}
-    ENDM
-
-    MAC ldx@RAM ;{}
-        ldx {0}
-    ENDM
-
-    MAC ldy@RAM ;{}
-        ldy {0}
-    ENDM
-
-
-    MAC lda@PLY ;{}
-        lda {0}
-    ENDM
-
-    MAC ldx@PLY ;{}
-        ldx {0}
-    ENDM
-
-    MAC ldy@PLY ;{}
-        ldy {0}
-    ENDM
-
-
-    MAC adc@PLY ;{}
-        adc {0}
-    ENDM
-
-    MAC sbc@PLY ;{}
-        sbc {0}
-    ENDM
-
-    MAC cmp@PLY ;{}
-        cmp {0}
-    ENDM
-
-;---------------------------------------------------------------------------------------------------
-
-    MAC SET_PLATFORM
-; 00 = NTSC
-; 01 = NTSC
-; 10 = PAL-50
-; 11 = PAL-60
-                lda SWCHB
-                rol
-                rol
-                rol
-                and #%11
-                eor #PAL
-                sta Platform                    ; P1 difficulty --> TV system (0=NTSC, 1=PAL)
-    ENDM
-
-
-;---------------------------------------------------------------------------------------------------
-
-;    MAC JSROM_SAFE ; {routine}
-;    ; Saves bank of routine to variable for later restore.
-;    ; Switches to the bank and does a JSR to the routine.
-
-;                lda #BANK_{1}
-;                sta savedBank
-;                sta SET_BANK
-;                jsr {1}
-;    ENDM
-
-
-;    MAC JSROM ; {routine}
-
-;                lda #BANK_{1}
-;                sta SET_BANK
-;                jsr {1}
-;    ENDM
-
-
-;    MAC JSRAM
-;                lda #BANK_{1}
-;                sta SET_BANK_RAM
-;                jsr {1}
-;    ENDM
-
-
-
-    MAC TIMECHECK ; {ident}, {branch if out of time}
-                    lda INTIM
-                    cmp #SPEEDOF_{1}
-                    bcc {2}
-    ENDM
-
-
-    MAC TIMING ; {label}, {cycles}
-SPEEDOF_{1} = ({2}/64) + 1
-    ENDM
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -512,33 +168,13 @@ SPEEDOF_{1} = ({2}/64) + 1
 
 
     MAC PHASE ;#
-        lda #{1}
+        lda #AI_{1}
         sta aiState
     ENDM
 
 
 ;--------------------------------------------------------------------------------
 
-    MAC COMMON_VARS
-
-        VAR __thinkbar, 1
-        VAR __toggle, 1
-
-        VAR __bestMove, 1
-        VAR __alpha, 2
-        VAR __beta, 2
-        VAR __negaMax, 2
-        VAR __value, 2
-
-        VAR __quiesceCapOnly, 1
-
-        VAR __originalPiece, 1
-        VAR __capturedPiece, 1
-        
-    ENDM
-;---------------------------------------------------------------------------------------------------
-
-    include "_ MACROS.asm"
     include "_ PIECE MACROS.asm"
 
     include "@3 STARTBANK.asm"                       ; MUST be first ROM bank
@@ -546,35 +182,35 @@ SPEEDOF_{1} = ({2}/64) + 1
     include "@0 HOME.asm"
 
     include "@1 GENERIC #1.asm"
+    include "@1 NEGAMAX.asm"
+    include "@1 STATE MACHINE #1.asm"
+    include "@1 STATE MACHINE #2.asm"
+    include "@1 PIECE HANDLER #1.asm"
+    include "@1 PIECE HANDLER #2.asm"
 
     include "@2 SCREEN RAM.asm"
     include "@2 PLY.asm"
     include "@2 GENERIC #3.asm"
-    include "@2 GFX1.asm"
-    include "@2 GFX2.asm"
-    include "@2 GFX3.asm"
-    include "@2 GFX4.asm"
+    include "@2 GENERIC #4.asm"
+    include "@2 GRAPHICS DATA.asm"
+
 
     include "@3 GENERIC #2.asm"
     include "@3 SCREEN ROM.asm"
     include "@3 EVALUATE.asm"
 
     include "SHADOW_BOARD.asm"
-    include "BANK_StateMachine@1#1.asm"
-    include "BANK_StateMachine@1#2.asm"
-    include "piece_graphics.asm"
-    include "BANK_GENERIC@2#2.asm"
-    include "NEGAMAX@1.asm"
 
 
-    include "PIECE_HANDLER@1#1.asm"
-    include "PIECE_HANDLER@1#2.asm"
 
     include "TitleScreen.asm"
     include "TitleScreen@2.asm"
 
 
     ALIGN _ROM_BANK_SIZE
+
+    ECHO [_ORIGIN/_ROM_BANK_SIZE]d, "ROM BANKS"
+    ECHO [ORIGIN_RAM / _RAM_BANK_SIZE]d, "RAM BANKS"
 
 ;---------------------------------------------------------------------------------------------------
 ;EOF

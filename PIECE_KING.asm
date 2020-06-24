@@ -69,7 +69,7 @@ QUEENSIDE       = -4
     DEF Handle_KING
     SUBROUTINE
 
-        REFER GenerateAllMoves ;✅
+        REF GenerateAllMoves ;✅
         VEND Handle_KING
 
     ; x = currentSquare (square the KING is on)

@@ -1,28 +1,15 @@
-; Chess
+;---------------------------------------------------------------------------------------------------
+; @0 HOME.asm
+
+; Atari 2600 Chess
 ; Copyright (c) 2019-2020 Andrew Davie
 ; andrew@taswegian.com
 
-
-; SLOT0 - screen draw, state machine dispatcher
-; SLOT1 - anything
-; SLOT2 - moves/ply
-; SLOT3 - board
-
-
-
-
-
+;---------------------------------------------------------------------------------------------------
 
     SLOT 0
+    ROMBANK LOCKED_BANK
 
-;---------------------------------------------------------------------------------------------------
-;#########################################  FIXED BANK  ############################################
-;---------------------------------------------------------------------------------------------------
-
-;_ORIGIN             SET _FIRST_BANK
-
-                    ROMBANK THE_FIRST_BANK
-                    RORG $f000
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -120,12 +107,33 @@ zapem               txa
 
 ;---------------------------------------------------------------------------------------------------
 
+    DEF COMMON_VARS
+
+        VAR __thinkbar, 1
+        VAR __toggle, 1
+
+        VAR __bestMove, 1
+        VAR __alpha, 2
+        VAR __beta, 2
+        VAR __negaMax, 2
+        VAR __value, 2
+
+        VAR __quiesceCapOnly, 1
+
+        VAR __originalPiece, 1
+        VAR __capturedPiece, 1
+
+        VEND COMMON_VARS        
+
+
+;---------------------------------------------------------------------------------------------------
+
     DEF ThinkBar
     SUBROUTINE
 
-        COMMON_VARS
-        REFER negaMax ;✅
-        REFER quiesce ;✅
+        REF COMMON_VARS
+        REF negaMax ;✅
+        REF quiesce ;✅
         VEND ThinkBar
 
         IF DIAGNOSTICS
@@ -149,7 +157,7 @@ zapem               txa
                     and #15
                     tay
                     lda rnd
-                    and #4
+                    and #6
                     ora TBcol,y
                     sta COLUPF
 
@@ -193,21 +201,25 @@ SynapsePattern
     DEF CopySinglePiece
     SUBROUTINE
 
-    TIMING COPYSINGLEPIECE, (2600)
+    ; Common vairables...
+    ; REQUIRES calling routines to "REF Variable_PieceShapeBuffer"
 
-        REFER showMoveCaptures ;✅
-        REFER aiDrawEntireBoard ;✅
-        REFER aiDrawPart2 ;✅
-        REFER aiMarchB ;✅
-        REFER aiFlashComputerMove ;✅
-        REFER aiSelectDestinationSquare ;✅
-        REFER aiMarchA2 ;✅
-        REFER aiMarchB2 ;✅
-        REFER aiWriteStartPieceBlank ;✅
-        REFER aiChoosePromotePiece ;✅
-        REFER aiMarchToTargetB ;✅
-        REFER aiPromotePawnStart ;✅
-        REFER aiFinalFlash ;✅
+    TIMING CopySinglePiece, (2600)
+
+        REF Variable_PieceShapeBuffer
+        REF showMoveCaptures ;✅
+        REF aiDrawEntireBoard ;✅
+        REF aiDrawPart2 ;✅
+        REF aiMarchB ;✅
+        REF aiFlashComputerMove ;✅
+        REF aiSelectDestinationSquare ;✅
+        REF aiMarchA2 ;✅
+        REF aiMarchB2 ;✅
+        REF aiWriteStartPieceBlank ;✅
+        REF aiChoosePromotePiece ;✅
+        REF aiMarchToTargetB ;✅
+        REF aiPromotePawnStart ;✅
+        REF aiFinalFlash ;✅
 
 
         VEND CopySinglePiece
@@ -224,9 +236,9 @@ SynapsePattern
     DEF InterceptMarkerCopy
     SUBROUTINE
 
-        REFER CopySinglePiece ;✅
-        REFER showPromoteOptions ;✅
-        REFER showMoveOptions ;✅
+        REF CopySinglePiece ;✅
+        REF showPromoteOptions ;✅
+        REF showMoveOptions ;✅
         VEND InterceptMarkerCopy
 
     ; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
@@ -335,6 +347,12 @@ ONCEPERFRAME = 40
         {1} EPHandler                               ; 41
         {1} EPFlash                                 ; 42
         {1} DebounceSelect                          ; 43
+        {1} InCheckBackupStart                      ; 44
+        {1} RestoreBitmaps                          ; 45
+        {1} WaitBitmap                              ; 46
+        {1} DrawBitmapBackground                    ; 47
+        {1} DrawBitmap2                             ; 48
+        {1} DrawBitmap3                             ; 49
 
     ENDM
 
@@ -355,7 +373,7 @@ ONCEPERFRAME = 40
     DEF AiStateMachine
     SUBROUTINE
 
-        REFER StartupBankReset ;✅
+        REF StartupBankReset ;✅
         VAR __aiVec, 2
         VEND AiStateMachine
 
@@ -378,10 +396,10 @@ ONCEPERFRAME = 40
     DEF GenerateAllMoves
     SUBROUTINE
 
-        REFER ListPlayerMoves ;✅
-        REFER aiComputerMove ;✅
-        REFER quiesce ;✅
-        REFER negaMax ;✅
+        REF ListPlayerMoves ;✅
+        REF aiComputerMove ;✅
+        REF quiesce ;✅
+        REF negaMax ;✅
 
         VAR __vector, 2
         VAR __pieceFilter, 1
@@ -488,36 +506,35 @@ ONCEPERFRAME = 40
                     sta SET_BANK
                     rts
 
-   MAC HANDLEVEC
+    MAC HANDLEVEC ; {label}, {macro}
+    DEF HandlerVector{1}
+    
+        .byte {2}MoveReturn
+        .byte {2}MoveReturn ;byte {1}Handle_WHITE_PAWN        ; 1
+        .byte {2}MoveReturn ;.byte {1}Handle_BLACK_PAWN        ; 2
+        .byte {2}Handle_KNIGHT            ; 3
+        .byte {2}Handle_BISHOP            ; 4
+        .byte {2}Handle_ROOK              ; 5
+        .byte {2}Handle_QUEEN             ; 6
+        .byte {2}Handle_KING              ; 7
 
-        .byte {1}MoveReturn
-        .byte {1}MoveReturn ;byte {1}Handle_WHITE_PAWN        ; 1
-        .byte {1}MoveReturn ;.byte {1}Handle_BLACK_PAWN        ; 2
-        .byte {1}Handle_KNIGHT            ; 3
-        .byte {1}Handle_BISHOP            ; 4
-        .byte {1}Handle_ROOK              ; 5
-        .byte {1}Handle_QUEEN             ; 6
-        .byte {1}Handle_KING              ; 7
+        .byte {2}MoveReturn
+        .byte {2}Handle_WHITE_PAWN        ; 1
+        .byte {2}Handle_BLACK_PAWN        ; 2
+        .byte {2}MoveReturn;.byte {1}Handle_KNIGHT            ; 3
+        .byte {2}MoveReturn;.byte {1}Handle_BISHOP            ; 4
+        .byte {2}MoveReturn;.byte {1}Handle_ROOK              ; 5
+        .byte {2}MoveReturn;.byte {1}Handle_QUEEN             ; 6
+        .byte {2}MoveReturn;.byte {1}Handle_KING              ; 7
 
-        .byte {1}MoveReturn
-        .byte {1}Handle_WHITE_PAWN        ; 1
-        .byte {1}Handle_BLACK_PAWN        ; 2
-        .byte {1}MoveReturn;.byte {1}Handle_KNIGHT            ; 3
-        .byte {1}MoveReturn;.byte {1}Handle_BISHOP            ; 4
-        .byte {1}MoveReturn;.byte {1}Handle_ROOK              ; 5
-        .byte {1}MoveReturn;.byte {1}Handle_QUEEN             ; 6
-        .byte {1}MoveReturn;.byte {1}Handle_KING              ; 7
     ENDM
 
 
 ;    .byte 0     ; dummy to prevent page cross access on index 0
 
-    DEF HandlerVectorLO
-    HANDLEVEC <
-    DEF HandlerVectorHI
-    HANDLEVEC >
-    DEF HandlerVectorBANK
-    HANDLEVEC BANK_
+    HANDLEVEC LO, <
+    HANDLEVEC HI, >
+    HANDLEVEC BANK, BANK_
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -535,9 +552,9 @@ ONCEPERFRAME = 40
 
     ; This in turn requires the minimum memory for PLY banks to be 3 (computer, player, response)
 
-        COMMON_VARS
-        REFER selectmove ;✅
-        REFER StartupBankReset ;✅
+        REF COMMON_VARS
+        REF selectmove ;✅
+        REF StartupBankReset ;✅
 
         VEND ListPlayerMoves
 
@@ -581,13 +598,13 @@ ONCEPERFRAME = 40
     DEF AddMove
     SUBROUTINE
 
-        REFER Handle_KING ;✅
-        REFER Handle_QUEEN ;✅
-        REFER Handle_ROOK ;✅
-        REFER Handle_BISHOP ;✅
-        REFER Handle_KNIGHT ;✅
-        REFER Handle_WHITE_PAWN ;✅
-        REFER Handle_BLACK_PAWN ;✅
+        REF Handle_KING ;✅
+        REF Handle_QUEEN ;✅
+        REF Handle_ROOK ;✅
+        REF Handle_BISHOP ;✅
+        REF Handle_KNIGHT ;✅
+        REF Handle_WHITE_PAWN ;✅
+        REF Handle_BLACK_PAWN ;✅
 
         VEND AddMove
 
@@ -625,7 +642,6 @@ ONCEPERFRAME = 40
                     rts
 
 
-
 ;---------------------------------------------------------------------------------------------------
 
     DEF debug
@@ -638,10 +654,10 @@ ONCEPERFRAME = 40
     DEF unmakeMove
     SUBROUTINE
 
-        REFER selectmove ;✅
-        REFER ListPlayerMoves ;✅
-        REFER quiesce ;✅
-        REFER negaMax ;✅
+        REF selectmove ;✅
+        REF ListPlayerMoves ;✅
+        REF quiesce ;✅
+        REF negaMax ;✅
         VEND unmakeMove
 
     ; restore the board evaluation to what it was at the start of this ply
@@ -696,7 +712,7 @@ ONCEPERFRAME = 40
     DEF showMoveCaptures
     SUBROUTINE
 
-        REFER aiShowMoveCaptures ;✅
+        REF aiShowMoveCaptures ;✅
 
         VAR __toSquareX12, 1
         VAR __fromPiece, 1
@@ -761,7 +777,7 @@ ONCEPERFRAME = 40
 
 .legit
 
-        ;TIMECHECK COPYSINGLEPIECE, restoreIndex     ; not enough time to draw
+        ;TIMECHECK CopySinglePiece, restoreIndex     ; not enough time to draw
 
                     lda __toSquareX12
                     sta squareToDraw
@@ -777,7 +793,8 @@ ONCEPERFRAME = 40
     DEF CopyPieceToRowBitmap
     SUBROUTINE
 
-        REFER InterceptMarkerCopy ;✅
+        REF Variable_PieceShapeBuffer
+        REF InterceptMarkerCopy ;✅
 
         VEND CopyPieceToRowBitmap
 
@@ -814,23 +831,23 @@ ONCEPERFRAME = 40
 
 .copyPieceR         lda __pieceShapeBuffer,y
                     beq .blank1
-                    eor ChessBitmap+72,y
-                    sta@RAM ChessBitmap+72,y
+                    eor ChessBitmap+PIECE_SHAPE_SIZE,y
+                    sta@RAM ChessBitmap+PIECE_SHAPE_SIZE,y
 
 .blank1             lda __pieceShapeBuffer+18,y
                     beq .blank2
-                    eor ChessBitmap+72+18,y
-                    sta@RAM ChessBitmap+72+18,y
+                    eor ChessBitmap+PIECE_SHAPE_SIZE+18,y
+                    sta@RAM ChessBitmap+PIECE_SHAPE_SIZE+18,y
 
 .blank2             lda __pieceShapeBuffer+36,y
                     beq .blank3
-                    eor ChessBitmap+72+36,y
-                    sta@RAM ChessBitmap+72+36,y
+                    eor ChessBitmap+PIECE_SHAPE_SIZE+36,y
+                    sta@RAM ChessBitmap+PIECE_SHAPE_SIZE+36,y
 
 .blank3             lda __pieceShapeBuffer+54,y
                     beq .blank4
-                    eor ChessBitmap+72+54,y
-                    sta@RAM ChessBitmap+72+54,y
+                    eor ChessBitmap+PIECE_SHAPE_SIZE+54,y
+                    sta@RAM ChessBitmap+PIECE_SHAPE_SIZE+54,y
 
 .blank4             dey
                     bpl .copyPieceR
@@ -842,7 +859,7 @@ ONCEPERFRAME = 40
     DEF EnPassantRemoveCapturedPawn
     SUBROUTINE
 
-        REFER aiSpecialMoveFixup
+        REF aiSpecialMoveFixup
         VEND EnPassantRemoveCapturedPawn
 
                     ldy enPassantPawn
@@ -882,7 +899,7 @@ ONCEPERFRAME = 40
 
 ;---------------------------------------------------------------------------------------------------
 
-    ECHO "FREE BYTES IN BANK_FIRST@0 BANK = ", $F3FC - *
-
-
+    END_BANK
+    
+;---------------------------------------------------------------------------------------------------
 ; EOF

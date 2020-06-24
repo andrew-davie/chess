@@ -1,16 +1,22 @@
-; Chess
+;---------------------------------------------------------------------------------------------------
+; @1 NEGAMAX.asm
+
+; Atari 2600 Chess
 ; Copyright (c) 2019-2020 Andrew Davie
 ; andrew@taswegian.com
 
+;---------------------------------------------------------------------------------------------------
+
     SLOT 1
     ROMBANK NEGAMAX
+
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiComputerMove
     SUBROUTINE
 
-        REFER AiStateMachine ;✅
+        REF AiStateMachine ;✅
         VEND aiComputerMove
 
     ; Computer is about to select a move
@@ -42,11 +48,11 @@
                     lda flagCheck
                     beq .gameDrawn
 
-                    PHASE AI_CheckMate
+                    PHASE CheckMate
                     rts
 
 
-.gameDrawn          PHASE AI_Draw
+.gameDrawn          PHASE Draw
                     rts
                     
 .notComputer
@@ -55,7 +61,7 @@
                     lda #-1
                     sta cursorX12
 
-                    PHASE AI_DelayAfterMove
+                    PHASE DelayAfterMove
 .halted             rts
 
 
@@ -64,8 +70,8 @@
     DEF selectmove
     SUBROUTINE
 
-        COMMON_VARS
-        REFER aiComputerMove ;✅
+        REF COMMON_VARS
+        REF aiComputerMove ;✅
         VEND selectmove
 
 
@@ -137,11 +143,11 @@
     DEF MakeMove
     SUBROUTINE
 
-        COMMON_VARS
-        REFER selectmove ;✅
-        REFER ListPlayerMoves ;✅
-        REFER quiesce ;✅
-        REFER negaMax ;✅
+        REF COMMON_VARS
+        REF selectmove ;✅
+        REF ListPlayerMoves ;✅
+        REF quiesce ;✅
+        REF negaMax ;✅
         VEND MakeMove
 
     ; Do a move without any GUI stuff
@@ -304,6 +310,7 @@
 .inCheck2           rts
 
 
+;---------------------------------------------------------------------------------------------------
 
     DEF negaMax
 
@@ -318,8 +325,8 @@
     ; __beta[2] = param beta
 
 
-        COMMON_VARS
-        REFER selectmove ;✅
+        REF COMMON_VARS
+        REF selectmove ;✅
         VEND negaMax
 
                     pha
@@ -503,6 +510,7 @@
 
 .retrn              jmp .exit
 
+
 ;---------------------------------------------------------------------------------------------------
 
     MAC XCHG ;{name}
@@ -518,7 +526,7 @@
     DEF Sort
     SUBROUTINE
 
-        REFER GenerateAllMoves
+        REF GenerateAllMoves
         VAR __xchg, 1
         VEND Sort
 
@@ -544,9 +552,6 @@
                     bpl .next
 
 .exit
-
-
-
 
     ; Scan for capture of king
     ; Also scan for virtual king captures (squares involved in castling)
@@ -612,8 +617,8 @@
     ; __beta[2] = param beta
 
 
-        COMMON_VARS
-        REFER negaMax
+        REF COMMON_VARS
+        REF negaMax
         VEND quiesce
 
                     lda currentPly
@@ -785,7 +790,7 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    CHECK_BANK_SIZE "NEGAMAX"
+    END_BANK
 
 ;---------------------------------------------------------------------------------------------------
 ; EOF

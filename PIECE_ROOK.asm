@@ -8,7 +8,7 @@
     DEF Handle_ROOK
     SUBROUTINE
 
-        REFER GenerateAllMoves ;✅
+        REF GenerateAllMoves ;✅
         VEND Handle_ROOK
 
     ; Pass...

@@ -7,7 +7,7 @@
     DEF Handle_QUEEN
     SUBROUTINE
 
-        REFER GenerateAllMoves ;✅
+        REF GenerateAllMoves ;✅
         VEND Handle_QUEEN
 
     ; Pass...

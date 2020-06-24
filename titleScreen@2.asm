@@ -1,7 +1,7 @@
-  SLOT 2
-  ROMBANK TITLEDATA2
+    SLOT 2
+    ROMBANK TITLEDATA2
 
     DEF TitleData
     include "titleData.asm"
 
- CHECK_BANK_SIZE "TITLEDATA2"
+    END_BANK

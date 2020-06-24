@@ -1,7 +1,21 @@
+;---------------------------------------------------------------------------------------------------
+; @2 SCREEN RAM.asm
+
+; Atari 2600 Chess
+; Copyright (c) 2019-2020 Andrew Davie
+; andrew@taswegian.com
+
+
+;---------------------------------------------------------------------------------------------------
+
     SLOT 2
-    REPEAT (CHESSBOARD_ROWS)
-        RAMBANK .DUMMY
+    REPEAT CHESSBOARD_ROWS
+        RAMBANK CHESSBOARDROW
+        END_BANK
     REPEND
+
+
+;---------------------------------------------------------------------------------------------------
 
     ; NOTE: THIS BANK JUST *LOOKS* EMPTY.
     ; It actually contains everything copied from the ROM copy of the ROW RAM banks.
@@ -37,17 +51,10 @@ ChessBitmap5 = SHADOW_ChessBitmap5
 ; we effectively have 1K
 ;---------------------------------------------------------------------------------------------------
 
-COLOUR_LINE_1 = $82
-COLOUR_LINE_2 = $38
-COLOUR_LINE_3 = $2A
+COLOUR_LINE_1 = $86
+COLOUR_LINE_2 = $48
+COLOUR_LINE_3 = $D8
 BACKGCOL      = $0
-
-    IF 0
-COLOUR_LINE_1 = $84
-COLOUR_LINE_2 = $38
-COLOUR_LINE_3 = $2A
-BACKGCOL      = $00
-    ENDIF
 
 ROW_BITMAP_SIZE = 6 * 24            ; PF0/PF1/PF2/(PF0)/(PF1)/(PF2) x 8 ICC pixels
 
@@ -74,19 +81,14 @@ SpriteBuffer2
         .byte %11111000
         .byte %11111000
 
-    IF 0
-    ALLOCATE BackupBitmap, ROW_BITMAP_SIZE
-    ds ROW_BITMAP_SIZE, 0
-    ENDIF
-
 ;---------------------------------------------------------------------------------------------------
 
-    ALIGN 256
+    ;ALIGN 256
     SUBROUTINE
 
-    REFER StartupBankReset
-__dummy
-    VEND __dummy
+    REF StartupBankReset
+;__dummy
+;    VEND __dummy
 
     ; x = row # (and bank#)
 
@@ -204,10 +206,15 @@ SMSPRITE8_1         lda SpriteBuffer2+8,y       ; 4
                     jmp .l3                     ; 3 @58
 
 
+;---------------------------------------------------------------------------------------------------
+
+    DEF BackupBitmap
+    ds ROW_BITMAP_SIZE, 0
+
 
 ;---------------------------------------------------------------------------------------------------
 
-    CHECK_RAM_BANK_SIZE "ROM_SHADOW_SCREEN"
+    CHECK_RAM_BANK_SIZE
 
 ;---------------------------------------------------------------------------------------------------
 ;EOF
