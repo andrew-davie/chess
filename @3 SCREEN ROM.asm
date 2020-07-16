@@ -177,35 +177,54 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-    DEF aiDrawBitmapBackground
+    DEF aiMaskBitmapBackground
     SUBROUTINE
+
+    ; Remove any unwanted background via mask
 
         REF AiStateMachine
         VAR _tt,1
-        VEND aiDrawBitmapBackground
+        VAR _mask, 2
+        VAR _mask2, 2
+        VEND aiMaskBitmapBackground
 
                     dec drawCount
                     bmi .next
-
 
                     lda drawCount
                     ora #SLOT2
                     sta SET_BANK_RAM
 
+                    lda #BANK_BitmapShapeLO
+                    sta SET_BANK;@2
 
-                    ldx #ROW_BITMAP_SIZE/2-1
+                    ldy #0                          ; hardwired bitmap shape #
 
-.draw               lda SampleBitmap,x
-                    and@RAM ChessBitmap,x
-                    sta@RAM ChessBitmap,x
+                    lda BitmapShapeLO,y
+                    sta _mask
+                    lda BitmapShapeHI,y
+                    sta _mask+1
 
-                    lda SampleBitmap+ROW_BITMAP_SIZE/2,x
-                    and@RAM ChessBitmap+ROW_BITMAP_SIZE/2,x
-                    sta@RAM ChessBitmap+ROW_BITMAP_SIZE/2,x
+                    ldy drawCount                   ; row
+                    lda (_mask),y
+                    cmp #-1
+                    beq .exit                       ; no mask for this row
 
-                    dex
+
+
+                    lda #<SampleBitmap
+                    sta _mask
+                    lda #>SampleBitmap
+                    sta _mask+1
+
+                    ldy #ROW_BITMAP_SIZE-1
+.draw               lda (_mask),y
+                    and@RAM ChessBitmap,y
+                    sta@RAM ChessBitmap,y
+
+                    dey
                     bpl .draw
-                    rts
+.exit               rts
 
 
 .next
@@ -303,6 +322,7 @@ pwb                 PHASE WaitBitmap
     ; PF0/PF1/PF2/PF0/PF1/PF2
     ; x axis goes downwards
 
+
     .byte %11111111,%11111111,%11111111,%11111111,%11111111,%11111111
     .byte %11111111,%11111111,%11111111,%11111111,%11111111,%11111111
     .byte %11111111,%11111111,%11111111,%11111111,%11111111,%11111111
@@ -395,6 +415,9 @@ pwb                 PHASE WaitBitmap
     .byte %00000000,%00000000,%00000000,%00000000,%00000000,%00000000,%00000000,%00000000 ;G
     .byte %00000000,%00000000,%00000000,%00000000,%00000000,%00000000,%00000000,%00000000 ;G
     .byte %10000001,%00000000,%10000001,%00000001,%00000001,%00000001,%00000001,%00000001
+
+
+
 
 
 

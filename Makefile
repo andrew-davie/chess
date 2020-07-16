@@ -10,8 +10,8 @@ chess.bin: *.asm Makefile FORCE
 	osascript -e 'quit app "Stella"'
 	(cd ./gfx && python ConvertChessPieces.py)
 	python tools/grid.py
-	../dasm/bin/dasm ./chess.asm -S -p20 -l./chess.lst -f3 -v1 -s./chess.sym -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
-	open -a /Applications/Stella.app ./chess.bin
+	../dasmx/dasm/bin/dasm ./chess.asm -E0 -S -p20 -l./chess.lst -f3 -v1 -s./chess.sym -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
+	open -a /Applications/Stella.app ./chess.bin --args -ld B -rd A
 
 force:
 #	echo "force"

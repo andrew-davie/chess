@@ -169,7 +169,7 @@ _TYPE_ROM = 1
 
 ;---------------------------------------------------------------------------------------------------
 
-    MAC RAMBANK ; {bank name}
+    MACRO RAMBANK ; {bank name}
 
         SEG.U RAM_{1}
         ORG ORIGIN_RAM
@@ -394,7 +394,7 @@ RND_EOR_VAL = $B4
         rol
         and #%11
         eor #PAL
-        sta Platform                    ; P1 difficulty --> TV system (0=NTSC, 1=PAL)
+        sta platform                    ; P1 difficulty --> TV system (0=NTSC, 1=PAL)
 
     ENDM
 

@@ -33,14 +33,17 @@
 
                     lda #0
                     sta SWBCNT                      ; console I/O always set to INPUT
-                    sta SWACNT                      ; set controller I/O to INPUT
                     sta HMCLR
+
 
                     sta GRP0
                     sta GRP1
                     sta ENAM0
                     sta ENAM1
                     sta ENABL
+
+                    ;lda #$FF
+                    sta SWACNT                      ; set controller I/O to INPUT
 
     ; cleanup remains of title screen
                     ;sta GRP0
@@ -59,6 +62,14 @@
                     lda #WHITE|HUMAN
                     sta sideToMove
 
+                    lda SWCHB
+                    asl
+                    rol
+                    rol
+                    and #1
+                    sta platform                    ; P1 difficulty --> NTSC/PAL
+
+                    SPEAK left_speech
                     rts
 
 
@@ -66,6 +77,11 @@
 
     DEF SetupBanks
     SUBROUTINE
+
+        REF StartupBankReset
+        VEND SetupBanks
+
+
 
     ; Move a copy of the row bank template to the first 8 banks of RAM
     ; and then terminate the draw subroutine by substituting in a RTS on the last one
@@ -90,6 +106,30 @@
                     stx SET_BANK_RAM
                     lda #$60                        ; "rts"
                     sta@RAM SELFMOD_RTS_ON_LAST_ROW
+
+
+    ; Patch the NTSC/PAL colours in all row banks
+
+                    ldx platform
+.ROWBANK SET [SLOT2]
+    REPEAT 8
+                    lda #.ROWBANK
+                    sta SET_BANK_RAM
+
+                    lda col1,x
+                    sta@RAM SMCOL1+1
+                    lda col2,x
+                    sta@RAM SMCOL2+1
+                    lda col3,x
+                    sta@RAM SMCOL3+1
+
+    IFCONST RAINBOW
+                    inx
+                    inx
+    ENDIF
+
+.ROWBANK SET .ROWBANK + 1
+    REPEND
 
 
 
@@ -125,6 +165,72 @@
 ;                    jsr CopyShadowROMtoRAM
 
                     rts
+
+
+col1
+    .byte NTSC_COLOUR_LINE_1, PAL_COLOUR_LINE_1
+    IFCONST RAINBOW
+    .byte (NTSC_COLOUR_LINE_1+16)&$FF, PAL_COLOUR_LINE_1
+    .byte (NTSC_COLOUR_LINE_1+32)&$FF, PAL_COLOUR_LINE_1
+    .byte (NTSC_COLOUR_LINE_1+48)&$FF, PAL_COLOUR_LINE_1
+    .byte (NTSC_COLOUR_LINE_1+64)&$FF, PAL_COLOUR_LINE_1
+    .byte (NTSC_COLOUR_LINE_1+80)&$FF, PAL_COLOUR_LINE_1
+    .byte (NTSC_COLOUR_LINE_1+96)&$FF, PAL_COLOUR_LINE_1
+    .byte (NTSC_COLOUR_LINE_1+112)&$FF, PAL_COLOUR_LINE_1
+    ENDIF
+col2
+    .byte NTSC_COLOUR_LINE_2, PAL_COLOUR_LINE_2
+    IFCONST RAINBOW
+    .byte (NTSC_COLOUR_LINE_2+32)&$FF, PAL_COLOUR_LINE_2
+    .byte (NTSC_COLOUR_LINE_2+48)&$FF, PAL_COLOUR_LINE_2
+    .byte (NTSC_COLOUR_LINE_2+64)&$FF, PAL_COLOUR_LINE_2
+    .byte (NTSC_COLOUR_LINE_2+80)&$FF, PAL_COLOUR_LINE_2
+    .byte (NTSC_COLOUR_LINE_2+96)&$FF, PAL_COLOUR_LINE_2
+    .byte (NTSC_COLOUR_LINE_2+112)&$FF, PAL_COLOUR_LINE_2
+    .byte (NTSC_COLOUR_LINE_2+128)&$FF, PAL_COLOUR_LINE_2
+    ENDIF
+col3
+    .byte NTSC_COLOUR_LINE_3, PAL_COLOUR_LINE_3
+    IFCONST RAINBOW
+    .byte (NTSC_COLOUR_LINE_3+32)&$FF, PAL_COLOUR_LINE_3
+    .byte (NTSC_COLOUR_LINE_3+48)&$FF, PAL_COLOUR_LINE_3
+    .byte (NTSC_COLOUR_LINE_3+64)&$FF, PAL_COLOUR_LINE_3
+    .byte (NTSC_COLOUR_LINE_3+80)&$FF, PAL_COLOUR_LINE_3
+    .byte (NTSC_COLOUR_LINE_3+96)&$FF, PAL_COLOUR_LINE_3
+    .byte (NTSC_COLOUR_LINE_3+112)&$FF, PAL_COLOUR_LINE_3
+    .byte (NTSC_COLOUR_LINE_3+128)&$FF, PAL_COLOUR_LINE_3
+    ENDIF
+
+
+    IFCONST RAINBOW
+    DEF RainBoard
+
+                    clc
+                    lda base
+                    adc #4
+                    sta base
+
+                    and #$F0
+                    beq RainBoard
+                    
+                    ora #8
+
+                
+.ROWBANK SET [SLOT2]
+    REPEAT 8
+                    ldy #.ROWBANK
+                    sty SET_BANK_RAM
+
+                    sta@RAM SMCOL1+1
+
+                    clc
+                    adc #16
+
+.ROWBANK SET .ROWBANK + 1
+    REPEND
+
+                    rts
+    ENDIF
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -364,16 +470,26 @@ InitPieceList
         .byte BLACK|R, 99
         .byte BLACK|K, 96
         .byte BLACK|BP, 89
+       .byte BLACK|BP, 88
 
-        .byte WHITE|WP, 37
-        .byte WHITE|WP, 38
-        .byte WHITE|WP, 39
+        ;.byte WHITE|WP, 37
+        ;.byte WHITE|WP, 38
+        ;.byte WHITE|WP, 39
         .byte WHITE|R,29
         .byte WHITE|K, 26
 
     ENDIF
 
 
+    IF TEST_POSITION & 0
+    ; mate/draw
+
+        .byte BLACK|K, 99
+
+        .byte WHITE|Q,78
+        .byte WHITE|K, 79
+
+    ENDIF
 
 
     IF TEST_POSITION & 0
@@ -426,9 +542,11 @@ InitPieceList
 
 ;---------------------------------------------------------------------------------------------------
 
+    IF 0
     DEF AddMoveSimple
     SUBROUTINE
 
+        REF MoveVAR
         VEND AddMoveSimple
 
     ; add square in y register to movelist as destination (X12 format)
@@ -438,7 +556,7 @@ InitPieceList
     ;   ENPASSANT flag set if pawn double-moving off opening rank
     ; capture           captured piece
 
-                    lda capture
+                    lda __capture
                     bne .always
                     lda __quiesceCapOnly
                     bne .abort
@@ -454,10 +572,11 @@ InitPieceList
                     sta@PLY MoveFrom,y
                     lda currentPiece
                     sta@PLY MovePiece,y
-                    lda capture
+                    lda __capture
                     sta@PLY MoveCapture,y
 
 .abort              rts
+    ENDIF
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -556,7 +675,7 @@ InitPieceList
                     and #~FLAG_ENPASSANT
                     ora #FLAG_MOVED
 
-                    ldy fromX12                 ; destinatino
+                    ldy fromX12                 ; destination
                     sta@RAM Board,y
 
 
@@ -691,19 +810,26 @@ InitPieceList
 
     DEF aiDraw
     SUBROUTINE
-                    lda #$C0
+
+                    ldx platform
+                    lda colGreen,x
                     sta COLUBK
                     rts
 
+colGreen
+    .byte $C2, $34
 
 ;---------------------------------------------------------------------------------------------------
 
     DEF aiCheckMate
     SUBROUTINE
-                    lda #$44
+                    ldx platform
+                    lda colRed,x
                     sta COLUBK
                     rts
 
+colRed
+    .byte $42, $64
 
 ;---------------------------------------------------------------------------------------------------
 

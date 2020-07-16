@@ -114,7 +114,7 @@ PositionalValue_BISHOP
 
 PositionalValue_ROOK
 
-    PVAL   -25, -20,  10,  0,  55, 0, -20,  -25
+    PVAL   -25, -20,  10,  20,  10, 10, -20,  -25
     PVAL  -120,   0,   0,   0,   0,   0,   0, -128
     PVAL  -128,   0,   0,   0,   0,   0,   0, -100
     PVAL   -100,   0,   0,   0,   0,   0,   0, -100
@@ -142,7 +142,7 @@ PositionalValue_QUEEN
 
 PositionalValue_KING_MIDGAME
 
-    PVAL   0,   0,  40, -120, -60, -120,  70,  0
+    PVAL   0,   0,  20, -40, -40, -20,  20,  0
     PVAL   0,   0,  -80, -80, -70, -70,  0,  0
     PVAL -10, -20, -20, -50, -60, -60, -20, -10
     PVAL -20, -30, -30, -40, -40, -30, -30, -20

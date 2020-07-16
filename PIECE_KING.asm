@@ -75,7 +75,9 @@ QUEENSIDE       = -4
     ; x = currentSquare (square the KING is on)
     ; currentPiece (KING of course, but with flags/colour attached)
 
+
                 MOVE_TO _DOWN+_LEFT
+    IF 1
                 MOVE_TO_X _DOWN
                 MOVE_TO_X _DOWN+_RIGHT
                 MOVE_TO_X _RIGHT
@@ -83,6 +85,7 @@ QUEENSIDE       = -4
                 MOVE_TO_X _UP
                 MOVE_TO_X _UP+_LEFT
                 MOVE_TO_X _LEFT
+    ENDIF
 
         IF CASTLING_ENABLED
         
@@ -93,6 +96,7 @@ QUEENSIDE       = -4
                 CASTLE QUEENSIDE
 
         ENDIF
+
         
 .exit           jmp MoveReturn
 

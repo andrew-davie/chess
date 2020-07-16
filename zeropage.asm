@@ -6,6 +6,8 @@
                 SEG.U variables
                 ORG $80
 
+framenum                        ds 1
+
 squareToDraw                    ds 1
 rnd                             ds 1                ; random
 drawDelay                       ds 1
@@ -51,9 +53,16 @@ positionCount                   ds 3
 
 ;maxPly                          ds 1
 flagCheck                       ds 1                ; -1 = no, #KING = yes
-protecting                      ds 1
+;protecting                      ds 1
 randomness                      ds 1
 __psb                           ds 2
 
 vkSquare                        ds 2                ; current move's king traversal squares during castling
-human                           ds 1                ; colour of human
+;human                           ds 1                ; colour of human
+
+platform                        ds 1                ; 0=NTSC, 1=PAL
+
+    IFCONST RAINBOW
+base                            ds 1
+    ENDIF
+    

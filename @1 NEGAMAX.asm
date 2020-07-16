@@ -104,8 +104,12 @@
 
                     jsr negaMax
 
-                    lda currentPly
-                    sta SET_BANK_RAM ;tmp?
+
+                    ;lda currentPly
+                    ;sta SET_BANK_RAM ;tmp?
+
+
+
 
                     ldx@PLY bestMove
                     bmi .nomove
@@ -248,7 +252,6 @@
     ENDIF
 
 
-
     ; Swap over sides
 
                     NEGEVAL
@@ -329,6 +332,7 @@
         REF selectmove ;✅
         VEND negaMax
 
+    
                     pha
 
                     jsr ThinkBar;@0
@@ -361,10 +365,6 @@
 .evOK
 
 
-
-                    ;lda #2
-                    ;sta COLUPF                      ; grey thinkbars
-
                     lda __alpha
                     sta@PLY alpha
                     lda __alpha+1
@@ -381,6 +381,13 @@
                     lda flagCheck
                     bne .inCheck2                           ; OTHER guy in check
 
+    ; Reurse?
+    ; to smaller depth, then sort...
+
+    ;ldx #2
+    ;jsr negaMax
+    ;jsr debug
+
                     lda #<-INFINITY
                     sta@PLY value
                     lda #>-INFINITY
@@ -392,6 +399,7 @@
                     
 .forChild           stx@PLY movePtr
 
+    jsr debug
                     jsr MakeMove;@this
 
 
@@ -427,10 +435,26 @@
                     jsr negaMax;@this
 
                     dec currentPly
+
+
                     lda currentPly
                     sta SET_BANK_RAM
 
+                    ldx@PLY movePtr
+
+                    clc
+                    adc #RAMBANK_SORT-RAMBANK_PLY
+                    sta SET_BANK_RAM
+
+                    lda __negaMax
+                    sta@RAM MoveValueLO,x
+                    lda __negaMax+1
+                    sta@RAM MoveValueHI,x
+
                     jsr unmakeMove;@0
+
+                    lda currentPly
+                    sta SET_BANK_RAM
 
                     sec
                     lda #0
@@ -439,6 +463,7 @@
                     lda #0
                     sbc __negaMax+1
                     sta __negaMax+1                 ; -negaMax(...)
+
 
     IF 1
                     lda flagCheck
@@ -452,7 +477,15 @@
                     beq .nextMove                   ; unconditional - move is not considered!
     ENDIF
     
-.notCheck           sec
+    
+.notCheck
+
+    lda currentPly
+    cmp #RAMBANK_PLY
+    bne .not0
+    ;jsr debug
+.not0
+                    sec
                     lda@PLY value
                     sbc __negaMax
                     lda@PLY value+1
@@ -461,7 +494,9 @@
                     eor #$80
 .lab0               bpl .lt0                        ; branch if value >= negaMax
 
+
     ; so, negaMax > value!
+
 
                     lda __negaMax
                     sta@PLY value

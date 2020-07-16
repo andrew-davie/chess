@@ -51,9 +51,38 @@ ChessBitmap5 = SHADOW_ChessBitmap5
 ; we effectively have 1K
 ;---------------------------------------------------------------------------------------------------
 
+; NTSC
+
+BW = 0
+NTSC = 1
+PAL =  2
+
+
+
+COL_TYPE  = PAL
+
+
+
+    IF COL_TYPE = NTSC
 COLOUR_LINE_1 = $86
-COLOUR_LINE_2 = $48
+COLOUR_LINE_2 = $46
 COLOUR_LINE_3 = $D8
+    ENDIF
+
+    IF COL_TYPE = PAL
+COLOUR_LINE_1 = $D6 ;86
+COLOUR_LINE_2 = $66 ;46
+COLOUR_LINE_3 = $38 ;D8
+    ENDIF
+
+
+    IF COL_TYPE = BW
+COLOUR_LINE_1 = $24 ;86
+COLOUR_LINE_2 = $A2 ;46
+COLOUR_LINE_3 = $94 ;D8
+    ENDIF
+
+
 BACKGCOL      = $0
 
 ROW_BITMAP_SIZE = 6 * 24            ; PF0/PF1/PF2/(PF0)/(PF1)/(PF2) x 8 ICC pixels
@@ -105,8 +134,10 @@ SELFMOD_RTS_ON_LAST_ROW
 
     DEF DrawRow
 
+    
+
  ;@64
-                    ldy #7                      ; 2
+                    ldy #7                     ; 2
                     bpl .dl2                    ; 3   (must be 69 here)
 
     ;@58...
@@ -120,8 +151,11 @@ SMSPRITE16_1        lda SpriteBuffer2+16,y      ; 4
 
     ;@-4
 
-                    lda #COLOUR_LINE_1 ;#$94                    ; 2
+SMCOL1              lda #COLOUR_LINE_1 ;#$94                    ; 2
                     sta COLUPF                  ; 3 @1
+                    and #$F0
+                    lda #$0 ;A0
+                    sta COLUBK
 
                     lda ChessBitmap0+16,y       ; 4
                     sta PF0                     ; 3
@@ -130,7 +164,7 @@ SMSPRITE16_1        lda SpriteBuffer2+16,y      ; 4
                     lda ChessBitmap2+16,y       ; 4
                     sta PF2                     ; 3 @22
 
-                    SLEEP 6                     ; 6 @28
+                    ;SLEEP 6                     ; 6 @28
 
                     lda ChessBitmap3+16,y       ; 4
                     sta PF0                     ; 3
@@ -139,7 +173,7 @@ SMSPRITE16_1        lda SpriteBuffer2+16,y      ; 4
                     lda ChessBitmap5+16,y       ; 4
                     sta.w PF2                   ; 4 @50
 
-                    SLEEP 4                     ; 4
+                    SLEEP 3                     ; 4
 
                     dey                         ; 2
                     bmi .endline                ; 2 (3)
@@ -157,7 +191,7 @@ SMSPRITE0_1         lda SpriteBuffer2,y         ; 4
 
     ;@7
 
-                    lda #COLOUR_LINE_2 ;#$4A                    ; 2
+SMCOL2              lda #COLOUR_LINE_2 ;#$4A                    ; 2
                     sta COLUPF                  ; 3 @12
 
                     lda ChessBitmap0,y          ; 4
@@ -184,7 +218,7 @@ SMSPRITE8_1         lda SpriteBuffer2+8,y       ; 4
                     sta GRP1                    ; 3
 
     ;@0
-                    lda #COLOUR_LINE_3 ;#$28                    ; 2
+SMCOL3              lda #COLOUR_LINE_3 ;#$28                    ; 2
                     sta COLUPF                  ; 3 @5
 
                     lda ChessBitmap0+8,y        ; 4

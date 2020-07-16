@@ -51,6 +51,8 @@ HOLD_DELAY                      = 40
         REF AiStateMachine
         VEND aiInCheckBackupStart
 
+
+
                     lda #8
                     sta drawCount                   ; row to draw
 
@@ -66,7 +68,6 @@ HOLD_DELAY                      = 40
         REF AiStateMachine
         VEND aiInCheckBackup
 
-    jsr debug
 
     ; We're about to draw some large text on the screen
     ; Make a backup copy of all of the row bitmaps, so that we can restore once text is done
@@ -81,7 +82,7 @@ HOLD_DELAY                      = 40
                     lda #8
                     sta drawCount                   ; ROW
 
-                    PHASE DrawBitmapBackground
+                    PHASE MaskBitmapBackground
                     rts
 
 
@@ -124,13 +125,13 @@ HOLD_DELAY                      = 40
 .exit
 
                     lda INPT4
-                    bmi .noButton
+                    ;bmi .noButton
                     PHASE SelectStartSquare
                     rts
 .noButton
 ;                    PHASE InCheckDelay
-           ;PHASE SelectStartSquare
-           PHASE InCheckBackupStart
+           PHASE SelectStartSquare
+           ;PHASE InCheckBackupStart
                     rts
 
 
@@ -161,8 +162,10 @@ HOLD_DELAY                      = 40
         REF AiStateMachine
         VEND aiBeginSelectMovePhase
 
-                    lda #$4
+                    ldx platform
+                    lda greyCol,x
                     sta COLUP0
+                    
                     ldx #%100
                     stx CTRLPF              ; under
 
@@ -182,6 +185,9 @@ HOLD_DELAY                      = 40
                     
                     PHASE FlashComputerMove
                     rts
+
+greyCol
+    .byte 6, 8
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -238,8 +244,8 @@ HOLD_DELAY                      = 40
 .initial2
 
 
-    PHASE InCheckBackupStart ;tmp
-    rts
+    ;PHASE InCheckBackupStart ;tmp
+    ;rts
 
 
            PHASE SelectStartSquare

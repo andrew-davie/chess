@@ -28,8 +28,8 @@ from PIL import Image
 from enum import Enum
 
 
-TOOL = "; Created by ConvertChessPieces.py\n"
-BANK_SIZE = 2048
+TOOL = "; Created by ConvertWords.py\n"
+BANK_SIZE = 1024
 
 SQUARE_WIDTH = 5
 SQUARE_HEIGHT = 8
@@ -57,7 +57,6 @@ class PieceTypes(Enum):
     QUEEN = 5
     KING = 6
     MARKER = 7
-    PROMOTE = 8
 
 
 pixel_no_to_bit_position = [
@@ -86,100 +85,147 @@ pixel_no_to_bit_position = [
 ]
 
 
-def grab(pieces_bitmap, side_colour, square_colour, piece_type, wrapper, indexer):
+def grab(name, bitmap, width, height):
 
-    y_start = (side_colour.value * 2 + square_colour.value) * SQUARE_HEIGHT
-    x_start = piece_type.value * SQUARE_WIDTH
+    f = open(name + '.asm', 'w')
 
-    for square_offset in range(0, 4):
+    mask = []
+    for y in range(0, height):
+        mask.append([])
+        for x in range(0, width):
+            p = bitmap[y, x]
+            if p > 0:
+                mask[y].append(1)
+            else:
+                mask[y].append(0)
+        print(mask[y])
 
-        name = side_colour.name + "_" + piece_type.name + "_on_" + square_colour.name + "_SQUARE_" + str(square_offset)
-        f = open(name + '.asm', 'w')
-        f.write(' OPTIONAL_PAGEBREAK "' + name + '", 72\n')
-        f.write(' DEF ' + name + "\n")
+        pf0 = 0
+        for a in range(0, 4):
+            pf0 += (mask[y][a] << (7-a))
+        pf1 = 0
+        for a in range(4, 4+8):
+            pf1 += (mask[y][a] << (a-4))
+        pf2 = 0
+        for a in range(12, 12+8):
+            pf2 += (mask[y][a] << (7-(a-12)))
 
-        lo.append(' .byte <' + name + '\n')
-        hi.append(' .byte >' + name + '\n')
-        bank.append(' .byte BANK_' + name + '\n')
+        pf0b = 0
+        for a in range(0, 4):
+            pf0b += (mask[y][20+a] << (7-a))
+        pf1b = 0
+        for a in range(4, 4+8):
+            pf1b += (mask[y][20+a] << (a-4))
+        pf2b = 0
+        for a in range(12, 12+8):
+            pf2b += (mask[y][20+a] << (7-(a-12)))
 
-        equate.append('INDEX_'+name + '=' + str(indexer) + '\n')
-        indexer += 1
+        f.write(' .byte ' + str(pf0))
+        f.write(',' + str(pf1))
+        f.write(',' + str(pf2))
+        f.write(',' + str(pf0b))
+        f.write(',' + str(pf1b))
+        f.write(',' + str(pf2b))
+        f.write('\n')
 
-        wrapper += 1
-        if wrapper % 28 == 0:
-            f_includes.write('   CHECK_BANK_SIZE "CHESS_PIECES_' + str(int((wrap / 28 - 1))) + ' ; -- full 2K"\n')
-            f_includes.write(' NEWBANK CHESS_PIECES_' + str(int(wrap / 28)) + '\n')
+    # y_start = (side_colour.value * 2 + square_colour.value) * SQUARE_HEIGHT
+    # x_start = piece_type.value * SQUARE_WIDTH
+    #
+    # for square_offset in range(0, 4):
+    #
+    #     name = side_colour.name + "_" + piece_type.name + "_on_" + square_colour.name + "_SQUARE_" + str(square_offset)
+    #     f = open(name + '.asm', 'w')
+    #     f.write(' OPTIONAL_PAGEBREAK "' + name + '", 72\n')
+    #     f.write(' DEF ' + name + "\n")
+    #
+    #     lo.append(' .byte <' + name + '\n')
+    #     hi.append(' .byte >' + name + '\n')
+    #     bank.append(' .byte BANK_' + name + '\n')
+    #
+    #     equate.append('INDEX_'+name + '=' + str(indexer) + '\n')
+    #     indexer += 1
+    #
+    #     wrapper += 1
+    #     if wrapper % 28 == 0:
+    #         f_includes.write('   CHECK_BANK_SIZE "CHESS_PIECES_' + str(int((wrap / 28 - 1))) + ' ; -- full 2K"\n')
+    #         f_includes.write(' NEWBANK CHESS_PIECES_' + str(int(wrap / 28)) + '\n')
+    #
+    #     f_includes.write(" include \"gfx/" + name + ".asm\"\n")
+    #
+    #     pf = [[],[],[]]
+    #
+    #     for y_bitmap in range(0, SQUARE_HEIGHT):
+    #
+    #         icc_scanline = [0, 0, 0]
+    #
+    #         for x_bitmap in range(0, SQUARE_WIDTH):
+    #
+    #             pixel_icc_colour = pieces_bitmap[x_start + x_bitmap, y_start + y_bitmap]
+    #             if piece_type != PieceTypes.BLANK:
+    #                 pixel_icc_colour ^= pieces_bitmap[x_bitmap, y_start + y_bitmap]
+    #             x_pf_pixel = x_bitmap + square_offset * SQUARE_WIDTH
+    #
+    #             if (pixel_icc_colour & 4) != 0:
+    #                 icc_scanline[0] |= pixel_no_to_bit_position[x_pf_pixel]
+    #             if (pixel_icc_colour & 2) != 0:
+    #                 icc_scanline[1] |= pixel_no_to_bit_position[x_pf_pixel]
+    #             if (pixel_icc_colour & 1) != 0:
+    #                 icc_scanline[2] |= pixel_no_to_bit_position[x_pf_pixel]
+    #
+    #         # Now output the three scanlines' playfield bytes
+    #         # we are not worrying about minimising ROM here - just 3 bytes/definition
+    #
+    #         for scanline in range(0, 3):
+    #
+    #             pf[0].append((icc_scanline[scanline] >> 16) & 0xFF)
+    #             pf[1].append((icc_scanline[scanline] >> 8) & 0xFF)
+    #             pf[2].append((icc_scanline[scanline]) & 0xFF)
+    #
+    #     # write the three 'columns' PF0, PF1, PF2
+    #     # columns make it easier to access/draw using Y as an index to indirect pointers to columns
+    #
+    #     mangled = [[],[],[]]
+    #     for line in range(0, 24, 3):
+    #         mangled[0].append(pf[0][line])
+    #         mangled[1].append(pf[1][line])
+    #         mangled[2].append(pf[2][line])
+    #     for line in range(0, 24, 3):
+    #         mangled[0].append(pf[0][line+1])
+    #         mangled[1].append(pf[1][line+1])
+    #         mangled[2].append(pf[2][line+1])
+    #     for line in range(0, 24, 3):
+    #         mangled[0].append(pf[0][line+2])
+    #         mangled[1].append(pf[1][line+2])
+    #         mangled[2].append(pf[2][line+2])
+    #
+    #     mangled2 = [[],[],[]]
+    #     for block in range(0, 3):
+    #         for line in range(7, -1, -1):
+    #             mangled2[0].append(mangled[0][block*8+line])
+    #             mangled2[1].append(mangled[1][block*8+line])
+    #             mangled2[2].append(mangled[2][block*8+line])
+    #
+    #     for playfield in range(0, 3):
+    #         f.write(' .byte ' + ','.join(f'${x:02x}' for x in mangled2[playfield])
+    #                 + ' ;PF' + str(playfield) + '\n')
+    #
+    #     f.close()
 
-        f_includes.write(" include \"gfx/" + name + ".asm\"\n")
+    return
 
-        pf = [[],[],[]]
 
-        for y_bitmap in range(0, SQUARE_HEIGHT):
+# Start
+print("Converting word masks")
 
-            icc_scanline = [0, 0, 0]
+name = 'word_mask'
 
-            for x_bitmap in range(0, SQUARE_WIDTH):
-
-                pixel_icc_colour = pieces_bitmap[x_start + x_bitmap, y_start + y_bitmap]
-                if piece_type != PieceTypes.BLANK:
-                    pixel_icc_colour ^= pieces_bitmap[x_bitmap, y_start + y_bitmap]
-                x_pf_pixel = x_bitmap + square_offset * SQUARE_WIDTH
-
-                if (pixel_icc_colour & 4) != 0:
-                    icc_scanline[0] |= pixel_no_to_bit_position[x_pf_pixel]
-                if (pixel_icc_colour & 2) != 0:
-                    icc_scanline[1] |= pixel_no_to_bit_position[x_pf_pixel]
-                if (pixel_icc_colour & 1) != 0:
-                    icc_scanline[2] |= pixel_no_to_bit_position[x_pf_pixel]
-
-            # Now output the three scanlines' playfield bytes
-            # we are not worrying about minimising ROM here - just 3 bytes/definition
-
-            for scanline in range(0, 3):
-
-                pf[0].append((icc_scanline[scanline] >> 16) & 0xFF)
-                pf[1].append((icc_scanline[scanline] >> 8) & 0xFF)
-                pf[2].append((icc_scanline[scanline]) & 0xFF)
-
-        # write the three 'columns' PF0, PF1, PF2
-        # columns make it easier to access/draw using Y as an index to indirect pointers to columns
-
-        mangled = [[],[],[]]
-        for line in range(0, 24, 3):
-            mangled[0].append(pf[0][line])
-            mangled[1].append(pf[1][line])
-            mangled[2].append(pf[2][line])
-        for line in range(0, 24, 3):
-            mangled[0].append(pf[0][line+1])
-            mangled[1].append(pf[1][line+1])
-            mangled[2].append(pf[2][line+1])
-        for line in range(0, 24, 3):
-            mangled[0].append(pf[0][line+2])
-            mangled[1].append(pf[1][line+2])
-            mangled[2].append(pf[2][line+2])
-
-        mangled2 = [[],[],[]]
-        for block in range(0, 3):
-            for line in range(7, -1, -1):
-                mangled2[0].append(mangled[0][block*8+line])
-                mangled2[1].append(mangled[1][block*8+line])
-                mangled2[2].append(mangled[2][block*8+line])
-
-        for playfield in range(0, 3):
-            f.write(' .byte ' + ','.join(f'${x:02x}' for x in mangled2[playfield])
-                    + ' ;PF' + str(playfield) + '\n')
-
-        f.close()
-
-print("Converting chess pieces")
-
-im = Image.open("pieces.gif")
+im = Image.open("word_mask.png")
 pix = im.load()
 
-f_includes = open('../piece_includes.asm', 'w')
+f_includes = open('../word_includes.asm', 'w')
 f_includes.write(TOOL)
 
-f_vector = open('../piece_vectors.asm', 'w')
+f_vector = open('../word_vectors.asm', 'w')
 f_vector.write(TOOL)
 
 wrap = 0
@@ -191,25 +237,21 @@ equate = []
 
 index = 0
 
-for side in PieceColours:
-    for square in SquareColours:
-        for piece in PieceTypes:
-            grab(pix, side, square, piece, wrap, index)
-            index += 4
+grab(name, pix, im.width, im.height)
 
-f_vector.write(' DEF PIECE_VECTOR_LO\n')
+f_vector.write(' DEF WORD_VECTOR_LO\n')
 for low_ptr in lo:
     f_vector.write(low_ptr)
 
-f_vector.write(' DEF PIECE_VECTOR_HI\n')
+f_vector.write(' DEF WORD_VECTOR_HI\n')
 for high_ptr in hi:
     f_vector.write(high_ptr)
 
-f_vector.write(' DEF PIECE_VECTOR_BANK\n')
+f_vector.write(' DEF WORD_VECTOR_BANK\n')
 for bank_ptr in bank:
     f_vector.write(bank_ptr)
 
-f_vector.write('\n; piece index equates...\n')
+f_vector.write('\n; word index equates...\n')
 for equ in equate:
     f_vector.write(equ)
 

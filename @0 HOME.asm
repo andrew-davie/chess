@@ -30,24 +30,21 @@
 .StartFrame
 
 
-    ; START OF FRAME
+                    CALL InterlaceFrame
 
-                    lda #%1110                      ; VSYNC ON
-.loopVSync3         sta WSYNC
-                    sta VSYNC
-                    lsr
-                    bne .loopVSync3                 ; branch until VYSNC has been reset
 
-                    sta VBLANK
-
-                    ldy #TIME_PART_1
-                    sty TIM64T
+                    ldx platform
+                    lda time64a,x
+                    sta TIM64T
 
     ; LOTS OF PROCESSING TIME - USE IT
 
-
-
+    IFCONST RAINBOW
+                    CALL RainBoard
+    ENDIF
+    
                     jsr AiStateMachine
+
 
     IF ASSERTS
 ; Catch timer expired already
@@ -78,7 +75,7 @@
     cmp #20
     bcc .notnow                    
 
-                    ;CALL GameSpeak
+                    CALL SayIt ;GameSpeak
                     CALL PositionSprites
 
 
@@ -101,10 +98,14 @@ zapem               txa
 
 .waitTime           bit TIMINT
                     bpl .waitTime
+    sta WSYNC
+    
 
                     jmp .StartFrame
 
-
+time64a
+    .byte TIME_PART_1, TIME_PART_1_PAL
+     
 ;---------------------------------------------------------------------------------------------------
 
     DEF COMMON_VARS
@@ -350,7 +351,7 @@ ONCEPERFRAME = 40
         {1} InCheckBackupStart                      ; 44
         {1} RestoreBitmaps                          ; 45
         {1} WaitBitmap                              ; 46
-        {1} DrawBitmapBackground                    ; 47
+        {1} MaskBitmapBackground                    ; 47
         {1} DrawBitmap2                             ; 48
         {1} DrawBitmap3                             ; 49
 

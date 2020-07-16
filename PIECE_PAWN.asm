@@ -105,7 +105,7 @@ BLACK_HOME_ROW     = 82                             ; >= this, on home row
                     MOVE_OR_PROMOTE_PAWN {2}
 
                     jmp .invalid2
-.invalid            inc protecting
+.invalid            ;inc protecting ???
 .invalid2
     ENDM
 

@@ -34,6 +34,7 @@ STELLA_AUTODETECT dc "TJ3E" ; 3E+ autodetect
                     sta PF1
                     sta PF2
                     sta GRP0
+                    sta COLUBK
 
                     lda #%01000010                  ; bit6 is not required
                     ;sta VBLANK                      ; end of screen - enter blanking
@@ -42,10 +43,17 @@ STELLA_AUTODETECT dc "TJ3E" ; 3E+ autodetect
 ; END OF VISIBLE SCREEN
 ; HERE'S SOME TIME TO DO STUFF
 
-                    lda #TIME_PART_2
+;                    lda #TIME_PART_2
+;                    sta TIM64T
+
+                    ldx platform
+                    lda time64b,x
                     sta TIM64T
                     rts
 
+time64b
+    .byte TIME_PART_2, TIME_PART_2_PAL
+    
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -144,6 +152,7 @@ _rts                rts
                     lda Board,y
                     sta __capturedPiece
 
+        ;TODO: what about castling...?
 
                     jsr AdjustMaterialPositionalValue;@this
 
@@ -241,7 +250,7 @@ _rts                rts
 
 
                     and #1
-                    ;eor #1
+                    eor #1
                     beq .white
                     lda #36
 .white
@@ -317,7 +326,7 @@ PieceToShape
     ; {
     ;   adjust the positional value  (originX12 --> fromX12)
 
-                    ldy toX12                      ; already loaded
+                    ldy toX12                       ; already loaded
                     lda fromPiece
                     jsr AddPiecePositionValue       ; add pos value for new position
 
@@ -459,7 +468,7 @@ PieceValueHI
                     bpl .sum
                     dey
 
-.sum                clc
+.sum                ;clc
                     adc Evaluation
                     sta Evaluation
                     tya

@@ -106,7 +106,8 @@
     ; pass y=-1 if move is NOT in the movelist
     ; preserve y
 
-                    lda #$42                        ; red
+                    ldx platform
+                    lda redCol,x
 
                     cpy #-1
                     beq .writeCursorCol             ; NOT in the movelist
@@ -117,11 +118,17 @@
                     lsr
                     and #6
                     clc
-                    adc #$D0 ;COLOUR_LINE_1         ; pulsing green
+
+                    adc greenCol,x
 
 .writeCursorCol     sta COLUP0
                     rts
 
+
+redCol
+    .byte NTSC_COLOUR_LINE_2 - 2, (PAL_COLOUR_LINE_2&$F0)+4
+greenCol
+    .byte (NTSC_COLOUR_LINE_3&$F0)+2, (PAL_COLOUR_LINE_3&$F0)+2
 
 ;---------------------------------------------------------------------------------------------------
 

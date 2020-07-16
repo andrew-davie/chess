@@ -11,6 +11,10 @@
     SLOT 3
     ROMBANK THREE
 
+    DEF Breaker
+                    brk
+
+
 ;---------------------------------------------------------------------------------------------------
 
     DEF GetPiece
@@ -175,6 +179,7 @@
                     and #128                        ; colour bit
                     ora #ROOK                       ; preserve colour
                     sta fromPiece
+                    sta __originalPiece
                     sta@PLY secondaryPiece
 
                     sec
@@ -199,6 +204,129 @@ virtualSquare1      .byte 25,27,95,97
 
     ;                 rts
 
+
+
+    ; The reset vectors
+    ; these must live in the fixed bank (bank 0 in 3E+ format)
+
+;    ORG $63FC
+;    RORG $FFFC
+
+;                    .word StartCartridge            ; RESET
+;                    .word StartCartridge            ; IRQ        (not used)
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF InterlaceFrame
+
+
+    ; START OF FRAME
+
+
+    IF 0
+
+                    lda SWCHB
+                    bmi .normal                     ; RIGHT difficulty switches on/off
+
+                    dec framenum
+                    lda framenum
+                    lsr
+                    bcs .normal
+
+                    SLEEP 36
+
+.normal             lda #2
+                    sta WSYNC
+                    sta VSYNC
+
+	                sta WSYNC                       ; line 1 of VSYNC
+	                sta WSYNC                       ; line 2 of VSYNC
+
+                	lda	#0
+	                sta WSYNC                       ; line 3 of VSYNC
+	                sta VSYNC                       ; @0
+
+
+                    sta VBLANK
+
+    ENDIF
+
+
+
+    IF 1
+
+
+frame
+;Vertical sync
+	;dec	framenum
+	
+	;lda	interlaced		;see if we are in interlaced mode
+	;beq	non_interlaced	
+
+    lda SWCHB
+    bmi even_sync
+
+    dec framenum
+	lda framenum
+    and #1
+	beq	even_sync	
+
+non_interlaced			;entry point for non-interlaced
+	;this is the vertical sync for the first field of an interlaced frame
+	;or just a normal non-interlaced vertical sync
+	lda #2
+	sta WSYNC
+	sta VSYNC ; Begin vertical sync.
+
+	sta WSYNC ; First line of VSYNC
+	sta WSYNC ; Second line of VSYNC.
+	lda	#0
+	sta WSYNC ; Third line of VSYNC.
+	sta VSYNC ; (0)
+
+	jmp done_sync
+even_sync
+	;this is the vertical sync for the second field of an interlaced fram
+	sta WSYNC
+	;need 40 cycles until the start of vertical sync
+	
+    SLEEP 36
+
+
+	lda #2		;40
+		
+	sta VSYNC ; Begin vertical sync.
+	sta WSYNC ; First line of VSYNC
+	sta WSYNC ; Second line of VSYNC.
+
+	sta WSYNC ; Third line of VSYNC.
+	;need 33 cycles until the end of VSYNC
+
+
+    ;SLEEP 10
+
+
+
+	lda #0	;33
+	sta VSYNC 
+
+done_sync
+
+;	LDA #40		;timer for 34 lines of blanking
+;	STA TIM64T
+        ENDIF
+
+
+;                    lda #%1110                      ; VSYNC ON
+;.loopVSync3         sta WSYNC
+;                    sta VSYNC
+;                    lsr
+;                    bne .loopVSync3                 ; branch until VYSNC has been reset
+
+;                    sta VBLANK
+
+                    rts
 
 
 ;---------------------------------------------------------------------------------------------------

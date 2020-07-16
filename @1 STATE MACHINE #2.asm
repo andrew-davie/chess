@@ -206,6 +206,8 @@
 
         REF AiStateMachine
         VEND aiGenerateMoves
+
+;            CALL Breaker
     
                     lda toX12
                     sta squareToDraw                    ; for showing move (display square)
@@ -487,7 +489,9 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
 
                     lda #%100
                     sta CTRLPF
-                    lda #$40
+
+                    ldx platform
+                    lda startCol,x
                     sta COLUP0
 
 
@@ -495,6 +499,12 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
                     beq deCount
                     dec drawDelay
                     rts
+
+startCol
+    .byte NTSC_COLOUR_LINE_2-2, PAL_COLOUR_LINE_2-2
+
+
+
 deCount
 
                     lda drawCount

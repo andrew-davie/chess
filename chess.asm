@@ -40,13 +40,13 @@ INFINITY                = $7000 ;32767
 ; assemble diagnostics. Remove for release.
 
 TEST_POSITION           = 0                         ; 0=normal, 1 = setup test position
-DIAGNOSTICS             = 1
+DIAGNOSTICS             = 0
 QUIESCENCE              = 1
 ASSERTS                 = 0
 PVSP                    = 0                         ; player versus player =1
 ENPASSANT_ENABLED       = 1
 CASTLING_ENABLED        = 1
-
+;RAINBOW                 = 1                        ; comment out to disable
 
 SELECT_SWITCH           = 2                         ; (SWCHB & SELECT_SWITCH)  0 == PRESSED
 
@@ -132,10 +132,19 @@ PAL                 = %10
 PAL_50              = PAL|0
 PAL_60              = PAL|1
 
+NTSC_COLOUR_LINE_1 = $86        ; blue
+NTSC_COLOUR_LINE_2 = $46        ; red
+NTSC_COLOUR_LINE_3 = $D8        ; green
+
+PAL_COLOUR_LINE_1 = $D6         ; blue
+PAL_COLOUR_LINE_2 = $68         ; red
+PAL_COLOUR_LINE_3 = $3A         ; green
 
 
-TIME_PART_2         = 46
-TIME_PART_1         = 46
+TIME_PART_2         = 46 ;68
+TIME_PART_1         = 45 ;66
+TIME_PART_2_PAL         = 56
+TIME_PART_1_PAL         = 78
 
 
 SLOT0               = 0
@@ -190,14 +199,16 @@ SLOT3               = 192
 
     include "@2 SCREEN RAM.asm"
     include "@2 PLY.asm"
+    include "@2 PLY2.asm"
     include "@2 GENERIC #3.asm"
     include "@2 GENERIC #4.asm"
     include "@2 GRAPHICS DATA.asm"
-
+    include "@2 VOX.asm"
 
     include "@3 GENERIC #2.asm"
     include "@3 SCREEN ROM.asm"
     include "@3 EVALUATE.asm"
+    include "@2 WORDS.asm"
 
     include "SHADOW_BOARD.asm"
 
@@ -205,6 +216,7 @@ SLOT3               = 192
 
     include "TitleScreen.asm"
     include "TitleScreen@2.asm"
+
 
 
     ALIGN _ROM_BANK_SIZE
