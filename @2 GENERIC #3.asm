@@ -179,6 +179,7 @@ _rts                rts
     ; if it has NOT moved, then it's a pawn leaving home rank, and sets the en-passant square
 
                     ldx #0                          ; (probably) NO en-passant this time
+
                     lda fromPiece
                     tay
 
@@ -190,7 +191,6 @@ _rts                rts
                     sta fromPiece
 
                     ldx toX12                       ; this IS an en-passantable opening, so record the square
-                    stx enPassantPawn               ; capturable square for en-passant move (or none)
 
     ; set the secondary piece movement info - this allows move/unmakemove to work for enpassant
 
@@ -200,6 +200,7 @@ _rts                rts
                     sty@PLY secondaryPiece
 
 .noep
+                    stx enPassantPawn               ; capturable square for en-passant move (or none)
     ; }
 
                     rts

@@ -303,7 +303,6 @@
                     cmp #0                          ; captured piece
                     bne .doQ                        ; last move was capture, so quiesce
     ENDIF
-                        
 
                     lda Evaluation
                     sta __negaMax
@@ -330,6 +329,7 @@
 
         REF COMMON_VARS
         REF selectmove ;✅
+        VAR ev2,2
         VEND negaMax
 
     
@@ -380,6 +380,35 @@
 
                     lda flagCheck
                     bne .inCheck2                           ; OTHER guy in check
+
+    ; add mobility to the score (for all moves). Will un-add on move revert
+    ; the 4x loop is to give weight to mobility :)
+
+    IF 1
+                    lda@PLY moveIndex
+                    cmp #$FF
+                    beq .nomoves
+
+                    ldx #0
+                    stx ev2+1
+
+    REPEAT 0
+                    asl
+                    rol ev2+1
+    REPEND
+
+                    clc
+                    adc Evaluation
+                    sta@PLY savedEvaluation
+                    sta Evaluation
+                    lda Evaluation+1
+                    adc ev2+1
+                    sta Evaluation+1
+                    sta@PLY savedEvaluation+1
+
+.nomoves
+    ENDIF
+
 
     ; Reurse?
     ; to smaller depth, then sort...

@@ -18,7 +18,7 @@
 ;---------------------------------------------------------------------------------------------------
 
 
-OVERLAY_SIZE    SET $4C           ; maximum size
+;OVERLAY_SIZE    SET $4C           ; maximum size
 MAXIMUM_REQUIRED_OVERLAY_SIZE       SET 0
 
 
@@ -31,7 +31,7 @@ MAXIMUM_REQUIRED_OVERLAY_SIZE       SET 0
 ; ADD AN OVERLAY FOR EACH ROUTINE'S USE, SO CLASHES CAN BE EASILY CHECKED
 
     DEF Overlay
-    ds OVERLAY_SIZE       ;--> overlay (share) variables
+    ds MAXIMUM_REQUIRED_OVERLAY_SIZE       ;--> overlay (share) variables
 END_OF_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------

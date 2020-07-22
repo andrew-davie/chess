@@ -1,0 +1,712 @@
+------- FILE ./vox_test.asm LEVEL 1 PASS 2
+      1  10000 ????						;
+      2  10000 ????						; vox_test.asm
+      3  10000 ????						;
+      4  10000 ????						;
+      5  10000 ????						; By Alex Herbert, 2004
+      6  10000 ????						;
+      7  10000 ????
+      8  10000 ????
+      9  10000 ????
+     10  10000 ????				       processor	6502
+     11  10000 ????
+     12  10000 ????
+     13  10000 ????
+     14  10000 ????						; TIA Registers (Write)
+     15  10000 ????		00 00	    VSYNC      equ	$00
+     16  10000 ????		00 01	    VBLANK     equ	$01
+     17  10000 ????		00 02	    WSYNC      equ	$02
+     18  10000 ????		00 03	    RSYNC      equ	$03
+     19  10000 ????		00 04	    NUSIZ0     equ	$04
+     20  10000 ????		00 05	    NUSIZ1     equ	$05
+     21  10000 ????		00 06	    COLUP0     equ	$06
+     22  10000 ????		00 07	    COLUP1     equ	$07
+     23  10000 ????		00 08	    COLUPF     equ	$08
+     24  10000 ????		00 09	    COLUBK     equ	$09
+     25  10000 ????		00 0a	    CTRLPF     equ	$0a
+     26  10000 ????		00 0b	    REFP0      equ	$0b
+     27  10000 ????		00 0c	    REFP1      equ	$0c
+     28  10000 ????		00 0d	    PF0        equ	$0d
+     29  10000 ????		00 0e	    PF1        equ	$0e
+     30  10000 ????		00 0f	    PF2        equ	$0f
+     31  10000 ????		00 10	    RESP0      equ	$10
+     32  10000 ????		00 11	    RESP1      equ	$11
+     33  10000 ????		00 12	    RESM0      equ	$12
+     34  10000 ????		00 13	    RESM1      equ	$13
+     35  10000 ????		00 14	    RESBL      equ	$14
+     36  10000 ????		00 15	    AUDC0      equ	$15
+     37  10000 ????		00 16	    AUDC1      equ	$16
+     38  10000 ????		00 17	    AUDF0      equ	$17
+     39  10000 ????		00 18	    AUDF1      equ	$18
+     40  10000 ????		00 19	    AUDV0      equ	$19
+     41  10000 ????		00 1a	    AUDV1      equ	$1a
+     42  10000 ????		00 1b	    GRP0       equ	$1b
+     43  10000 ????		00 1c	    GRP1       equ	$1c
+     44  10000 ????		00 1d	    ENAM0      equ	$1d
+     45  10000 ????		00 1e	    ENAM1      equ	$1e
+     46  10000 ????		00 1f	    ENABL      equ	$1f
+     47  10000 ????		00 20	    HMP0       equ	$20
+     48  10000 ????		00 21	    HMP1       equ	$21
+     49  10000 ????		00 22	    HMM0       equ	$22
+     50  10000 ????		00 23	    HMM1       equ	$23
+     51  10000 ????		00 24	    HMBL       equ	$24
+     52  10000 ????		00 25	    VDELP0     equ	$25
+     53  10000 ????		00 26	    VDELP1     equ	$26
+     54  10000 ????		00 27	    VDELBL     equ	$27
+     55  10000 ????		00 28	    RESMP0     equ	$28
+     56  10000 ????		00 29	    RESMP1     equ	$29
+     57  10000 ????		00 2a	    HMOVE      equ	$2a
+     58  10000 ????		00 2b	    HMCLR      equ	$2b
+     59  10000 ????		00 2c	    CXCLR      equ	$2c
+     60  10000 ????
+     61  10000 ????
+     62  10000 ????						; TIA Registers (Read)
+     63  10000 ????		00 00	    CXM0P      equ	$00
+     64  10000 ????		00 01	    CXM1P      equ	$01
+     65  10000 ????		00 02	    CXP0FB     equ	$02
+     66  10000 ????		00 03	    CXP1FB     equ	$03
+     67  10000 ????		00 04	    CXM0FB     equ	$04
+     68  10000 ????		00 05	    CXM1FB     equ	$05
+     69  10000 ????		00 06	    CXBLPF     equ	$06
+     70  10000 ????		00 07	    CXPPMM     equ	$07
+     71  10000 ????		00 08	    INPT0      equ	$08
+     72  10000 ????		00 09	    INPT1      equ	$09
+     73  10000 ????		00 0a	    INPT2      equ	$0a
+     74  10000 ????		00 0b	    INPT3      equ	$0b
+     75  10000 ????		00 0c	    INPT4      equ	$0c
+     76  10000 ????		00 0d	    INPT5      equ	$0d
+     77  10000 ????
+     78  10000 ????
+     79  10000 ????						; RIOT Registers
+     80  10000 ????		02 80	    SWCHA      equ	$0280
+     81  10000 ????		02 81	    SWACNT     equ	$0281
+     82  10000 ????
+     83  10000 ????		02 82	    SWCHB      equ	$0282
+     84  10000 ????		02 83	    SWBCNT     equ	$0283
+     85  10000 ????
+     86  10000 ????		02 84	    INTIM      equ	$0284
+     87  10000 ????		02 85	    TIMINT     equ	$0285
+     88  10000 ????
+     89  10000 ????		02 94	    TIM1T      equ	$0294
+     90  10000 ????		02 95	    TIM8T      equ	$0295
+     91  10000 ????		02 96	    TIM64T     equ	$0296
+     92  10000 ????		02 97	    T1024T     equ	$0297
+     93  10000 ????
+     94  10000 ????
+     95  10000 ????
+     96  10000 ????
+     97  10000 ????						; Speakjet Driver
+     98  10000 ????
+------- FILE speakjet.inc LEVEL 2 PASS 2
+      0  10000 ????				       include	"speakjet.inc"
+      1  10000 ????						;
+      2  10000 ????						; speakjet.inc
+      3  10000 ????						;
+      4  10000 ????						;
+      5  10000 ????						; AtariVox Speech Synth Driver
+      6  10000 ????						;
+      7  10000 ????						; By Alex Herbert, 2004
+      8  10000 ????						;
+      9  10000 ????
+     10  10000 ????
+     11  10000 ????
+     12  10000 ????
+     13  10000 ????						; Constants
+     14  10000 ????
+     15  10000 ????
+     16  10000 ????		00 01	    SERIAL_OUTMASK equ	$01
+     17  10000 ????		00 02	    SERIAL_RDYMASK equ	$02
+     18  10000 ????
+     19  10000 ????
+     20  10000 ????
+     21  10000 ????						; Macros
+     22  10000 ????
+     23  10000 ????				       mac	spkout
+     24  10000 ????
+     25  10000 ????						; check buffer-full status
+     26  10000 ????				       lda	SWCHA
+     27  10000 ????				       and	#SERIAL_RDYMASK
+     28  10000 ????				       beq	.speech_done
+     29  10000 ????
+     30  10000 ????						; get next speech byte
+     31  10000 ????				       ldy	#$00
+     32  10000 ????				       lda	(speech_addr),y
+     33  10000 ????
+     34  10000 ????						; invert data and check for end of string
+     35  10000 ????				       eor	#$ff
+     36  10000 ????				       beq	.speech_done
+     37  10000 ????				       sta	{1}
+     38  10000 ????
+     39  10000 ????						; increment speech pointer
+     40  10000 ????				       inc	speech_addr
+     41  10000 ????				       bne	.incaddr_skip
+     42  10000 ????				       inc	speech_addr+1
+     43  10000 ????			    .incaddr_skip
+     44  10000 ????
+     45  10000 ????						; output byte as serial data
+     46  10000 ????
+     47  10000 ????				       sec		; start bit
+     48  10000 ????			    .byteout_loop
+     49  10000 ????						; put carry flag into bit 0 of SWACNT, perserving other bits
+     50  10000 ????				       lda	SWACNT	; 4
+     51  10000 ????				       and	#$fe	; 2 6
+     52  10000 ????				       adc	#$00	; 2 8
+     53  10000 ????				       sta	SWACNT	; 4 12
+     54  10000 ????
+     55  10000 ????						; 10 bits sent? (1 start bit, 8 data bits, 1 stop bit)
+     56  10000 ????				       cpy	#$09	; 2 14
+     57  10000 ????				       beq	.speech_done	; 2 16
+     58  10000 ????				       iny		; 2 18
+     59  10000 ????
+     60  10000 ????						; waste some cycles
+     61  10000 ????				       ldx	#$07
+     62  10000 ????			    .delay_loop
+     63  10000 ????				       dex
+     64  10000 ????				       bne	.delay_loop	; 36 54
+     65  10000 ????
+     66  10000 ????						; shift next data bit into carry
+     67  10000 ????				       lsr	{1}	; 5 59
+     68  10000 ????
+     69  10000 ????						; and loop (branch always taken)
+     70  10000 ????				       bpl	.byteout_loop	; 3 62 cycles for loop
+     71  10000 ????
+     72  10000 ????			    .speech_done
+     73  10000 ????
+     74  10000 ????				       endm
+     75  10000 ????
+     76  10000 ????
+     77  10000 ????				       mac	speak
+     78  10000 ????
+     79  10000 ????				       lda	#<{1}
+     80  10000 ????				       sta	speech_addr
+     81  10000 ????				       lda	#>{1}
+     82  10000 ????				       sta	speech_addr+1
+     83  10000 ????
+     84  10000 ????				       endm
+     85  10000 ????
+     86  10000 ????
+     87  10000 ????
+------- FILE ./vox_test.asm
+    100  10000 ????
+    101  10000 ????
+    102  10000 ????
+    103  10000 ????
+    104  10000 ????						; Macros
+    105  10000 ????
+    106  10000 ????				       mac	wait_timint
+    107  10000 ????			    .1	       bit	TIMINT
+    108  10000 ????				       bpl	.1
+    109  10000 ????				       sta	WSYNC
+    110  10000 ????				       endm
+    111  10000 ????
+    112  10000 ????
+    113  10000 ????
+    114  10000 ????				       mac	wait_hbls
+    115  10000 ????				       ldx	{1}
+    116  10000 ????			    .1	       dex
+    117  10000 ????				       sta	WSYNC
+    118  10000 ????				       bne	.1
+    119  10000 ????				       endm
+    120  10000 ????
+    121  10000 ????
+    122  10000 ????
+    123  10000 ????
+    124  10000 ????						; Variables
+    125  10000 ????
+    126 U0086 ????				      seg.u	bss
+    127 U0080					      org	$0080
+    128 U0080
+    129 U0080
+    130 U0080		       00	   frame      ds	1
+    131 U0081		       00	   temp       ds	1
+    132 U0082		       00	   switch_states ds	1
+    133 U0083		       00	   switch_edges ds	1
+    134 U0084
+    135 U0084		       00 00	   speech_addr ds	2
+    136 U0086
+    137 U0086
+    138 U0086
+    139 U0086
+    140 U0086							; Code/Data
+    141 U0086
+    142  10000 ????				       seg	code
+    143  f000					      org	$f000,$ff
+    144  f000
+    145  f000
+    146  f000		       00 00 00 00*	      ds	3*1024
+    147  fc00
+    148  fc00							; Speech Data
+    149  fc00
+    150  fc00				   fire_speech
+    151  fc00		       1f fd		      dc.b	31,253
+    152  fc02		       ff		      dc.b	$ff
+    153  fc03
+    154  fc03				   up_speech
+    155  fc03		       1f bf 83 08*	      dc.b	31,191,131,8,187,191,129,143,2,2
+    156  fc0d		       bf 83 08 bb*	      dc.b	191,131,8,187,191,129,143,2,2
+    157  fc16		       93 0e 88 08*	      dc.b	147,14,136,8,141,8,191,162,8,190,148,8,128,31
+    158  fc24		       ff		      dc.b	$ff
+    159  fc25				   down_speech
+    160  fc25		       1f 16 6e 17*	      dc.b	31,22,110,23,1,215,6
+    161  fc2c		       ae 9a 07 8d*	      dc.b	174,154,7,141,7,165,7,151,6,215,6
+    162  fc37		       ae 9a 07 8d*	      dc.b	174,154,7,141,7,165,7,151,6,215,6
+    163  fc42		       ae 9a 07 8d*	      dc.b	174,154,7,141,7,165,7,151,31
+    164  fc4b		       ff		      dc.b	$ff
+    165  fc4c				   left_speech
+    166  fc4c		       1f 15 74 17*	      dc.b	31,21,116,23,4,22,55,182,129,194,131,141
+    167  fc58		       02 02 08 ba*	      dc.b	2,2,8,186,7,155,4,191,6,145,7,136,7,155,196,6
+    168  fc68		       9a 80 06 94*	      dc.b	154,128,6,148,7,137,7,164,18,171,136,191,31
+    169  fc75		       ff		      dc.b	$ff
+    170  fc76				   right_speech
+    171  fc76		       1f 15 7f aa*	      dc.b	31,21,127,170,128,174,128,170,128,174,128
+    172  fc81		       aa 80 ae 80*	      dc.b	170,128,174,128,170,128,174,128,170,128,174,128,31
+    173  fc8e		       ff		      dc.b	$ff
+    174  fc8f
+    175  fc8f				   silence_speech
+    176  fc8f		       1f		      dc.b	31
+    177  fc90		       ff		      dc.b	$ff
+    178  fc91
+    179  fc91
+    180  fc91
+    181  fc91							; Boot Code
+    182  fc91
+    183  fc91				   boot
+    184  fc91		       78		      sei
+    185  fc92		       d8		      cld
+    186  fc93
+    187  fc93		       a2 ff		      ldx	#$ff
+    188  fc95		       9a		      txs
+    189  fc96
+    190  fc96		       e8		      inx
+    191  fc97		       8a		      txa
+    192  fc98				   boot_loop
+    193  fc98		       48		      pha
+    194  fc99		       ca		      dex
+    195  fc9a		       d0 fc		      bne	boot_loop
+    196  fc9c
+      0  fc9c					      SPEAK	silence_speech
+      1  fc9c
+      2  fc9c		       a9 8f		      lda	#<silence_speech
+      3  fc9e		       85 84		      sta	speech_addr
+      4  fca0		       a9 fc		      lda	#>silence_speech
+      5  fca2		       85 85		      sta	speech_addr+1
+      6  fca4
+    198  fca4
+    199  fca4
+    200  fca4							; Display Loop
+    201  fca4
+    202  fca4				   vertical_sync
+    203  fca4		       a9 02		      lda	#$02
+    204  fca6		       85 02		      sta	WSYNC
+    205  fca8		       85 00		      sta	VSYNC
+    206  fcaa
+    207  fcaa		       a2 ff		      ldx	#$ff
+    208  fcac		       9a		      txs
+    209  fcad
+    210  fcad		       e6 80		      inc	frame
+    211  fcaf
+    212  fcaf		       85 02		      sta	WSYNC
+    213  fcb1
+    214  fcb1		       a9 2a		      lda	#(36*76)>>6
+    215  fcb3		       85 02		      sta	WSYNC
+    216  fcb5		       8d 96 02 	      sta	TIM64T
+    217  fcb8
+    218  fcb8		       a9 00		      lda	#$00
+    219  fcba		       85 02		      sta	WSYNC
+    220  fcbc		       85 00		      sta	VSYNC
+    221  fcbe
+    222  fcbe
+    223  fcbe				   vblank_start
+    224  fcbe		       20 a9 fd 	      jsr	read_switches
+    225  fcc1
+    226  fcc1		       20 cc fd 	      jsr	speech_select
+    227  fcc4
+    228  fcc4
+    229  fcc4		       a9 03		      lda	#$03
+    230  fcc6		       85 02		      sta	WSYNC
+    231  fcc8		       85 04		      sta	NUSIZ0	; 3
+    232  fcca		       85 05		      sta	NUSIZ1	; 3 6
+    233  fccc		       a2 01		      ldx	#$01	; 2 8
+    234  fcce		       86 25		      stx	VDELP0	; 3 11
+    235  fcd0		       86 26		      stx	VDELP1	; 3 14
+    236  fcd2		       86 0a		      stx	CTRLPF	; 3 17
+    237  fcd4		       ca		      dex		; 2 19
+    238  fcd5		       86 1b		      stx	GRP0	; 3 22
+    239  fcd7		       86 1c		      stx	GRP1	; 3 25
+    240  fcd9		       86 1b		      stx	GRP0	; 3 28
+    241  fcdb
+    242  fcdb		       a9 40		      lda	#$40	; 2 30
+    243  fcdd		       85 20		      sta	HMP0	; 3 33
+    244  fcdf		       a9 50		      lda	#$50	; 2 35
+    245  fce1		       85 21		      sta	HMP1	; 3 37
+    246  fce3
+    247  fce3		       85 10		      sta	RESP0	; 3 40
+    248  fce5		       85 11		      sta	RESP1	; 3 43
+    249  fce7
+    250  fce7		       a9 04		      lda	#$04
+    251  fce9		       85 09		      sta	COLUBK
+    252  fceb
+    253  fceb		       a9 28		      lda	#$28
+    254  fced		       85 06		      sta	COLUP0
+    255  fcef		       85 07		      sta	COLUP1
+    256  fcf1
+    257  fcf1		       85 02		      sta	WSYNC
+    258  fcf3		       85 2a		      sta	HMOVE
+    259  fcf5
+    260  fcf5
+      0  fcf5					      WAIT_TIMINT
+      1  fcf5		       2c 85 02    .1	      bit	TIMINT
+      2  fcf8		       10 fb		      bpl	.1
+      3  fcfa		       85 02		      sta	WSYNC
+    262  fcfc
+    263  fcfc
+    264  fcfc				   display_start
+    265  fcfc		       a9 00		      lda	#$00
+    266  fcfe		       85 02		      sta	WSYNC
+    267  fd00		       85 01		      sta	VBLANK
+    268  fd02
+    269  fd02		       a9 e2		      lda	#(191*76)>>6
+    270  fd04		       8d 96 02 	      sta	TIM64T
+    271  fd07
+    272  fd07
+      0  fd07					      WAIT_HBLS	#$40
+      1  fd07		       a2 40		      ldx	#$40
+      2  fd09		       ca	   .1	      dex
+      3  fd0a		       85 02		      sta	WSYNC
+      4  fd0c		       d0 fb		      bne	.1
+    274  fd0e
+    275  fd0e
+    276  fd0e		       a9 fe		      lda	#$fe
+    277  fd10		       85 02		      sta	WSYNC
+    278  fd12		       85 0f		      sta	PF2
+    279  fd14		       85 02		      sta	WSYNC
+    280  fd16		       85 02		      sta	WSYNC
+    281  fd18		       85 02		      sta	WSYNC
+    282  fd1a
+    283  fd1a		       a2 10		      ldx	#$10
+    284  fd1c				   title_loop
+    285  fd1c		       ca		      dex
+    286  fd1d		       85 02		      sta	WSYNC
+    287  fd1f
+    288  fd1f		       bd 00 ff 	      lda	title_sprite0,x	; 4
+    289  fd22		       85 1b		      sta	GRP0	; 3
+    290  fd24		       bd 10 ff 	      lda	title_sprite1,x	; 4
+    291  fd27		       85 1c		      sta	GRP1	; 3
+    292  fd29		       bd 20 ff 	      lda	title_sprite2,x	; 4
+    293  fd2c		       85 1b		      sta	GRP0	; 3 21
+    294  fd2e
+    295  fd2e		       bc 30 ff 	      ldy	title_sprite3,x	; 4
+    296  fd31		       bd 40 ff 	      lda	title_sprite4,x	; 4
+    297  fd34		       85 81		      sta	temp	; 3
+    298  fd36		       bd 50 ff 	      lda	title_sprite5,x	; 4 36
+    299  fd39
+    300  fd39		       9a		      txs		; 2
+    301  fd3a		       a6 81		      ldx	temp	; 3 41
+    302  fd3c
+    303  fd3c		       84 1c		      sty	GRP1	; 3 44
+    304  fd3e		       86 1b		      stx	GRP0	; 3 47
+    305  fd40		       85 1c		      sta	GRP1	; 3 50
+    306  fd42		       85 1b		      sta	GRP0	; 3 53
+    307  fd44
+    308  fd44		       a9 00		      lda	#$00
+    309  fd46		       85 02		      sta	WSYNC
+    310  fd48		       85 1c		      sta	GRP1
+    311  fd4a		       85 1b		      sta	GRP0
+    312  fd4c		       85 1c		      sta	GRP1
+    313  fd4e
+    314  fd4e		       ba		      tsx
+    315  fd4f		       d0 cb		      bne	title_loop
+    316  fd51
+    317  fd51		       85 02		      sta	WSYNC
+    318  fd53		       85 02		      sta	WSYNC
+    319  fd55		       85 02		      sta	WSYNC
+    320  fd57		       a9 00		      lda	#$00
+    321  fd59		       85 02		      sta	WSYNC
+    322  fd5b		       85 0f		      sta	PF2
+    323  fd5d
+    324  fd5d
+      0  fd5d					      WAIT_TIMINT
+      1  fd5d		       2c 85 02    .1	      bit	TIMINT
+      2  fd60		       10 fb		      bpl	.1
+      3  fd62		       85 02		      sta	WSYNC
+    326  fd64
+    327  fd64
+    328  fd64				   overscan_start
+    329  fd64		       a9 02		      lda	#$02
+    330  fd66		       85 02		      sta	WSYNC
+    331  fd68		       85 01		      sta	VBLANK
+    332  fd6a
+    333  fd6a		       a9 23		      lda	#(30*76)>>6
+    334  fd6c		       8d 96 02 	      sta	TIM64T
+    335  fd6f
+    336  fd6f
+      0  fd6f					      SPKOUT	temp
+      1  fd6f
+      2  fd6f
+      3  fd6f		       ad 80 02 	      lda	SWCHA
+      4  fd72		       29 02		      and	#SERIAL_RDYMASK
+      5  fd74		       f0 29		      beq	.speech_done
+      6  fd76
+      7  fd76
+      8  fd76		       a0 00		      ldy	#$00
+      9  fd78		       b1 84		      lda	(speech_addr),y
+     10  fd7a
+     11  fd7a
+     12  fd7a		       49 ff		      eor	#$ff
+     13  fd7c		       f0 21		      beq	.speech_done
+     14  fd7e		       85 81		      sta	temp
+     15  fd80
+     16  fd80
+     17  fd80		       e6 84		      inc	speech_addr
+     18  fd82		       d0 02		      bne	.incaddr_skip
+     19  fd84		       e6 85		      inc	speech_addr+1
+     20  fd86				   .incaddr_skip
+     21  fd86
+     22  fd86
+     23  fd86
+     24  fd86		       38		      sec
+     25  fd87				   .byteout_loop
+     26  fd87
+     27  fd87		       ad 81 02 	      lda	SWACNT
+     28  fd8a		       29 fe		      and	#$fe
+     29  fd8c		       69 00		      adc	#$00
+     30  fd8e		       8d 81 02 	      sta	SWACNT
+     31  fd91
+     32  fd91
+     33  fd91		       c0 09		      cpy	#$09
+     34  fd93		       f0 0a		      beq	.speech_done
+     35  fd95		       c8		      iny
+     36  fd96
+     37  fd96
+     38  fd96		       a2 07		      ldx	#$07
+     39  fd98				   .delay_loop
+     40  fd98		       ca		      dex
+     41  fd99		       d0 fd		      bne	.delay_loop
+     42  fd9b
+     43  fd9b
+     44  fd9b		       46 81		      lsr	temp
+     45  fd9d
+     46  fd9d
+     47  fd9d		       10 e8		      bpl	.byteout_loop
+     48  fd9f
+     49  fd9f				   .speech_done
+     50  fd9f
+    338  fd9f
+    339  fd9f
+      0  fd9f					      WAIT_TIMINT
+      1  fd9f		       2c 85 02    .1	      bit	TIMINT
+      2  fda2		       10 fb		      bpl	.1
+      3  fda4		       85 02		      sta	WSYNC
+    341  fda6
+    342  fda6		       4c a4 fc 	      jmp	vertical_sync
+    343  fda9
+    344  fda9
+    345  fda9
+    346  fda9							; Subroutines
+    347  fda9
+    348  fda9				   read_switches
+    349  fda9		       a5 82		      lda	switch_states
+    350  fdab		       49 ff		      eor	#$ff
+    351  fdad		       85 83		      sta	switch_edges
+    352  fdaf
+    353  fdaf		       ad 82 02 	      lda	SWCHB
+    354  fdb2		       09 f4		      ora	#$f4
+    355  fdb4		       85 82		      sta	switch_states
+    356  fdb6		       ad 80 02 	      lda	SWCHA
+    357  fdb9		       09 0f		      ora	#$0f
+    358  fdbb		       25 82		      and	switch_states
+    359  fdbd		       24 0c		      bit	INPT4
+    360  fdbf		       30 02		      bmi	switches_skip
+    361  fdc1		       29 fb		      and	#$fb
+    362  fdc3				   switches_skip
+    363  fdc3		       49 ff		      eor	#$ff
+    364  fdc5		       85 82		      sta	switch_states
+    365  fdc7		       25 83		      and	switch_edges
+    366  fdc9		       85 83		      sta	switch_edges
+    367  fdcb		       60		      rts
+    368  fdcc
+    369  fdcc
+    370  fdcc
+    371  fdcc				   speech_select
+    372  fdcc		       a5 83		      lda	switch_edges
+    373  fdce		       0a		      asl
+    374  fdcf		       b0 31		      bcs	start_rightspeech
+    375  fdd1		       0a		      asl
+    376  fdd2		       b0 25		      bcs	start_leftspeech
+    377  fdd4		       0a		      asl
+    378  fdd5		       b0 19		      bcs	start_downspeech
+    379  fdd7		       0a		      asl
+    380  fdd8		       b0 0d		      bcs	start_upspeech
+    381  fdda		       0a		      asl
+    382  fddb		       30 01		      bmi	start_firespeech
+    383  fddd		       60		      rts
+    384  fdde
+    385  fdde				   start_firespeech
+      0  fdde					      SPEAK	fire_speech
+      1  fdde
+      2  fdde		       a9 00		      lda	#<fire_speech
+      3  fde0		       85 84		      sta	speech_addr
+      4  fde2		       a9 fc		      lda	#>fire_speech
+      5  fde4		       85 85		      sta	speech_addr+1
+      6  fde6
+    387  fde6		       60		      rts
+    388  fde7
+    389  fde7				   start_upspeech
+      0  fde7					      SPEAK	up_speech
+      1  fde7
+      2  fde7		       a9 03		      lda	#<up_speech
+      3  fde9		       85 84		      sta	speech_addr
+      4  fdeb		       a9 fc		      lda	#>up_speech
+      5  fded		       85 85		      sta	speech_addr+1
+      6  fdef
+    391  fdef		       60		      rts
+    392  fdf0
+    393  fdf0				   start_downspeech
+      0  fdf0					      SPEAK	down_speech
+      1  fdf0
+      2  fdf0		       a9 25		      lda	#<down_speech
+      3  fdf2		       85 84		      sta	speech_addr
+      4  fdf4		       a9 fc		      lda	#>down_speech
+      5  fdf6		       85 85		      sta	speech_addr+1
+      6  fdf8
+    395  fdf8		       60		      rts
+    396  fdf9
+    397  fdf9				   start_leftspeech
+      0  fdf9					      SPEAK	left_speech
+      1  fdf9
+      2  fdf9		       a9 4c		      lda	#<left_speech
+      3  fdfb		       85 84		      sta	speech_addr
+      4  fdfd		       a9 fc		      lda	#>left_speech
+      5  fdff		       85 85		      sta	speech_addr+1
+      6  fe01
+    399  fe01		       60		      rts
+    400  fe02
+    401  fe02				   start_rightspeech
+      0  fe02					      SPEAK	right_speech
+      1  fe02
+      2  fe02		       a9 76		      lda	#<right_speech
+      3  fe04		       85 84		      sta	speech_addr
+      4  fe06		       a9 fc		      lda	#>right_speech
+      5  fe08		       85 85		      sta	speech_addr+1
+      6  fe0a
+    403  fe0a		       60		      rts
+    404  fe0b
+    405  fe0b
+    406  fe0b
+    407  fe0b							; Sprite Data
+    408  fe0b
+    409  ff00		       00 00 00 00*	      align	$100
+    410  ff00
+    411  ff00				   title_sprite0
+    412  ff00		       00		      dc.b	%00000000
+    413  ff01		       00		      dc.b	%00000000
+    414  ff02		       00		      dc.b	%00000000
+    415  ff03		       00		      dc.b	%00000000
+    416  ff04		       00		      dc.b	%00000000
+    417  ff05		       00		      dc.b	%00000000
+    418  ff06		       00		      dc.b	%00000000
+    419  ff07		       00		      dc.b	0
+    420  ff08		       00		      dc.b	0
+    421  ff09		       88		      dc.b	%10001000
+    422  ff0a		       88		      dc.b	%10001000
+    423  ff0b		       f8		      dc.b	%11111000
+    424  ff0c		       88		      dc.b	%10001000
+    425  ff0d		       88		      dc.b	%10001000
+    426  ff0e		       50		      dc.b	%01010000
+    427  ff0f		       23		      dc.b	%00100011
+    428  ff10
+    429  ff10				   title_sprite1
+    430  ff10		       02		      dc.b	%00000010
+    431  ff11		       02		      dc.b	%00000010
+    432  ff12		       02		      dc.b	%00000010
+    433  ff13		       02		      dc.b	%00000010
+    434  ff14		       02		      dc.b	%00000010
+    435  ff15		       02		      dc.b	%00000010
+    436  ff16		       0f		      dc.b	%00001111
+    437  ff17		       00		      dc.b	0
+    438  ff18		       00		      dc.b	0
+    439  ff19		       88		      dc.b	%10001000
+    440  ff1a		       88		      dc.b	%10001000
+    441  ff1b		       8f		      dc.b	%10001111
+    442  ff1c		       88		      dc.b	%10001000
+    443  ff1d		       88		      dc.b	%10001000
+    444  ff1e		       85		      dc.b	%10000101
+    445  ff1f		       e2		      dc.b	%11100010
+    446  ff20
+    447  ff20				   title_sprite2
+    448  ff20		       3e		      dc.b	%00111110
+    449  ff21		       20		      dc.b	%00100000
+    450  ff22		       20		      dc.b	%00100000
+    451  ff23		       3c		      dc.b	%00111100
+    452  ff24		       20		      dc.b	%00100000
+    453  ff25		       20		      dc.b	%00100000
+    454  ff26		       be		      dc.b	%10111110
+    455  ff27		       00		      dc.b	0
+    456  ff28		       00		      dc.b	0
+    457  ff29		       a2		      dc.b	%10100010
+    458  ff2a		       a4		      dc.b	%10100100
+    459  ff2b		       a8		      dc.b	%10101000
+    460  ff2c		       bc		      dc.b	%10111100
+    461  ff2d		       a2		      dc.b	%10100010
+    462  ff2e		       22		      dc.b	%00100010
+    463  ff2f		       3c		      dc.b	%00111100
+    464  ff30
+    465  ff30				   title_sprite3
+    466  ff30		       70		      dc.b	%01110000
+    467  ff31		       88		      dc.b	%10001000
+    468  ff32		       08		      dc.b	%00001000
+    469  ff33		       70		      dc.b	%01110000
+    470  ff34		       80		      dc.b	%10000000
+    471  ff35		       88		      dc.b	%10001000
+    472  ff36		       73		      dc.b	%01110011
+    473  ff37		       00		      dc.b	0
+    474  ff38		       00		      dc.b	0
+    475  ff39		       70		      dc.b	%01110000
+    476  ff3a		       21		      dc.b	%00100001
+    477  ff3b		       22		      dc.b	%00100010
+    478  ff3c		       22		      dc.b	%00100010
+    479  ff3d		       22		      dc.b	%00100010
+    480  ff3e		       22		      dc.b	%00100010
+    481  ff3f		       72		      dc.b	%01110010
+    482  ff40
+    483  ff40				   title_sprite4
+    484  ff40		       80		      dc.b	%10000000
+    485  ff41		       80		      dc.b	%10000000
+    486  ff42		       80		      dc.b	%10000000
+    487  ff43		       80		      dc.b	%10000000
+    488  ff44		       80		      dc.b	%10000000
+    489  ff45		       80		      dc.b	%10000000
+    490  ff46		       e0		      dc.b	%11100000
+    491  ff47		       00		      dc.b	0
+    492  ff48		       00		      dc.b	0
+    493  ff49		       87		      dc.b	%10000111
+    494  ff4a		       48		      dc.b	%01001000
+    495  ff4b		       28		      dc.b	%00101000
+    496  ff4c		       28		      dc.b	%00101000
+    497  ff4d		       28		      dc.b	%00101000
+    498  ff4e		       28		      dc.b	%00101000
+    499  ff4f		       27		      dc.b	%00100111
+    500  ff50
+    501  ff50				   title_sprite5
+    502  ff50		       00		      dc.b	%00000000
+    503  ff51		       00		      dc.b	%00000000
+    504  ff52		       00		      dc.b	%00000000
+    505  ff53		       00		      dc.b	%00000000
+    506  ff54		       00		      dc.b	%00000000
+    507  ff55		       00		      dc.b	%00000000
+    508  ff56		       00		      dc.b	%00000000
+    509  ff57		       00		      dc.b	0
+    510  ff58		       00		      dc.b	0
+    511  ff59		       22		      dc.b	%00100010
+    512  ff5a		       a2		      dc.b	%10100010
+    513  ff5b		       94		      dc.b	%10010100
+    514  ff5c		       88		      dc.b	%10001000
+    515  ff5d		       94		      dc.b	%10010100
+    516  ff5e		       a2		      dc.b	%10100010
+    517  ff5f		       22		      dc.b	%00100010
+    518  ff60
+    519  ff60
+    520  ff60
+    521  ff60
+    522  fffa					      org	$fffa
+    523  fffa		       91 fc 91 fc*	      dc.w	boot,boot,boot

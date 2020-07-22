@@ -18,10 +18,14 @@ TOP_OF_STACK        = $FF-RESERVED_FOR_STACK
     ECHO "Overlay boundary: ", Overlay + MAXIMUM_REQUIRED_OVERLAY_SIZE
     ECHO "Stack boundary: ", $FF- PLY_BANKS*2
 
-    IF ($FF - PLY_BANKS*2) < (Overlay + MAXIMUM_REQUIRED_OVERLAY_SIZE)
-        ECHO "ERROR: Not enough reserved space for stack with given #PLY"
-        ERR
-    ENDIF
+    
+    ; IGNORE stack stomping (sort of)
+    ; The stack area is not used by the ply code...
+    
+    ;IF ($FF - PLY_BANKS*2) < (Overlay + MAXIMUM_REQUIRED_OVERLAY_SIZE)
+    ;    ECHO "ERROR: Not enough reserved space for stack with given #PLY"
+    ;    ERR
+    ;ENDIF
 
     ;IF TOP_OF_STACK <= (Overlay + MAXIMUM_REQUIRED_OVERLAY_SIZE)
     ;    ECHO "ERROR: Not enough reserved space for stack"

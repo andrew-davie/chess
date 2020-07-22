@@ -143,6 +143,8 @@ speech_addr     ds      2
         org     $f000,$ff
 
 
+        ;ds 1*1024
+
 ; Speech Data
 
 fire_speech
@@ -362,6 +364,7 @@ switches_skip
         sta     switch_states
         and     switch_edges
         sta     switch_edges
+;        sta COLUBK
         rts
 
 
@@ -380,6 +383,8 @@ speech_select
         bmi     start_firespeech
         rts
 
+
+
 start_firespeech
         SPEAK   fire_speech
         rts
@@ -396,10 +401,13 @@ start_leftspeech
         SPEAK   left_speech
         rts
 
+
 start_rightspeech
         SPEAK   right_speech
         rts
 
+
+    
 
 
 ; Sprite Data

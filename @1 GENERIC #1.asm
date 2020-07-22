@@ -69,7 +69,7 @@
                     and #1
                     sta platform                    ; P1 difficulty --> NTSC/PAL
 
-                    SPEAK left_speech
+                    ;SPEAK left_speech
                     rts
 
 
@@ -448,7 +448,7 @@ InitPieceList
 
     ENDIF
 
-    IF TEST_POSITION & 0
+    IF TEST_POSITION & 1
     ; En passant test (white)
 
         .byte BLACK|BP|FLAG_MOVED, 53
@@ -464,7 +464,7 @@ InitPieceList
     ENDIF
 
 
-    IF TEST_POSITION & 1
+    IF TEST_POSITION & 0
     ; castle
 
         .byte BLACK|R, 99

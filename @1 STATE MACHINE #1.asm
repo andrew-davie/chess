@@ -575,7 +575,7 @@ greyCol
         VEND aiShowMoveCaptures
 
     ; draw/undraw ALL captured pieces
-    ; we should do this an even number of times so that pieces don't disappEOR
+    ; we should do this an even number of times so that pieces don't disappear
 
                     dec ccur
                     CALL setCursorColours

@@ -9,10 +9,93 @@
     ROMBANK VOX
 
 
-
 ; Speakjet Driver
 
-        include "speakjet.inc"
+
+
+; Constants
+
+
+SERIAL_OUTMASK  equ     $01
+SERIAL_RDYMASK  equ     $02
+
+
+
+; Macros
+
+    MACRO SPKOUT
+
+
+    ; check buffer-full status
+
+                    lda SWCHA
+                    and #SERIAL_RDYMASK
+                    beq .speech_done
+
+    ; get next speech byte
+
+                    ldy #0
+                    lda (speech_addr),y
+
+    ; invert data and check for end of string
+
+                    eor #$ff
+                    beq .speech_done
+                    sta {1}
+
+    ; increment speech pointer
+
+                    inc speech_addr
+                    bne .incaddr_skip
+                    inc speech_addr+1
+.incaddr_skip
+
+    ; output byte as serial data
+
+                    sec                             ; start bit
+.byteout_loop
+
+    ; put carry flag into bit 0 of SWACNT, perserving other bits
+
+                    lda SWACNT                      ; 4
+                    and #$fe                        ; 2 6
+                    adc #$00                        ; 2 8
+                    sta SWACNT                      ; 4 12
+
+    ; 10 bits sent? (1 start bit, 8 data bits, 1 stop bit)
+
+                    cpy     #$09            ; 2 14
+                    beq     .speech_done    ; 2 16
+                    iny                     ; 2 18
+
+                    ; waste some cycles
+                    ldx     #$07
+.delay_loop
+                    dex
+                    bne     .delay_loop     ; 36 54
+
+                    ; shift next data bit into carry
+                    lsr     {1}             ; 5 59
+
+                    ; and loop (branch always taken)
+                    bpl     .byteout_loop   ; 3 62 cycles for loop
+
+.speech_done
+
+        endm
+
+
+        mac     SPEAK
+
+        lda     #<{1}
+        sta     speech_addr
+        lda     #>{1}
+        sta     speech_addr+1
+
+        endm
+
+
+
 
 
 
@@ -37,9 +120,14 @@
 
 
 
+; Variables
 
 
 ; Code/Data
+
+;        seg     code
+;        org     $f000,$ff
+
 
 ; Speech Data
 
@@ -72,34 +160,13 @@ silence_speech
         dc.b    31
         dc.b    $ff
 
+    
 
+; Boot Code
 
     DEF SayIt
-
-        VAR temp, 1
-        VAR switch_states, 1
-        VAR switch_edges, 1
-        VEND SayIt
-
     rts
 
-                    SPKOUT  temp
-
-    jmp boot
-
-        ; get next speech byte
-        ldy     #$00
-        lda     (speech_addr),y
-
-        ; invert data and check for end of string
-        eor     #$ff
-        bne .going
-
-        ;jsr debug
-                    SPEAK left_speech
-.going
-
-                    rts
 
 boot
         sei
@@ -128,7 +195,7 @@ vertical_sync
         ldx     #$ff
         txs
 
-        inc     frame
+        inc     voxframe
 
         sta     WSYNC
 
@@ -437,3 +504,8 @@ title_sprite5
         dc.b    %10100010
         dc.b    %00100010
 
+
+
+
+
+    END_BANK

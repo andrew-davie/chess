@@ -4,7 +4,7 @@
 ; andrew@taswegian.com
 
 
-TIA_BASE_ADDRESS = $40
+TIA_BASE_ADDRESS = 0 ;$40
 
     processor 6502
     include "vcs.h"
@@ -34,7 +34,7 @@ YES                     = 1
 NO                      = 0
 HUMAN                   = 64
 
-INFINITY                = $7000 ;32767
+INFINITY                = $8000-1 ;32767
 
 
 ; assemble diagnostics. Remove for release.
@@ -55,8 +55,8 @@ SELECT_SWITCH           = 2                         ; (SWCHB & SELECT_SWITCH)  0
 ; PLY+2 for computer response (thus, 3). The bank allocation gets stomped!
 
 
-SEARCH_DEPTH            = 3
-QUIESCE_EXTRA_DEPTH     = 4
+SEARCH_DEPTH            = 4
+QUIESCE_EXTRA_DEPTH     = 3
 
 
     IF SEARCH_DEPTH < 3
@@ -133,12 +133,12 @@ PAL_50              = PAL|0
 PAL_60              = PAL|1
 
 NTSC_COLOUR_LINE_1 = $86        ; blue
-NTSC_COLOUR_LINE_2 = $46        ; red
-NTSC_COLOUR_LINE_3 = $D8        ; green
+NTSC_COLOUR_LINE_2 = $48        ; red
+NTSC_COLOUR_LINE_3 = $DA        ; green
 
 PAL_COLOUR_LINE_1 = $D6         ; blue
-PAL_COLOUR_LINE_2 = $68         ; red
-PAL_COLOUR_LINE_3 = $3A         ; green
+PAL_COLOUR_LINE_2 = $6A         ; red
+PAL_COLOUR_LINE_3 = $3C         ; green
 
 
 TIME_PART_2         = 46 ;68

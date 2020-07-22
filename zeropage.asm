@@ -45,6 +45,14 @@ previousPiece                   ds 1
 speech_addr                     ds 2
 ;bg                              ds 1
 
+voxframe           ds      1
+temp            ds      1
+switch_states   ds      1
+switch_edges    ds      1
+
+
+
+
 capture                         ds 1
 
     IF DIAGNOSTICS
@@ -55,7 +63,7 @@ positionCount                   ds 3
 flagCheck                       ds 1                ; -1 = no, #KING = yes
 ;protecting                      ds 1
 randomness                      ds 1
-__psb                           ds 2
+;__psb                           ds 2
 
 vkSquare                        ds 2                ; current move's king traversal squares during castling
 ;human                           ds 1                ; colour of human
@@ -65,4 +73,5 @@ platform                        ds 1                ; 0=NTSC, 1=PAL
     IFCONST RAINBOW
 base                            ds 1
     ENDIF
+
     

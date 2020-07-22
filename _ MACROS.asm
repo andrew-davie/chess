@@ -94,7 +94,6 @@ TEMPORARY_VAR SET VAREND_{1}
     ; Will allocate appropriate bytes, and also check for overflow of the available overlay buffer
 
     MAC VAR ; { name, size }
-;        ;LIST OFF
 {1} = TEMPORARY_VAR
 TEMPORARY_VAR SET TEMPORARY_VAR + TEMPORARY_OFFSET + {2}
 
@@ -103,13 +102,10 @@ OVERLAY_DELTA SET TEMPORARY_VAR - Overlay
 MAXIMUM_REQUIRED_OVERLAY_SIZE SET OVERLAY_DELTA
         ENDIF
         IF OVERLAY_DELTA + Overlay >= TOP_OF_STACK
-            LIST ON
 VNAME   SETSTR {1}
             ECHO "Temporary Variable", VNAME, "overflow!"
             ERR
-            ECHO "Temporary Variable overlow!"
         ENDIF
-        LIST ON
     ENDM
 
 

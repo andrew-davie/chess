@@ -124,6 +124,8 @@ time64a
         VAR __originalPiece, 1
         VAR __capturedPiece, 1
 
+
+        VAR testzp, 2
         VEND COMMON_VARS        
 
 
@@ -135,7 +137,30 @@ time64a
         REF COMMON_VARS
         REF negaMax ;✅
         REF quiesce ;✅
+
         VEND ThinkBar
+
+
+    ; Check timer!
+
+    IF 0
+        lda INTIM
+        bpl .notick
+        lda #127
+        sta T1024T
+        inc testzp
+        ;bne .notick
+        inc testzp+1
+
+        lda testzp+1
+        asl
+        sta COLUBK
+
+
+
+.notick
+    ENDIF
+
 
         IF DIAGNOSTICS
 
@@ -240,6 +265,9 @@ SynapsePattern
         REF CopySinglePiece ;✅
         REF showPromoteOptions ;✅
         REF showMoveOptions ;✅
+
+        VAR __psb, 2
+        
         VEND InterceptMarkerCopy
 
     ; Copy a piece shape (3 PF bytes wide x 24 lines) to the RAM buffer
