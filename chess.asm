@@ -55,7 +55,7 @@ SELECT_SWITCH           = 2                         ; (SWCHB & SELECT_SWITCH)  0
 ; PLY+2 for computer response (thus, 3). The bank allocation gets stomped!
 
 
-SEARCH_DEPTH            = 4
+SEARCH_DEPTH            = 3
 QUIESCE_EXTRA_DEPTH     = 3
 
 

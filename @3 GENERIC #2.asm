@@ -60,86 +60,6 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-;     DEF GenCastleMoveForRook_ENPASSANT
-;     SUBROUTINE
-
-;         REF MakeMove ;✅
-;         REF CastleFixupDraw_ENPASSANT ;✅
-;         VEND GenCastleMoveForRook_ENPASSANT
-
-;         rts ;tmp
-;         jsr debug ;tmp
-
-;     ; Like castling, this generates the acutal extra-move for the en-passant
-
-
-;     ; Check to see if we are doing an actual en-passant capture...
-
-;     ; NOTE: If using test boards for debugging, the FLAG_MOVED flag is IMPORTANT
-;     ;  as the en-passant will fail if the taking piece does not have this flag set correctly
-
-
-
-;     ; {
-;     ; With en-passant flag, it is essentially dual-use.
-;     ; First, it marks if the move is *involved* somehow in an en-passant
-;     ; if the piece has MOVED already, then it's an en-passant capture
-;     ; if it has NOT moved, then it's a pawn leaving home rank, and sets the en-passant square
-
-;                     ldy enPassantPawn               ; save from previous side move
-
-;                     ldx #0                          ; (probably) NO en-passant this time
-;                     lda fromPiece
-;                     and #FLAG_ENPASSANT|FLAG_MOVED
-;                     cmp #FLAG_ENPASSANT
-;                     bne .noep                       ; HAS moved, or not en-passant
-
-;                     eor fromPiece                   ; clear FLAG_ENPASSANT
-;                     sta fromPiece
-
-;                     ldx toX12                       ; this IS an en-passantable opening, so record the square
-; .noep               stx enPassantPawn               ; capturable square for en-passant move (or none)
-
-;     ; }
-
-;                     clc
-
-;                     lda fromPiece
-;                     and #FLAG_ENPASSANT
-;                     beq .notEnPassant               ; not an en-passant, or it's enpassant by a MOVED piece
-
-
-;     ; at this point the attacking pawn has finished moving to the "take" square
-;     ; the loser-pawn is marked with enPassantPawn
-;     ; we want to generate a 'blank' move to take the pawn
-
-;                     lda originX12                   ; we need a blank square to move FROM
-;                     sta fromX12                     ; use the square the attacker pawn just left
-
-;     ; calculate the captured pawn's square based on move colour
-
-;                     lda #-10
-;                     ldx fromPiece
-;                     bpl .white
-;                     lda #10
-; .white
-;                     clc
-;                     adc fromX12                     ; attacker destination square
-;                     sta toX12                       ; now we have the captured pawn square!
-;                     sta@PLY secondarySquare         ; square to which we RESTORE the captured pawn on unmakemove
-
-;                     sta@PLY secondaryBlank
-;                     lda fromPiece
-;                     eor #$80                        ; opponent pawn
-;                     sta@PLY secondaryPiece          ; a capture!
-
-
-;                     sec                             ; double-move, so don't change sides
-; .notEnPassant       rts
-
-
-;---------------------------------------------------------------------------------------------------
-
     DEF GenCastleMoveForRook
     SUBROUTINE
 
@@ -325,6 +245,111 @@ done_sync
 ;                    bne .loopVSync3                 ; branch until VYSNC has been reset
 
 ;                    sta VBLANK
+
+                    rts
+
+
+;---------------------------------------------------------------------------------------------------
+
+    DEF BubbleSort
+    SUBROUTINE
+
+
+    IF 1
+    ;{
+
+    ; This MUST be called at the start of a new ply
+    ; It initialises the movelist to empty
+    ; x must be preserved
+
+    ; note that 'alpha' and 'beta' are set externally!!
+
+                    lda #-1
+                    sta@PLY bestMove
+
+                    lda enPassantPawn               ; flag/square from last actual move made
+                    sta@PLY enPassantSquare         ; used for backtracking, to reset the flag
+
+                    lda vkSquare
+                    sta@PLY virtualKingSquare
+                    lda vkSquare+1
+                    sta@PLY virtualKingSquare+1     ; traversal squares of king for castling
+
+    ; The value of the material (signed, 16-bit) is restored to the saved value at the reversion
+    ; of a move. It's quicker to restore than to re-sum. So we save the current evaluation at the
+    ; start of each new ply.
+
+                    lda Evaluation
+                    sta@PLY savedEvaluation
+                    lda Evaluation+1
+                    sta@PLY savedEvaluation+1
+    ;}
+    ENDIF
+
+
+                    clc
+                    lda currentPly
+                    adc #RAMBANK_SORT-RAMBANK_PLY
+                    sta __bank2
+
+
+                    lda@PLY moveIndex
+                    sta __n
+                    inc __n                         ; n := length(A)
+
+.bubble             lda #0
+                    sta __newn
+
+                    lda #1
+                    sta __i
+
+.bubbleLoop         lda __i
+                    cmp __n
+                    beq .exitBubble
+
+                    tax                             ; A
+                    tay
+                    dey                             ; B i-1
+
+                    lda __bank2
+                    sta SET_BANK_RAM;@2
+
+                    sec
+                    lda MoveValueLO,x
+                    sbc MoveValueLO,y
+                    lda MoveValueHI,x
+                    sbc MoveValueHI,y
+                    bvc .cmp16bit
+                    eor #$80
+.cmp16bit           bmi .lessThan                   ; sort small to large
+
+    ; swap!
+                    XCHG MoveValueLO
+                    XCHG MoveValueHI
+
+                    lda currentPly
+                    sta SET_BANK_RAM;@2
+
+                    XCHG MoveFrom
+                    XCHG MoveTo
+                    XCHG MovePiece
+                    XCHG MoveCapture
+
+                    lda __i
+                    sta __newn
+
+.lessThan           inc __i
+                    jmp .bubbleLoop
+
+.exitBubble         lda __newn
+                    sta __n
+
+                    cmp #2
+                    bcc .exitLoop
+                    jmp .bubble
+
+.exitLoop           lda currentPly
+                    sta SET_BANK_RAM
 
                     rts
 

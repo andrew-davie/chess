@@ -113,6 +113,7 @@
 
                     ldx@PLY bestMove
                     bmi .nomove
+    jsr debug
 
     ; Generate player's moves in reply
     ; Make the computer move, list player moves (PLY+1), unmake computer move
@@ -378,13 +379,17 @@
 
                     jsr GenerateAllMoves;@0
 
+    DEF negaLoop
+
                     lda flagCheck
                     bne .inCheck2                           ; OTHER guy in check
 
-    ; add mobility to the score (for all moves). Will un-add on move revert
-    ; the 4x loop is to give weight to mobility :)
 
-    IF 1
+    IF 0
+    ; TODO: how does this sit with the move ordering subsearch?
+
+    ; add mobility to the score (for all moves). Will un-add on move revert
+
                     lda@PLY moveIndex
                     cmp #$FF
                     beq .nomoves
@@ -409,14 +414,6 @@
 .nomoves
     ENDIF
 
-
-    ; Reurse?
-    ; to smaller depth, then sort...
-
-    ;ldx #2
-    ;jsr negaMax
-    ;jsr debug
-
                     lda #<-INFINITY
                     sta@PLY value
                     lda #>-INFINITY
@@ -428,7 +425,6 @@
                     
 .forChild           stx@PLY movePtr
 
-    jsr debug
                     jsr MakeMove;@this
 
 
@@ -509,11 +505,6 @@
     
 .notCheck
 
-    lda currentPly
-    cmp #RAMBANK_PLY
-    bne .not0
-    ;jsr debug
-.not0
                     sec
                     lda@PLY value
                     sbc __negaMax
@@ -587,15 +578,115 @@
     ENDM
 
 
+    IF 0
+    ; bubble sort from Wikipedia
+
+    ;n := length(A)
+    ;repeat
+    ;    newn := 0
+    ;    for i := 1 to n - 1 inclusive do
+    ;        if A[i - 1] > A[i] then
+    ;            swap(A[i - 1], A[i])
+    ;            newn := i
+    ;        end if
+    ;    end for
+    ;    n := newn
+    ;until n ≤ 1
+
+    ENDIF
+
+
+
     DEF Sort
     SUBROUTINE
 
         REF GenerateAllMoves
         VAR __xchg, 1
+        VAR __n, 1
+        VAR __newn, 1
+        VAR __i, 1
+        VAR __bank2, 1
         VEND Sort
 
                     lda __quiesceCapOnly
                     bne .exit                       ; only caps present so already sorted!
+
+
+    IF 1
+
+    ; Run a shallow negamax search to get the values for each move
+    ; and then do a bubble sort of the results
+
+                    lda currentPly
+                    cmp #RAMBANK_PLY+1
+                    bcs .tooDeep
+
+                    lda@PLY depthLeft
+                    pha
+                    lda@PLY movePtr
+                    pha
+
+                    lda@PLY alpha+1
+                    pha
+                    lda@PLY alpha
+                    pha
+                    lda@PLY beta+1
+                    pha
+                    lda@PLY beta
+                    pha
+
+                    lda@PLY value+1
+                    pha
+                    lda@PLY value
+                    pha
+
+
+                    lda #<INFINITY
+                    sta __beta
+                    lda #>INFINITY
+                    sta __beta+1
+
+                    lda #<-INFINITY
+                    sta __alpha
+                    lda #>-INFINITY
+                    sta __alpha+1                   ; player tries to maximise
+
+                    ldx #0
+                    stx@PLY depthLeft
+                    
+                    jsr negaLoop                    
+
+                    CALL BubbleSort;@3
+
+                    pla
+                    sta@PLY value
+                    pla
+                    sta@PLY value+1
+
+                    pla
+                    sta@PLY beta
+                    pla
+                    sta@PLY beta+1
+                    pla
+                    sta@PLY alpha
+                    pla
+                    sta@PLY alpha+1
+
+                    pla
+                    sta@PLY movePtr
+                    pla
+                    sta@PLY depthLeft
+
+    jsr debug
+
+
+.tooDeep
+    ENDIF
+
+
+
+    IF 0
+    ; original capture-only sort...
 
                     ldx@PLY moveIndex
                     ldy@PLY moveIndex
@@ -614,6 +705,8 @@
 
                     dex
                     bpl .next
+    ENDIF
+
 
 .exit
 

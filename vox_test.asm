@@ -384,6 +384,7 @@ speech_select
         rts
 
 
+    ds 40
 
 start_firespeech
         SPEAK   fire_speech

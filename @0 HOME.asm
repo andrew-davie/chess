@@ -431,7 +431,6 @@ ONCEPERFRAME = 40
         REF negaMax ;✅
 
         VAR __vector, 2
-        VAR __pieceFilter, 1
 
         VEND GenerateAllMoves
 
@@ -472,20 +471,9 @@ ONCEPERFRAME = 40
     ;}
 
 
-
-                    lda #8                  ; pawns
-                    sta __pieceFilter
-                    jsr MoveGenX
-                    ;lda #99
-                    ;sta currentSquare
-                    lda #0
-                    sta __pieceFilter
                     jsr MoveGenX
 
-                    lda #BANK_Sort
-                    sta SET_BANK
-                    jmp Sort;@1
-
+                    JUMP Sort;@1
 
 
     DEF MoveGenX
@@ -517,7 +505,6 @@ ONCEPERFRAME = 40
                     and #~FLAG_CASTLE               ; todo: better part of the move, mmh?
                     sta currentPiece
                     and #PIECE_MASK
-                    ora __pieceFilter
                     tay
 
                     lda HandlerVectorHI,y
@@ -539,27 +526,15 @@ ONCEPERFRAME = 40
     DEF HandlerVector{1}
     
         .byte {2}MoveReturn
-        .byte {2}MoveReturn ;byte {1}Handle_WHITE_PAWN        ; 1
-        .byte {2}MoveReturn ;.byte {1}Handle_BLACK_PAWN        ; 2
+        .byte {2}Handle_WHITE_PAWN        ; 1
+        .byte {2}Handle_BLACK_PAWN        ; 2
         .byte {2}Handle_KNIGHT            ; 3
         .byte {2}Handle_BISHOP            ; 4
         .byte {2}Handle_ROOK              ; 5
         .byte {2}Handle_QUEEN             ; 6
         .byte {2}Handle_KING              ; 7
-
-        .byte {2}MoveReturn
-        .byte {2}Handle_WHITE_PAWN        ; 1
-        .byte {2}Handle_BLACK_PAWN        ; 2
-        .byte {2}MoveReturn;.byte {1}Handle_KNIGHT            ; 3
-        .byte {2}MoveReturn;.byte {1}Handle_BISHOP            ; 4
-        .byte {2}MoveReturn;.byte {1}Handle_ROOK              ; 5
-        .byte {2}MoveReturn;.byte {1}Handle_QUEEN             ; 6
-        .byte {2}MoveReturn;.byte {1}Handle_KING              ; 7
-
     ENDM
 
-
-;    .byte 0     ; dummy to prevent page cross access on index 0
 
     HANDLEVEC LO, <
     HANDLEVEC HI, >

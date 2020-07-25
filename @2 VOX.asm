@@ -68,11 +68,12 @@ SERIAL_RDYMASK  equ     $02
                     beq     .speech_done    ; 2 16
                     iny                     ; 2 18
 
-                    ; waste some cycles
-                    ldx     #$07
-.delay_loop
-                    dex
-                    bne     .delay_loop     ; 36 54
+                    SLEEP 36
+;                    ; waste some cycles
+;                    ldx     #$07
+;.delay_loop
+;                    dex
+;                    bne     .delay_loop     ; 36 54
 
                     ; shift next data bit into carry
                     lsr     {1}             ; 5 59
@@ -81,6 +82,11 @@ SERIAL_RDYMASK  equ     $02
                     bpl     .byteout_loop   ; 3 62 cycles for loop
 
 .speech_done
+
+    IF >.byteout_loop != >.
+        ECHO "byteout speak page cross"
+        ERR
+    ENDIF
 
         endm
 
