@@ -16,7 +16,6 @@ _ORIGIN             SET _FIRST_BANK
     DEF StartCartridge
 
                     CLEAN_START
-
                     JUMP StartupBankReset;@0
 
 ;---------------------------------------------------------------------------------------------------

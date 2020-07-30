@@ -109,11 +109,11 @@
                     ;sta SET_BANK_RAM ;tmp?
 
 
+                    ;SPEAK SAY_your_move ;left_speech
 
 
                     ldx@PLY bestMove
                     bmi .nomove
-    jsr debug
 
     ; Generate player's moves in reply
     ; Make the computer move, list player moves (PLY+1), unmake computer move
@@ -381,11 +381,14 @@
 
     DEF negaLoop
 
+    jsr debug
+
+
                     lda flagCheck
                     bne .inCheck2                           ; OTHER guy in check
 
 
-    IF 0
+    IF 1
     ; TODO: how does this sit with the move ordering subsearch?
 
     ; add mobility to the score (for all moves). Will un-add on move revert
@@ -397,7 +400,7 @@
                     ldx #0
                     stx ev2+1
 
-    REPEAT 0
+    REPEAT 1
                     asl
                     rol ev2+1
     REPEND
@@ -609,8 +612,9 @@
         VEND Sort
 
                     lda __quiesceCapOnly
-                    bne .exit                       ; only caps present so already sorted!
-
+                    beq .nonExit
+                    jmp .exit                       ; only caps present so already sorted!
+.nonExit
 
     IF 1
 
@@ -658,6 +662,33 @@
 
                     CALL BubbleSort;@3
 
+                    lda #<INFINITY
+                    sta __beta
+                    lda #>INFINITY
+                    sta __beta+1
+
+                    lda #<-INFINITY
+                    sta __alpha
+                    lda #>-INFINITY
+                    sta __alpha+1                   ; player tries to maximise
+
+                    ldx #1
+                    stx@PLY depthLeft
+                    
+                    jsr negaLoop                    
+
+
+
+
+
+
+
+
+
+                    CALL BubbleSort;@3
+
+
+
                     pla
                     sta@PLY value
                     pla
@@ -677,38 +708,13 @@
                     pla
                     sta@PLY depthLeft
 
-    jsr debug
-
 
 .tooDeep
-    ENDIF
-
-
-
-    IF 0
-    ; original capture-only sort...
-
-                    ldx@PLY moveIndex
-                    ldy@PLY moveIndex
-                    iny                             ; this is OK - swaps "1st" with itself if it's a capture
-
-.next               dey
-                    bmi .exit
-
-                    lda@PLY MoveCapture,y
-                    beq .next
-
-                    XCHG MoveFrom
-                    XCHG MoveTo
-                    XCHG MovePiece
-                    XCHG MoveCapture
-
-                    dex
-                    bpl .next
-    ENDIF
-
-
 .exit
+    ENDIF
+
+
+
 
     ; Scan for capture of king
     ; Also scan for virtual king captures (squares involved in castling)

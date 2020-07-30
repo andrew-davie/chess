@@ -1,4 +1,9 @@
 record moves in rambank
-store board in savekey
+store board in savekey (/ragequit)
+fix pre-emptive resignation on mate detection
+cull to N moves after sort/search
 
 
+
+showmovecaptures (for promotion duplicates) are going to fail with sorted moves
+check this still works....?

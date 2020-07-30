@@ -69,6 +69,7 @@
                     and #1
                     sta platform                    ; P1 difficulty --> NTSC/PAL
 
+                    SPEAK silence_speech
                     ;SPEAK left_speech
                     rts
 
@@ -540,44 +541,6 @@ InitPieceList
     ENDIF
 
 
-;---------------------------------------------------------------------------------------------------
-
-    IF 0
-    DEF AddMoveSimple
-    SUBROUTINE
-
-        REF MoveVAR
-        VEND AddMoveSimple
-
-    ; add square in y register to movelist as destination (X12 format)
-    ; [y]               to square (X12)
-    ; currentSquare     from square (X12)
-    ; currentPiece      piece.
-    ;   ENPASSANT flag set if pawn double-moving off opening rank
-    ; capture           captured piece
-
-                    lda __capture
-                    bne .always
-                    lda __quiesceCapOnly
-                    bne .abort
-
-.always             tya
-
-                    ldy@PLY moveIndex
-                    iny
-                    sty@PLY moveIndex
-                    
-                    sta@PLY MoveTo,y
-                    lda currentSquare
-                    sta@PLY MoveFrom,y
-                    lda currentPiece
-                    sta@PLY MovePiece,y
-                    lda __capture
-                    sta@PLY MoveCapture,y
-
-.abort              rts
-    ENDIF
-
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -771,6 +734,8 @@ InitPieceList
                     rts
 
 .comp
+
+                    ;SPEAK SAY_how_about
 
                     lda #-1
                     sta toX12                        ; becomes startup flash square

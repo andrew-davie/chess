@@ -85,7 +85,7 @@ SERIAL_RDYMASK  equ     $02
 
     IF >.byteout_loop != >.
         ECHO "byteout speak page cross"
-        ERR
+        ;ERR
     ENDIF
 
         endm
@@ -126,6 +126,17 @@ SERIAL_RDYMASK  equ     $02
 
 
 
+
+; Boot Code
+
+    DEF SayIt
+
+        ;inc     voxframe
+
+
+        SPKOUT  temp
+        rts
+
 ; Variables
 
 
@@ -164,176 +175,252 @@ right_speech
 
 silence_speech
         dc.b    31
+        .byte 21, SPKPITCH       ; slower (default=114)
+        .byte 20,24  ; volume (default=96)
+        .byte 23,4                                  ; band. deep-hollow sound
         dc.b    $ff
 
+
+SAY_your_move
+
+    ; your = \IY \OWRR
+        .byte 128, 153
+    ; move= \MM \SLOW \UW \VV
+        .byte 140, 8, 139, 166
+        .byte $FF
+
+
+SPKPITCH = 120
+
+
+;"Ha ha ha"
+
+;"Ha! You have fallen for my trap!"
+
+;"Mate in 236 moves..."
+
+;"I saw that!"
+
+;"Puny human"
+
+;"Don't look a gift knight in the mouth"
+
+;"We all learn from our mistakes: you have infinite improvement capability"
+
+;"You have a good memory for bad openings"
+
+;"You play like a human"
+
+;"You play like a computer"
+
+SAY_blindfold
+;"I was playing that one blindfolded"
+    .byte 20, 96, 21, 114, 22, 88, 23, 5, 157, 147, 134, 167, 169, 8, 132, 8, 191, 147, 14, 136, 8, 141
+    .byte $FF
+
+SAY_atari
+
+    ;"Atari! ..... whoops..... wrong game... Check!"
+ .byte 20, 96, 21, 114, 22, 88, 23, 5, 148, 136, 8, 144, 8, 178, 154, 140, 182, 131, 131, 196
+ .byte $FF
+
+SAY_feet
+
+;"If i had feet, I'd be kicking you under the table right now"
+ .byte 20, 96, 21, 114, 22, 88, 23, 5, 129, 186, 186, 157, 186, 128, 191, 2, 8, 160, 134, 141, 175, 151, 8, 169, 8, 128, 191, 7, 130, 7, 154, 18, 170, 7, 134, 146, 148, 7, 155, 7, 128, 191, 142, 163
+ .byte $FF
+
+SAY_mistake
+
+    ;"I know you would make that mistake"
+ .byte 20, 96, 21, 114, 22, 88, 23, 5, 157, 8, 160, 147, 8, 138, 177, 140, 154, 196, 169, 8, 132, 8, 191, 140, 7, 129, 187, 191, 154, 196
+ .byte $FF
+
+
+
+SAY_noCPU
+    ;"Without a CPU i would try that move too"
+
+    ;with= \WW \IH \SLOW \SLOW \TH
+    .byte 21,120
+    .byte 147, 129, 8, 8, 190
+    ;out = \AYWW \TT
+    .byte 163, 191
+    .byte 21, SPKPITCH
     
+    ; a = \UX (mine)
+        .byte 9, 134
 
-; Boot Code
+    ; CPU
+    .byte 187, 8, 128
+    .byte 0
+    .byte 198, 8,128
+    .byte 0
+    .byte 8, 160
 
-    DEF SayIt
-    rts
-
-
-boot
-        sei
-        cld
-
-        ldx     #$ff
-        txs
-
-        inx
-        txa
-boot_loop
-        pha
-        dex
-        bne     boot_loop
-
-        SPEAK   silence_speech
+    .byte 2
 
 
-; Display Loop
-
-vertical_sync
-        lda     #$02
-        sta     WSYNC
-        sta     VSYNC
-
-        ldx     #$ff
-        txs
-
-        inc     voxframe
-
-        sta     WSYNC
-
-        lda     #(36*76)>>6
-        sta     WSYNC
-        sta     TIM64T
-
-        lda     #$00
-        sta     WSYNC
-        sta     VSYNC
+ .byte 20, 96, 21, 114, 22, 88, 23, 5, 157, 147, 8, 138, 177, 8, 191, 7, 148, 155, 169, 8, 132, 8, 191, 140, 8, 139, 166, 8, 191, 162
+ .byte $FF
 
 
-vblank_start
-        jsr     read_switches
+;And I'm going to have the computer call the piece a "horsie" instead of a knight
 
-        jsr     speech_select
+SAY_how_about
+SAY_NQB3
 
+    ; horse= \HO \OWRR \SE \IY
+    .byte 20, 96, 21, 114, 22, 88, 23, 5
+; horsie
+ ;.byte 8, 191, 162
+ .byte 0
 
-        lda     #$03
-        sta     WSYNC
-        sta     NUSIZ0          ; 3
-        sta     NUSIZ1          ; 3 6
-        ldx     #$01            ; 2 8
-        stx     VDELP0          ; 3 11
-        stx     VDELP1          ; 3 14
-        stx     CTRLPF          ; 3 17
-        dex                     ; 2 19
-        stx     GRP0            ; 3 22
-        stx     GRP1            ; 3 25
-        stx     GRP0            ; 3 28
+; queens
+; .byte 20, 96, 21, 114, 22, 88, 23, 5
+; .byte 0
 
-        lda     #$40            ; 2 30
-        sta     HMP0            ; 3 33
-        lda     #$50            ; 2 35
-        sta     HMP1            ; 3 37
-
-        sta     RESP0           ; 3 40
-        sta     RESP1           ; 3 43
-
-        lda     #$04
-        sta     COLUBK
-
-        lda     #$28
-        sta     COLUP0
-        sta     COLUP1
-
-        sta     WSYNC
-        sta     HMOVE
+; bishop
+; .byte 20, 96, 21, 114, 22, 88, 23, 5
+; .byte 0
 
 
-        WAIT_TIMINT
+; three
+; .byte 20, 96, 21, 114, 22, 88, 23, 5, 8, 190, 148, 8, 128
+ .byte $FF
 
 
-display_start
-        lda     #$00
-        sta     WSYNC
-        sta     VBLANK
-
-        lda     #(191*76)>>6
-        sta     TIM64T
 
 
-        WAIT_HBLS       #$40
+;SAY_how_about
+
+; .byte 20, 96, 21, 114, 22, 88, 23, 5, 141, 136, 191, 154, 128, 166, 150, 7, 128, 8, 179, 138, 138, 177, 140, 8, 139, 166
+; .byte $FF
+
+    ; how about a nice game of chess
+
+    ;how= \HO \SLOW \AYWW
+
+    ;.byte 21,120
+        ;.byte 184, 8, 163
+
+    .byte 0
+
+    ;about=\UX \OB \AYWW \TT  
+
+;        .byte 134, 8, 173, 163, 191
 
 
-        lda     #$fe
-        sta     WSYNC
-        sta     PF2
-        sta     WSYNC
-        sta     WSYNC
-        sta     WSYNC
-
-        ldx     #$10
-title_loop
-        dex
-        sta     WSYNC
-
-        lda     title_sprite0,x         ; 4
-        sta     GRP0                    ; 3
-        lda     title_sprite1,x         ; 4
-        sta     GRP1                    ; 3
-        lda     title_sprite2,x         ; 4
-        sta     GRP0                    ; 3 21
-
-        ldy     title_sprite3,x         ; 4
-        lda     title_sprite4,x         ; 4
-        sta     temp                    ; 3
-        lda     title_sprite5,x         ; 4 36
-
-        txs                             ; 2
-        ldx     temp                    ; 3 41
-
-        sty     GRP1                    ; 3 44
-        stx     GRP0                    ; 3 47
-        sta     GRP1                    ; 3 50
-        sta     GRP0                    ; 3 53
-
-        lda     #$00
-        sta     WSYNC
-        sta     GRP1
-        sta     GRP0
-        sta     GRP1
-
-        tsx
-        bne     title_loop
-
-        sta     WSYNC
-        sta     WSYNC
-        sta     WSYNC
-        lda     #$00
-        sta     WSYNC
-        sta     PF2
+    .byte 9,
+    ;.byte 134 ;\UX
+    ;.byte 21,64
+    .byte 8,173 ;\OB
+    ;.byte 21,SPKPITCH
+    .byte 163 ;\AYWW
+    .byte 14
+    .byte 8, 191 ;\TT
+    .byte $FF
 
 
-        WAIT_TIMINT
+
+    .byte 21, SPKPITCH
+    ; a = \UX (mine)
+        .byte 9, 134
 
 
-overscan_start
-        lda     #$02
-        sta     WSYNC
-        sta     VBLANK
+    ;nine =\NE \Stress \OHIH \NE     
 
-        lda     #(30*76)>>6
-        sta     TIM64T
+        .byte 141, 14, 157, 188
 
+    ;game =\Slow \GE \EYIY \MM 
 
-        SPKOUT  temp
+        .byte 8, 178, 154, 8,140
+        .byte 0
 
 
-        WAIT_TIMINT
+    ;of = \SLOW \UX \VV
+        .byte 8, 134, 166
 
-        jmp     vertical_sync
+    ;chess\CH \EH \EH \SE 
+        .byte 182, 131, 131, 8, 187
+        .byte $FF
+
+
+
+SAY_hi_mum
+
+        ;.byte 21, SPKPITCH       ; slower (default=114)
+
+    ; say= \SE \FAST \EY \EYIY
+
+        .byte 187, 9, 130, 154
+        .byte 4
+
+    ; hi= \HO \SLOW \OHIY
+        .byte 20,32
+        .byte 14, 184, 8, 14, 155
+        .byte 4
+        .byte 20,24        
+
+    ; to = \SLOW \TT \SLOW \IHWW
+        .byte 8, 191, 8, 162
+        ;.byte 4
+
+    ; your = \IY \SLOW \OWRR
+        .byte 191, 8, 128, 153
+
+    ; much= \MM \SLOW \UX \MM
+        .byte 8, 140, 8, 136
+        .byte 21, 80
+        .byte 140
+
+
+        .byte 21, 120
+
+    ; for = \FF \SLOW \OWRR \SLOW \OWRR
+        .byte 186, 8, 153
+        .byte 20,16
+        .byte 148
+        .byte 20,24
+        .byte 21, SPKPITCH
+
+    ; me = \MM \IY \SLOW \IY
+        .byte 140, 128, 8, 128, 128
+
+    .byte $FF
+
+SAY_you_are_a_loser
+
+    ; you = \SLOW \IYUW
+        .byte 8, 160
+
+    ; are= \AWRR
+        .byte 152
+
+    ; a = \UX (mine)
+        .byte 9, 134
+
+    ; lose= \LO \SLOW \UW \FAST \ZZ (R=\SLOW \RR 148)
+        .byte 146, 8, 160, 8, 168, 8, 151
+
+    .byte $FF
+
+SAY_computer_moved
+
+    ; your = \IY \OWRR
+        .byte 128, 153
+    ; mistake= \MM \FAST \IH \SE \TT \EYIY \EK
+        .byte 140, 7, 129, 8, 187, 191, 154, 196
+
+    .byte 2 ;delay
+
+    ; you = \SLOW \IYUW
+        .byte 8, 160
+    ; suck = \SLOW \SE \SLOW \UX \EK
+        .byte 8, 192, 8, 134, 196
+    .byte $FF
+
+
 
 
 

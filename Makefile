@@ -11,7 +11,7 @@ chess.bin: *.asm Makefile FORCE
 	(cd ./gfx && python ConvertChessPieces.py)
 	python tools/grid.py
 	../dasmx/dasm/bin/dasm ./chess.asm -E0 -S -p20 -l./chess.lst -f3 -v1 -s./chess.sym -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
-	open -a /Applications/Stella.app ./chess.bin --args -ld B -rd A
+	open -a /Applications/Stella.app ./chess.bin --args -ld B -rd B -rc atarivox -avoxport /dev/cu.usbserial-A50285BI
 
 force:
 #	echo "force"

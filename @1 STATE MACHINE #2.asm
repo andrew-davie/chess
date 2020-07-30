@@ -216,6 +216,19 @@
                     asl
                     bmi .player
 
+                    lda rnd
+                    and #7
+                    lda #5
+                    asl
+                    tax
+
+        lda     speakRandom,x
+        sta     speech_addr
+        lda     speakRandom+1,x
+        sta     speech_addr+1
+
+
+;                    SPEAK SAY_you_are_a_loser ;computer_moved
 
 .computer           PHASE ComputerMove               ; computer select move
                     rts
@@ -223,6 +236,20 @@
                     
 .player             PHASE StartMoveGen
                     rts
+
+
+
+speakRandom
+
+    .word SAY_you_are_a_loser
+    .word SAY_hi_mum
+    .word SAY_noCPU
+    .word SAY_NQB3
+    .word SAY_mistake
+    .word SAY_feet
+    .word SAY_atari
+    .word SAY_blindfold
+
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -452,6 +479,9 @@ fineAdjustTable EQU fineAdjustBegin - %11110001; NOTE: %11110001 = -15
     ; Iterate the movelist and for all from squares which = drawPieceNumber
     ; then draw a BLANK at that square
     ; do 1 by one, when none found then increment state
+
+
+                   SPEAK SAY_how_about
 
                     lda cursorX12
                     sta squareToDraw

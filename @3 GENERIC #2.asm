@@ -294,6 +294,11 @@ done_sync
 
 
                     lda@PLY moveIndex
+                    bpl .start                      ; no moves - no sorting
+                    rts
+                    
+.start
+
                     sta __n
                     inc __n                         ; n := length(A)
 

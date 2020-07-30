@@ -24,6 +24,8 @@
                     CALL CartInit
                     CALL SetupBanks
                     CALL InitialisePieceSquares
+
+ 
                     jsr ListPlayerMoves;@0
 
 
@@ -43,6 +45,7 @@
                     CALL RainBoard
     ENDIF
     
+                    CALL SayIt ;GameSpeak
                     jsr AiStateMachine
 
 
@@ -75,7 +78,6 @@
     cmp #20
     bcc .notnow                    
 
-                    CALL SayIt ;GameSpeak
                     CALL PositionSprites
 
 
@@ -139,6 +141,9 @@ time64a
         REF quiesce ;✅
 
         VEND ThinkBar
+
+
+
 
 
     ; Check timer!
@@ -650,6 +655,8 @@ ONCEPERFRAME = 40
 
     DEF debug
     SUBROUTINE
+
+
                     rts
 
 

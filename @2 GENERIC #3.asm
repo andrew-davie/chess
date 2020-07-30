@@ -115,6 +115,7 @@ _rts                rts
 
 .bitmapCleared
 
+
                     lda #99
                     sta squareToDraw
 
@@ -155,6 +156,8 @@ _rts                rts
         ;TODO: what about castling...?
 
                     jsr AdjustMaterialPositionalValue;@this
+
+
 
                     lda #0
                     sta previousPiece
