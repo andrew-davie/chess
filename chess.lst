@@ -873,7 +873,7 @@
      34  0000 ????	       00 00	   NO	      =	0
      35  0000 ????	       00 40	   HUMAN      =	64
      36  0000 ????
-     37  0000 ????	       7f ff	   INFINITY   =	$8000-1	;32767
+     37  0000 ????	       6f ff	   INFINITY   =	$7000-1	;32767
      38  0000 ????
      39  0000 ????
      40  0000 ????						; assemble diagnostics. Remove for release.
@@ -1439,7 +1439,7 @@
       8  0400				   _BANK_SLOT SET	0 * 64
       9  0400
       0  0400					      ROMBANK	LOCKED_BANK
-      1  07bb ????				      SEG	ROM_LOCKED_BANK
+      1  07c0 ????				      SEG	ROM_LOCKED_BANK
       2  0400					      ORG	_ORIGIN
       3  0400					      RORG	_BANK_ADDRESS_ORIGIN
       4  0400				   _BANK_START SET	*
@@ -1507,7 +1507,7 @@
      10  0412		       20 59 f5 	      jsr	InitialisePieceSquares
      27  0415
      28  0415
-     29  0415		       20 2b f2 	      jsr	ListPlayerMoves	;@0
+     29  0415		       20 30 f2 	      jsr	ListPlayerMoves	;@0
      30  0418
      31  0418
      32  0418				   .StartFrame
@@ -2165,7 +2165,7 @@
     308  04f4		       09 80		      ora	#[SLOT2]
     309  04f6		       85 3e		      sta	SET_BANK_RAM	;@2		 ; bank row
     310  04f8
-    311  04f8		       20 2b f3 	      jsr	CopyPieceToRowBitmap	;@3
+    311  04f8		       20 30 f3 	      jsr	CopyPieceToRowBitmap	;@3
     312  04fb		       60		      rts
     313  04fc
     314  04fc
@@ -2879,774 +2879,778 @@
       1  05c8		       8d c9 fb 	      sta	[RAM]+savedEvaluation+1
     476  05cb							;}
     477  05cb
-    478  05cb
-    479  05cb		       20 d5 f1 	      jsr	MoveGenX
-    480  05ce
-      0  05ce					      JUMP	Sort	;@1
-      1  05ce				  -	      IF	SLOT_Sort == _BANK_SLOT
-      2  05ce				  -FNAME      SETSTR	Sort
-      3  05ce				  -	      ECHO	""
-      4  05ce				  -	      ECHO	"ERROR: Incompatible slot for jump to function", FNAME
-      5  05ce				  -	      ECHO	"Cannot switch bank in use for ", FNAME
-      6  05ce				  -	      ERR
-      7  05ce					      ENDIF
-      8  05ce		       a9 43		      lda	#BANK_Sort
-      9  05d0		       85 3f		      sta	SET_BANK
-     10  05d2		       4c 5e f6 	      jmp	Sort
-    482  05d5
-    483  05d5
-      0  05d5					      DEF	MoveGenX
-      1  05d5				   SLOT_MoveGenX SET	_BANK_SLOT
-      2  05d5				   BANK_MoveGenX SET	SLOT_MoveGenX + _CURRENT_BANK
-      3  05d5				   MoveGenX
-      4  05d5				   TEMPORARY_VAR SET	Overlay
-      5  05d5				   TEMPORARY_OFFSET SET	0
-      6  05d5				   VAR_BOUNDARY_MoveGenX SET	TEMPORARY_OFFSET
-      7  05d5				   FUNCTION_NAME SET	MoveGenX
-    485  05d5					      SUBROUTINE
-    486  05d5
-    487  05d5		       a9 d9		      lda	#RAMBANK_BOARD
-    488  05d7		       85 3e		      sta	SET_BANK_RAM	;@3		 ; should be hardwired forever, right?
-    489  05d9
-    490  05d9		       a2 64		      ldx	#100
-    491  05db		       d0 02		      bne	.next
-    492  05dd
-      0  05dd					      DEF	MoveReturn
-      1  05dd				   SLOT_MoveReturn SET	_BANK_SLOT
-      2  05dd				   BANK_MoveReturn SET	SLOT_MoveReturn + _CURRENT_BANK
-      3  05dd				   MoveReturn
-      4  05dd				   TEMPORARY_VAR SET	Overlay
-      5  05dd				   TEMPORARY_OFFSET SET	0
-      6  05dd				   VAR_BOUNDARY_MoveReturn SET	TEMPORARY_OFFSET
-      7  05dd				   FUNCTION_NAME SET	MoveReturn
-    494  05dd
-    495  05dd		       a6 93		      ldx	currentSquare
-    496  05df		       ca	   .next      dex
-    497  05e0		       e0 16		      cpx	#22
-    498  05e2		       90 2a		      bcc	.exit
-    499  05e4
-    500  05e4		       bd 79 fc 	      lda	Board,x
-    501  05e7		       f0 f6		      beq	.next
-    502  05e9		       c9 ff		      cmp	#-1
-    503  05eb		       f0 f2		      beq	.next
-    504  05ed		       45 96		      eor	sideToMove
-    505  05ef		       30 ee		      bmi	.next
-    506  05f1
-    507  05f1		       86 93		      stx	currentSquare
-    508  05f3
-    509  05f3		       45 96		      eor	sideToMove
-    510  05f5		       29 ef		      and	#~FLAG_CASTLE	; todo: better part of the move, mmh?
-    511  05f7		       85 92		      sta	currentPiece
-    512  05f9		       29 0f		      and	#PIECE_MASK
-    513  05fb		       a8		      tay
-    514  05fc
-    515  05fc		       b9 1b f2 	      lda	HandlerVectorHI,y
-    516  05ff		       85 b9		      sta	__vector+1
-    517  0601		       b9 13 f2 	      lda	HandlerVectorLO,y
-    518  0604		       85 b8		      sta	__vector
-    519  0606
-    520  0606		       b9 23 f2 	      lda	HandlerVectorBANK,y
-    521  0609		       85 3f		      sta	SET_BANK	;@1
+    478  05cb		       a9 00		      lda	#0
+      0  05cd					      sta@PLY	inCheck	; flags ANY check at a ply (for draw detection)
+      1  05cd		       8d dc fb 	      sta	[RAM]+inCheck
+    480  05d0
+    481  05d0
+    482  05d0		       20 da f1 	      jsr	MoveGenX
+    483  05d3
+      0  05d3					      JUMP	Sort	;@1
+      1  05d3				  -	      IF	SLOT_Sort == _BANK_SLOT
+      2  05d3				  -FNAME      SETSTR	Sort
+      3  05d3				  -	      ECHO	""
+      4  05d3				  -	      ECHO	"ERROR: Incompatible slot for jump to function", FNAME
+      5  05d3				  -	      ECHO	"Cannot switch bank in use for ", FNAME
+      6  05d3				  -	      ERR
+      7  05d3					      ENDIF
+      8  05d3		       a9 43		      lda	#BANK_Sort
+      9  05d5		       85 3f		      sta	SET_BANK
+     10  05d7		       4c 4f f6 	      jmp	Sort
+    485  05da
+    486  05da
+      0  05da					      DEF	MoveGenX
+      1  05da				   SLOT_MoveGenX SET	_BANK_SLOT
+      2  05da				   BANK_MoveGenX SET	SLOT_MoveGenX + _CURRENT_BANK
+      3  05da				   MoveGenX
+      4  05da				   TEMPORARY_VAR SET	Overlay
+      5  05da				   TEMPORARY_OFFSET SET	0
+      6  05da				   VAR_BOUNDARY_MoveGenX SET	TEMPORARY_OFFSET
+      7  05da				   FUNCTION_NAME SET	MoveGenX
+    488  05da					      SUBROUTINE
+    489  05da
+    490  05da		       a9 d9		      lda	#RAMBANK_BOARD
+    491  05dc		       85 3e		      sta	SET_BANK_RAM	;@3		 ; should be hardwired forever, right?
+    492  05de
+    493  05de		       a2 64		      ldx	#100
+    494  05e0		       d0 02		      bne	.next
+    495  05e2
+      0  05e2					      DEF	MoveReturn
+      1  05e2				   SLOT_MoveReturn SET	_BANK_SLOT
+      2  05e2				   BANK_MoveReturn SET	SLOT_MoveReturn + _CURRENT_BANK
+      3  05e2				   MoveReturn
+      4  05e2				   TEMPORARY_VAR SET	Overlay
+      5  05e2				   TEMPORARY_OFFSET SET	0
+      6  05e2				   VAR_BOUNDARY_MoveReturn SET	TEMPORARY_OFFSET
+      7  05e2				   FUNCTION_NAME SET	MoveReturn
+    497  05e2
+    498  05e2		       a6 93		      ldx	currentSquare
+    499  05e4		       ca	   .next      dex
+    500  05e5		       e0 16		      cpx	#22
+    501  05e7		       90 2a		      bcc	.exit
+    502  05e9
+    503  05e9		       bd 79 fc 	      lda	Board,x
+    504  05ec		       f0 f6		      beq	.next
+    505  05ee		       c9 ff		      cmp	#-1
+    506  05f0		       f0 f2		      beq	.next
+    507  05f2		       45 96		      eor	sideToMove
+    508  05f4		       30 ee		      bmi	.next
+    509  05f6
+    510  05f6		       86 93		      stx	currentSquare
+    511  05f8
+    512  05f8		       45 96		      eor	sideToMove
+    513  05fa		       29 ef		      and	#~FLAG_CASTLE	; todo: better part of the move, mmh?
+    514  05fc		       85 92		      sta	currentPiece
+    515  05fe		       29 0f		      and	#PIECE_MASK
+    516  0600		       a8		      tay
+    517  0601
+    518  0601		       b9 20 f2 	      lda	HandlerVectorHI,y
+    519  0604		       85 b9		      sta	__vector+1
+    520  0606		       b9 18 f2 	      lda	HandlerVectorLO,y
+    521  0609		       85 b8		      sta	__vector
     522  060b
-    523  060b		       6c b8 00 	      jmp	(__vector)
-    524  060e
-    525  060e
-    526  060e		       a9 43	   .exit      lda	#BANK_negaMax
-    527  0610		       85 3f		      sta	SET_BANK
-    528  0612		       60		      rts
-    529  0613
-    530  0613					      MAC	handlevec
-    531  0613					      DEF	HandlerVector{1}
-    532  0613
-    533  0613					      .byte	{2}MoveReturn
-    534  0613					      .byte	{2}Handle_WHITE_PAWN	; 1
-    535  0613					      .byte	{2}Handle_BLACK_PAWN	; 2
-    536  0613					      .byte	{2}Handle_KNIGHT	; 3
-    537  0613					      .byte	{2}Handle_BISHOP	; 4
-    538  0613					      .byte	{2}Handle_ROOK	; 5
-    539  0613					      .byte	{2}Handle_QUEEN	; 6
-    540  0613					      .byte	{2}Handle_KING	; 7
-    541  0613					      ENDM		; {label}, {macro}
-    542  0613
-    543  0613
-      0  0613					      HANDLEVEC	LO, <
-      0  0613					      DEF	HandlerVectorLO
-      1  0613				   SLOT_HandlerVectorLO SET	_BANK_SLOT
-      2  0613				   BANK_HandlerVectorLO SET	SLOT_HandlerVectorLO + _CURRENT_BANK
-      3  0613				   HandlerVectorLO
-      4  0613				   TEMPORARY_VAR SET	Overlay
-      5  0613				   TEMPORARY_OFFSET SET	0
-      6  0613				   VAR_BOUNDARY_HandlerVectorLO SET	TEMPORARY_OFFSET
-      7  0613				   FUNCTION_NAME SET	HandlerVectorLO
-      2  0613
-      3  0613		       dd		      .byte.b	<MoveReturn
-      4  0614		       29		      .byte.b	<Handle_WHITE_PAWN
-      5  0615		       f9		      .byte.b	<Handle_BLACK_PAWN
-      6  0616		       a0		      .byte.b	<Handle_KNIGHT
-      7  0617		       49		      .byte.b	<Handle_BISHOP
-      8  0618		       00		      .byte.b	<Handle_ROOK
-      9  0619		       7b		      .byte.b	<Handle_QUEEN
-     10  061a		       6e		      .byte.b	<Handle_KING
-      0  061b					      HANDLEVEC	HI, >
-      0  061b					      DEF	HandlerVectorHI
-      1  061b				   SLOT_HandlerVectorHI SET	_BANK_SLOT
-      2  061b				   BANK_HandlerVectorHI SET	SLOT_HandlerVectorHI + _CURRENT_BANK
-      3  061b				   HandlerVectorHI
-      4  061b				   TEMPORARY_VAR SET	Overlay
-      5  061b				   TEMPORARY_OFFSET SET	0
-      6  061b				   VAR_BOUNDARY_HandlerVectorHI SET	TEMPORARY_OFFSET
-      7  061b				   FUNCTION_NAME SET	HandlerVectorHI
-      2  061b
-      3  061b		       f1		      .byte.b	>MoveReturn
-      4  061c		       f4		      .byte.b	>Handle_WHITE_PAWN
-      5  061d		       f4		      .byte.b	>Handle_BLACK_PAWN
-      6  061e		       f5		      .byte.b	>Handle_KNIGHT
-      7  061f		       f6		      .byte.b	>Handle_BISHOP
-      8  0620		       f4		      .byte.b	>Handle_ROOK
-      9  0621		       f4		      .byte.b	>Handle_QUEEN
-     10  0622		       f5		      .byte.b	>Handle_KING
-      0  0623					      HANDLEVEC	BANK, BANK_
-      0  0623					      DEF	HandlerVectorBANK
-      1  0623				   SLOT_HandlerVectorBANK SET	_BANK_SLOT
-      2  0623				   BANK_HandlerVectorBANK SET	SLOT_HandlerVectorBANK + _CURRENT_BANK
-      3  0623				   HandlerVectorBANK
-      4  0623				   TEMPORARY_VAR SET	Overlay
-      5  0623				   TEMPORARY_OFFSET SET	0
-      6  0623				   VAR_BOUNDARY_HandlerVectorBANK SET	TEMPORARY_OFFSET
-      7  0623				   FUNCTION_NAME SET	HandlerVectorBANK
-      2  0623
-      3  0623		       01		      .byte.b	BANK_MoveReturn
-      4  0624		       46		      .byte.b	BANK_Handle_WHITE_PAWN
-      5  0625		       46		      .byte.b	BANK_Handle_BLACK_PAWN
-      6  0626		       46		      .byte.b	BANK_Handle_KNIGHT
-      7  0627		       46		      .byte.b	BANK_Handle_BISHOP
-      8  0628		       47		      .byte.b	BANK_Handle_ROOK
-      9  0629		       47		      .byte.b	BANK_Handle_QUEEN
-     10  062a		       47		      .byte.b	BANK_Handle_KING
-    547  062b
-    548  062b
-    549  062b							;---------------------------------------------------------------------------------------------------
-    550  062b
-      0  062b					      DEF	ListPlayerMoves
-      1  062b				   SLOT_ListPlayerMoves SET	_BANK_SLOT
-      2  062b				   BANK_ListPlayerMoves SET	SLOT_ListPlayerMoves + _CURRENT_BANK
-      3  062b				   ListPlayerMoves
-      4  062b				   TEMPORARY_VAR SET	Overlay
-      5  062b				   TEMPORARY_OFFSET SET	0
-      6  062b				   VAR_BOUNDARY_ListPlayerMoves SET	TEMPORARY_OFFSET
-      7  062b				   FUNCTION_NAME SET	ListPlayerMoves
-    552  062b					      SUBROUTINE
-    553  062b
-    554  062b							; Build a list of (mostly) valid player moves. The list of all moves is generated, and then
-    555  062b							; these are each verified by making the move and listing all opponent moves. If the opponent
-    556  062b							; can capture the king, the move is invalidated by setting its "from" square to zero.
-    557  062b
-    558  062b							; The movelist is built in the second ply so as not to stomp on the movelist from the computer
-    559  062b							; on the previous response. This allows the player movelist to be generated BEFORE the
-    560  062b							; computer's move has been visually shown on the screen.
-    561  062b
-    562  062b							; This in turn requires the minimum memory for PLY banks to be 3 (computer, player, response)
-    563  062b
-      0  062b					      REF	COMMON_VARS
-      1  062b					      IF	VAREND_COMMON_VARS > TEMPORARY_VAR
-      2  062b				   TEMPORARY_VAR SET	VAREND_COMMON_VARS
-      3  062b					      ENDIF
-      0  062b					      REF	selectmove	;✅
-      1  062b				  -	      IF	VAREND_selectmove > TEMPORARY_VAR
-      2  062b				  -TEMPORARY_VAR SET	VAREND_selectmove
-      3  062b					      ENDIF
-      0  062b					      REF	StartupBankReset	;✅
-      1  062b				  -	      IF	VAREND_StartupBankReset > TEMPORARY_VAR
-      2  062b				  -TEMPORARY_VAR SET	VAREND_StartupBankReset
-      3  062b					      ENDIF
-    567  062b
-      0  062b					      VEND	ListPlayerMoves
-      1  062b
-      2  062b
-      3  062b		       00 b6	   VAREND_ListPlayerMoves =	TEMPORARY_VAR
-      4  062b
-    569  062b
-    570  062b
-    571  062b		       a9 00		      lda	#0
-    572  062d		       85 b1		      sta	__quiesceCapOnly	; gen ALL moves
-    573  062f
-    574  062f		       a9 89		      lda	#RAMBANK_PLY+1
-    575  0631		       85 95		      sta	currentPly
-    576  0633
-    577  0633		       20 a6 f1 	      jsr	GenerateAllMoves	;@this
-    578  0636
-      0  0636					      ldx@PLY	moveIndex
-      1  0636		       ae cf f9 	      ldx	moveIndex
-      0  0639				   .scan      stx@PLY	movePtr
-      1  0639		       8e d0 fb 	      stx	[RAM]+movePtr
-    581  063c
-      0  063c					      CALL	MakeMove	;@1
-      1  063c				  -	      IF	SLOT_MakeMove == _BANK_SLOT
-      2  063c				  -FNAME      SETSTR	MakeMove
-      3  063c				  -	      ECHO	""
-      4  063c				  -	      ECHO	"ERROR: Incompatible slot for call to function", FNAME
-      5  063c				  -	      ECHO	"Cannot switch bank in use for ", FNAME
-      6  063c				  -	      ERR
-      7  063c					      ENDIF
-      8  063c		       a9 43		      lda	#BANK_MakeMove
-      9  063e		       85 3f		      sta	SET_BANK
-     10  0640		       20 7f f4 	      jsr	MakeMove
-    583  0643
-    584  0643		       e6 95		      inc	currentPly
-    585  0645		       20 a6 f1 	      jsr	GenerateAllMoves	;@this
+    523  060b		       b9 28 f2 	      lda	HandlerVectorBANK,y
+    524  060e		       85 3f		      sta	SET_BANK	;@1
+    525  0610
+    526  0610		       6c b8 00 	      jmp	(__vector)
+    527  0613
+    528  0613
+    529  0613		       a9 43	   .exit      lda	#BANK_negaMax
+    530  0615		       85 3f		      sta	SET_BANK
+    531  0617		       60		      rts
+    532  0618
+    533  0618					      MAC	handlevec
+    534  0618					      DEF	HandlerVector{1}
+    535  0618
+    536  0618					      .byte	{2}MoveReturn
+    537  0618					      .byte	{2}Handle_WHITE_PAWN	; 1
+    538  0618					      .byte	{2}Handle_BLACK_PAWN	; 2
+    539  0618					      .byte	{2}Handle_KNIGHT	; 3
+    540  0618					      .byte	{2}Handle_BISHOP	; 4
+    541  0618					      .byte	{2}Handle_ROOK	; 5
+    542  0618					      .byte	{2}Handle_QUEEN	; 6
+    543  0618					      .byte	{2}Handle_KING	; 7
+    544  0618					      ENDM		; {label}, {macro}
+    545  0618
+    546  0618
+      0  0618					      HANDLEVEC	LO, <
+      0  0618					      DEF	HandlerVectorLO
+      1  0618				   SLOT_HandlerVectorLO SET	_BANK_SLOT
+      2  0618				   BANK_HandlerVectorLO SET	SLOT_HandlerVectorLO + _CURRENT_BANK
+      3  0618				   HandlerVectorLO
+      4  0618				   TEMPORARY_VAR SET	Overlay
+      5  0618				   TEMPORARY_OFFSET SET	0
+      6  0618				   VAR_BOUNDARY_HandlerVectorLO SET	TEMPORARY_OFFSET
+      7  0618				   FUNCTION_NAME SET	HandlerVectorLO
+      2  0618
+      3  0618		       e2		      .byte.b	<MoveReturn
+      4  0619		       29		      .byte.b	<Handle_WHITE_PAWN
+      5  061a		       f9		      .byte.b	<Handle_BLACK_PAWN
+      6  061b		       a0		      .byte.b	<Handle_KNIGHT
+      7  061c		       49		      .byte.b	<Handle_BISHOP
+      8  061d		       00		      .byte.b	<Handle_ROOK
+      9  061e		       7b		      .byte.b	<Handle_QUEEN
+     10  061f		       6e		      .byte.b	<Handle_KING
+      0  0620					      HANDLEVEC	HI, >
+      0  0620					      DEF	HandlerVectorHI
+      1  0620				   SLOT_HandlerVectorHI SET	_BANK_SLOT
+      2  0620				   BANK_HandlerVectorHI SET	SLOT_HandlerVectorHI + _CURRENT_BANK
+      3  0620				   HandlerVectorHI
+      4  0620				   TEMPORARY_VAR SET	Overlay
+      5  0620				   TEMPORARY_OFFSET SET	0
+      6  0620				   VAR_BOUNDARY_HandlerVectorHI SET	TEMPORARY_OFFSET
+      7  0620				   FUNCTION_NAME SET	HandlerVectorHI
+      2  0620
+      3  0620		       f1		      .byte.b	>MoveReturn
+      4  0621		       f4		      .byte.b	>Handle_WHITE_PAWN
+      5  0622		       f4		      .byte.b	>Handle_BLACK_PAWN
+      6  0623		       f5		      .byte.b	>Handle_KNIGHT
+      7  0624		       f6		      .byte.b	>Handle_BISHOP
+      8  0625		       f4		      .byte.b	>Handle_ROOK
+      9  0626		       f4		      .byte.b	>Handle_QUEEN
+     10  0627		       f5		      .byte.b	>Handle_KING
+      0  0628					      HANDLEVEC	BANK, BANK_
+      0  0628					      DEF	HandlerVectorBANK
+      1  0628				   SLOT_HandlerVectorBANK SET	_BANK_SLOT
+      2  0628				   BANK_HandlerVectorBANK SET	SLOT_HandlerVectorBANK + _CURRENT_BANK
+      3  0628				   HandlerVectorBANK
+      4  0628				   TEMPORARY_VAR SET	Overlay
+      5  0628				   TEMPORARY_OFFSET SET	0
+      6  0628				   VAR_BOUNDARY_HandlerVectorBANK SET	TEMPORARY_OFFSET
+      7  0628				   FUNCTION_NAME SET	HandlerVectorBANK
+      2  0628
+      3  0628		       01		      .byte.b	BANK_MoveReturn
+      4  0629		       46		      .byte.b	BANK_Handle_WHITE_PAWN
+      5  062a		       46		      .byte.b	BANK_Handle_BLACK_PAWN
+      6  062b		       46		      .byte.b	BANK_Handle_KNIGHT
+      7  062c		       46		      .byte.b	BANK_Handle_BISHOP
+      8  062d		       47		      .byte.b	BANK_Handle_ROOK
+      9  062e		       47		      .byte.b	BANK_Handle_QUEEN
+     10  062f		       47		      .byte.b	BANK_Handle_KING
+    550  0630
+    551  0630
+    552  0630							;---------------------------------------------------------------------------------------------------
+    553  0630
+      0  0630					      DEF	ListPlayerMoves
+      1  0630				   SLOT_ListPlayerMoves SET	_BANK_SLOT
+      2  0630				   BANK_ListPlayerMoves SET	SLOT_ListPlayerMoves + _CURRENT_BANK
+      3  0630				   ListPlayerMoves
+      4  0630				   TEMPORARY_VAR SET	Overlay
+      5  0630				   TEMPORARY_OFFSET SET	0
+      6  0630				   VAR_BOUNDARY_ListPlayerMoves SET	TEMPORARY_OFFSET
+      7  0630				   FUNCTION_NAME SET	ListPlayerMoves
+    555  0630					      SUBROUTINE
+    556  0630
+    557  0630							; Build a list of (mostly) valid player moves. The list of all moves is generated, and then
+    558  0630							; these are each verified by making the move and listing all opponent moves. If the opponent
+    559  0630							; can capture the king, the move is invalidated by setting its "from" square to zero.
+    560  0630
+    561  0630							; The movelist is built in the second ply so as not to stomp on the movelist from the computer
+    562  0630							; on the previous response. This allows the player movelist to be generated BEFORE the
+    563  0630							; computer's move has been visually shown on the screen.
+    564  0630
+    565  0630							; This in turn requires the minimum memory for PLY banks to be 3 (computer, player, response)
+    566  0630
+      0  0630					      REF	COMMON_VARS
+      1  0630					      IF	VAREND_COMMON_VARS > TEMPORARY_VAR
+      2  0630				   TEMPORARY_VAR SET	VAREND_COMMON_VARS
+      3  0630					      ENDIF
+      0  0630					      REF	selectmove	;✅
+      1  0630				  -	      IF	VAREND_selectmove > TEMPORARY_VAR
+      2  0630				  -TEMPORARY_VAR SET	VAREND_selectmove
+      3  0630					      ENDIF
+      0  0630					      REF	StartupBankReset	;✅
+      1  0630				  -	      IF	VAREND_StartupBankReset > TEMPORARY_VAR
+      2  0630				  -TEMPORARY_VAR SET	VAREND_StartupBankReset
+      3  0630					      ENDIF
+    570  0630
+      0  0630					      VEND	ListPlayerMoves
+      1  0630
+      2  0630
+      3  0630		       00 b6	   VAREND_ListPlayerMoves =	TEMPORARY_VAR
+      4  0630
+    572  0630
+    573  0630
+    574  0630		       a9 00		      lda	#0
+    575  0632		       85 b1		      sta	__quiesceCapOnly	; gen ALL moves
+    576  0634
+    577  0634		       a9 89		      lda	#RAMBANK_PLY+1
+    578  0636		       85 95		      sta	currentPly
+    579  0638
+    580  0638		       20 a6 f1 	      jsr	GenerateAllMoves	;@this
+    581  063b
+      0  063b					      ldx@PLY	moveIndex
+      1  063b		       ae cf f9 	      ldx	moveIndex
+      0  063e				   .scan      stx@PLY	movePtr
+      1  063e		       8e d0 fb 	      stx	[RAM]+movePtr
+    584  0641
+      0  0641					      CALL	MakeMove	;@1
+      1  0641				  -	      IF	SLOT_MakeMove == _BANK_SLOT
+      2  0641				  -FNAME      SETSTR	MakeMove
+      3  0641				  -	      ECHO	""
+      4  0641				  -	      ECHO	"ERROR: Incompatible slot for call to function", FNAME
+      5  0641				  -	      ECHO	"Cannot switch bank in use for ", FNAME
+      6  0641				  -	      ERR
+      7  0641					      ENDIF
+      8  0641		       a9 43		      lda	#BANK_MakeMove
+      9  0643		       85 3f		      sta	SET_BANK
+     10  0645		       20 7f f4 	      jsr	MakeMove
     586  0648
-    587  0648		       c6 95		      dec	currentPly
-    588  064a
-    589  064a		       20 88 f2 	      jsr	unmakeMove	;@this
-    590  064d
-    591  064d		       a5 a1		      lda	flagCheck
-    592  064f		       f0 08		      beq	.next
-    593  0651
-      0  0651					      ldx@PLY	movePtr
-      1  0651		       ae d0 f9 	      ldx	movePtr
-    595  0654		       a9 00		      lda	#0
-      0  0656					      sta@PLY	MoveFrom,x	; invalidate move (still in check!)
-      1  0656		       9d 00 fa 	      sta	[RAM]+MoveFrom,x
-    597  0659
-      0  0659				   .next      ldx@PLY	movePtr
-      1  0659		       ae d0 f9 	      ldx	movePtr
-    599  065c		       ca		      dex
-    600  065d		       10 da		      bpl	.scan
-    601  065f
-    602  065f		       60		      rts
-    603  0660
-    604  0660
-    605  0660							;---------------------------------------------------------------------------------------------------
-    606  0660
-      0  0660					      DEF	AddMove
-      1  0660				   SLOT_AddMove SET	_BANK_SLOT
-      2  0660				   BANK_AddMove SET	SLOT_AddMove + _CURRENT_BANK
-      3  0660				   AddMove
-      4  0660				   TEMPORARY_VAR SET	Overlay
-      5  0660				   TEMPORARY_OFFSET SET	0
-      6  0660				   VAR_BOUNDARY_AddMove SET	TEMPORARY_OFFSET
-      7  0660				   FUNCTION_NAME SET	AddMove
-    608  0660					      SUBROUTINE
-    609  0660
-      0  0660					      REF	Handle_KING	;✅
-      1  0660					      IF	VAREND_Handle_KING > TEMPORARY_VAR
-      2  0660				   TEMPORARY_VAR SET	VAREND_Handle_KING
-      3  0660					      ENDIF
-      0  0660					      REF	Handle_QUEEN	;✅
-      1  0660				  -	      IF	VAREND_Handle_QUEEN > TEMPORARY_VAR
-      2  0660				  -TEMPORARY_VAR SET	VAREND_Handle_QUEEN
-      3  0660					      ENDIF
-      0  0660					      REF	Handle_ROOK	;✅
-      1  0660				  -	      IF	VAREND_Handle_ROOK > TEMPORARY_VAR
-      2  0660				  -TEMPORARY_VAR SET	VAREND_Handle_ROOK
-      3  0660					      ENDIF
-      0  0660					      REF	Handle_BISHOP	;✅
-      1  0660				  -	      IF	VAREND_Handle_BISHOP > TEMPORARY_VAR
-      2  0660				  -TEMPORARY_VAR SET	VAREND_Handle_BISHOP
-      3  0660					      ENDIF
-      0  0660					      REF	Handle_KNIGHT	;✅
-      1  0660				  -	      IF	VAREND_Handle_KNIGHT > TEMPORARY_VAR
-      2  0660				  -TEMPORARY_VAR SET	VAREND_Handle_KNIGHT
-      3  0660					      ENDIF
-      0  0660					      REF	Handle_WHITE_PAWN	;✅
-      1  0660				  -	      IF	VAREND_Handle_WHITE_PAWN > TEMPORARY_VAR
-      2  0660				  -TEMPORARY_VAR SET	VAREND_Handle_WHITE_PAWN
-      3  0660					      ENDIF
-      0  0660					      REF	Handle_BLACK_PAWN	;✅
-      1  0660				  -	      IF	VAREND_Handle_BLACK_PAWN > TEMPORARY_VAR
-      2  0660				  -TEMPORARY_VAR SET	VAREND_Handle_BLACK_PAWN
-      3  0660					      ENDIF
-    617  0660
-      0  0660					      VEND	AddMove
-      1  0660
-      2  0660
-      3  0660		       00 ba	   VAREND_AddMove =	TEMPORARY_VAR
-      4  0660
-    619  0660
-    620  0660							; add square in y register to movelist as destination (X12 format)
-    621  0660							; [y]		     to square (X12)
-    622  0660							; currentSquare     from square (X12)
-    623  0660							; currentPiece      piece.
-    624  0660							;   ENPASSANT flag set if pawn double-moving off opening rank
-    625  0660							; capture	     captured piece
-    626  0660
-    627  0660
-    628  0660		       a5 a0		      lda	capture
-    629  0662		       d0 04		      bne	.always
-    630  0664		       a5 b1		      lda	__quiesceCapOnly
-    631  0666		       d0 1c		      bne	.abort
-    632  0668
-    633  0668		       98	   .always    tya
-    634  0669		       aa		      tax
-    635  066a
-      0  066a					      ldy@PLY	moveIndex
-      1  066a		       ac cf f9 	      ldy	moveIndex
-    637  066d		       c8		      iny
-      0  066e					      sty@PLY	moveIndex
-      1  066e		       8c cf fb 	      sty	[RAM]+moveIndex
-    639  0671
-      0  0671					      sta@PLY	MoveTo,y
-      1  0671		       99 64 fa 	      sta	[RAM]+MoveTo,y
-    641  0674		       a5 93		      lda	currentSquare
-      0  0676					      sta@PLY	MoveFrom,y
-      1  0676		       99 00 fa 	      sta	[RAM]+MoveFrom,y
-    643  0679		       a5 92		      lda	currentPiece
-      0  067b					      sta@PLY	MovePiece,y
-      1  067b		       99 00 fb 	      sta	[RAM]+MovePiece,y
-    645  067e		       a5 a0		      lda	capture
-      0  0680					      sta@PLY	MoveCapture,y
-      1  0680		       99 64 fb 	      sta	[RAM]+MoveCapture,y
-    647  0683		       60		      rts
-    648  0684
-    649  0684		       98	   .abort     tya
-    650  0685		       aa		      tax
-    651  0686		       60		      rts
-    652  0687
-    653  0687
-    654  0687							;---------------------------------------------------------------------------------------------------
-    655  0687
-      0  0687					      DEF	debug
-      1  0687				   SLOT_debug SET	_BANK_SLOT
-      2  0687				   BANK_debug SET	SLOT_debug + _CURRENT_BANK
-      3  0687				   debug
-      4  0687				   TEMPORARY_VAR SET	Overlay
-      5  0687				   TEMPORARY_OFFSET SET	0
-      6  0687				   VAR_BOUNDARY_debug SET	TEMPORARY_OFFSET
-      7  0687				   FUNCTION_NAME SET	debug
-    657  0687					      SUBROUTINE
-    658  0687
-    659  0687
-    660  0687		       60		      rts
-    661  0688
-    662  0688
-    663  0688							;---------------------------------------------------------------------------------------------------
-    664  0688
-      0  0688					      DEF	unmakeMove
-      1  0688				   SLOT_unmakeMove SET	_BANK_SLOT
-      2  0688				   BANK_unmakeMove SET	SLOT_unmakeMove + _CURRENT_BANK
-      3  0688				   unmakeMove
-      4  0688				   TEMPORARY_VAR SET	Overlay
-      5  0688				   TEMPORARY_OFFSET SET	0
-      6  0688				   VAR_BOUNDARY_unmakeMove SET	TEMPORARY_OFFSET
-      7  0688				   FUNCTION_NAME SET	unmakeMove
-    666  0688					      SUBROUTINE
-    667  0688
-      0  0688					      REF	selectmove	;✅
-      1  0688					      IF	VAREND_selectmove > TEMPORARY_VAR
-      2  0688				   TEMPORARY_VAR SET	VAREND_selectmove
-      3  0688					      ENDIF
-      0  0688					      REF	ListPlayerMoves	;✅
-      1  0688				  -	      IF	VAREND_ListPlayerMoves > TEMPORARY_VAR
-      2  0688				  -TEMPORARY_VAR SET	VAREND_ListPlayerMoves
-      3  0688					      ENDIF
-      0  0688					      REF	quiesce	;✅
-      1  0688					      IF	VAREND_quiesce > TEMPORARY_VAR
-      2  0688				   TEMPORARY_VAR SET	VAREND_quiesce
-      3  0688					      ENDIF
-      0  0688					      REF	negaMax	;✅
-      1  0688				  -	      IF	VAREND_negaMax > TEMPORARY_VAR
-      2  0688				  -TEMPORARY_VAR SET	VAREND_negaMax
-      3  0688					      ENDIF
-      0  0688					      VEND	unmakeMove
-      1  0688
-      2  0688
-      3  0688		       00 b8	   VAREND_unmakeMove =	TEMPORARY_VAR
-      4  0688
-    673  0688
-    674  0688							; restore the board evaluation to what it was at the start of this ply
-    675  0688							; TODO: note: moved flag seems wrong on restoration??
-    676  0688
-    677  0688		       a5 95		      lda	currentPly
-    678  068a		       85 3e		      sta	SET_BANK_RAM	;@2
-    679  068c		       a2 d9		      ldx	#RAMBANK_BOARD
-    680  068e		       86 3e		      stx	SET_BANK_RAM	;@3
-    681  0690
-      0  0690					      lda@PLY	savedEvaluation
-      1  0690		       ad c8 f9 	      lda	savedEvaluation
-    683  0693		       85 90		      sta	Evaluation
-      0  0695					      lda@PLY	savedEvaluation+1
-      1  0695		       ad c9 f9 	      lda	savedEvaluation+1
-    685  0698		       85 91		      sta	Evaluation+1
-    686  069a
-      0  069a					      lda@PLY	virtualKingSquare
-      1  069a		       ad da f9 	      lda	virtualKingSquare
-    688  069d		       85 a3		      sta	vkSquare
-      0  069f					      lda@PLY	virtualKingSquare+1
-      1  069f		       ad db f9 	      lda	virtualKingSquare+1
-    690  06a2		       85 a4		      sta	vkSquare+1
-    691  06a4
-      0  06a4					      lda@PLY	enPassantSquare
-      1  06a4		       ad ca f9 	      lda	enPassantSquare
-    693  06a7		       85 94		      sta	enPassantPawn
+    587  0648		       e6 95		      inc	currentPly
+    588  064a		       20 a6 f1 	      jsr	GenerateAllMoves	;@this
+    589  064d
+    590  064d		       c6 95		      dec	currentPly
+    591  064f
+    592  064f		       20 8d f2 	      jsr	unmakeMove	;@this
+    593  0652
+    594  0652		       a5 a1		      lda	flagCheck
+    595  0654		       f0 08		      beq	.next
+    596  0656
+      0  0656					      ldx@PLY	movePtr
+      1  0656		       ae d0 f9 	      ldx	movePtr
+    598  0659		       a9 00		      lda	#0
+      0  065b					      sta@PLY	MoveFrom,x	; invalidate move (still in check!)
+      1  065b		       9d 00 fa 	      sta	[RAM]+MoveFrom,x
+    600  065e
+      0  065e				   .next      ldx@PLY	movePtr
+      1  065e		       ae d0 f9 	      ldx	movePtr
+    602  0661		       ca		      dex
+    603  0662		       10 da		      bpl	.scan
+    604  0664
+    605  0664		       60		      rts
+    606  0665
+    607  0665
+    608  0665							;---------------------------------------------------------------------------------------------------
+    609  0665
+      0  0665					      DEF	AddMove
+      1  0665				   SLOT_AddMove SET	_BANK_SLOT
+      2  0665				   BANK_AddMove SET	SLOT_AddMove + _CURRENT_BANK
+      3  0665				   AddMove
+      4  0665				   TEMPORARY_VAR SET	Overlay
+      5  0665				   TEMPORARY_OFFSET SET	0
+      6  0665				   VAR_BOUNDARY_AddMove SET	TEMPORARY_OFFSET
+      7  0665				   FUNCTION_NAME SET	AddMove
+    611  0665					      SUBROUTINE
+    612  0665
+      0  0665					      REF	Handle_KING	;✅
+      1  0665					      IF	VAREND_Handle_KING > TEMPORARY_VAR
+      2  0665				   TEMPORARY_VAR SET	VAREND_Handle_KING
+      3  0665					      ENDIF
+      0  0665					      REF	Handle_QUEEN	;✅
+      1  0665				  -	      IF	VAREND_Handle_QUEEN > TEMPORARY_VAR
+      2  0665				  -TEMPORARY_VAR SET	VAREND_Handle_QUEEN
+      3  0665					      ENDIF
+      0  0665					      REF	Handle_ROOK	;✅
+      1  0665				  -	      IF	VAREND_Handle_ROOK > TEMPORARY_VAR
+      2  0665				  -TEMPORARY_VAR SET	VAREND_Handle_ROOK
+      3  0665					      ENDIF
+      0  0665					      REF	Handle_BISHOP	;✅
+      1  0665				  -	      IF	VAREND_Handle_BISHOP > TEMPORARY_VAR
+      2  0665				  -TEMPORARY_VAR SET	VAREND_Handle_BISHOP
+      3  0665					      ENDIF
+      0  0665					      REF	Handle_KNIGHT	;✅
+      1  0665				  -	      IF	VAREND_Handle_KNIGHT > TEMPORARY_VAR
+      2  0665				  -TEMPORARY_VAR SET	VAREND_Handle_KNIGHT
+      3  0665					      ENDIF
+      0  0665					      REF	Handle_WHITE_PAWN	;✅
+      1  0665				  -	      IF	VAREND_Handle_WHITE_PAWN > TEMPORARY_VAR
+      2  0665				  -TEMPORARY_VAR SET	VAREND_Handle_WHITE_PAWN
+      3  0665					      ENDIF
+      0  0665					      REF	Handle_BLACK_PAWN	;✅
+      1  0665				  -	      IF	VAREND_Handle_BLACK_PAWN > TEMPORARY_VAR
+      2  0665				  -TEMPORARY_VAR SET	VAREND_Handle_BLACK_PAWN
+      3  0665					      ENDIF
+    620  0665
+      0  0665					      VEND	AddMove
+      1  0665
+      2  0665
+      3  0665		       00 ba	   VAREND_AddMove =	TEMPORARY_VAR
+      4  0665
+    622  0665
+    623  0665							; add square in y register to movelist as destination (X12 format)
+    624  0665							; [y]		     to square (X12)
+    625  0665							; currentSquare     from square (X12)
+    626  0665							; currentPiece      piece.
+    627  0665							;   ENPASSANT flag set if pawn double-moving off opening rank
+    628  0665							; capture	     captured piece
+    629  0665
+    630  0665
+    631  0665		       a5 a0		      lda	capture
+    632  0667		       d0 04		      bne	.always
+    633  0669		       a5 b1		      lda	__quiesceCapOnly
+    634  066b		       d0 1c		      bne	.abort
+    635  066d
+    636  066d		       98	   .always    tya
+    637  066e		       aa		      tax
+    638  066f
+      0  066f					      ldy@PLY	moveIndex
+      1  066f		       ac cf f9 	      ldy	moveIndex
+    640  0672		       c8		      iny
+      0  0673					      sty@PLY	moveIndex
+      1  0673		       8c cf fb 	      sty	[RAM]+moveIndex
+    642  0676
+      0  0676					      sta@PLY	MoveTo,y
+      1  0676		       99 64 fa 	      sta	[RAM]+MoveTo,y
+    644  0679		       a5 93		      lda	currentSquare
+      0  067b					      sta@PLY	MoveFrom,y
+      1  067b		       99 00 fa 	      sta	[RAM]+MoveFrom,y
+    646  067e		       a5 92		      lda	currentPiece
+      0  0680					      sta@PLY	MovePiece,y
+      1  0680		       99 00 fb 	      sta	[RAM]+MovePiece,y
+    648  0683		       a5 a0		      lda	capture
+      0  0685					      sta@PLY	MoveCapture,y
+      1  0685		       99 64 fb 	      sta	[RAM]+MoveCapture,y
+    650  0688		       60		      rts
+    651  0689
+    652  0689		       98	   .abort     tya
+    653  068a		       aa		      tax
+    654  068b		       60		      rts
+    655  068c
+    656  068c
+    657  068c							;---------------------------------------------------------------------------------------------------
+    658  068c
+      0  068c					      DEF	debug
+      1  068c				   SLOT_debug SET	_BANK_SLOT
+      2  068c				   BANK_debug SET	SLOT_debug + _CURRENT_BANK
+      3  068c				   debug
+      4  068c				   TEMPORARY_VAR SET	Overlay
+      5  068c				   TEMPORARY_OFFSET SET	0
+      6  068c				   VAR_BOUNDARY_debug SET	TEMPORARY_OFFSET
+      7  068c				   FUNCTION_NAME SET	debug
+    660  068c					      SUBROUTINE
+    661  068c
+    662  068c
+    663  068c		       60		      rts
+    664  068d
+    665  068d
+    666  068d							;---------------------------------------------------------------------------------------------------
+    667  068d
+      0  068d					      DEF	unmakeMove
+      1  068d				   SLOT_unmakeMove SET	_BANK_SLOT
+      2  068d				   BANK_unmakeMove SET	SLOT_unmakeMove + _CURRENT_BANK
+      3  068d				   unmakeMove
+      4  068d				   TEMPORARY_VAR SET	Overlay
+      5  068d				   TEMPORARY_OFFSET SET	0
+      6  068d				   VAR_BOUNDARY_unmakeMove SET	TEMPORARY_OFFSET
+      7  068d				   FUNCTION_NAME SET	unmakeMove
+    669  068d					      SUBROUTINE
+    670  068d
+      0  068d					      REF	selectmove	;✅
+      1  068d					      IF	VAREND_selectmove > TEMPORARY_VAR
+      2  068d				   TEMPORARY_VAR SET	VAREND_selectmove
+      3  068d					      ENDIF
+      0  068d					      REF	ListPlayerMoves	;✅
+      1  068d				  -	      IF	VAREND_ListPlayerMoves > TEMPORARY_VAR
+      2  068d				  -TEMPORARY_VAR SET	VAREND_ListPlayerMoves
+      3  068d					      ENDIF
+      0  068d					      REF	quiesce	;✅
+      1  068d					      IF	VAREND_quiesce > TEMPORARY_VAR
+      2  068d				   TEMPORARY_VAR SET	VAREND_quiesce
+      3  068d					      ENDIF
+      0  068d					      REF	negaMax	;✅
+      1  068d				  -	      IF	VAREND_negaMax > TEMPORARY_VAR
+      2  068d				  -TEMPORARY_VAR SET	VAREND_negaMax
+      3  068d					      ENDIF
+      0  068d					      VEND	unmakeMove
+      1  068d
+      2  068d
+      3  068d		       00 b8	   VAREND_unmakeMove =	TEMPORARY_VAR
+      4  068d
+    676  068d
+    677  068d							; restore the board evaluation to what it was at the start of this ply
+    678  068d							; TODO: note: moved flag seems wrong on restoration??
+    679  068d
+    680  068d		       a5 95		      lda	currentPly
+    681  068f		       85 3e		      sta	SET_BANK_RAM	;@2
+    682  0691		       a2 d9		      ldx	#RAMBANK_BOARD
+    683  0693		       86 3e		      stx	SET_BANK_RAM	;@3
+    684  0695
+      0  0695					      lda@PLY	savedEvaluation
+      1  0695		       ad c8 f9 	      lda	savedEvaluation
+    686  0698		       85 90		      sta	Evaluation
+      0  069a					      lda@PLY	savedEvaluation+1
+      1  069a		       ad c9 f9 	      lda	savedEvaluation+1
+    688  069d		       85 91		      sta	Evaluation+1
+    689  069f
+      0  069f					      lda@PLY	virtualKingSquare
+      1  069f		       ad da f9 	      lda	virtualKingSquare
+    691  06a2		       85 a3		      sta	vkSquare
+      0  06a4					      lda@PLY	virtualKingSquare+1
+      1  06a4		       ad db f9 	      lda	virtualKingSquare+1
+    693  06a7		       85 a4		      sta	vkSquare+1
     694  06a9
-      0  06a9					      ldx@PLY	movePtr
-      1  06a9		       ae d0 f9 	      ldx	movePtr
-      0  06ac					      ldy@PLY	MoveFrom,x
-      1  06ac		       bc 00 f8 	      ldy	MoveFrom,x
-      0  06af					      lda@PLY	restorePiece
-      1  06af		       ad d9 f9 	      lda	restorePiece
-      0  06b2					      sta@RAM	Board,y
-      1  06b2		       99 79 fe 	      sta	[RAM]+Board,y
-    699  06b5
-      0  06b5					      ldy@PLY	MoveTo,x
-      1  06b5		       bc 64 f8 	      ldy	MoveTo,x
-      0  06b8					      lda@PLY	capturedPiece
-      1  06b8		       ad cb f9 	      lda	capturedPiece
-      0  06bb					      sta@RAM	Board,y
-      1  06bb		       99 79 fe 	      sta	[RAM]+Board,y
-    703  06be
-    704  06be
-    705  06be							; See if there are any 'secondary' pieces that moved
-    706  06be							; here we're dealing with reverting a castling or enPassant move
-    707  06be
-      0  06be					      lda@PLY	secondaryPiece
-      1  06be		       ad cc f9 	      lda	secondaryPiece
-    709  06c1		       f0 10		      beq	.noSecondary
-      0  06c3					      ldx@PLY	secondarySquare
-      1  06c3		       ae cd f9 	      ldx	secondarySquare
-      0  06c6					      sta@RAM	Board,x	; put piece back
-      1  06c6		       9d 79 fe 	      sta	[RAM]+Board,x
-      0  06c9					      ldy@PLY	secondaryBlank
-      1  06c9		       ac ce f9 	      ldy	secondaryBlank
-    713  06cc		       f0 05		      beq	.noSecondary	; enpassant - no blanker square
-    714  06ce		       a9 00		      lda	#0
-      0  06d0					      sta@RAM	Board,y	; blank piece origin
-      1  06d0		       99 79 fe 	      sta	[RAM]+Board,y
-    716  06d3
-      0  06d3				   .noSecondary SWAP
-      1  06d3
-      2  06d3		       a5 96		      lda	sideToMove
-      3  06d5		       49 c0		      eor	#SWAP_SIDE|HUMAN
-      4  06d7		       85 96		      sta	sideToMove
-      5  06d9
-    718  06d9		       60		      rts
-    719  06da
-    720  06da
-    721  06da							;---------------------------------------------------------------------------------------------------
-    722  06da
-      0  06da					      DEF	showMoveCaptures
-      1  06da				   SLOT_showMoveCaptures SET	_BANK_SLOT
-      2  06da				   BANK_showMoveCaptures SET	SLOT_showMoveCaptures + _CURRENT_BANK
-      3  06da				   showMoveCaptures
-      4  06da				   TEMPORARY_VAR SET	Overlay
-      5  06da				   TEMPORARY_OFFSET SET	0
-      6  06da				   VAR_BOUNDARY_showMoveCaptures SET	TEMPORARY_OFFSET
-      7  06da				   FUNCTION_NAME SET	showMoveCaptures
-    724  06da					      SUBROUTINE
-    725  06da
-      0  06da					      REF	aiShowMoveCaptures	;✅
-      1  06da					      IF	VAREND_aiShowMoveCaptures > TEMPORARY_VAR
-      2  06da				   TEMPORARY_VAR SET	VAREND_aiShowMoveCaptures
-      3  06da					      ENDIF
-    727  06da
-      0  06da					      VAR	__toSquareX12, 1
-      1  06da		       00 a8	   __toSquareX12 =	TEMPORARY_VAR
-      2  06da				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  06da
-      4  06da				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  06da				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  06da				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  06da					      ENDIF
-      8  06da				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
-      9  06da				  -VNAME      SETSTR	__toSquareX12
-     10  06da				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
-     11  06da				  -	      ERR
-     12  06da					      ENDIF
-      0  06da					      VAR	__fromPiece, 1
-      1  06da		       00 a9	   __fromPiece =	TEMPORARY_VAR
-      2  06da				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  06da
-      4  06da				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  06da				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  06da				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  06da					      ENDIF
-      8  06da				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
-      9  06da				  -VNAME      SETSTR	__fromPiece
-     10  06da				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
-     11  06da				  -	      ERR
-     12  06da					      ENDIF
-      0  06da					      VAR	__aiMoveIndex, 1
-      1  06da		       00 aa	   __aiMoveIndex =	TEMPORARY_VAR
-      2  06da				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  06da
-      4  06da				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  06da				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  06da				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  06da					      ENDIF
-      8  06da				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
-      9  06da				  -VNAME      SETSTR	__aiMoveIndex
-     10  06da				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
-     11  06da				  -	      ERR
-     12  06da					      ENDIF
-    731  06da
-      0  06da					      VEND	showMoveCaptures
-      1  06da
-      2  06da
-      3  06da		       00 ab	   VAREND_showMoveCaptures =	TEMPORARY_VAR
-      4  06da
-    733  06da
-    734  06da							; place a marker on the board for any square matching the piece
-    735  06da							; EXCEPT for squares which are occupied (we'll flash those later)
-    736  06da							; x = movelist item # being checked
-    737  06da
-    738  06da
-    739  06da		       a6 8e	   .next      ldx	aiMoveIndex
-    740  06dc		       86 aa		      stx	__aiMoveIndex
-    741  06de		       30 4a		      bmi	.skip	; no moves in list
-    742  06e0
-    743  06e0		       ad 84 02 	      lda	INTIM
-    744  06e3		       c9 14		      cmp	#20
-    745  06e5		       90 43		      bcc	.skip
-    746  06e7
-    747  06e7		       c6 8e		      dec	aiMoveIndex
-    748  06e9
-    749  06e9		       a9 89		      lda	#RAMBANK_PLY+1
-    750  06eb		       85 3e		      sta	SET_BANK_RAM
-      0  06ed					      lda@PLY	MoveFrom,x
-      1  06ed		       bd 00 f8 	      lda	MoveFrom,x
-    752  06f0		       c5 86		      cmp	fromX12
-    753  06f2		       d0 e6		      bne	.next
-    754  06f4
-      0  06f4					      lda@PLY	MoveTo,x
-      1  06f4		       bd 64 f8 	      lda	MoveTo,x
-    756  06f7		       85 a8		      sta	__toSquareX12
-    757  06f9		       a8		      tay
-    758  06fa
-    759  06fa		       a9 d9		      lda	#RAMBANK_BOARD
-    760  06fc		       85 3e		      sta	SET_BANK_RAM	;@3
-    761  06fe		       b9 79 fc 	      lda	Board,y
-    762  0701		       29 0f		      and	#PIECE_MASK
-    763  0703		       f0 d5		      beq	.next
-    764  0705
-    765  0705							; There's something on the board at destination, so it's a capture
-    766  0705							; Let's see if we are doing a pawn promote...
-    767  0705
-    768  0705		       a4 86		      ldy	fromX12
-    769  0707
-    770  0707		       a9 d9		      lda	#RAMBANK_BOARD
-    771  0709		       85 3e		      sta	SET_BANK_RAM	;@3
-    772  070b		       b9 79 fc 	      lda	Board,y
-    773  070e		       85 a9		      sta	__fromPiece
-    774  0710
-    775  0710		       a9 89		      lda	#RAMBANK_PLY+1
-    776  0712		       85 3e		      sta	SET_BANK_RAM
-      0  0714					      lda@PLY	MovePiece,x
-      1  0714		       bd 00 f9 	      lda	MovePiece,x
-    778  0717		       45 a9		      eor	__fromPiece
-    779  0719		       29 0f		      and	#PIECE_MASK
-    780  071b		       f0 06		      beq	.legit	; from == to, so not a promote
-    781  071d
-    782  071d							; Have detected a promotion duplicate - skip all 3 of them
-    783  071d							; TODO: this will need reworking once moves are sorted
-    784  071d
-    785  071d		       c6 8e		      dec	aiMoveIndex	; skip "KBRQ" promotes
-    786  071f		       c6 8e		      dec	aiMoveIndex
-    787  0721		       c6 8e		      dec	aiMoveIndex
-    788  0723
-    789  0723				   .legit
-    790  0723
-    791  0723							;TIMECHECK CopySinglePiece, restoreIndex     ; not enough time to draw
-    792  0723
-    793  0723		       a5 a8		      lda	__toSquareX12
-    794  0725		       85 81		      sta	squareToDraw
-    795  0727
-    796  0727							; WARNING - local variables will not survive the following call...!
-    797  0727		       20 c1 f0 	      jsr	CopySinglePiece	;@0
-    798  072a
-    799  072a		       60	   .skip      rts
-    800  072b
-    801  072b
-    802  072b							;---------------------------------------------------------------------------------------------------
-    803  072b
-      0  072b					      DEF	CopyPieceToRowBitmap
-      1  072b				   SLOT_CopyPieceToRowBitmap SET	_BANK_SLOT
-      2  072b				   BANK_CopyPieceToRowBitmap SET	SLOT_CopyPieceToRowBitmap + _CURRENT_BANK
-      3  072b				   CopyPieceToRowBitmap
-      4  072b				   TEMPORARY_VAR SET	Overlay
-      5  072b				   TEMPORARY_OFFSET SET	0
-      6  072b				   VAR_BOUNDARY_CopyPieceToRowBitmap SET	TEMPORARY_OFFSET
-      7  072b				   FUNCTION_NAME SET	CopyPieceToRowBitmap
-    805  072b					      SUBROUTINE
-    806  072b
-      0  072b					      REF	Variable_PieceShapeBuffer
-      1  072b					      IF	VAREND_Variable_PieceShapeBuffer > TEMPORARY_VAR
-      2  072b				   TEMPORARY_VAR SET	VAREND_Variable_PieceShapeBuffer
-      3  072b					      ENDIF
-      0  072b					      REF	InterceptMarkerCopy	;✅
-      1  072b					      IF	VAREND_InterceptMarkerCopy > TEMPORARY_VAR
-      2  072b				   TEMPORARY_VAR SET	VAREND_InterceptMarkerCopy
-      3  072b					      ENDIF
-    809  072b
-      0  072b					      VEND	CopyPieceToRowBitmap
-      1  072b
-      2  072b
-      3  072b		       00 f0	   VAREND_CopyPieceToRowBitmap =	TEMPORARY_VAR
-      4  072b
-    811  072b
-    812  072b		       a0 11		      ldy	#17
-    813  072d		       b0 30		      bcs	.rightSide
-    814  072f
-    815  072f		       b9 a6 00    .copyPiece lda	__pieceShapeBuffer,y
-    816  0732		       f0 06		      beq	.blank1
-    817  0734		       59 00 f8 	      eor	ChessBitmap,y
-      0  0737					      sta@RAM	ChessBitmap,y
-      1  0737		       99 00 fa 	      sta	[RAM]+ChessBitmap,y
-    819  073a
-    820  073a		       b9 b8 00    .blank1    lda	__pieceShapeBuffer+18,y
-    821  073d		       f0 06		      beq	.blank2
-    822  073f		       59 12 f8 	      eor	ChessBitmap+18,y
-      0  0742					      sta@RAM	ChessBitmap+18,y
-      1  0742		       99 12 fa 	      sta	[RAM]+ChessBitmap+18,y
-    824  0745
-    825  0745		       b9 ca 00    .blank2    lda	__pieceShapeBuffer+36,y
-    826  0748		       f0 06		      beq	.blank3
-    827  074a		       59 24 f8 	      eor	ChessBitmap+36,y
-      0  074d					      sta@RAM	ChessBitmap+36,y
-      1  074d		       99 24 fa 	      sta	[RAM]+ChessBitmap+36,y
-    829  0750
-    830  0750		       b9 dc 00    .blank3    lda	__pieceShapeBuffer+54,y
-    831  0753		       f0 06		      beq	.blank4
-    832  0755		       59 36 f8 	      eor	ChessBitmap+54,y
-      0  0758					      sta@RAM	ChessBitmap+54,y
-      1  0758		       99 36 fa 	      sta	[RAM]+ChessBitmap+54,y
-    834  075b
-    835  075b		       88	   .blank4    dey
-    836  075c		       10 d1		      bpl	.copyPiece
-    837  075e		       60		      rts
-    838  075f
-    839  075f				   .rightSide
-    840  075f
-    841  075f					      SUBROUTINE
-    842  075f
-    843  075f		       b9 a6 00    .copyPieceR lda	__pieceShapeBuffer,y
-    844  0762		       f0 06		      beq	.blank1
-    845  0764		       59 48 f8 	      eor	ChessBitmap+PIECE_SHAPE_SIZE,y
-      0  0767					      sta@RAM	ChessBitmap+PIECE_SHAPE_SIZE,y
-      1  0767		       99 48 fa 	      sta	[RAM]+ChessBitmap+PIECE_SHAPE_SIZE,y
-    847  076a
-    848  076a		       b9 b8 00    .blank1    lda	__pieceShapeBuffer+18,y
-    849  076d		       f0 06		      beq	.blank2
-    850  076f		       59 5a f8 	      eor	ChessBitmap+PIECE_SHAPE_SIZE+18,y
-      0  0772					      sta@RAM	ChessBitmap+PIECE_SHAPE_SIZE+18,y
-      1  0772		       99 5a fa 	      sta	[RAM]+ChessBitmap+PIECE_SHAPE_SIZE+18,y
-    852  0775
-    853  0775		       b9 ca 00    .blank2    lda	__pieceShapeBuffer+36,y
-    854  0778		       f0 06		      beq	.blank3
-    855  077a		       59 6c f8 	      eor	ChessBitmap+PIECE_SHAPE_SIZE+36,y
-      0  077d					      sta@RAM	ChessBitmap+PIECE_SHAPE_SIZE+36,y
-      1  077d		       99 6c fa 	      sta	[RAM]+ChessBitmap+PIECE_SHAPE_SIZE+36,y
-    857  0780
-    858  0780		       b9 dc 00    .blank3    lda	__pieceShapeBuffer+54,y
-    859  0783		       f0 06		      beq	.blank4
-    860  0785		       59 7e f8 	      eor	ChessBitmap+PIECE_SHAPE_SIZE+54,y
-      0  0788					      sta@RAM	ChessBitmap+PIECE_SHAPE_SIZE+54,y
-      1  0788		       99 7e fa 	      sta	[RAM]+ChessBitmap+PIECE_SHAPE_SIZE+54,y
-    862  078b
-    863  078b		       88	   .blank4    dey
-    864  078c		       10 d1		      bpl	.copyPieceR
-    865  078e		       60		      rts
-    866  078f
-    867  078f
-    868  078f							;---------------------------------------------------------------------------------------------------
-    869  078f
-      0  078f					      DEF	EnPassantRemoveCapturedPawn
-      1  078f				   SLOT_EnPassantRemoveCapturedPawn SET	_BANK_SLOT
-      2  078f				   BANK_EnPassantRemoveCapturedPawn SET	SLOT_EnPassantRemoveCapturedPawn + _CURRENT_BANK
-      3  078f				   EnPassantRemoveCapturedPawn
-      4  078f				   TEMPORARY_VAR SET	Overlay
-      5  078f				   TEMPORARY_OFFSET SET	0
-      6  078f				   VAR_BOUNDARY_EnPassantRemoveCapturedPawn SET	TEMPORARY_OFFSET
-      7  078f				   FUNCTION_NAME SET	EnPassantRemoveCapturedPawn
-    871  078f					      SUBROUTINE
-    872  078f
-      0  078f					      REF	aiSpecialMoveFixup
-      1  078f					      IF	VAREND_aiSpecialMoveFixup > TEMPORARY_VAR
-      2  078f				   TEMPORARY_VAR SET	VAREND_aiSpecialMoveFixup
-      3  078f					      ENDIF
-      0  078f					      VEND	EnPassantRemoveCapturedPawn
-      1  078f
-      2  078f
-      3  078f		       00 b6	   VAREND_EnPassantRemoveCapturedPawn =	TEMPORARY_VAR
-      4  078f
-    875  078f
-    876  078f		       a4 94		      ldy	enPassantPawn
-    877  0791		       f0 27		      beq	.exit
-    878  0793
-    879  0793
-    880  0793		       a9 d9		      lda	#RAMBANK_BOARD
-    881  0795		       85 3e		      sta	SET_BANK_RAM	;@3
-    882  0797
-    883  0797							; Account for the opponent pawn being removed
-    884  0797							; Effectively ADD the values to our current score
-    885  0797
-    886  0797		       a5 96		      lda	sideToMove
-    887  0799		       49 80		      eor	#128
-    888  079b		       29 80		      and	#128
-    889  079d		       09 01		      ora	#WP	; == BP in this usage
-    890  079f
-    891  079f		       a2 89		      ldx	#BANK_AddPiecePositionValue
-    892  07a1		       86 3f		      stx	SET_BANK	;@2
-    893  07a3		       20 59 f9 	      jsr	AddPiecePositionValue	; remove pos value for original position
-    894  07a6
-    895  07a6		       a9 01		      lda	#WP	; == BP
-    896  07a8		       a2 89		      ldx	#BANK_AddPieceMaterialValue
-    897  07aa		       86 3f		      stx	SET_BANK	;@2
-    898  07ac		       20 36 f9 	      jsr	AddPieceMaterialValue	; remove material for original type
-    899  07af
-    900  07af		       a9 d9		      lda	#RAMBANK_BOARD
-    901  07b1		       85 3e		      sta	SET_BANK_RAM	;@3
-    902  07b3
-    903  07b3		       a6 94		      ldx	enPassantPawn
-    904  07b5		       a9 00		      lda	#0
-      0  07b7					      sta@RAM	Board,x
-      1  07b7		       9d 79 fe 	      sta	[RAM]+Board,x
-    906  07ba
-    907  07ba
-    908  07ba		       60	   .exit      rts
-    909  07bb
-    910  07bb
-    911  07bb							;---------------------------------------------------------------------------------------------------
-    912  07bb
-      0  07bb					      END_BANK
-      1  07bb				  -	      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      2  07bb				  -	      CHECK_RAM_BANK_SIZE
-      3  07bb					      ELSE
-      0  07bb					      CHECK_BANK_SIZE
-      1  07bb		       03 bb	   .TEMP      =	* - _BANK_START
- ROM bank # 2 LOCKED_BANK size = $3bb free = 68
-      2  07bb					      ECHO	"ROM bank #", [_ORIGIN/_ROM_BANK_SIZE]d, _LAST_BANK, "size =", .TEMP, "free =", [_ROM_BANK_SIZE - .TEMP - 1]d
-      3  07bb				  -	      IF	( .TEMP ) > _ROM_BANK_SIZE
-      4  07bb				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - _ORIGIN
-      5  07bb				  -	      ERR
-      6  07bb					      ENDIF
-      5  07bb					      ENDIF
-    914  07bb
-    915  07bb							;---------------------------------------------------------------------------------------------------
-    916  07bb							; EOF
+      0  06a9					      lda@PLY	enPassantSquare
+      1  06a9		       ad ca f9 	      lda	enPassantSquare
+    696  06ac		       85 94		      sta	enPassantPawn
+    697  06ae
+      0  06ae					      ldx@PLY	movePtr
+      1  06ae		       ae d0 f9 	      ldx	movePtr
+      0  06b1					      ldy@PLY	MoveFrom,x
+      1  06b1		       bc 00 f8 	      ldy	MoveFrom,x
+      0  06b4					      lda@PLY	restorePiece
+      1  06b4		       ad d9 f9 	      lda	restorePiece
+      0  06b7					      sta@RAM	Board,y
+      1  06b7		       99 79 fe 	      sta	[RAM]+Board,y
+    702  06ba
+      0  06ba					      ldy@PLY	MoveTo,x
+      1  06ba		       bc 64 f8 	      ldy	MoveTo,x
+      0  06bd					      lda@PLY	capturedPiece
+      1  06bd		       ad cb f9 	      lda	capturedPiece
+      0  06c0					      sta@RAM	Board,y
+      1  06c0		       99 79 fe 	      sta	[RAM]+Board,y
+    706  06c3
+    707  06c3
+    708  06c3							; See if there are any 'secondary' pieces that moved
+    709  06c3							; here we're dealing with reverting a castling or enPassant move
+    710  06c3
+      0  06c3					      lda@PLY	secondaryPiece
+      1  06c3		       ad cc f9 	      lda	secondaryPiece
+    712  06c6		       f0 10		      beq	.noSecondary
+      0  06c8					      ldx@PLY	secondarySquare
+      1  06c8		       ae cd f9 	      ldx	secondarySquare
+      0  06cb					      sta@RAM	Board,x	; put piece back
+      1  06cb		       9d 79 fe 	      sta	[RAM]+Board,x
+      0  06ce					      ldy@PLY	secondaryBlank
+      1  06ce		       ac ce f9 	      ldy	secondaryBlank
+    716  06d1		       f0 05		      beq	.noSecondary	; enpassant - no blanker square
+    717  06d3		       a9 00		      lda	#0
+      0  06d5					      sta@RAM	Board,y	; blank piece origin
+      1  06d5		       99 79 fe 	      sta	[RAM]+Board,y
+    719  06d8
+      0  06d8				   .noSecondary SWAP
+      1  06d8
+      2  06d8		       a5 96		      lda	sideToMove
+      3  06da		       49 c0		      eor	#SWAP_SIDE|HUMAN
+      4  06dc		       85 96		      sta	sideToMove
+      5  06de
+    721  06de		       60		      rts
+    722  06df
+    723  06df
+    724  06df							;---------------------------------------------------------------------------------------------------
+    725  06df
+      0  06df					      DEF	showMoveCaptures
+      1  06df				   SLOT_showMoveCaptures SET	_BANK_SLOT
+      2  06df				   BANK_showMoveCaptures SET	SLOT_showMoveCaptures + _CURRENT_BANK
+      3  06df				   showMoveCaptures
+      4  06df				   TEMPORARY_VAR SET	Overlay
+      5  06df				   TEMPORARY_OFFSET SET	0
+      6  06df				   VAR_BOUNDARY_showMoveCaptures SET	TEMPORARY_OFFSET
+      7  06df				   FUNCTION_NAME SET	showMoveCaptures
+    727  06df					      SUBROUTINE
+    728  06df
+      0  06df					      REF	aiShowMoveCaptures	;✅
+      1  06df					      IF	VAREND_aiShowMoveCaptures > TEMPORARY_VAR
+      2  06df				   TEMPORARY_VAR SET	VAREND_aiShowMoveCaptures
+      3  06df					      ENDIF
+    730  06df
+      0  06df					      VAR	__toSquareX12, 1
+      1  06df		       00 a8	   __toSquareX12 =	TEMPORARY_VAR
+      2  06df				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  06df
+      4  06df				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  06df				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  06df				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  06df					      ENDIF
+      8  06df				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
+      9  06df				  -VNAME      SETSTR	__toSquareX12
+     10  06df				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
+     11  06df				  -	      ERR
+     12  06df					      ENDIF
+      0  06df					      VAR	__fromPiece, 1
+      1  06df		       00 a9	   __fromPiece =	TEMPORARY_VAR
+      2  06df				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  06df
+      4  06df				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  06df				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  06df				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  06df					      ENDIF
+      8  06df				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
+      9  06df				  -VNAME      SETSTR	__fromPiece
+     10  06df				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
+     11  06df				  -	      ERR
+     12  06df					      ENDIF
+      0  06df					      VAR	__aiMoveIndex, 1
+      1  06df		       00 aa	   __aiMoveIndex =	TEMPORARY_VAR
+      2  06df				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  06df
+      4  06df				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  06df				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  06df				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  06df					      ENDIF
+      8  06df				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
+      9  06df				  -VNAME      SETSTR	__aiMoveIndex
+     10  06df				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
+     11  06df				  -	      ERR
+     12  06df					      ENDIF
+    734  06df
+      0  06df					      VEND	showMoveCaptures
+      1  06df
+      2  06df
+      3  06df		       00 ab	   VAREND_showMoveCaptures =	TEMPORARY_VAR
+      4  06df
+    736  06df
+    737  06df							; place a marker on the board for any square matching the piece
+    738  06df							; EXCEPT for squares which are occupied (we'll flash those later)
+    739  06df							; x = movelist item # being checked
+    740  06df
+    741  06df
+    742  06df		       a6 8e	   .next      ldx	aiMoveIndex
+    743  06e1		       86 aa		      stx	__aiMoveIndex
+    744  06e3		       30 4a		      bmi	.skip	; no moves in list
+    745  06e5
+    746  06e5		       ad 84 02 	      lda	INTIM
+    747  06e8		       c9 14		      cmp	#20
+    748  06ea		       90 43		      bcc	.skip
+    749  06ec
+    750  06ec		       c6 8e		      dec	aiMoveIndex
+    751  06ee
+    752  06ee		       a9 89		      lda	#RAMBANK_PLY+1
+    753  06f0		       85 3e		      sta	SET_BANK_RAM
+      0  06f2					      lda@PLY	MoveFrom,x
+      1  06f2		       bd 00 f8 	      lda	MoveFrom,x
+    755  06f5		       c5 86		      cmp	fromX12
+    756  06f7		       d0 e6		      bne	.next
+    757  06f9
+      0  06f9					      lda@PLY	MoveTo,x
+      1  06f9		       bd 64 f8 	      lda	MoveTo,x
+    759  06fc		       85 a8		      sta	__toSquareX12
+    760  06fe		       a8		      tay
+    761  06ff
+    762  06ff		       a9 d9		      lda	#RAMBANK_BOARD
+    763  0701		       85 3e		      sta	SET_BANK_RAM	;@3
+    764  0703		       b9 79 fc 	      lda	Board,y
+    765  0706		       29 0f		      and	#PIECE_MASK
+    766  0708		       f0 d5		      beq	.next
+    767  070a
+    768  070a							; There's something on the board at destination, so it's a capture
+    769  070a							; Let's see if we are doing a pawn promote...
+    770  070a
+    771  070a		       a4 86		      ldy	fromX12
+    772  070c
+    773  070c		       a9 d9		      lda	#RAMBANK_BOARD
+    774  070e		       85 3e		      sta	SET_BANK_RAM	;@3
+    775  0710		       b9 79 fc 	      lda	Board,y
+    776  0713		       85 a9		      sta	__fromPiece
+    777  0715
+    778  0715		       a9 89		      lda	#RAMBANK_PLY+1
+    779  0717		       85 3e		      sta	SET_BANK_RAM
+      0  0719					      lda@PLY	MovePiece,x
+      1  0719		       bd 00 f9 	      lda	MovePiece,x
+    781  071c		       45 a9		      eor	__fromPiece
+    782  071e		       29 0f		      and	#PIECE_MASK
+    783  0720		       f0 06		      beq	.legit	; from == to, so not a promote
+    784  0722
+    785  0722							; Have detected a promotion duplicate - skip all 3 of them
+    786  0722							; TODO: this will need reworking once moves are sorted
+    787  0722
+    788  0722		       c6 8e		      dec	aiMoveIndex	; skip "KBRQ" promotes
+    789  0724		       c6 8e		      dec	aiMoveIndex
+    790  0726		       c6 8e		      dec	aiMoveIndex
+    791  0728
+    792  0728				   .legit
+    793  0728
+    794  0728							;TIMECHECK CopySinglePiece, restoreIndex     ; not enough time to draw
+    795  0728
+    796  0728		       a5 a8		      lda	__toSquareX12
+    797  072a		       85 81		      sta	squareToDraw
+    798  072c
+    799  072c							; WARNING - local variables will not survive the following call...!
+    800  072c		       20 c1 f0 	      jsr	CopySinglePiece	;@0
+    801  072f
+    802  072f		       60	   .skip      rts
+    803  0730
+    804  0730
+    805  0730							;---------------------------------------------------------------------------------------------------
+    806  0730
+      0  0730					      DEF	CopyPieceToRowBitmap
+      1  0730				   SLOT_CopyPieceToRowBitmap SET	_BANK_SLOT
+      2  0730				   BANK_CopyPieceToRowBitmap SET	SLOT_CopyPieceToRowBitmap + _CURRENT_BANK
+      3  0730				   CopyPieceToRowBitmap
+      4  0730				   TEMPORARY_VAR SET	Overlay
+      5  0730				   TEMPORARY_OFFSET SET	0
+      6  0730				   VAR_BOUNDARY_CopyPieceToRowBitmap SET	TEMPORARY_OFFSET
+      7  0730				   FUNCTION_NAME SET	CopyPieceToRowBitmap
+    808  0730					      SUBROUTINE
+    809  0730
+      0  0730					      REF	Variable_PieceShapeBuffer
+      1  0730					      IF	VAREND_Variable_PieceShapeBuffer > TEMPORARY_VAR
+      2  0730				   TEMPORARY_VAR SET	VAREND_Variable_PieceShapeBuffer
+      3  0730					      ENDIF
+      0  0730					      REF	InterceptMarkerCopy	;✅
+      1  0730					      IF	VAREND_InterceptMarkerCopy > TEMPORARY_VAR
+      2  0730				   TEMPORARY_VAR SET	VAREND_InterceptMarkerCopy
+      3  0730					      ENDIF
+    812  0730
+      0  0730					      VEND	CopyPieceToRowBitmap
+      1  0730
+      2  0730
+      3  0730		       00 f0	   VAREND_CopyPieceToRowBitmap =	TEMPORARY_VAR
+      4  0730
+    814  0730
+    815  0730		       a0 11		      ldy	#17
+    816  0732		       b0 30		      bcs	.rightSide
+    817  0734
+    818  0734		       b9 a6 00    .copyPiece lda	__pieceShapeBuffer,y
+    819  0737		       f0 06		      beq	.blank1
+    820  0739		       59 00 f8 	      eor	ChessBitmap,y
+      0  073c					      sta@RAM	ChessBitmap,y
+      1  073c		       99 00 fa 	      sta	[RAM]+ChessBitmap,y
+    822  073f
+    823  073f		       b9 b8 00    .blank1    lda	__pieceShapeBuffer+18,y
+    824  0742		       f0 06		      beq	.blank2
+    825  0744		       59 12 f8 	      eor	ChessBitmap+18,y
+      0  0747					      sta@RAM	ChessBitmap+18,y
+      1  0747		       99 12 fa 	      sta	[RAM]+ChessBitmap+18,y
+    827  074a
+    828  074a		       b9 ca 00    .blank2    lda	__pieceShapeBuffer+36,y
+    829  074d		       f0 06		      beq	.blank3
+    830  074f		       59 24 f8 	      eor	ChessBitmap+36,y
+      0  0752					      sta@RAM	ChessBitmap+36,y
+      1  0752		       99 24 fa 	      sta	[RAM]+ChessBitmap+36,y
+    832  0755
+    833  0755		       b9 dc 00    .blank3    lda	__pieceShapeBuffer+54,y
+    834  0758		       f0 06		      beq	.blank4
+    835  075a		       59 36 f8 	      eor	ChessBitmap+54,y
+      0  075d					      sta@RAM	ChessBitmap+54,y
+      1  075d		       99 36 fa 	      sta	[RAM]+ChessBitmap+54,y
+    837  0760
+    838  0760		       88	   .blank4    dey
+    839  0761		       10 d1		      bpl	.copyPiece
+    840  0763		       60		      rts
+    841  0764
+    842  0764				   .rightSide
+    843  0764
+    844  0764					      SUBROUTINE
+    845  0764
+    846  0764		       b9 a6 00    .copyPieceR lda	__pieceShapeBuffer,y
+    847  0767		       f0 06		      beq	.blank1
+    848  0769		       59 48 f8 	      eor	ChessBitmap+PIECE_SHAPE_SIZE,y
+      0  076c					      sta@RAM	ChessBitmap+PIECE_SHAPE_SIZE,y
+      1  076c		       99 48 fa 	      sta	[RAM]+ChessBitmap+PIECE_SHAPE_SIZE,y
+    850  076f
+    851  076f		       b9 b8 00    .blank1    lda	__pieceShapeBuffer+18,y
+    852  0772		       f0 06		      beq	.blank2
+    853  0774		       59 5a f8 	      eor	ChessBitmap+PIECE_SHAPE_SIZE+18,y
+      0  0777					      sta@RAM	ChessBitmap+PIECE_SHAPE_SIZE+18,y
+      1  0777		       99 5a fa 	      sta	[RAM]+ChessBitmap+PIECE_SHAPE_SIZE+18,y
+    855  077a
+    856  077a		       b9 ca 00    .blank2    lda	__pieceShapeBuffer+36,y
+    857  077d		       f0 06		      beq	.blank3
+    858  077f		       59 6c f8 	      eor	ChessBitmap+PIECE_SHAPE_SIZE+36,y
+      0  0782					      sta@RAM	ChessBitmap+PIECE_SHAPE_SIZE+36,y
+      1  0782		       99 6c fa 	      sta	[RAM]+ChessBitmap+PIECE_SHAPE_SIZE+36,y
+    860  0785
+    861  0785		       b9 dc 00    .blank3    lda	__pieceShapeBuffer+54,y
+    862  0788		       f0 06		      beq	.blank4
+    863  078a		       59 7e f8 	      eor	ChessBitmap+PIECE_SHAPE_SIZE+54,y
+      0  078d					      sta@RAM	ChessBitmap+PIECE_SHAPE_SIZE+54,y
+      1  078d		       99 7e fa 	      sta	[RAM]+ChessBitmap+PIECE_SHAPE_SIZE+54,y
+    865  0790
+    866  0790		       88	   .blank4    dey
+    867  0791		       10 d1		      bpl	.copyPieceR
+    868  0793		       60		      rts
+    869  0794
+    870  0794
+    871  0794							;---------------------------------------------------------------------------------------------------
+    872  0794
+      0  0794					      DEF	EnPassantRemoveCapturedPawn
+      1  0794				   SLOT_EnPassantRemoveCapturedPawn SET	_BANK_SLOT
+      2  0794				   BANK_EnPassantRemoveCapturedPawn SET	SLOT_EnPassantRemoveCapturedPawn + _CURRENT_BANK
+      3  0794				   EnPassantRemoveCapturedPawn
+      4  0794				   TEMPORARY_VAR SET	Overlay
+      5  0794				   TEMPORARY_OFFSET SET	0
+      6  0794				   VAR_BOUNDARY_EnPassantRemoveCapturedPawn SET	TEMPORARY_OFFSET
+      7  0794				   FUNCTION_NAME SET	EnPassantRemoveCapturedPawn
+    874  0794					      SUBROUTINE
+    875  0794
+      0  0794					      REF	aiSpecialMoveFixup
+      1  0794					      IF	VAREND_aiSpecialMoveFixup > TEMPORARY_VAR
+      2  0794				   TEMPORARY_VAR SET	VAREND_aiSpecialMoveFixup
+      3  0794					      ENDIF
+      0  0794					      VEND	EnPassantRemoveCapturedPawn
+      1  0794
+      2  0794
+      3  0794		       00 b6	   VAREND_EnPassantRemoveCapturedPawn =	TEMPORARY_VAR
+      4  0794
+    878  0794
+    879  0794		       a4 94		      ldy	enPassantPawn
+    880  0796		       f0 27		      beq	.exit
+    881  0798
+    882  0798
+    883  0798		       a9 d9		      lda	#RAMBANK_BOARD
+    884  079a		       85 3e		      sta	SET_BANK_RAM	;@3
+    885  079c
+    886  079c							; Account for the opponent pawn being removed
+    887  079c							; Effectively ADD the values to our current score
+    888  079c
+    889  079c		       a5 96		      lda	sideToMove
+    890  079e		       49 80		      eor	#128
+    891  07a0		       29 80		      and	#128
+    892  07a2		       09 01		      ora	#WP	; == BP in this usage
+    893  07a4
+    894  07a4		       a2 89		      ldx	#BANK_AddPiecePositionValue
+    895  07a6		       86 3f		      stx	SET_BANK	;@2
+    896  07a8		       20 59 f9 	      jsr	AddPiecePositionValue	; remove pos value for original position
+    897  07ab
+    898  07ab		       a9 01		      lda	#WP	; == BP
+    899  07ad		       a2 89		      ldx	#BANK_AddPieceMaterialValue
+    900  07af		       86 3f		      stx	SET_BANK	;@2
+    901  07b1		       20 36 f9 	      jsr	AddPieceMaterialValue	; remove material for original type
+    902  07b4
+    903  07b4		       a9 d9		      lda	#RAMBANK_BOARD
+    904  07b6		       85 3e		      sta	SET_BANK_RAM	;@3
+    905  07b8
+    906  07b8		       a6 94		      ldx	enPassantPawn
+    907  07ba		       a9 00		      lda	#0
+      0  07bc					      sta@RAM	Board,x
+      1  07bc		       9d 79 fe 	      sta	[RAM]+Board,x
+    909  07bf
+    910  07bf
+    911  07bf		       60	   .exit      rts
+    912  07c0
+    913  07c0
+    914  07c0							;---------------------------------------------------------------------------------------------------
+    915  07c0
+      0  07c0					      END_BANK
+      1  07c0				  -	      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      2  07c0				  -	      CHECK_RAM_BANK_SIZE
+      3  07c0					      ELSE
+      0  07c0					      CHECK_BANK_SIZE
+      1  07c0		       03 c0	   .TEMP      =	* - _BANK_START
+ ROM bank # 2 LOCKED_BANK size = $3c0 free = 63
+      2  07c0					      ECHO	"ROM bank #", [_ORIGIN/_ROM_BANK_SIZE]d, _LAST_BANK, "size =", .TEMP, "free =", [_ROM_BANK_SIZE - .TEMP - 1]d
+      3  07c0				  -	      IF	( .TEMP ) > _ROM_BANK_SIZE
+      4  07c0				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - _ORIGIN
+      5  07c0				  -	      ERR
+      6  07c0					      ENDIF
+      5  07c0					      ENDIF
+    917  07c0
+    918  07c0							;---------------------------------------------------------------------------------------------------
+    919  07c0							; EOF
 ------- FILE ./chess.asm
-    192  07bb
+    192  07c0
 ------- FILE @1 GENERIC #1.asm LEVEL 2 PASS 4
-      0  07bb					      include	"@1 GENERIC #1.asm"
-      1  07bb							;---------------------------------------------------------------------------------------------------
-      2  07bb							; @1 GENERIC #1.asm
-      3  07bb
-      4  07bb							; Atari 2600 Chess
-      5  07bb							; Copyright (c) 2019-2020 Andrew Davie
-      6  07bb							; andrew@taswegian.com
-      7  07bb
-      8  07bb							;---------------------------------------------------------------------------------------------------
-      9  07bb
-      0  07bb					      SLOT	1	; which bank this code switches to
-      1  07bb
-      2  07bb				  -	      IF	(1 < 0) || (1 > 3)
-      3  07bb				  -	      ECHO	"Illegal bank address/segment location", 1
-      4  07bb				  -	      ERR
-      5  07bb					      ENDIF
-      6  07bb
-      7  07bb				   _BANK_ADDRESS_ORIGIN SET	$F000 + (1 * _ROM_BANK_SIZE)
-      8  07bb				   _BANK_SLOT SET	1 * 64
-      9  07bb
-      0  07bb					      ROMBANK	ONE
+      0  07c0					      include	"@1 GENERIC #1.asm"
+      1  07c0							;---------------------------------------------------------------------------------------------------
+      2  07c0							; @1 GENERIC #1.asm
+      3  07c0
+      4  07c0							; Atari 2600 Chess
+      5  07c0							; Copyright (c) 2019-2020 Andrew Davie
+      6  07c0							; andrew@taswegian.com
+      7  07c0
+      8  07c0							;---------------------------------------------------------------------------------------------------
+      9  07c0
+      0  07c0					      SLOT	1	; which bank this code switches to
+      1  07c0
+      2  07c0				  -	      IF	(1 < 0) || (1 > 3)
+      3  07c0				  -	      ECHO	"Illegal bank address/segment location", 1
+      4  07c0				  -	      ERR
+      5  07c0					      ENDIF
+      6  07c0
+      7  07c0				   _BANK_ADDRESS_ORIGIN SET	$F000 + (1 * _ROM_BANK_SIZE)
+      8  07c0				   _BANK_SLOT SET	1 * 64
+      9  07c0
+      0  07c0					      ROMBANK	ONE
       1  0afc ????				      SEG	ROM_ONE
       2  0800					      ORG	_ORIGIN
       3  0800					      RORG	_BANK_ADDRESS_ORIGIN
@@ -4419,7 +4423,7 @@
     449  09fa				  -
     450  09fa				  -	      ENDIF
     451  09fa				  -
-    452  09fa				  -	      IF	TEST_POSITION & 1
+    452  09fa				  -	      IF	TEST_POSITION & 0
     453  09fa				  -			; En passant test (white)
     454  09fa				  -
     455  09fa				  -	      .byte	BLACK|BP|FLAG_MOVED, 53
@@ -4452,7 +4456,7 @@
     482  09fa				  -	      ENDIF
     483  09fa				  -
     484  09fa				  -
-    485  09fa				  -	      IF	TEST_POSITION & 0
+    485  09fa				  -	      IF	TEST_POSITION & 1
     486  09fa				  -			; mate/draw
     487  09fa				  -
     488  09fa				  -	      .byte	BLACK|K, 99
@@ -4617,7 +4621,7 @@
     611  0a2f		       a9 00		      lda	#0
     612  0a31		       85 83		      sta	drawDelay
     613  0a33
-    614  0a33		       20 8f f3 	      jsr	EnPassantRemoveCapturedPawn
+    614  0a33		       20 94 f3 	      jsr	EnPassantRemoveCapturedPawn
     615  0a36
     616  0a36							;lda #100
     617  0a36							;sta aiFlashDelay ;???
@@ -5021,7 +5025,7 @@
       8  0afc				   _BANK_SLOT SET	1 * 64
       9  0afc
       0  0afc					      ROMBANK	NEGAMAX
-      1  0ff3 ????				      SEG	ROM_NEGAMAX
+      1  0fc8 ????				      SEG	ROM_NEGAMAX
       2  0c00					      ORG	_ORIGIN
       3  0c00					      RORG	_BANK_ADDRESS_ORIGIN
       4  0c00				   _BANK_START SET	*
@@ -5155,12 +5159,12 @@
      90  0c3a
      91  0c3a		       a9 ff		      lda	#<INFINITY
      92  0c3c		       85 ab		      sta	__beta
-     93  0c3e		       a9 7f		      lda	#>INFINITY
+     93  0c3e		       a9 6f		      lda	#>INFINITY
      94  0c40		       85 ac		      sta	__beta+1
      95  0c42
      96  0c42		       a9 01		      lda	#<-INFINITY
      97  0c44		       85 a9		      sta	__alpha
-     98  0c46		       a9 80		      lda	#>-INFINITY
+     98  0c46		       a9 90		      lda	#>-INFINITY
      99  0c48		       85 aa		      sta	__alpha+1	; player tries to maximise
     100  0c4a
     101  0c4a		       a2 04		      ldx	#SEARCH_DEPTH
@@ -5187,10 +5191,10 @@
       0  0c58					      stx@PLY	movePtr
       1  0c58		       8e d0 fb 	      stx	[RAM]+movePtr
     122  0c5b		       20 7f f4 	      jsr	MakeMove	;@this
-    123  0c5e		       20 2b f2 	      jsr	ListPlayerMoves	;@0
+    123  0c5e		       20 30 f2 	      jsr	ListPlayerMoves	;@0
     124  0c61
     125  0c61		       c6 95		      dec	currentPly
-    126  0c63		       20 88 f2 	      jsr	unmakeMove	;@0
+    126  0c63		       20 8d f2 	      jsr	unmakeMove	;@0
     127  0c66
     128  0c66							; Grab the computer move details for the UI animation
     129  0c66
@@ -5438,7 +5442,7 @@
     286  0cfb
     287  0cfb		       a9 ff	   .doQ       lda	#-1
     288  0cfd		       85 b1		      sta	__quiesceCapOnly
-    289  0cff		       20 0c f7 	      jsr	quiesce
+    289  0cff		       20 e1 f6 	      jsr	quiesce
     290  0d02		       e6 b1		      inc	__quiesceCapOnly
     291  0d04		       60		      rts
     292  0d05
@@ -5542,852 +5546,828 @@
     357  0d38				   .noCheat
     358  0d38
     359  0d38
-      0  0d38					      NEXT_RANDOM
-      1  0d38
-      2  0d38		       a5 82		      lda	rnd
-      3  0d3a		       4a		      lsr
-      4  0d3b		       90 02		      bcc	.skipEOR
-      5  0d3d		       49 b4		      eor	#RND_EOR_VAL
-      6  0d3f		       85 82	   .skipEOR   sta	rnd
-      7  0d41
-    361  0d41		       25 a2		      and	randomness
-    362  0d43		       65 90		      adc	Evaluation
-    363  0d45		       85 90		      sta	Evaluation	; since it's random we don't care about HI
-    364  0d47							;bcc .evOK
-    365  0d47							;inc Evaluation+1
-    366  0d47				   .evOK
-    367  0d47
-    368  0d47
-    369  0d47		       a5 a9		      lda	__alpha
-      0  0d49					      sta@PLY	alpha
-      1  0d49		       8d d2 fb 	      sta	[RAM]+alpha
-    371  0d4c		       a5 aa		      lda	__alpha+1
-      0  0d4e					      sta@PLY	alpha+1
-      1  0d4e		       8d d3 fb 	      sta	[RAM]+alpha+1
-    373  0d51
-    374  0d51		       a5 ab		      lda	__beta
-      0  0d53					      sta@PLY	beta
-      1  0d53		       8d d4 fb 	      sta	[RAM]+beta
-    376  0d56		       a5 ac		      lda	__beta+1
-      0  0d58					      sta@PLY	beta+1
-      1  0d58		       8d d5 fb 	      sta	[RAM]+beta+1
-    378  0d5b
-    379  0d5b
-    380  0d5b		       20 a6 f1 	      jsr	GenerateAllMoves	;@0
-    381  0d5e
-      0  0d5e					      DEF	negaLoop
-      1  0d5e				   SLOT_negaLoop SET	_BANK_SLOT
-      2  0d5e				   BANK_negaLoop SET	SLOT_negaLoop + _CURRENT_BANK
-      3  0d5e				   negaLoop
-      4  0d5e				   TEMPORARY_VAR SET	Overlay
-      5  0d5e				   TEMPORARY_OFFSET SET	0
-      6  0d5e				   VAR_BOUNDARY_negaLoop SET	TEMPORARY_OFFSET
-      7  0d5e				   FUNCTION_NAME SET	negaLoop
-    383  0d5e
-    384  0d5e		       20 87 f2 	      jsr	debug
-    385  0d61
-    386  0d61
-    387  0d61		       a5 a1		      lda	flagCheck
-    388  0d63		       d0 b7		      bne	.inCheck2	; OTHER guy in check
-    389  0d65
-    390  0d65
-    391  0d65					      IF	1
-    392  0d65							; TODO: how does this sit with the move ordering subsearch?
-    393  0d65
-    394  0d65							; add mobility to the score (for all moves). Will un-add on move revert
-    395  0d65
-      0  0d65					      lda@PLY	moveIndex
-      1  0d65		       ad cf f9 	      lda	moveIndex
-    397  0d68		       c9 ff		      cmp	#$FF
-    398  0d6a		       f0 18		      beq	.nomoves
-    399  0d6c
-    400  0d6c		       a2 00		      ldx	#0
-    401  0d6e		       86 b7		      stx	ev2+1
-    402  0d70
-    403  0d70					      REPEAT	1
-    404  0d70		       0a		      asl
-    405  0d71		       26 b7		      rol	ev2+1
-    406  0d73					      REPEND
-    407  0d73
-    408  0d73		       18		      clc
-    409  0d74		       65 90		      adc	Evaluation
-      0  0d76					      sta@PLY	savedEvaluation
-      1  0d76		       8d c8 fb 	      sta	[RAM]+savedEvaluation
-    411  0d79		       85 90		      sta	Evaluation
-    412  0d7b		       a5 91		      lda	Evaluation+1
-    413  0d7d		       65 b7		      adc	ev2+1
-    414  0d7f		       85 91		      sta	Evaluation+1
-      0  0d81					      sta@PLY	savedEvaluation+1
-      1  0d81		       8d c9 fb 	      sta	[RAM]+savedEvaluation+1
-    416  0d84
-    417  0d84				   .nomoves
-    418  0d84					      ENDIF
-    419  0d84
-    420  0d84		       a9 01		      lda	#<-INFINITY
-      0  0d86					      sta@PLY	value
-      1  0d86		       8d d6 fb 	      sta	[RAM]+value
-    422  0d89		       a9 80		      lda	#>-INFINITY
-      0  0d8b					      sta@PLY	value+1
-      1  0d8b		       8d d7 fb 	      sta	[RAM]+value+1
-    424  0d8e
-      0  0d8e					      ldx@PLY	moveIndex
-      1  0d8e		       ae cf f9 	      ldx	moveIndex
-    426  0d91		       10 03		      bpl	.forChild
-    427  0d93		       4c 05 f5 	      jmp	.exit
-    428  0d96
-      0  0d96				   .forChild  stx@PLY	movePtr
-      1  0d96		       8e d0 fb 	      stx	[RAM]+movePtr
-    430  0d99
-    431  0d99		       20 7f f4 	      jsr	MakeMove	;@this
-    432  0d9c
-    433  0d9c
-    434  0d9c							;	  value := max(value, −negaMax(child, depth − 1, −β, −α, −color))
-    435  0d9c
-    436  0d9c							; PARAMS depth-1, -beta, -alpha
-    437  0d9c							; pased through temporary variables (__alpha, __beta) and X reg
-    438  0d9c
-    439  0d9c		       38		      sec
-    440  0d9d		       a9 00		      lda	#0
-      0  0d9f					      sbc@PLY	beta
-      1  0d9f		       ed d4 f9 	      sbc	beta
-    442  0da2		       85 a9		      sta	__alpha
-    443  0da4		       a9 00		      lda	#0
-      0  0da6					      sbc@PLY	beta+1
-      1  0da6		       ed d5 f9 	      sbc	beta+1
-    445  0da9		       85 aa		      sta	__alpha+1
-    446  0dab
-    447  0dab		       38		      sec
-    448  0dac		       a9 00		      lda	#0
-      0  0dae					      sbc@PLY	alpha
-      1  0dae		       ed d2 f9 	      sbc	alpha
-    450  0db1		       85 ab		      sta	__beta
-    451  0db3		       a9 00		      lda	#0
-      0  0db5					      sbc@PLY	alpha+1
-      1  0db5		       ed d3 f9 	      sbc	alpha+1
-    453  0db8		       85 ac		      sta	__beta+1
-    454  0dba
-    455  0dba
-      0  0dba					      ldx@PLY	depthLeft
-      1  0dba		       ae d8 f9 	      ldx	depthLeft
-      0  0dbd					      lda@PLY	capturedPiece
-      1  0dbd		       ad cb f9 	      lda	capturedPiece
-    458  0dc0
-    459  0dc0		       e6 95		      inc	currentPly
-    460  0dc2		       a4 95		      ldy	currentPly
-    461  0dc4		       84 3e		      sty	SET_BANK_RAM	; self-switch
-    462  0dc6
-    463  0dc6		       20 1d f5 	      jsr	negaMax	;@this
-    464  0dc9
-    465  0dc9		       c6 95		      dec	currentPly
-    466  0dcb
-    467  0dcb
-    468  0dcb		       a5 95		      lda	currentPly
-    469  0dcd		       85 3e		      sta	SET_BANK_RAM
-    470  0dcf
-      0  0dcf					      ldx@PLY	movePtr
-      1  0dcf		       ae d0 f9 	      ldx	movePtr
-    472  0dd2
-    473  0dd2		       18		      clc
-    474  0dd3		       69 08		      adc	#RAMBANK_SORT-RAMBANK_PLY
-    475  0dd5		       85 3e		      sta	SET_BANK_RAM
-    476  0dd7
-    477  0dd7		       a5 ad		      lda	__negaMax
-      0  0dd9					      sta@RAM	MoveValueLO,x
-      1  0dd9		       9d 00 fa 	      sta	[RAM]+MoveValueLO,x
-    479  0ddc		       a5 ae		      lda	__negaMax+1
-      0  0dde					      sta@RAM	MoveValueHI,x
-      1  0dde		       9d 64 fa 	      sta	[RAM]+MoveValueHI,x
-    481  0de1
-    482  0de1		       20 88 f2 	      jsr	unmakeMove	;@0
-    483  0de4
-    484  0de4		       a5 95		      lda	currentPly
-    485  0de6		       85 3e		      sta	SET_BANK_RAM
-    486  0de8
-    487  0de8		       38		      sec
-    488  0de9		       a9 00		      lda	#0
-    489  0deb		       e5 ad		      sbc	__negaMax
-    490  0ded		       85 ad		      sta	__negaMax
-    491  0def		       a9 00		      lda	#0
-    492  0df1		       e5 ae		      sbc	__negaMax+1
-    493  0df3		       85 ae		      sta	__negaMax+1	; -negaMax(...)
-    494  0df5
-    495  0df5
-    496  0df5					      IF	1
-    497  0df5		       a5 a1		      lda	flagCheck
-    498  0df7		       f0 06		      beq	.notCheck
-    499  0df9
-    500  0df9							; at this point we've determined that the move was illegal, because the next ply detected
-    501  0df9							; a king capture. So, the move should be totally discounted
-    502  0df9
-    503  0df9		       a9 00		      lda	#0
-    504  0dfb		       85 a1		      sta	flagCheck	; so we don't retrigger in future - it's been handled!
-    505  0dfd		       f0 53		      beq	.nextMove	; unconditional - move is not considered!
-    506  0dff					      ENDIF
-    507  0dff
-    508  0dff
-    509  0dff				   .notCheck
-    510  0dff
-    511  0dff		       38		      sec
-      0  0e00					      lda@PLY	value
-      1  0e00		       ad d6 f9 	      lda	value
-    513  0e03		       e5 ad		      sbc	__negaMax
-      0  0e05					      lda@PLY	value+1
-      1  0e05		       ad d7 f9 	      lda	value+1
-    515  0e08		       e5 ae		      sbc	__negaMax+1
-    516  0e0a		       50 02		      bvc	.lab0
-    517  0e0c		       49 80		      eor	#$80
-    518  0e0e		       10 10	   .lab0      bpl	.lt0	; branch if value >= negaMax
-    519  0e10
-    520  0e10
-    521  0e10							; so, negaMax > value!
-    522  0e10
-    523  0e10
-    524  0e10		       a5 ad		      lda	__negaMax
-      0  0e12					      sta@PLY	value
-      1  0e12		       8d d6 fb 	      sta	[RAM]+value
-    526  0e15		       a5 ae		      lda	__negaMax+1
-      0  0e17					      sta@PLY	value+1	; max(value, -negaMax)
-      1  0e17		       8d d7 fb 	      sta	[RAM]+value+1
-    528  0e1a
-      0  0e1a					      lda@PLY	movePtr
-      1  0e1a		       ad d0 f9 	      lda	movePtr
-      0  0e1d					      sta@PLY	bestMove
-      1  0e1d		       8d d1 fb 	      sta	[RAM]+bestMove
-    531  0e20				   .lt0
-    532  0e20
-    533  0e20							;	  α := max(α, value)
-    534  0e20
-    535  0e20		       38		      sec
-      0  0e21					      lda@PLY	value
-      1  0e21		       ad d6 f9 	      lda	value
-      0  0e24					      sbc@PLY	alpha
-      1  0e24		       ed d2 f9 	      sbc	alpha
-      0  0e27					      lda@PLY	value+1
-      1  0e27		       ad d7 f9 	      lda	value+1
-      0  0e2a					      sbc@PLY	alpha+1
-      1  0e2a		       ed d3 f9 	      sbc	alpha+1
-    540  0e2d		       50 02		      bvc	.lab1
-    541  0e2f		       49 80		      eor	#$80
-    542  0e31		       30 0c	   .lab1      bmi	.lt1	; value < alpha
-    543  0e33
-      0  0e33					      lda@PLY	value
-      1  0e33		       ad d6 f9 	      lda	value
-      0  0e36					      sta@PLY	alpha
-      1  0e36		       8d d2 fb 	      sta	[RAM]+alpha
-      0  0e39					      lda@PLY	value+1
-      1  0e39		       ad d7 f9 	      lda	value+1
-      0  0e3c					      sta@PLY	alpha+1	; alpha = max(alpha, value)
-      1  0e3c		       8d d3 fb 	      sta	[RAM]+alpha+1
-    548  0e3f
-    549  0e3f				   .lt1
-    550  0e3f
-    551  0e3f							;	  if α ≥ β then
-    552  0e3f							;	      break (* cut-off *)
-    553  0e3f
-    554  0e3f		       38		      sec
-      0  0e40					      lda@PLY	alpha
-      1  0e40		       ad d2 f9 	      lda	alpha
-      0  0e43					      sbc@PLY	beta
-      1  0e43		       ed d4 f9 	      sbc	beta
-      0  0e46					      lda@PLY	alpha+1
-      1  0e46		       ad d3 f9 	      lda	alpha+1
-      0  0e49					      sbc@PLY	beta+1
-      1  0e49		       ed d5 f9 	      sbc	beta+1
-    559  0e4c		       50 02		      bvc	.lab2
-    560  0e4e		       49 80		      eor	#$80
-    561  0e50		       10 09	   .lab2      bpl	.retrn	; alpha >= beta
-    562  0e52
-    563  0e52
-      0  0e52				   .nextMove  ldx@PLY	movePtr
-      1  0e52		       ae d0 f9 	      ldx	movePtr
-    565  0e55		       ca	   .nextX     dex
-    566  0e56		       30 03		      bmi	.retrn
-    567  0e58		       4c 96 f5 	      jmp	.forChild
-    568  0e5b
-    569  0e5b		       4c 05 f5    .retrn     jmp	.exit
-    570  0e5e
-    571  0e5e
-    572  0e5e							;---------------------------------------------------------------------------------------------------
-    573  0e5e
-    574  0e5e					      MAC	xchg
-    575  0e5e					      lda@PLY	{1},x
-    576  0e5e					      pha		;sta __xchg
-    577  0e5e					      lda@PLY	{1},y
-    578  0e5e					      sta@PLY	{1},x
-    579  0e5e					      pla		;lda __xchg
-    580  0e5e					      sta@PLY	{1},y
-    581  0e5e					      ENDM		;{name}
-    582  0e5e
-    583  0e5e
-    584  0e5e				  -	      IF	0
-    585  0e5e				  -			; bubble sort from Wikipedia
-    586  0e5e				  -
-    587  0e5e				  -			;n := length(A)
-    588  0e5e				  -			;repeat
-    589  0e5e				  -			;    newn := 0
-    590  0e5e				  -			;    for i := 1 to n - 1 inclusive do
-    591  0e5e				  -			;	  if A[i - 1] > A[i] then
-    592  0e5e				  -			;	      swap(A[i - 1], A[i])
-    593  0e5e				  -			;	      newn := i
-    594  0e5e				  -			;	  end if
-    595  0e5e				  -			;    end for
-    596  0e5e				  -			;    n := newn
-    597  0e5e				  -			;until n ≤ 1
-    598  0e5e				  -
-    599  0e5e					      ENDIF
-    600  0e5e
-    601  0e5e
-    602  0e5e
-      0  0e5e					      DEF	Sort
-      1  0e5e				   SLOT_Sort  SET	_BANK_SLOT
-      2  0e5e				   BANK_Sort  SET	SLOT_Sort + _CURRENT_BANK
-      3  0e5e				   Sort
-      4  0e5e				   TEMPORARY_VAR SET	Overlay
-      5  0e5e				   TEMPORARY_OFFSET SET	0
-      6  0e5e				   VAR_BOUNDARY_Sort SET	TEMPORARY_OFFSET
-      7  0e5e				   FUNCTION_NAME SET	Sort
-    604  0e5e					      SUBROUTINE
-    605  0e5e
-      0  0e5e					      REF	GenerateAllMoves
-      1  0e5e					      IF	VAREND_GenerateAllMoves > TEMPORARY_VAR
-      2  0e5e				   TEMPORARY_VAR SET	VAREND_GenerateAllMoves
-      3  0e5e					      ENDIF
-      0  0e5e					      VAR	__xchg, 1
-      1  0e5e		       00 ba	   __xchg     =	TEMPORARY_VAR
-      2  0e5e				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  0e5e
-      4  0e5e				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  0e5e				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  0e5e				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  0e5e					      ENDIF
-      8  0e5e				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
-      9  0e5e				  -VNAME      SETSTR	__xchg
-     10  0e5e				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
-     11  0e5e				  -	      ERR
-     12  0e5e					      ENDIF
-      0  0e5e					      VAR	__n, 1
-      1  0e5e		       00 bb	   __n	      =	TEMPORARY_VAR
-      2  0e5e				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  0e5e
-      4  0e5e				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  0e5e				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  0e5e				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  0e5e					      ENDIF
-      8  0e5e				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
-      9  0e5e				  -VNAME      SETSTR	__n
-     10  0e5e				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
-     11  0e5e				  -	      ERR
-     12  0e5e					      ENDIF
-      0  0e5e					      VAR	__newn, 1
-      1  0e5e		       00 bc	   __newn     =	TEMPORARY_VAR
-      2  0e5e				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  0e5e
-      4  0e5e				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  0e5e				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  0e5e				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  0e5e					      ENDIF
-      8  0e5e				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
-      9  0e5e				  -VNAME      SETSTR	__newn
-     10  0e5e				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
-     11  0e5e				  -	      ERR
-     12  0e5e					      ENDIF
-      0  0e5e					      VAR	__i, 1
-      1  0e5e		       00 bd	   __i	      =	TEMPORARY_VAR
-      2  0e5e				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  0e5e
-      4  0e5e				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  0e5e				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  0e5e				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  0e5e					      ENDIF
-      8  0e5e				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
-      9  0e5e				  -VNAME      SETSTR	__i
-     10  0e5e				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
-     11  0e5e				  -	      ERR
-     12  0e5e					      ENDIF
-      0  0e5e					      VAR	__bank2, 1
-      1  0e5e		       00 be	   __bank2    =	TEMPORARY_VAR
-      2  0e5e				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
-      3  0e5e
-      4  0e5e				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
-      5  0e5e				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-      6  0e5e				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
-      7  0e5e					      ENDIF
-      8  0e5e				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
-      9  0e5e				  -VNAME      SETSTR	__bank2
-     10  0e5e				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
-     11  0e5e				  -	      ERR
-     12  0e5e					      ENDIF
-      0  0e5e					      VEND	Sort
-      1  0e5e
-      2  0e5e
-      3  0e5e		       00 bf	   VAREND_Sort =	TEMPORARY_VAR
-      4  0e5e
-    613  0e5e
-    614  0e5e		       a5 b1		      lda	__quiesceCapOnly
-    615  0e60		       f0 03		      beq	.nonExit
-    616  0e62		       4c e9 f6 	      jmp	.exit	; only caps present so already sorted!
-    617  0e65				   .nonExit
-    618  0e65
-    619  0e65					      IF	1
-    620  0e65
-    621  0e65							; Run a shallow negamax search to get the values for each move
-    622  0e65							; and then do a bubble sort of the results
-    623  0e65
-    624  0e65		       a5 95		      lda	currentPly
-    625  0e67		       c9 89		      cmp	#RAMBANK_PLY+1
-    626  0e69		       b0 7e		      bcs	.tooDeep
-    627  0e6b
-      0  0e6b					      lda@PLY	depthLeft
-      1  0e6b		       ad d8 f9 	      lda	depthLeft
-    629  0e6e		       48		      pha
-      0  0e6f					      lda@PLY	movePtr
-      1  0e6f		       ad d0 f9 	      lda	movePtr
-    631  0e72		       48		      pha
-    632  0e73
-      0  0e73					      lda@PLY	alpha+1
-      1  0e73		       ad d3 f9 	      lda	alpha+1
-    634  0e76		       48		      pha
-      0  0e77					      lda@PLY	alpha
-      1  0e77		       ad d2 f9 	      lda	alpha
-    636  0e7a		       48		      pha
-      0  0e7b					      lda@PLY	beta+1
-      1  0e7b		       ad d5 f9 	      lda	beta+1
-    638  0e7e		       48		      pha
-      0  0e7f					      lda@PLY	beta
-      1  0e7f		       ad d4 f9 	      lda	beta
-    640  0e82		       48		      pha
-    641  0e83
-      0  0e83					      lda@PLY	value+1
-      1  0e83		       ad d7 f9 	      lda	value+1
-    643  0e86		       48		      pha
-      0  0e87					      lda@PLY	value
-      1  0e87		       ad d6 f9 	      lda	value
-    645  0e8a		       48		      pha
-    646  0e8b
-    647  0e8b
-    648  0e8b		       a9 ff		      lda	#<INFINITY
-    649  0e8d		       85 ab		      sta	__beta
-    650  0e8f		       a9 7f		      lda	#>INFINITY
-    651  0e91		       85 ac		      sta	__beta+1
-    652  0e93
-    653  0e93		       a9 01		      lda	#<-INFINITY
-    654  0e95		       85 a9		      sta	__alpha
-    655  0e97		       a9 80		      lda	#>-INFINITY
-    656  0e99		       85 aa		      sta	__alpha+1	; player tries to maximise
-    657  0e9b
-    658  0e9b		       a2 00		      ldx	#0
-      0  0e9d					      stx@PLY	depthLeft
-      1  0e9d		       8e d8 fb 	      stx	[RAM]+depthLeft
-    660  0ea0
-    661  0ea0		       20 5e f5 	      jsr	negaLoop
-    662  0ea3
-      0  0ea3					      CALL	BubbleSort	;@3
-      1  0ea3				  -	      IF	SLOT_BubbleSort == _BANK_SLOT
-      2  0ea3				  -FNAME      SETSTR	BubbleSort
-      3  0ea3				  -	      ECHO	""
-      4  0ea3				  -	      ECHO	"ERROR: Incompatible slot for call to function", FNAME
-      5  0ea3				  -	      ECHO	"Cannot switch bank in use for ", FNAME
-      6  0ea3				  -	      ERR
-      7  0ea3					      ENDIF
-      8  0ea3		       a9 d9		      lda	#BANK_BubbleSort
-      9  0ea5		       85 3f		      sta	SET_BANK
-     10  0ea7		       20 aa fc 	      jsr	BubbleSort
-    664  0eaa
-    665  0eaa		       a9 ff		      lda	#<INFINITY
-    666  0eac		       85 ab		      sta	__beta
-    667  0eae		       a9 7f		      lda	#>INFINITY
-    668  0eb0		       85 ac		      sta	__beta+1
-    669  0eb2
-    670  0eb2		       a9 01		      lda	#<-INFINITY
-    671  0eb4		       85 a9		      sta	__alpha
-    672  0eb6		       a9 80		      lda	#>-INFINITY
-    673  0eb8		       85 aa		      sta	__alpha+1	; player tries to maximise
-    674  0eba
-    675  0eba		       a2 01		      ldx	#1
-      0  0ebc					      stx@PLY	depthLeft
-      1  0ebc		       8e d8 fb 	      stx	[RAM]+depthLeft
-    677  0ebf
-    678  0ebf		       20 5e f5 	      jsr	negaLoop
-    679  0ec2
-    680  0ec2
-    681  0ec2
-    682  0ec2
-    683  0ec2
-    684  0ec2
-    685  0ec2
-    686  0ec2
-    687  0ec2
-      0  0ec2					      CALL	BubbleSort	;@3
-      1  0ec2				  -	      IF	SLOT_BubbleSort == _BANK_SLOT
-      2  0ec2				  -FNAME      SETSTR	BubbleSort
-      3  0ec2				  -	      ECHO	""
-      4  0ec2				  -	      ECHO	"ERROR: Incompatible slot for call to function", FNAME
-      5  0ec2				  -	      ECHO	"Cannot switch bank in use for ", FNAME
-      6  0ec2				  -	      ERR
-      7  0ec2					      ENDIF
-      8  0ec2		       a9 d9		      lda	#BANK_BubbleSort
-      9  0ec4		       85 3f		      sta	SET_BANK
-     10  0ec6		       20 aa fc 	      jsr	BubbleSort
-    689  0ec9
-    690  0ec9
-    691  0ec9
-    692  0ec9		       68		      pla
-      0  0eca					      sta@PLY	value
-      1  0eca		       8d d6 fb 	      sta	[RAM]+value
-    694  0ecd		       68		      pla
-      0  0ece					      sta@PLY	value+1
-      1  0ece		       8d d7 fb 	      sta	[RAM]+value+1
-    696  0ed1
-    697  0ed1		       68		      pla
-      0  0ed2					      sta@PLY	beta
-      1  0ed2		       8d d4 fb 	      sta	[RAM]+beta
-    699  0ed5		       68		      pla
-      0  0ed6					      sta@PLY	beta+1
-      1  0ed6		       8d d5 fb 	      sta	[RAM]+beta+1
-    701  0ed9		       68		      pla
-      0  0eda					      sta@PLY	alpha
-      1  0eda		       8d d2 fb 	      sta	[RAM]+alpha
-    703  0edd		       68		      pla
-      0  0ede					      sta@PLY	alpha+1
-      1  0ede		       8d d3 fb 	      sta	[RAM]+alpha+1
-    705  0ee1
-    706  0ee1		       68		      pla
-      0  0ee2					      sta@PLY	movePtr
-      1  0ee2		       8d d0 fb 	      sta	[RAM]+movePtr
-    708  0ee5		       68		      pla
-      0  0ee6					      sta@PLY	depthLeft
-      1  0ee6		       8d d8 fb 	      sta	[RAM]+depthLeft
-    710  0ee9
-    711  0ee9
-    712  0ee9				   .tooDeep
-    713  0ee9				   .exit
-    714  0ee9					      ENDIF
-    715  0ee9
-    716  0ee9
-    717  0ee9
-    718  0ee9
-    719  0ee9							; Scan for capture of king
-    720  0ee9							; Also scan for virtual king captures (squares involved in castling)
-    721  0ee9
-      0  0ee9					      ldx@PLY	moveIndex
-      1  0ee9		       ae cf f9 	      ldx	moveIndex
-    723  0eec		       30 19		      bmi	.notCheck	; OK if no captures in quiesce!
-    724  0eee
-      0  0eee				   .scanCheck lda@PLY	MoveCapture,x
-      1  0eee		       bd 64 f9 	      lda	MoveCapture,x
-    726  0ef1		       29 0f		      and	#PIECE_MASK
-    727  0ef3		       c9 07		      cmp	#KING
-    728  0ef5		       f0 12		      beq	.check
-    729  0ef7
-    730  0ef7							; If the squares the king is crossing for castling are capturable, then that's an illegal
-    731  0ef7							; castle move and it's treated as if the king were in check.
-    732  0ef7
-      0  0ef7					      lda@PLY	MoveTo,x
-      1  0ef7		       bd 64 f8 	      lda	MoveTo,x
-      0  0efa					      cmp@PLY	virtualKingSquare
-      1  0efa		       cd da f9 	      cmp	virtualKingSquare
-    735  0efd		       f0 0a		      beq	.check
-      0  0eff					      cmp@PLY	virtualKingSquare+1
-      1  0eff		       cd db f9 	      cmp	virtualKingSquare+1
-    737  0f02		       f0 05		      beq	.check
-    738  0f04
-    739  0f04		       ca	   .nextScan  dex
-    740  0f05		       10 e7		      bpl	.scanCheck
-    741  0f07
-    742  0f07		       a9 00	   .notCheck  lda	#0
-    743  0f09		       85 a1	   .check     sta	flagCheck
-    744  0f0b		       60		      rts
-    745  0f0c
-    746  0f0c
-    747  0f0c							;---------------------------------------------------------------------------------------------------
-    748  0f0c							; QUIESCE!
-    749  0f0c
-    750  0f0c							;int Quiesce( int alpha, int beta ) {
-    751  0f0c							;    int stand_pat = Evaluate();
-    752  0f0c							;    if( stand_pat >= beta )
-    753  0f0c							;	  return beta;
-    754  0f0c							;    if( alpha < stand_pat )
-    755  0f0c							;	  alpha = stand_pat;
-    756  0f0c
-    757  0f0c							;    until( every_capture_has_been_examined )	{
-    758  0f0c							;	  MakeCapture();
-    759  0f0c							;	  score = -Quiesce( -beta, -alpha );
-    760  0f0c							;	  TakeBackMove();
-    761  0f0c
-    762  0f0c							;	  if( score >= beta )
-    763  0f0c							;	      return beta;
-    764  0f0c							;	  if( score > alpha )
-    765  0f0c							;	     alpha = score;
-    766  0f0c							;    }
-    767  0f0c							;    return alpha;
-    768  0f0c							;}
-    769  0f0c
-    770  0f0c
-    771  0f0c							;---------------------------------------------------------------------------------------------------
-    772  0f0c
-      0  0f0c					      DEF	quiesce
-      1  0f0c				   SLOT_quiesce SET	_BANK_SLOT
-      2  0f0c				   BANK_quiesce SET	SLOT_quiesce + _CURRENT_BANK
-      3  0f0c				   quiesce
-      4  0f0c				   TEMPORARY_VAR SET	Overlay
-      5  0f0c				   TEMPORARY_OFFSET SET	0
-      6  0f0c				   VAR_BOUNDARY_quiesce SET	TEMPORARY_OFFSET
-      7  0f0c				   FUNCTION_NAME SET	quiesce
-    774  0f0c					      SUBROUTINE
-    775  0f0c
-    776  0f0c							; pass...
-    777  0f0c							; x = depthleft
-    778  0f0c							; SET_BANK_RAM      --> current ply
-    779  0f0c							; __alpha[2] = param alpha
-    780  0f0c							; __beta[2] = param beta
-    781  0f0c
-    782  0f0c
-      0  0f0c					      REF	COMMON_VARS
-      1  0f0c					      IF	VAREND_COMMON_VARS > TEMPORARY_VAR
-      2  0f0c				   TEMPORARY_VAR SET	VAREND_COMMON_VARS
-      3  0f0c					      ENDIF
-      0  0f0c					      REF	negaMax
-      1  0f0c					      IF	VAREND_negaMax > TEMPORARY_VAR
-      2  0f0c				   TEMPORARY_VAR SET	VAREND_negaMax
-      3  0f0c					      ENDIF
-      0  0f0c					      VEND	quiesce
-      1  0f0c
-      2  0f0c
-      3  0f0c		       00 b8	   VAREND_quiesce =	TEMPORARY_VAR
-      4  0f0c
-    786  0f0c
-    787  0f0c		       a5 95		      lda	currentPly
-    788  0f0e		       c9 8f		      cmp	#RAMBANK_PLY + PLY_BANKS -1
-    789  0f10		       b0 28		      bcs	.retBeta
-    790  0f12							;sta SET_BANK_RAM ;tmp
-    791  0f12
-    792  0f12
-    793  0f12		       20 81 f0 	      jsr	ThinkBar	;@0
-    794  0f15
-    795  0f15		       a5 ab		      lda	__beta
-      0  0f17					      sta@PLY	beta
-      1  0f17		       8d d4 fb 	      sta	[RAM]+beta
-    797  0f1a		       a5 ac		      lda	__beta+1
-      0  0f1c					      sta@PLY	beta+1
-      1  0f1c		       8d d5 fb 	      sta	[RAM]+beta+1
-    799  0f1f
-    800  0f1f		       a5 a9		      lda	__alpha
-      0  0f21					      sta@PLY	alpha
-      1  0f21		       8d d2 fb 	      sta	[RAM]+alpha
-    802  0f24		       a5 aa		      lda	__alpha+1
-      0  0f26					      sta@PLY	alpha+1
-      1  0f26		       8d d3 fb 	      sta	[RAM]+alpha+1
-    804  0f29
-    805  0f29
-    806  0f29							;    int stand_pat = Evaluate();
-    807  0f29							;    if( stand_pat >= beta )
-    808  0f29							;	  return beta;
-    809  0f29
-    810  0f29		       38		      sec
-    811  0f2a		       a5 90		      lda	Evaluation
-      0  0f2c					      sbc@PLY	beta
-      1  0f2c		       ed d4 f9 	      sbc	beta
-    813  0f2f		       a5 91		      lda	Evaluation+1
-      0  0f31					      sbc@PLY	beta+1
-      1  0f31		       ed d5 f9 	      sbc	beta+1
-    815  0f34		       50 02		      bvc	.spat0
-    816  0f36		       49 80		      eor	#$80
-    817  0f38		       30 0b	   .spat0     bmi	.norb	;pl .retBeta			 ; branch if stand_pat >= beta
-    818  0f3a
-    819  0f3a		       ad d4 f9    .retBeta   lda	beta
-    820  0f3d		       85 ad		      sta	__negaMax
-    821  0f3f		       ad d5 f9 	      lda	beta+1
-    822  0f42		       85 ae		      sta	__negaMax+1
-    823  0f44
-    824  0f44		       60	   .abort     rts
-    825  0f45
-    826  0f45				   .norb
-    827  0f45
-    828  0f45
-    829  0f45							;    if( alpha < stand_pat )
-    830  0f45							;	  alpha = stand_pat;
-    831  0f45
-    832  0f45		       38		      sec
-    833  0f46		       ad d2 f9 	      lda	alpha
-    834  0f49		       e5 90		      sbc	Evaluation
-    835  0f4b		       ad d3 f9 	      lda	alpha+1
-    836  0f4e		       e5 91		      sbc	Evaluation+1
-    837  0f50		       50 02		      bvc	.spat1
-    838  0f52		       49 80		      eor	#$80
-    839  0f54		       10 0a	   .spat1     bpl	.alpha	; branch if alpha >= stand_pat
-    840  0f56
-    841  0f56							; alpha < stand_pat
-    842  0f56
-    843  0f56		       a5 90		      lda	Evaluation
-      0  0f58					      sta@PLY	alpha
-      1  0f58		       8d d2 fb 	      sta	[RAM]+alpha
-    845  0f5b		       a5 91		      lda	Evaluation+1
-      0  0f5d					      sta@PLY	alpha+1
-      1  0f5d		       8d d3 fb 	      sta	[RAM]+alpha+1
-    847  0f60
-    848  0f60				   .alpha
-    849  0f60		       20 a6 f1 	      jsr	GenerateAllMoves
-    850  0f63		       a5 a1		      lda	flagCheck
-    851  0f65		       d0 dd		      bne	.abort	; pure abort
-    852  0f67
-      0  0f67					      ldx@PLY	moveIndex
-      1  0f67		       ae cf f9 	      ldx	moveIndex
-    854  0f6a		       30 76		      bmi	.exit
-    855  0f6c
-      0  0f6c				   .forChild  stx@PLY	movePtr
-      1  0f6c		       8e d0 fb 	      stx	[RAM]+movePtr
-    857  0f6f
-    858  0f6f							; The movelist has captures ONLY (ref: __quiesceCapOnly != 0)
-    859  0f6f
-    860  0f6f		       20 7f f4 	      jsr	MakeMove	;@this
-    861  0f72
-    862  0f72		       38		      sec
-    863  0f73		       a9 00		      lda	#0
-      0  0f75					      sbc@PLY	beta
-      1  0f75		       ed d4 f9 	      sbc	beta
-    865  0f78		       85 a9		      sta	__alpha
-    866  0f7a		       a9 00		      lda	#0
-      0  0f7c					      sbc@PLY	beta+1
-      1  0f7c		       ed d5 f9 	      sbc	beta+1
-    868  0f7f		       85 aa		      sta	__alpha+1
-    869  0f81
-    870  0f81		       38		      sec
-    871  0f82		       a9 00		      lda	#0
-      0  0f84					      sbc@PLY	alpha
-      1  0f84		       ed d2 f9 	      sbc	alpha
-    873  0f87		       85 ab		      sta	__beta
-    874  0f89		       a9 00		      lda	#0
-      0  0f8b					      sbc@PLY	alpha+1
-      1  0f8b		       ed d3 f9 	      sbc	alpha+1
-    876  0f8e		       85 ac		      sta	__beta+1
-    877  0f90
-    878  0f90		       e6 95		      inc	currentPly
-    879  0f92		       a5 95		      lda	currentPly
-    880  0f94		       85 3e		      sta	SET_BANK_RAM	; self-switch
-    881  0f96
-    882  0f96		       20 0c f7 	      jsr	quiesce	;@this
-    883  0f99
-    884  0f99		       c6 95		      dec	currentPly
-    885  0f9b
-    886  0f9b		       20 88 f2 	      jsr	unmakeMove	;@0
-    887  0f9e
-    888  0f9e		       a5 a1		      lda	flagCheck	; don't consider moves which leave us in check
-    889  0fa0		       d0 4b		      bne	.inCheck
-    890  0fa2
-    891  0fa2		       38		      sec
-    892  0fa3							;lda #0			 ; already 0
-    893  0fa3		       e5 ad		      sbc	__negaMax
-    894  0fa5		       85 ad		      sta	__negaMax
-    895  0fa7		       a9 00		      lda	#0
-    896  0fa9		       e5 ae		      sbc	__negaMax+1
-    897  0fab		       85 ae		      sta	__negaMax+1	; -negaMax(...)
-    898  0fad
-    899  0fad
-    900  0fad
-    901  0fad							;	  if( score >= beta )
-    902  0fad							;	      return beta;
-    903  0fad
-    904  0fad
-    905  0fad		       38		      sec
-    906  0fae		       a5 ad		      lda	__negaMax
-      0  0fb0					      sbc@PLY	beta
-      1  0fb0		       ed d4 f9 	      sbc	beta
-    908  0fb3		       a5 ae		      lda	__negaMax+1
-      0  0fb5					      sbc@PLY	beta+1
-      1  0fb5		       ed d5 f9 	      sbc	beta+1
-    910  0fb8		       50 02		      bvc	.lab0
-    911  0fba		       49 80		      eor	#$80
-    912  0fbc		       30 03	   .lab0      bmi	.nrb2	; .retBeta		       ; branch if score >= beta
-    913  0fbe		       4c 3a f7 	      jmp	.retBeta
-    914  0fc1				   .nrb2
-    915  0fc1
-    916  0fc1							;	  if( score > alpha )
-    917  0fc1							;	     alpha = score;
-    918  0fc1							;    }
-    919  0fc1
-    920  0fc1		       38		      sec
-      0  0fc2					      lda@PLY	alpha
-      1  0fc2		       ad d2 f9 	      lda	alpha
-    922  0fc5		       e5 ad		      sbc	__negaMax
-      0  0fc7					      lda@PLY	alpha+1
-      1  0fc7		       ad d3 f9 	      lda	alpha+1
-    924  0fca		       e5 ae		      sbc	__negaMax+1
-    925  0fcc		       50 02		      bvc	.lab2
-    926  0fce		       49 80		      eor	#$80
-    927  0fd0		       10 0a	   .lab2      bpl	.nextMove	; alpha >= score
-    928  0fd2
-    929  0fd2							; score > alpha
-    930  0fd2
-    931  0fd2		       a5 ad		      lda	__negaMax
-      0  0fd4					      sta@PLY	alpha
-      1  0fd4		       8d d2 fb 	      sta	[RAM]+alpha
-    933  0fd7		       a5 ae		      lda	__negaMax+1
-      0  0fd9					      sta@PLY	alpha+1
-      1  0fd9		       8d d3 fb 	      sta	[RAM]+alpha+1
-    935  0fdc
-      0  0fdc				   .nextMove  ldx@PLY	movePtr
-      1  0fdc		       ae d0 f9 	      ldx	movePtr
-    937  0fdf		       ca		      dex
-    938  0fe0		       10 8a		      bpl	.forChild
-    939  0fe2
-    940  0fe2							;    return alpha;
-    941  0fe2
-    942  0fe2				   .exit
-      0  0fe2					      lda@PLY	alpha
-      1  0fe2		       ad d2 f9 	      lda	alpha
-    944  0fe5		       85 ad		      sta	__negaMax
-      0  0fe7					      lda@PLY	alpha+1
-      1  0fe7		       ad d3 f9 	      lda	alpha+1
-    946  0fea		       85 ae		      sta	__negaMax+1
-    947  0fec		       60		      rts
-    948  0fed
-    949  0fed		       a9 00	   .inCheck   lda	#0
-    950  0fef		       85 a1		      sta	flagCheck
-    951  0ff1		       f0 e9		      beq	.nextMove
-    952  0ff3
-    953  0ff3
-    954  0ff3							;---------------------------------------------------------------------------------------------------
-    955  0ff3
-      0  0ff3					      END_BANK
-      1  0ff3				  -	      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      2  0ff3				  -	      CHECK_RAM_BANK_SIZE
-      3  0ff3					      ELSE
-      0  0ff3					      CHECK_BANK_SIZE
-      1  0ff3		       03 f3	   .TEMP      =	* - _BANK_START
- ROM bank # 4 NEGAMAX size = $3f3 free = 12
-      2  0ff3					      ECHO	"ROM bank #", [_ORIGIN/_ROM_BANK_SIZE]d, _LAST_BANK, "size =", .TEMP, "free =", [_ROM_BANK_SIZE - .TEMP - 1]d
-      3  0ff3				  -	      IF	( .TEMP ) > _ROM_BANK_SIZE
-      4  0ff3				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - _ORIGIN
-      5  0ff3				  -	      ERR
-      6  0ff3					      ENDIF
-      5  0ff3					      ENDIF
-    957  0ff3
-    958  0ff3							;---------------------------------------------------------------------------------------------------
-    959  0ff3							; EOF
+    360  0d38				  -	      IF	0
+    361  0d38				  -	      NEXT_RANDOM
+    362  0d38				  -	      and	randomness
+    363  0d38				  -	      adc	Evaluation
+    364  0d38				  -	      sta	Evaluation	; since it's random we don't care about HI
+    365  0d38				  -			;bcc .evOK
+    366  0d38				  -			;inc Evaluation+1
+    367  0d38				  -.evOK
+    368  0d38					      ENDIF
+    369  0d38
+    370  0d38		       a5 a9		      lda	__alpha
+      0  0d3a					      sta@PLY	alpha
+      1  0d3a		       8d d2 fb 	      sta	[RAM]+alpha
+    372  0d3d		       a5 aa		      lda	__alpha+1
+      0  0d3f					      sta@PLY	alpha+1
+      1  0d3f		       8d d3 fb 	      sta	[RAM]+alpha+1
+    374  0d42
+    375  0d42		       a5 ab		      lda	__beta
+      0  0d44					      sta@PLY	beta
+      1  0d44		       8d d4 fb 	      sta	[RAM]+beta
+    377  0d47		       a5 ac		      lda	__beta+1
+      0  0d49					      sta@PLY	beta+1
+      1  0d49		       8d d5 fb 	      sta	[RAM]+beta+1
+    379  0d4c
+    380  0d4c
+    381  0d4c		       20 a6 f1 	      jsr	GenerateAllMoves	;@0
+    382  0d4f
+      0  0d4f					      DEF	negaLoop
+      1  0d4f				   SLOT_negaLoop SET	_BANK_SLOT
+      2  0d4f				   BANK_negaLoop SET	SLOT_negaLoop + _CURRENT_BANK
+      3  0d4f				   negaLoop
+      4  0d4f				   TEMPORARY_VAR SET	Overlay
+      5  0d4f				   TEMPORARY_OFFSET SET	0
+      6  0d4f				   VAR_BOUNDARY_negaLoop SET	TEMPORARY_OFFSET
+      7  0d4f				   FUNCTION_NAME SET	negaLoop
+    384  0d4f
+    385  0d4f
+    386  0d4f		       a5 a1		      lda	flagCheck
+    387  0d51		       d0 c9		      bne	.inCheck2	; OTHER guy in check
+    388  0d53
+    389  0d53
+    390  0d53					      IF	1
+    391  0d53							; TODO: how does this sit with the move ordering subsearch?
+    392  0d53
+    393  0d53							; add mobility to the score (for all moves). Will un-add on move revert
+    394  0d53
+      0  0d53					      lda@PLY	moveIndex
+      1  0d53		       ad cf f9 	      lda	moveIndex
+    396  0d56		       c9 ff		      cmp	#$FF
+    397  0d58		       f0 18		      beq	.nomoves
+    398  0d5a
+    399  0d5a		       a2 00		      ldx	#0
+    400  0d5c		       86 b7		      stx	ev2+1
+    401  0d5e
+    402  0d5e					      REPEAT	1
+    403  0d5e		       0a		      asl
+    404  0d5f		       26 b7		      rol	ev2+1
+    405  0d61					      REPEND
+    406  0d61
+    407  0d61		       18		      clc
+    408  0d62		       65 90		      adc	Evaluation
+      0  0d64					      sta@PLY	savedEvaluation
+      1  0d64		       8d c8 fb 	      sta	[RAM]+savedEvaluation
+    410  0d67		       85 90		      sta	Evaluation
+    411  0d69		       a5 91		      lda	Evaluation+1
+    412  0d6b		       65 b7		      adc	ev2+1
+    413  0d6d		       85 91		      sta	Evaluation+1
+      0  0d6f					      sta@PLY	savedEvaluation+1
+      1  0d6f		       8d c9 fb 	      sta	[RAM]+savedEvaluation+1
+    415  0d72
+    416  0d72				   .nomoves
+    417  0d72					      ENDIF
+    418  0d72
+    419  0d72		       a9 01		      lda	#<-INFINITY
+      0  0d74					      sta@PLY	value
+      1  0d74		       8d d6 fb 	      sta	[RAM]+value
+    421  0d77		       a9 90		      lda	#>-INFINITY
+      0  0d79					      sta@PLY	value+1
+      1  0d79		       8d d7 fb 	      sta	[RAM]+value+1
+    423  0d7c
+      0  0d7c					      ldx@PLY	moveIndex
+      1  0d7c		       ae cf f9 	      ldx	moveIndex
+    425  0d7f		       10 03		      bpl	.forChild
+    426  0d81		       4c 05 f5 	      jmp	.exit
+    427  0d84
+      0  0d84				   .forChild  stx@PLY	movePtr
+      1  0d84		       8e d0 fb 	      stx	[RAM]+movePtr
+    429  0d87
+    430  0d87		       20 7f f4 	      jsr	MakeMove	;@this
+    431  0d8a
+    432  0d8a
+    433  0d8a							;	  value := max(value, −negaMax(child, depth − 1, −β, −α, −color))
+    434  0d8a
+    435  0d8a							; PARAMS depth-1, -beta, -alpha
+    436  0d8a							; pased through temporary variables (__alpha, __beta) and X reg
+    437  0d8a
+    438  0d8a		       38		      sec
+    439  0d8b		       a9 00		      lda	#0
+      0  0d8d					      sbc@PLY	beta
+      1  0d8d		       ed d4 f9 	      sbc	beta
+    441  0d90		       85 a9		      sta	__alpha
+    442  0d92		       a9 00		      lda	#0
+      0  0d94					      sbc@PLY	beta+1
+      1  0d94		       ed d5 f9 	      sbc	beta+1
+    444  0d97		       85 aa		      sta	__alpha+1
+    445  0d99
+    446  0d99		       38		      sec
+    447  0d9a		       a9 00		      lda	#0
+      0  0d9c					      sbc@PLY	alpha
+      1  0d9c		       ed d2 f9 	      sbc	alpha
+    449  0d9f		       85 ab		      sta	__beta
+    450  0da1		       a9 00		      lda	#0
+      0  0da3					      sbc@PLY	alpha+1
+      1  0da3		       ed d3 f9 	      sbc	alpha+1
+    452  0da6		       85 ac		      sta	__beta+1
+    453  0da8
+    454  0da8
+      0  0da8					      ldx@PLY	depthLeft
+      1  0da8		       ae d8 f9 	      ldx	depthLeft
+      0  0dab					      lda@PLY	capturedPiece
+      1  0dab		       ad cb f9 	      lda	capturedPiece
+    457  0dae
+    458  0dae		       e6 95		      inc	currentPly
+    459  0db0		       a4 95		      ldy	currentPly
+    460  0db2		       84 3e		      sty	SET_BANK_RAM	; self-switch
+    461  0db4
+    462  0db4		       20 1d f5 	      jsr	negaMax	;@this
+    463  0db7
+    464  0db7		       c6 95		      dec	currentPly
+    465  0db9
+    466  0db9
+    467  0db9		       a5 95		      lda	currentPly
+    468  0dbb		       85 3e		      sta	SET_BANK_RAM
+    469  0dbd
+      0  0dbd					      ldx@PLY	movePtr
+      1  0dbd		       ae d0 f9 	      ldx	movePtr
+    471  0dc0
+    472  0dc0		       18		      clc
+    473  0dc1		       69 08		      adc	#RAMBANK_SORT-RAMBANK_PLY
+    474  0dc3		       85 3e		      sta	SET_BANK_RAM
+    475  0dc5
+    476  0dc5		       a5 ad		      lda	__negaMax
+      0  0dc7					      sta@RAM	MoveValueLO,x
+      1  0dc7		       9d 00 fa 	      sta	[RAM]+MoveValueLO,x
+    478  0dca		       a5 ae		      lda	__negaMax+1
+      0  0dcc					      sta@RAM	MoveValueHI,x
+      1  0dcc		       9d 64 fa 	      sta	[RAM]+MoveValueHI,x
+    480  0dcf
+    481  0dcf		       20 8d f2 	      jsr	unmakeMove	;@0
+    482  0dd2
+    483  0dd2		       a5 95		      lda	currentPly
+    484  0dd4		       85 3e		      sta	SET_BANK_RAM
+    485  0dd6
+    486  0dd6		       38		      sec
+    487  0dd7		       a9 00		      lda	#0
+    488  0dd9		       e5 ad		      sbc	__negaMax
+    489  0ddb		       85 ad		      sta	__negaMax
+    490  0ddd		       a9 00		      lda	#0
+    491  0ddf		       e5 ae		      sbc	__negaMax+1
+    492  0de1		       85 ae		      sta	__negaMax+1	; -negaMax(...)
+    493  0de3
+    494  0de3
+    495  0de3					      IF	1
+    496  0de3		       a5 a1		      lda	flagCheck
+    497  0de5		       f0 09		      beq	.notCheck
+      0  0de7					      sta@PLY	inCheck
+      1  0de7		       8d dc fb 	      sta	[RAM]+inCheck
+    499  0dea
+    500  0dea							; at this point we've determined that the move was illegal, because the next ply detected
+    501  0dea							; a king capture. So, the move should be totally discounted
+    502  0dea
+    503  0dea		       a9 00		      lda	#0
+    504  0dec		       85 a1		      sta	flagCheck	; so we don't retrigger in future - it's been handled!
+    505  0dee		       f0 53		      beq	.nextMove	; unconditional - move is not considered!
+    506  0df0					      ENDIF
+    507  0df0
+    508  0df0
+    509  0df0				   .notCheck
+    510  0df0
+    511  0df0		       38		      sec
+      0  0df1					      lda@PLY	value
+      1  0df1		       ad d6 f9 	      lda	value
+    513  0df4		       e5 ad		      sbc	__negaMax
+      0  0df6					      lda@PLY	value+1
+      1  0df6		       ad d7 f9 	      lda	value+1
+    515  0df9		       e5 ae		      sbc	__negaMax+1
+    516  0dfb		       50 02		      bvc	.lab0
+    517  0dfd		       49 80		      eor	#$80
+    518  0dff		       10 10	   .lab0      bpl	.lt0	; branch if value >= negaMax
+    519  0e01
+    520  0e01
+    521  0e01							; so, negaMax > value!
+    522  0e01
+    523  0e01
+    524  0e01		       a5 ad		      lda	__negaMax
+      0  0e03					      sta@PLY	value
+      1  0e03		       8d d6 fb 	      sta	[RAM]+value
+    526  0e06		       a5 ae		      lda	__negaMax+1
+      0  0e08					      sta@PLY	value+1	; max(value, -negaMax)
+      1  0e08		       8d d7 fb 	      sta	[RAM]+value+1
+    528  0e0b
+      0  0e0b					      lda@PLY	movePtr
+      1  0e0b		       ad d0 f9 	      lda	movePtr
+      0  0e0e					      sta@PLY	bestMove
+      1  0e0e		       8d d1 fb 	      sta	[RAM]+bestMove
+    531  0e11				   .lt0
+    532  0e11
+    533  0e11							;	  α := max(α, value)
+    534  0e11
+    535  0e11		       38		      sec
+      0  0e12					      lda@PLY	value
+      1  0e12		       ad d6 f9 	      lda	value
+      0  0e15					      sbc@PLY	alpha
+      1  0e15		       ed d2 f9 	      sbc	alpha
+      0  0e18					      lda@PLY	value+1
+      1  0e18		       ad d7 f9 	      lda	value+1
+      0  0e1b					      sbc@PLY	alpha+1
+      1  0e1b		       ed d3 f9 	      sbc	alpha+1
+    540  0e1e		       50 02		      bvc	.lab1
+    541  0e20		       49 80		      eor	#$80
+    542  0e22		       30 0c	   .lab1      bmi	.lt1	; value < alpha
+    543  0e24
+      0  0e24					      lda@PLY	value
+      1  0e24		       ad d6 f9 	      lda	value
+      0  0e27					      sta@PLY	alpha
+      1  0e27		       8d d2 fb 	      sta	[RAM]+alpha
+      0  0e2a					      lda@PLY	value+1
+      1  0e2a		       ad d7 f9 	      lda	value+1
+      0  0e2d					      sta@PLY	alpha+1	; alpha = max(alpha, value)
+      1  0e2d		       8d d3 fb 	      sta	[RAM]+alpha+1
+    548  0e30
+    549  0e30				   .lt1
+    550  0e30
+    551  0e30							;	  if α ≥ β then
+    552  0e30							;	      break (* cut-off *)
+    553  0e30
+    554  0e30		       38		      sec
+      0  0e31					      lda@PLY	alpha
+      1  0e31		       ad d2 f9 	      lda	alpha
+      0  0e34					      sbc@PLY	beta
+      1  0e34		       ed d4 f9 	      sbc	beta
+      0  0e37					      lda@PLY	alpha+1
+      1  0e37		       ad d3 f9 	      lda	alpha+1
+      0  0e3a					      sbc@PLY	beta+1
+      1  0e3a		       ed d5 f9 	      sbc	beta+1
+    559  0e3d		       50 02		      bvc	.lab2
+    560  0e3f		       49 80		      eor	#$80
+    561  0e41		       10 09	   .lab2      bpl	.retrn	; alpha >= beta
+    562  0e43
+    563  0e43
+      0  0e43				   .nextMove  ldx@PLY	movePtr
+      1  0e43		       ae d0 f9 	      ldx	movePtr
+    565  0e46		       ca	   .nextX     dex
+    566  0e47		       30 03		      bmi	.retrn
+    567  0e49		       4c 84 f5 	      jmp	.forChild
+    568  0e4c
+    569  0e4c				   .retrn
+    570  0e4c
+    571  0e4c				  -	      IF	0
+    572  0e4c				  -
+    573  0e4c				  -			; If there has been NO "best move" found, then there were no valid moves
+    574  0e4c				  -			; if the side was in check, that's OK we'll score a checkmate for that
+    575  0e4c				  -			; but if NOT in check, then it's a stalemate, and the score needs to be adjusted
+    576  0e4c				  -
+    577  0e4c				  -	      lda@PLY	bestMove
+    578  0e4c				  -	      bpl	.someMoveOK
+    579  0e4c				  -	      lda@PLY	inCheck
+    580  0e4c				  -	      bne	.someMoveOK	; it's a checkmate
+    581  0e4c				  -
+    582  0e4c				  -			;lda #0
+    583  0e4c				  -	      sta@PLY	value
+    584  0e4c				  -	      sta@PLY	value+1
+    585  0e4c				  -
+    586  0e4c				  -.someMoveOK
+    587  0e4c					      ENDIF
+    588  0e4c
+    589  0e4c		       4c 05 f5 	      jmp	.exit
+    590  0e4f
+    591  0e4f
+    592  0e4f							;---------------------------------------------------------------------------------------------------
+    593  0e4f
+    594  0e4f					      MAC	xchg
+    595  0e4f					      lda@PLY	{1},x
+    596  0e4f					      pha		;sta __xchg
+    597  0e4f					      lda@PLY	{1},y
+    598  0e4f					      sta@PLY	{1},x
+    599  0e4f					      pla		;lda __xchg
+    600  0e4f					      sta@PLY	{1},y
+    601  0e4f					      ENDM		;{name}
+    602  0e4f
+    603  0e4f
+    604  0e4f				  -	      IF	0
+    605  0e4f				  -			; bubble sort from Wikipedia
+    606  0e4f				  -
+    607  0e4f				  -			;n := length(A)
+    608  0e4f				  -			;repeat
+    609  0e4f				  -			;    newn := 0
+    610  0e4f				  -			;    for i := 1 to n - 1 inclusive do
+    611  0e4f				  -			;	  if A[i - 1] > A[i] then
+    612  0e4f				  -			;	      swap(A[i - 1], A[i])
+    613  0e4f				  -			;	      newn := i
+    614  0e4f				  -			;	  end if
+    615  0e4f				  -			;    end for
+    616  0e4f				  -			;    n := newn
+    617  0e4f				  -			;until n ≤ 1
+    618  0e4f				  -
+    619  0e4f					      ENDIF
+    620  0e4f
+    621  0e4f
+    622  0e4f
+      0  0e4f					      DEF	Sort
+      1  0e4f				   SLOT_Sort  SET	_BANK_SLOT
+      2  0e4f				   BANK_Sort  SET	SLOT_Sort + _CURRENT_BANK
+      3  0e4f				   Sort
+      4  0e4f				   TEMPORARY_VAR SET	Overlay
+      5  0e4f				   TEMPORARY_OFFSET SET	0
+      6  0e4f				   VAR_BOUNDARY_Sort SET	TEMPORARY_OFFSET
+      7  0e4f				   FUNCTION_NAME SET	Sort
+    624  0e4f					      SUBROUTINE
+    625  0e4f
+      0  0e4f					      REF	GenerateAllMoves
+      1  0e4f					      IF	VAREND_GenerateAllMoves > TEMPORARY_VAR
+      2  0e4f				   TEMPORARY_VAR SET	VAREND_GenerateAllMoves
+      3  0e4f					      ENDIF
+      0  0e4f					      VAR	__xchg, 1
+      1  0e4f		       00 ba	   __xchg     =	TEMPORARY_VAR
+      2  0e4f				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  0e4f
+      4  0e4f				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  0e4f				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  0e4f				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  0e4f					      ENDIF
+      8  0e4f				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
+      9  0e4f				  -VNAME      SETSTR	__xchg
+     10  0e4f				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
+     11  0e4f				  -	      ERR
+     12  0e4f					      ENDIF
+      0  0e4f					      VAR	__n, 1
+      1  0e4f		       00 bb	   __n	      =	TEMPORARY_VAR
+      2  0e4f				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  0e4f
+      4  0e4f				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  0e4f				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  0e4f				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  0e4f					      ENDIF
+      8  0e4f				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
+      9  0e4f				  -VNAME      SETSTR	__n
+     10  0e4f				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
+     11  0e4f				  -	      ERR
+     12  0e4f					      ENDIF
+      0  0e4f					      VAR	__newn, 1
+      1  0e4f		       00 bc	   __newn     =	TEMPORARY_VAR
+      2  0e4f				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  0e4f
+      4  0e4f				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  0e4f				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  0e4f				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  0e4f					      ENDIF
+      8  0e4f				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
+      9  0e4f				  -VNAME      SETSTR	__newn
+     10  0e4f				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
+     11  0e4f				  -	      ERR
+     12  0e4f					      ENDIF
+      0  0e4f					      VAR	__i, 1
+      1  0e4f		       00 bd	   __i	      =	TEMPORARY_VAR
+      2  0e4f				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  0e4f
+      4  0e4f				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  0e4f				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  0e4f				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  0e4f					      ENDIF
+      8  0e4f				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
+      9  0e4f				  -VNAME      SETSTR	__i
+     10  0e4f				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
+     11  0e4f				  -	      ERR
+     12  0e4f					      ENDIF
+      0  0e4f					      VAR	__bank2, 1
+      1  0e4f		       00 be	   __bank2    =	TEMPORARY_VAR
+      2  0e4f				   TEMPORARY_VAR SET	TEMPORARY_VAR + TEMPORARY_OFFSET + 1
+      3  0e4f
+      4  0e4f				   OVERLAY_DELTA SET	TEMPORARY_VAR - Overlay
+      5  0e4f				  -	      IF	OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
+      6  0e4f				  -MAXIMUM_REQUIRED_OVERLAY_SIZE SET	OVERLAY_DELTA
+      7  0e4f					      ENDIF
+      8  0e4f				  -	      IF	OVERLAY_DELTA + Overlay >= TOP_OF_STACK
+      9  0e4f				  -VNAME      SETSTR	__bank2
+     10  0e4f				  -	      ECHO	"Temporary Variable", VNAME, "overflow!"
+     11  0e4f				  -	      ERR
+     12  0e4f					      ENDIF
+      0  0e4f					      VEND	Sort
+      1  0e4f
+      2  0e4f
+      3  0e4f		       00 bf	   VAREND_Sort =	TEMPORARY_VAR
+      4  0e4f
+    633  0e4f
+    634  0e4f		       a5 b1		      lda	__quiesceCapOnly
+    635  0e51		       f0 03		      beq	.nonExit
+    636  0e53		       4c be f6 	      jmp	.exit	; only caps present so already sorted!
+    637  0e56				   .nonExit
+    638  0e56
+    639  0e56					      IF	1
+    640  0e56
+    641  0e56							; Run a shallow negamax search to get the values for each move
+    642  0e56							; and then do a bubble sort of the results
+    643  0e56
+    644  0e56		       a5 95		      lda	currentPly
+    645  0e58		       c9 89		      cmp	#RAMBANK_PLY+1
+    646  0e5a		       b0 62		      bcs	.tooDeep
+    647  0e5c
+      0  0e5c					      lda@PLY	depthLeft
+      1  0e5c		       ad d8 f9 	      lda	depthLeft
+    649  0e5f		       48		      pha
+      0  0e60					      lda@PLY	movePtr
+      1  0e60		       ad d0 f9 	      lda	movePtr
+    651  0e63		       48		      pha
+    652  0e64
+      0  0e64					      lda@PLY	alpha+1
+      1  0e64		       ad d3 f9 	      lda	alpha+1
+    654  0e67		       48		      pha
+      0  0e68					      lda@PLY	alpha
+      1  0e68		       ad d2 f9 	      lda	alpha
+    656  0e6b		       48		      pha
+      0  0e6c					      lda@PLY	beta+1
+      1  0e6c		       ad d5 f9 	      lda	beta+1
+    658  0e6f		       48		      pha
+      0  0e70					      lda@PLY	beta
+      1  0e70		       ad d4 f9 	      lda	beta
+    660  0e73		       48		      pha
+    661  0e74
+      0  0e74					      lda@PLY	value+1
+      1  0e74		       ad d7 f9 	      lda	value+1
+    663  0e77		       48		      pha
+      0  0e78					      lda@PLY	value
+      1  0e78		       ad d6 f9 	      lda	value
+    665  0e7b		       48		      pha
+    666  0e7c
+    667  0e7c
+    668  0e7c		       a9 ff		      lda	#<INFINITY
+    669  0e7e		       85 ab		      sta	__beta
+    670  0e80		       a9 6f		      lda	#>INFINITY
+    671  0e82		       85 ac		      sta	__beta+1
+    672  0e84
+    673  0e84		       a9 01		      lda	#<-INFINITY
+    674  0e86		       85 a9		      sta	__alpha
+    675  0e88		       a9 90		      lda	#>-INFINITY
+    676  0e8a		       85 aa		      sta	__alpha+1	; player tries to maximise
+    677  0e8c
+    678  0e8c		       a2 02		      ldx	#2
+      0  0e8e					      stx@PLY	depthLeft
+      1  0e8e		       8e d8 fb 	      stx	[RAM]+depthLeft
+    680  0e91
+    681  0e91		       20 4f f5 	      jsr	negaLoop
+    682  0e94
+      0  0e94					      CALL	BubbleSort	;@3
+      1  0e94				  -	      IF	SLOT_BubbleSort == _BANK_SLOT
+      2  0e94				  -FNAME      SETSTR	BubbleSort
+      3  0e94				  -	      ECHO	""
+      4  0e94				  -	      ECHO	"ERROR: Incompatible slot for call to function", FNAME
+      5  0e94				  -	      ECHO	"Cannot switch bank in use for ", FNAME
+      6  0e94				  -	      ERR
+      7  0e94					      ENDIF
+      8  0e94		       a9 d9		      lda	#BANK_BubbleSort
+      9  0e96		       85 3f		      sta	SET_BANK
+     10  0e98		       20 aa fc 	      jsr	BubbleSort
+    684  0e9b
+    685  0e9b		       68		      pla
+      0  0e9c					      sta@PLY	value
+      1  0e9c		       8d d6 fb 	      sta	[RAM]+value
+    687  0e9f		       68		      pla
+      0  0ea0					      sta@PLY	value+1
+      1  0ea0		       8d d7 fb 	      sta	[RAM]+value+1
+    689  0ea3
+    690  0ea3		       68		      pla
+      0  0ea4					      sta@PLY	beta
+      1  0ea4		       8d d4 fb 	      sta	[RAM]+beta
+    692  0ea7		       68		      pla
+      0  0ea8					      sta@PLY	beta+1
+      1  0ea8		       8d d5 fb 	      sta	[RAM]+beta+1
+    694  0eab		       68		      pla
+      0  0eac					      sta@PLY	alpha
+      1  0eac		       8d d2 fb 	      sta	[RAM]+alpha
+    696  0eaf		       68		      pla
+      0  0eb0					      sta@PLY	alpha+1
+      1  0eb0		       8d d3 fb 	      sta	[RAM]+alpha+1
+    698  0eb3
+    699  0eb3		       68		      pla
+      0  0eb4					      sta@PLY	movePtr
+      1  0eb4		       8d d0 fb 	      sta	[RAM]+movePtr
+    701  0eb7		       68		      pla
+      0  0eb8					      sta@PLY	depthLeft
+      1  0eb8		       8d d8 fb 	      sta	[RAM]+depthLeft
+    703  0ebb
+    704  0ebb		       20 8c f2 	      jsr	debug
+    705  0ebe				   .tooDeep
+    706  0ebe					      ENDIF
+    707  0ebe				   .exit
+    708  0ebe
+    709  0ebe
+    710  0ebe
+    711  0ebe
+    712  0ebe							; Scan for capture of king
+    713  0ebe							; Also scan for virtual king captures (squares involved in castling)
+    714  0ebe
+      0  0ebe					      ldx@PLY	moveIndex
+      1  0ebe		       ae cf f9 	      ldx	moveIndex
+    716  0ec1		       30 19		      bmi	.notCheck	; OK if no captures in quiesce!
+    717  0ec3
+      0  0ec3				   .scanCheck lda@PLY	MoveCapture,x
+      1  0ec3		       bd 64 f9 	      lda	MoveCapture,x
+    719  0ec6		       29 0f		      and	#PIECE_MASK
+    720  0ec8		       c9 07		      cmp	#KING
+    721  0eca		       f0 12		      beq	.check
+    722  0ecc
+    723  0ecc							; If the squares the king is crossing for castling are capturable, then that's an illegal
+    724  0ecc							; castle move and it's treated as if the king were in check.
+    725  0ecc
+      0  0ecc					      lda@PLY	MoveTo,x
+      1  0ecc		       bd 64 f8 	      lda	MoveTo,x
+      0  0ecf					      cmp@PLY	virtualKingSquare
+      1  0ecf		       cd da f9 	      cmp	virtualKingSquare
+    728  0ed2		       f0 0a		      beq	.check
+      0  0ed4					      cmp@PLY	virtualKingSquare+1
+      1  0ed4		       cd db f9 	      cmp	virtualKingSquare+1
+    730  0ed7		       f0 05		      beq	.check
+    731  0ed9
+    732  0ed9		       ca	   .nextScan  dex
+    733  0eda		       10 e7		      bpl	.scanCheck
+    734  0edc
+    735  0edc		       a9 00	   .notCheck  lda	#0
+    736  0ede		       85 a1	   .check     sta	flagCheck
+    737  0ee0		       60		      rts
+    738  0ee1
+    739  0ee1
+    740  0ee1							;---------------------------------------------------------------------------------------------------
+    741  0ee1							; QUIESCE!
+    742  0ee1
+    743  0ee1							;int Quiesce( int alpha, int beta ) {
+    744  0ee1							;    int stand_pat = Evaluate();
+    745  0ee1							;    if( stand_pat >= beta )
+    746  0ee1							;	  return beta;
+    747  0ee1							;    if( alpha < stand_pat )
+    748  0ee1							;	  alpha = stand_pat;
+    749  0ee1
+    750  0ee1							;    until( every_capture_has_been_examined )	{
+    751  0ee1							;	  MakeCapture();
+    752  0ee1							;	  score = -Quiesce( -beta, -alpha );
+    753  0ee1							;	  TakeBackMove();
+    754  0ee1
+    755  0ee1							;	  if( score >= beta )
+    756  0ee1							;	      return beta;
+    757  0ee1							;	  if( score > alpha )
+    758  0ee1							;	     alpha = score;
+    759  0ee1							;    }
+    760  0ee1							;    return alpha;
+    761  0ee1							;}
+    762  0ee1
+    763  0ee1
+    764  0ee1							;---------------------------------------------------------------------------------------------------
+    765  0ee1
+      0  0ee1					      DEF	quiesce
+      1  0ee1				   SLOT_quiesce SET	_BANK_SLOT
+      2  0ee1				   BANK_quiesce SET	SLOT_quiesce + _CURRENT_BANK
+      3  0ee1				   quiesce
+      4  0ee1				   TEMPORARY_VAR SET	Overlay
+      5  0ee1				   TEMPORARY_OFFSET SET	0
+      6  0ee1				   VAR_BOUNDARY_quiesce SET	TEMPORARY_OFFSET
+      7  0ee1				   FUNCTION_NAME SET	quiesce
+    767  0ee1					      SUBROUTINE
+    768  0ee1
+    769  0ee1							; pass...
+    770  0ee1							; x = depthleft
+    771  0ee1							; SET_BANK_RAM      --> current ply
+    772  0ee1							; __alpha[2] = param alpha
+    773  0ee1							; __beta[2] = param beta
+    774  0ee1
+    775  0ee1
+      0  0ee1					      REF	COMMON_VARS
+      1  0ee1					      IF	VAREND_COMMON_VARS > TEMPORARY_VAR
+      2  0ee1				   TEMPORARY_VAR SET	VAREND_COMMON_VARS
+      3  0ee1					      ENDIF
+      0  0ee1					      REF	negaMax
+      1  0ee1					      IF	VAREND_negaMax > TEMPORARY_VAR
+      2  0ee1				   TEMPORARY_VAR SET	VAREND_negaMax
+      3  0ee1					      ENDIF
+      0  0ee1					      VEND	quiesce
+      1  0ee1
+      2  0ee1
+      3  0ee1		       00 b8	   VAREND_quiesce =	TEMPORARY_VAR
+      4  0ee1
+    779  0ee1
+    780  0ee1		       a5 95		      lda	currentPly
+    781  0ee3		       c9 8f		      cmp	#RAMBANK_PLY + PLY_BANKS -1
+    782  0ee5		       b0 28		      bcs	.retBeta
+    783  0ee7							;sta SET_BANK_RAM ;tmp
+    784  0ee7
+    785  0ee7
+    786  0ee7		       20 81 f0 	      jsr	ThinkBar	;@0
+    787  0eea
+    788  0eea		       a5 ab		      lda	__beta
+      0  0eec					      sta@PLY	beta
+      1  0eec		       8d d4 fb 	      sta	[RAM]+beta
+    790  0eef		       a5 ac		      lda	__beta+1
+      0  0ef1					      sta@PLY	beta+1
+      1  0ef1		       8d d5 fb 	      sta	[RAM]+beta+1
+    792  0ef4
+    793  0ef4		       a5 a9		      lda	__alpha
+      0  0ef6					      sta@PLY	alpha
+      1  0ef6		       8d d2 fb 	      sta	[RAM]+alpha
+    795  0ef9		       a5 aa		      lda	__alpha+1
+      0  0efb					      sta@PLY	alpha+1
+      1  0efb		       8d d3 fb 	      sta	[RAM]+alpha+1
+    797  0efe
+    798  0efe
+    799  0efe							;    int stand_pat = Evaluate();
+    800  0efe							;    if( stand_pat >= beta )
+    801  0efe							;	  return beta;
+    802  0efe
+    803  0efe		       38		      sec
+    804  0eff		       a5 90		      lda	Evaluation
+      0  0f01					      sbc@PLY	beta
+      1  0f01		       ed d4 f9 	      sbc	beta
+    806  0f04		       a5 91		      lda	Evaluation+1
+      0  0f06					      sbc@PLY	beta+1
+      1  0f06		       ed d5 f9 	      sbc	beta+1
+    808  0f09		       50 02		      bvc	.spat0
+    809  0f0b		       49 80		      eor	#$80
+    810  0f0d		       30 0b	   .spat0     bmi	.norb	;pl .retBeta			 ; branch if stand_pat >= beta
+    811  0f0f
+    812  0f0f		       ad d4 f9    .retBeta   lda	beta
+    813  0f12		       85 ad		      sta	__negaMax
+    814  0f14		       ad d5 f9 	      lda	beta+1
+    815  0f17		       85 ae		      sta	__negaMax+1
+    816  0f19
+    817  0f19		       60	   .abort     rts
+    818  0f1a
+    819  0f1a				   .norb
+    820  0f1a
+    821  0f1a
+    822  0f1a							;    if( alpha < stand_pat )
+    823  0f1a							;	  alpha = stand_pat;
+    824  0f1a
+    825  0f1a		       38		      sec
+    826  0f1b		       ad d2 f9 	      lda	alpha
+    827  0f1e		       e5 90		      sbc	Evaluation
+    828  0f20		       ad d3 f9 	      lda	alpha+1
+    829  0f23		       e5 91		      sbc	Evaluation+1
+    830  0f25		       50 02		      bvc	.spat1
+    831  0f27		       49 80		      eor	#$80
+    832  0f29		       10 0a	   .spat1     bpl	.alpha	; branch if alpha >= stand_pat
+    833  0f2b
+    834  0f2b							; alpha < stand_pat
+    835  0f2b
+    836  0f2b		       a5 90		      lda	Evaluation
+      0  0f2d					      sta@PLY	alpha
+      1  0f2d		       8d d2 fb 	      sta	[RAM]+alpha
+    838  0f30		       a5 91		      lda	Evaluation+1
+      0  0f32					      sta@PLY	alpha+1
+      1  0f32		       8d d3 fb 	      sta	[RAM]+alpha+1
+    840  0f35
+    841  0f35				   .alpha
+    842  0f35		       20 a6 f1 	      jsr	GenerateAllMoves
+    843  0f38		       a5 a1		      lda	flagCheck
+    844  0f3a		       d0 dd		      bne	.abort	; pure abort
+    845  0f3c
+      0  0f3c					      ldx@PLY	moveIndex
+      1  0f3c		       ae cf f9 	      ldx	moveIndex
+    847  0f3f		       30 76		      bmi	.exit
+    848  0f41
+      0  0f41				   .forChild  stx@PLY	movePtr
+      1  0f41		       8e d0 fb 	      stx	[RAM]+movePtr
+    850  0f44
+    851  0f44							; The movelist has captures ONLY (ref: __quiesceCapOnly != 0)
+    852  0f44
+    853  0f44		       20 7f f4 	      jsr	MakeMove	;@this
+    854  0f47
+    855  0f47		       38		      sec
+    856  0f48		       a9 00		      lda	#0
+      0  0f4a					      sbc@PLY	beta
+      1  0f4a		       ed d4 f9 	      sbc	beta
+    858  0f4d		       85 a9		      sta	__alpha
+    859  0f4f		       a9 00		      lda	#0
+      0  0f51					      sbc@PLY	beta+1
+      1  0f51		       ed d5 f9 	      sbc	beta+1
+    861  0f54		       85 aa		      sta	__alpha+1
+    862  0f56
+    863  0f56		       38		      sec
+    864  0f57		       a9 00		      lda	#0
+      0  0f59					      sbc@PLY	alpha
+      1  0f59		       ed d2 f9 	      sbc	alpha
+    866  0f5c		       85 ab		      sta	__beta
+    867  0f5e		       a9 00		      lda	#0
+      0  0f60					      sbc@PLY	alpha+1
+      1  0f60		       ed d3 f9 	      sbc	alpha+1
+    869  0f63		       85 ac		      sta	__beta+1
+    870  0f65
+    871  0f65		       e6 95		      inc	currentPly
+    872  0f67		       a5 95		      lda	currentPly
+    873  0f69		       85 3e		      sta	SET_BANK_RAM	; self-switch
+    874  0f6b
+    875  0f6b		       20 e1 f6 	      jsr	quiesce	;@this
+    876  0f6e
+    877  0f6e		       c6 95		      dec	currentPly
+    878  0f70
+    879  0f70		       20 8d f2 	      jsr	unmakeMove	;@0
+    880  0f73
+    881  0f73		       a5 a1		      lda	flagCheck	; don't consider moves which leave us in check
+    882  0f75		       d0 4b		      bne	.inCheck
+    883  0f77
+    884  0f77		       38		      sec
+    885  0f78							;lda #0			 ; already 0
+    886  0f78		       e5 ad		      sbc	__negaMax
+    887  0f7a		       85 ad		      sta	__negaMax
+    888  0f7c		       a9 00		      lda	#0
+    889  0f7e		       e5 ae		      sbc	__negaMax+1
+    890  0f80		       85 ae		      sta	__negaMax+1	; -negaMax(...)
+    891  0f82
+    892  0f82
+    893  0f82
+    894  0f82							;	  if( score >= beta )
+    895  0f82							;	      return beta;
+    896  0f82
+    897  0f82
+    898  0f82		       38		      sec
+    899  0f83		       a5 ad		      lda	__negaMax
+      0  0f85					      sbc@PLY	beta
+      1  0f85		       ed d4 f9 	      sbc	beta
+    901  0f88		       a5 ae		      lda	__negaMax+1
+      0  0f8a					      sbc@PLY	beta+1
+      1  0f8a		       ed d5 f9 	      sbc	beta+1
+    903  0f8d		       50 02		      bvc	.lab0
+    904  0f8f		       49 80		      eor	#$80
+    905  0f91		       30 03	   .lab0      bmi	.nrb2	; .retBeta		       ; branch if score >= beta
+    906  0f93		       4c 0f f7 	      jmp	.retBeta
+    907  0f96				   .nrb2
+    908  0f96
+    909  0f96							;	  if( score > alpha )
+    910  0f96							;	     alpha = score;
+    911  0f96							;    }
+    912  0f96
+    913  0f96		       38		      sec
+      0  0f97					      lda@PLY	alpha
+      1  0f97		       ad d2 f9 	      lda	alpha
+    915  0f9a		       e5 ad		      sbc	__negaMax
+      0  0f9c					      lda@PLY	alpha+1
+      1  0f9c		       ad d3 f9 	      lda	alpha+1
+    917  0f9f		       e5 ae		      sbc	__negaMax+1
+    918  0fa1		       50 02		      bvc	.lab2
+    919  0fa3		       49 80		      eor	#$80
+    920  0fa5		       10 0a	   .lab2      bpl	.nextMove	; alpha >= score
+    921  0fa7
+    922  0fa7							; score > alpha
+    923  0fa7
+    924  0fa7		       a5 ad		      lda	__negaMax
+      0  0fa9					      sta@PLY	alpha
+      1  0fa9		       8d d2 fb 	      sta	[RAM]+alpha
+    926  0fac		       a5 ae		      lda	__negaMax+1
+      0  0fae					      sta@PLY	alpha+1
+      1  0fae		       8d d3 fb 	      sta	[RAM]+alpha+1
+    928  0fb1
+      0  0fb1				   .nextMove  ldx@PLY	movePtr
+      1  0fb1		       ae d0 f9 	      ldx	movePtr
+    930  0fb4		       ca		      dex
+    931  0fb5		       10 8a		      bpl	.forChild
+    932  0fb7
+    933  0fb7							;    return alpha;
+    934  0fb7
+    935  0fb7				   .exit
+      0  0fb7					      lda@PLY	alpha
+      1  0fb7		       ad d2 f9 	      lda	alpha
+    937  0fba		       85 ad		      sta	__negaMax
+      0  0fbc					      lda@PLY	alpha+1
+      1  0fbc		       ad d3 f9 	      lda	alpha+1
+    939  0fbf		       85 ae		      sta	__negaMax+1
+    940  0fc1		       60		      rts
+    941  0fc2
+    942  0fc2		       a9 00	   .inCheck   lda	#0
+    943  0fc4		       85 a1		      sta	flagCheck
+    944  0fc6		       f0 e9		      beq	.nextMove
+    945  0fc8
+    946  0fc8
+    947  0fc8							;---------------------------------------------------------------------------------------------------
+    948  0fc8
+      0  0fc8					      END_BANK
+      1  0fc8				  -	      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      2  0fc8				  -	      CHECK_RAM_BANK_SIZE
+      3  0fc8					      ELSE
+      0  0fc8					      CHECK_BANK_SIZE
+      1  0fc8		       03 c8	   .TEMP      =	* - _BANK_START
+ ROM bank # 4 NEGAMAX size = $3c8 free = 55
+      2  0fc8					      ECHO	"ROM bank #", [_ORIGIN/_ROM_BANK_SIZE]d, _LAST_BANK, "size =", .TEMP, "free =", [_ROM_BANK_SIZE - .TEMP - 1]d
+      3  0fc8				  -	      IF	( .TEMP ) > _ROM_BANK_SIZE
+      4  0fc8				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - _ORIGIN
+      5  0fc8				  -	      ERR
+      6  0fc8					      ENDIF
+      5  0fc8					      ENDIF
+    950  0fc8
+    951  0fc8							;---------------------------------------------------------------------------------------------------
+    952  0fc8							; EOF
 ------- FILE ./chess.asm
 ------- FILE @1 STATE MACHINE #1.asm LEVEL 2 PASS 4
-      0  0ff3					      include	"@1 STATE MACHINE #1.asm"
-      1  0ff3							;---------------------------------------------------------------------------------------------------
-      2  0ff3							; @1 STATE MACHINE #1.asm
-      3  0ff3
-      4  0ff3							; Atari 2600 Chess
-      5  0ff3							; Copyright (c) 2019-2020 Andrew Davie
-      6  0ff3							; andrew@taswegian.com
-      7  0ff3
-      8  0ff3
-      9  0ff3							;---------------------------------------------------------------------------------------------------
-     10  0ff3
-      0  0ff3					      SLOT	1
-      1  0ff3
-      2  0ff3				  -	      IF	(1 < 0) || (1 > 3)
-      3  0ff3				  -	      ECHO	"Illegal bank address/segment location", 1
-      4  0ff3				  -	      ERR
-      5  0ff3					      ENDIF
-      6  0ff3
-      7  0ff3				   _BANK_ADDRESS_ORIGIN SET	$F000 + (1 * _ROM_BANK_SIZE)
-      8  0ff3				   _BANK_SLOT SET	1 * 64
-      9  0ff3
-      0  0ff3					      ROMBANK	STATEMACHINE
+      0  0fc8					      include	"@1 STATE MACHINE #1.asm"
+      1  0fc8							;---------------------------------------------------------------------------------------------------
+      2  0fc8							; @1 STATE MACHINE #1.asm
+      3  0fc8
+      4  0fc8							; Atari 2600 Chess
+      5  0fc8							; Copyright (c) 2019-2020 Andrew Davie
+      6  0fc8							; andrew@taswegian.com
+      7  0fc8
+      8  0fc8
+      9  0fc8							;---------------------------------------------------------------------------------------------------
+     10  0fc8
+      0  0fc8					      SLOT	1
+      1  0fc8
+      2  0fc8				  -	      IF	(1 < 0) || (1 > 3)
+      3  0fc8				  -	      ECHO	"Illegal bank address/segment location", 1
+      4  0fc8				  -	      ERR
+      5  0fc8					      ENDIF
+      6  0fc8
+      7  0fc8				   _BANK_ADDRESS_ORIGIN SET	$F000 + (1 * _ROM_BANK_SIZE)
+      8  0fc8				   _BANK_SLOT SET	1 * 64
+      9  0fc8
+      0  0fc8					      ROMBANK	STATEMACHINE
       1  13e1 ????				      SEG	ROM_STATEMACHINE
       2  1000					      ORG	_ORIGIN
       3  1000					      RORG	_BANK_ADDRESS_ORIGIN
@@ -7374,7 +7354,7 @@
     593  1228							;lda #BANK_showMoveCaptures
     594  1228							;sta SET_BANK;@0
     595  1228
-    596  1228		       20 da f2 	      jsr	showMoveCaptures	;@0
+    596  1228		       20 df f2 	      jsr	showMoveCaptures	;@0
     597  122b		       a5 8e		      lda	aiMoveIndex
     598  122d		       10 06		      bpl	.exit
     599  122f
@@ -9201,22 +9181,22 @@
       6  1800		       84 ba		      sty	__temp
       7  1802		       a9 06		      lda	#WHITE|QUEEN
       8  1804		       85 92		      sta	currentPiece
-      9  1806		       20 60 f2 	      jsr	AddMove
+      9  1806		       20 65 f2 	      jsr	AddMove
      10  1809
      11  1809		       a9 05		      lda	#WHITE|ROOK
      12  180b		       85 92		      sta	currentPiece
      13  180d		       a4 ba		      ldy	__temp
-     14  180f		       20 60 f2 	      jsr	AddMove
+     14  180f		       20 65 f2 	      jsr	AddMove
      15  1812
      16  1812		       a9 04		      lda	#WHITE|BISHOP
      17  1814		       85 92		      sta	currentPiece
      18  1816		       a4 ba		      ldy	__temp
-     19  1818		       20 60 f2 	      jsr	AddMove
+     19  1818		       20 65 f2 	      jsr	AddMove
      20  181b
      21  181b		       a9 03		      lda	#WHITE|KNIGHT
      22  181d		       85 92		      sta	currentPiece
      23  181f		       a4 ba		      ldy	__temp
-     24  1821		       20 60 f2 	      jsr	AddMove
+     24  1821		       20 65 f2 	      jsr	AddMove
      25  1824
      26  1824					      IF	WHITE = WHITE
      27  1824		       a9 01		      lda	#WHITE|WP
@@ -9275,7 +9255,7 @@
      15  183d				  -	      jmp	.pMoved
      16  183d					      ENDIF
      17  183d
-     18  183d		       20 60 f2    .standard  jsr	AddMove
+     18  183d		       20 65 f2    .standard  jsr	AddMove
      19  1840				   .pMoved
      20  1840
     141  1840
@@ -9292,7 +9272,7 @@
     152  1850		       09 20		      ora	#FLAG_ENPASSANT
     153  1852		       85 92		      sta	currentPiece	; GENERATE en-passant opportunity
     154  1854
-    155  1854		       20 60 f2 	      jsr	AddMove	; add the +2UP move off home row
+    155  1854		       20 65 f2 	      jsr	AddMove	; add the +2UP move off home row
     156  1857
     157  1857				   .pMoved
     158  1857
@@ -9329,7 +9309,7 @@
      15  1873				  -	      jmp	.pMoved
      16  1873					      ENDIF
      17  1873
-     18  1873		       20 60 f2    .standard  jsr	AddMove
+     18  1873		       20 65 f2    .standard  jsr	AddMove
      19  1876				   .pMoved
      20  1876
      14  1876
@@ -9367,7 +9347,7 @@
      15  1895				  -	      jmp	.pMoved
      16  1895					      ENDIF
      17  1895
-     18  1895		       20 60 f2    .standard  jsr	AddMove
+     18  1895		       20 65 f2    .standard  jsr	AddMove
      19  1898				   .pMoved
      20  1898
      14  1898
@@ -9397,7 +9377,7 @@
       8  18ae		       bc 1e fc 	      ldy	ValidSquare+_LEFT+_UP,x
       9  18b1		       b9 79 fc 	      lda	Board,y
      10  18b4		       d0 03		      bne	.invalid
-     11  18b6		       20 60 f2 	      jsr	AddMove
+     11  18b6		       20 65 f2 	      jsr	AddMove
      12  18b9				   .invalid
       0  18b9					      EN_PASSANT	_RIGHT, _UP
       1  18b9					      SUBROUTINE
@@ -9410,13 +9390,13 @@
       8  18c2		       bc 20 fc 	      ldy	ValidSquare+_RIGHT+_UP,x
       9  18c5		       b9 79 fc 	      lda	Board,y
      10  18c8		       d0 03		      bne	.invalid
-     11  18ca		       20 60 f2 	      jsr	AddMove
+     11  18ca		       20 65 f2 	      jsr	AddMove
      12  18cd				   .invalid
     177  18cd
     178  18cd				   .noEnPassant
     179  18cd					      ENDIF
     180  18cd
-    181  18cd		       4c dd f1 	      jmp	MoveReturn
+    181  18cd		       4c e2 f1 	      jmp	MoveReturn
     182  18d0
     183  18d0
     184  18d0							;---------------------------------------------------------------------------------------------------
@@ -9465,22 +9445,22 @@
       6  18d0		       84 ba		      sty	__temp
       7  18d2		       a9 86		      lda	#BLACK|QUEEN
       8  18d4		       85 92		      sta	currentPiece
-      9  18d6		       20 60 f2 	      jsr	AddMove
+      9  18d6		       20 65 f2 	      jsr	AddMove
      10  18d9
      11  18d9		       a9 85		      lda	#BLACK|ROOK
      12  18db		       85 92		      sta	currentPiece
      13  18dd		       a4 ba		      ldy	__temp
-     14  18df		       20 60 f2 	      jsr	AddMove
+     14  18df		       20 65 f2 	      jsr	AddMove
      15  18e2
      16  18e2		       a9 84		      lda	#BLACK|BISHOP
      17  18e4		       85 92		      sta	currentPiece
      18  18e6		       a4 ba		      ldy	__temp
-     19  18e8		       20 60 f2 	      jsr	AddMove
+     19  18e8		       20 65 f2 	      jsr	AddMove
      20  18eb
      21  18eb		       a9 83		      lda	#BLACK|KNIGHT
      22  18ed		       85 92		      sta	currentPiece
      23  18ef		       a4 ba		      ldy	__temp
-     24  18f1		       20 60 f2 	      jsr	AddMove
+     24  18f1		       20 65 f2 	      jsr	AddMove
      25  18f4
      26  18f4				  -	      IF	BLACK = WHITE
      27  18f4				  -	      lda	#WHITE|WP
@@ -9537,7 +9517,7 @@
      15  190a		       4c 10 f5 	      jmp	.pMoved
      16  190d					      ENDIF
      17  190d
-     18  190d		       20 60 f2    .standard  jsr	AddMove
+     18  190d		       20 65 f2    .standard  jsr	AddMove
      19  1910				   .pMoved
      20  1910
     213  1910
@@ -9556,7 +9536,7 @@
     226  1920		       09 20		      ora	#FLAG_ENPASSANT
     227  1922		       85 92		      sta	currentPiece	; CAN en-passant
     228  1924
-    229  1924		       20 60 f2 	      jsr	AddMove	; add the +2DOWN move off home row
+    229  1924		       20 65 f2 	      jsr	AddMove	; add the +2DOWN move off home row
     230  1927
     231  1927				   .pMoved
     232  1927
@@ -9593,7 +9573,7 @@
      15  1940		       4c 46 f5 	      jmp	.pMoved
      16  1943					      ENDIF
      17  1943
-     18  1943		       20 60 f2    .standard  jsr	AddMove
+     18  1943		       20 65 f2    .standard  jsr	AddMove
      19  1946				   .pMoved
      20  1946
      14  1946
@@ -9631,7 +9611,7 @@
      15  1962		       4c 68 f5 	      jmp	.pMoved
      16  1965					      ENDIF
      17  1965
-     18  1965		       20 60 f2    .standard  jsr	AddMove
+     18  1965		       20 65 f2    .standard  jsr	AddMove
      19  1968				   .pMoved
      20  1968
      14  1968
@@ -9661,7 +9641,7 @@
       8  197e		       bc 0a fc 	      ldy	ValidSquare+_LEFT+_DOWN,x
       9  1981		       b9 79 fc 	      lda	Board,y
      10  1984		       d0 03		      bne	.invalid
-     11  1986		       20 60 f2 	      jsr	AddMove
+     11  1986		       20 65 f2 	      jsr	AddMove
      12  1989				   .invalid
       0  1989					      EN_PASSANT	_RIGHT, _DOWN
       1  1989					      SUBROUTINE
@@ -9674,13 +9654,13 @@
       8  1992		       bc 0c fc 	      ldy	ValidSquare+_RIGHT+_DOWN,x
       9  1995		       b9 79 fc 	      lda	Board,y
      10  1998		       d0 03		      bne	.invalid
-     11  199a		       20 60 f2 	      jsr	AddMove
+     11  199a		       20 65 f2 	      jsr	AddMove
      12  199d				   .invalid
     251  199d
     252  199d				   .noEnPassant
     253  199d					      ENDIF
     254  199d
-    255  199d		       4c dd f1 	      jmp	MoveReturn
+    255  199d		       4c e2 f1 	      jmp	MoveReturn
     256  19a0
     257  19a0							; EOF
 ------- FILE @1 PIECE HANDLER #1.asm
@@ -9726,7 +9706,7 @@
       7  19aa		       f0 04		      beq	.squareEmpty
       8  19ac		       45 92		      eor	currentPiece
       9  19ae		       10 03		      bpl	.invalid
-     10  19b0		       20 60 f2    .squareEmpty jsr	AddMove
+     10  19b0		       20 65 f2    .squareEmpty jsr	AddMove
      11  19b3				   .invalid
      12  19b3
       0  19b3					      MOVE_TO_X	_DOWN+_DOWN+_RIGHT
@@ -9741,7 +9721,7 @@
       7  19bf		       f0 04		      beq	.squareEmpty
       8  19c1		       45 92		      eor	currentPiece
       9  19c3		       10 03		      bpl	.invalid
-     10  19c5		       20 60 f2    .squareEmpty jsr	AddMove
+     10  19c5		       20 65 f2    .squareEmpty jsr	AddMove
      11  19c8				   .invalid
      12  19c8
       0  19c8					      MOVE_TO_X	_UP+_UP+_LEFT
@@ -9756,7 +9736,7 @@
       7  19d4		       f0 04		      beq	.squareEmpty
       8  19d6		       45 92		      eor	currentPiece
       9  19d8		       10 03		      bpl	.invalid
-     10  19da		       20 60 f2    .squareEmpty jsr	AddMove
+     10  19da		       20 65 f2    .squareEmpty jsr	AddMove
      11  19dd				   .invalid
      12  19dd
       0  19dd					      MOVE_TO_X	_UP+_UP+_RIGHT
@@ -9771,7 +9751,7 @@
       7  19e9		       f0 04		      beq	.squareEmpty
       8  19eb		       45 92		      eor	currentPiece
       9  19ed		       10 03		      bpl	.invalid
-     10  19ef		       20 60 f2    .squareEmpty jsr	AddMove
+     10  19ef		       20 65 f2    .squareEmpty jsr	AddMove
      11  19f2				   .invalid
      12  19f2
      21  19f2
@@ -9787,7 +9767,7 @@
       7  19fe		       f0 04		      beq	.squareEmpty
       8  1a00		       45 92		      eor	currentPiece
       9  1a02		       10 03		      bpl	.invalid
-     10  1a04		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1a04		       20 65 f2    .squareEmpty jsr	AddMove
      11  1a07				   .invalid
      12  1a07
       0  1a07					      MOVE_TO_X	_DOWN+_RIGHT+_RIGHT
@@ -9802,7 +9782,7 @@
       7  1a13		       f0 04		      beq	.squareEmpty
       8  1a15		       45 92		      eor	currentPiece
       9  1a17		       10 03		      bpl	.invalid
-     10  1a19		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1a19		       20 65 f2    .squareEmpty jsr	AddMove
      11  1a1c				   .invalid
      12  1a1c
       0  1a1c					      MOVE_TO_X	_UP+_LEFT+_LEFT
@@ -9817,7 +9797,7 @@
       7  1a28		       f0 04		      beq	.squareEmpty
       8  1a2a		       45 92		      eor	currentPiece
       9  1a2c		       10 03		      bpl	.invalid
-     10  1a2e		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1a2e		       20 65 f2    .squareEmpty jsr	AddMove
      11  1a31				   .invalid
      12  1a31
       0  1a31					      MOVE_TO_X	_UP+_RIGHT+_RIGHT
@@ -9832,11 +9812,11 @@
       7  1a3d		       f0 04		      beq	.squareEmpty
       8  1a3f		       45 92		      eor	currentPiece
       9  1a41		       10 03		      bpl	.invalid
-     10  1a43		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1a43		       20 65 f2    .squareEmpty jsr	AddMove
      11  1a46				   .invalid
      12  1a46
      26  1a46
-     27  1a46		       4c dd f1 	      jmp	MoveReturn
+     27  1a46		       4c e2 f1 	      jmp	MoveReturn
      28  1a49
      29  1a49							; EOF
 ------- FILE @1 PIECE HANDLER #1.asm
@@ -9882,7 +9862,7 @@
       8  1a4d		       a6 93		      ldx	currentSquare
       9  1a4f		       d0 03		      bne	.project
      10  1a51
-     11  1a51		       20 60 f2    .empty     jsr	AddMove
+     11  1a51		       20 65 f2    .empty     jsr	AddMove
      12  1a54		       bc 0a fc    .project   ldy	ValidSquare+_DOWN+_LEFT,x
      13  1a57		       30 0e		      bmi	.invalid
      14  1a59		       b9 79 fc 	      lda	Board,y
@@ -9890,7 +9870,7 @@
      16  1a5e		       85 a0		      sta	capture
      17  1a60		       45 92		      eor	currentPiece
      18  1a62		       10 03		      bpl	.invalid
-     19  1a64		       20 60 f2 	      jsr	AddMove
+     19  1a64		       20 65 f2 	      jsr	AddMove
      20  1a67
      21  1a67				   .invalid
      22  1a67
@@ -9905,7 +9885,7 @@
       8  1a6b		       a6 93		      ldx	currentSquare
       9  1a6d		       d0 03		      bne	.project
      10  1a6f
-     11  1a6f		       20 60 f2    .empty     jsr	AddMove
+     11  1a6f		       20 65 f2    .empty     jsr	AddMove
      12  1a72		       bc 0c fc    .project   ldy	ValidSquare+_DOWN+_RIGHT,x
      13  1a75		       30 0e		      bmi	.invalid
      14  1a77		       b9 79 fc 	      lda	Board,y
@@ -9913,7 +9893,7 @@
      16  1a7c		       85 a0		      sta	capture
      17  1a7e		       45 92		      eor	currentPiece
      18  1a80		       10 03		      bpl	.invalid
-     19  1a82		       20 60 f2 	      jsr	AddMove
+     19  1a82		       20 65 f2 	      jsr	AddMove
      20  1a85
      21  1a85				   .invalid
      22  1a85
@@ -9928,7 +9908,7 @@
       8  1a89		       a6 93		      ldx	currentSquare
       9  1a8b		       d0 03		      bne	.project
      10  1a8d
-     11  1a8d		       20 60 f2    .empty     jsr	AddMove
+     11  1a8d		       20 65 f2    .empty     jsr	AddMove
      12  1a90		       bc 1e fc    .project   ldy	ValidSquare+_UP+_LEFT,x
      13  1a93		       30 0e		      bmi	.invalid
      14  1a95		       b9 79 fc 	      lda	Board,y
@@ -9936,7 +9916,7 @@
      16  1a9a		       85 a0		      sta	capture
      17  1a9c		       45 92		      eor	currentPiece
      18  1a9e		       10 03		      bpl	.invalid
-     19  1aa0		       20 60 f2 	      jsr	AddMove
+     19  1aa0		       20 65 f2 	      jsr	AddMove
      20  1aa3
      21  1aa3				   .invalid
      22  1aa3
@@ -9951,7 +9931,7 @@
       8  1aa7		       a6 93		      ldx	currentSquare
       9  1aa9		       d0 03		      bne	.project
      10  1aab
-     11  1aab		       20 60 f2    .empty     jsr	AddMove
+     11  1aab		       20 65 f2    .empty     jsr	AddMove
      12  1aae		       bc 20 fc    .project   ldy	ValidSquare+_UP+_RIGHT,x
      13  1ab1		       30 0e		      bmi	.invalid
      14  1ab3		       b9 79 fc 	      lda	Board,y
@@ -9959,12 +9939,12 @@
      16  1ab8		       85 a0		      sta	capture
      17  1aba		       45 92		      eor	currentPiece
      18  1abc		       10 03		      bpl	.invalid
-     19  1abe		       20 60 f2 	      jsr	AddMove
+     19  1abe		       20 65 f2 	      jsr	AddMove
      20  1ac1
      21  1ac1				   .invalid
      22  1ac1
      20  1ac1
-     21  1ac1		       4c dd f1 	      jmp	MoveReturn
+     21  1ac1		       4c e2 f1 	      jmp	MoveReturn
      22  1ac4
      23  1ac4							;---------------------------------------------------------------------------------------------------
      24  1ac4							; EOF
@@ -10068,7 +10048,7 @@
       8  1c04		       a6 93		      ldx	currentSquare
       9  1c06		       d0 03		      bne	.project
      10  1c08
-     11  1c08		       20 60 f2    .empty     jsr	AddMove
+     11  1c08		       20 65 f2    .empty     jsr	AddMove
      12  1c0b		       bc 0b fc    .project   ldy	ValidSquare+_DOWN,x
      13  1c0e		       30 0e		      bmi	.invalid
      14  1c10		       b9 79 fc 	      lda	Board,y
@@ -10076,7 +10056,7 @@
      16  1c15		       85 a0		      sta	capture
      17  1c17		       45 92		      eor	currentPiece
      18  1c19		       10 03		      bpl	.invalid
-     19  1c1b		       20 60 f2 	      jsr	AddMove
+     19  1c1b		       20 65 f2 	      jsr	AddMove
      20  1c1e
      21  1c1e				   .invalid
      22  1c1e
@@ -10091,7 +10071,7 @@
       8  1c22		       a6 93		      ldx	currentSquare
       9  1c24		       d0 03		      bne	.project
      10  1c26
-     11  1c26		       20 60 f2    .empty     jsr	AddMove
+     11  1c26		       20 65 f2    .empty     jsr	AddMove
      12  1c29		       bc 16 fc    .project   ldy	ValidSquare+_RIGHT,x
      13  1c2c		       30 0e		      bmi	.invalid
      14  1c2e		       b9 79 fc 	      lda	Board,y
@@ -10099,7 +10079,7 @@
      16  1c33		       85 a0		      sta	capture
      17  1c35		       45 92		      eor	currentPiece
      18  1c37		       10 03		      bpl	.invalid
-     19  1c39		       20 60 f2 	      jsr	AddMove
+     19  1c39		       20 65 f2 	      jsr	AddMove
      20  1c3c
      21  1c3c				   .invalid
      22  1c3c
@@ -10114,7 +10094,7 @@
       8  1c40		       a6 93		      ldx	currentSquare
       9  1c42		       d0 03		      bne	.project
      10  1c44
-     11  1c44		       20 60 f2    .empty     jsr	AddMove
+     11  1c44		       20 65 f2    .empty     jsr	AddMove
      12  1c47		       bc 1f fc    .project   ldy	ValidSquare+_UP,x
      13  1c4a		       30 0e		      bmi	.invalid
      14  1c4c		       b9 79 fc 	      lda	Board,y
@@ -10122,7 +10102,7 @@
      16  1c51		       85 a0		      sta	capture
      17  1c53		       45 92		      eor	currentPiece
      18  1c55		       10 03		      bpl	.invalid
-     19  1c57		       20 60 f2 	      jsr	AddMove
+     19  1c57		       20 65 f2 	      jsr	AddMove
      20  1c5a
      21  1c5a				   .invalid
      22  1c5a
@@ -10137,7 +10117,7 @@
       8  1c5e		       a6 93		      ldx	currentSquare
       9  1c60		       d0 03		      bne	.project
      10  1c62
-     11  1c62		       20 60 f2    .empty     jsr	AddMove
+     11  1c62		       20 65 f2    .empty     jsr	AddMove
      12  1c65		       bc 14 fc    .project   ldy	ValidSquare+_LEFT,x
      13  1c68		       30 0e		      bmi	.invalid
      14  1c6a		       b9 79 fc 	      lda	Board,y
@@ -10145,12 +10125,12 @@
      16  1c6f		       85 a0		      sta	capture
      17  1c71		       45 92		      eor	currentPiece
      18  1c73		       10 03		      bpl	.invalid
-     19  1c75		       20 60 f2 	      jsr	AddMove
+     19  1c75		       20 65 f2 	      jsr	AddMove
      20  1c78
      21  1c78				   .invalid
      22  1c78
      23  1c78
-     24  1c78		       4c dd f1 	      jmp	MoveReturn
+     24  1c78		       4c e2 f1 	      jmp	MoveReturn
      25  1c7b
      26  1c7b							;---------------------------------------------------------------------------------------------------
      27  1c7b							; EOF
@@ -10198,7 +10178,7 @@
       8  1c7f		       a6 93		      ldx	currentSquare
       9  1c81		       d0 03		      bne	.project
      10  1c83
-     11  1c83		       20 60 f2    .empty     jsr	AddMove
+     11  1c83		       20 65 f2    .empty     jsr	AddMove
      12  1c86		       bc 0a fc    .project   ldy	ValidSquare+_DOWN+_LEFT,x
      13  1c89		       30 0e		      bmi	.invalid
      14  1c8b		       b9 79 fc 	      lda	Board,y
@@ -10206,7 +10186,7 @@
      16  1c90		       85 a0		      sta	capture
      17  1c92		       45 92		      eor	currentPiece
      18  1c94		       10 03		      bpl	.invalid
-     19  1c96		       20 60 f2 	      jsr	AddMove
+     19  1c96		       20 65 f2 	      jsr	AddMove
      20  1c99
      21  1c99				   .invalid
      22  1c99
@@ -10221,7 +10201,7 @@
       8  1c9d		       a6 93		      ldx	currentSquare
       9  1c9f		       d0 03		      bne	.project
      10  1ca1
-     11  1ca1		       20 60 f2    .empty     jsr	AddMove
+     11  1ca1		       20 65 f2    .empty     jsr	AddMove
      12  1ca4		       bc 0b fc    .project   ldy	ValidSquare+_DOWN,x
      13  1ca7		       30 0e		      bmi	.invalid
      14  1ca9		       b9 79 fc 	      lda	Board,y
@@ -10229,7 +10209,7 @@
      16  1cae		       85 a0		      sta	capture
      17  1cb0		       45 92		      eor	currentPiece
      18  1cb2		       10 03		      bpl	.invalid
-     19  1cb4		       20 60 f2 	      jsr	AddMove
+     19  1cb4		       20 65 f2 	      jsr	AddMove
      20  1cb7
      21  1cb7				   .invalid
      22  1cb7
@@ -10244,7 +10224,7 @@
       8  1cbb		       a6 93		      ldx	currentSquare
       9  1cbd		       d0 03		      bne	.project
      10  1cbf
-     11  1cbf		       20 60 f2    .empty     jsr	AddMove
+     11  1cbf		       20 65 f2    .empty     jsr	AddMove
      12  1cc2		       bc 0c fc    .project   ldy	ValidSquare+_DOWN+_RIGHT,x
      13  1cc5		       30 0e		      bmi	.invalid
      14  1cc7		       b9 79 fc 	      lda	Board,y
@@ -10252,7 +10232,7 @@
      16  1ccc		       85 a0		      sta	capture
      17  1cce		       45 92		      eor	currentPiece
      18  1cd0		       10 03		      bpl	.invalid
-     19  1cd2		       20 60 f2 	      jsr	AddMove
+     19  1cd2		       20 65 f2 	      jsr	AddMove
      20  1cd5
      21  1cd5				   .invalid
      22  1cd5
@@ -10267,7 +10247,7 @@
       8  1cd9		       a6 93		      ldx	currentSquare
       9  1cdb		       d0 03		      bne	.project
      10  1cdd
-     11  1cdd		       20 60 f2    .empty     jsr	AddMove
+     11  1cdd		       20 65 f2    .empty     jsr	AddMove
      12  1ce0		       bc 16 fc    .project   ldy	ValidSquare+_RIGHT,x
      13  1ce3		       30 0e		      bmi	.invalid
      14  1ce5		       b9 79 fc 	      lda	Board,y
@@ -10275,7 +10255,7 @@
      16  1cea		       85 a0		      sta	capture
      17  1cec		       45 92		      eor	currentPiece
      18  1cee		       10 03		      bpl	.invalid
-     19  1cf0		       20 60 f2 	      jsr	AddMove
+     19  1cf0		       20 65 f2 	      jsr	AddMove
      20  1cf3
      21  1cf3				   .invalid
      22  1cf3
@@ -10290,7 +10270,7 @@
       8  1cf7		       a6 93		      ldx	currentSquare
       9  1cf9		       d0 03		      bne	.project
      10  1cfb
-     11  1cfb		       20 60 f2    .empty     jsr	AddMove
+     11  1cfb		       20 65 f2    .empty     jsr	AddMove
      12  1cfe		       bc 20 fc    .project   ldy	ValidSquare+_UP+_RIGHT,x
      13  1d01		       30 0e		      bmi	.invalid
      14  1d03		       b9 79 fc 	      lda	Board,y
@@ -10298,7 +10278,7 @@
      16  1d08		       85 a0		      sta	capture
      17  1d0a		       45 92		      eor	currentPiece
      18  1d0c		       10 03		      bpl	.invalid
-     19  1d0e		       20 60 f2 	      jsr	AddMove
+     19  1d0e		       20 65 f2 	      jsr	AddMove
      20  1d11
      21  1d11				   .invalid
      22  1d11
@@ -10313,7 +10293,7 @@
       8  1d15		       a6 93		      ldx	currentSquare
       9  1d17		       d0 03		      bne	.project
      10  1d19
-     11  1d19		       20 60 f2    .empty     jsr	AddMove
+     11  1d19		       20 65 f2    .empty     jsr	AddMove
      12  1d1c		       bc 1f fc    .project   ldy	ValidSquare+_UP,x
      13  1d1f		       30 0e		      bmi	.invalid
      14  1d21		       b9 79 fc 	      lda	Board,y
@@ -10321,7 +10301,7 @@
      16  1d26		       85 a0		      sta	capture
      17  1d28		       45 92		      eor	currentPiece
      18  1d2a		       10 03		      bpl	.invalid
-     19  1d2c		       20 60 f2 	      jsr	AddMove
+     19  1d2c		       20 65 f2 	      jsr	AddMove
      20  1d2f
      21  1d2f				   .invalid
      22  1d2f
@@ -10336,7 +10316,7 @@
       8  1d33		       a6 93		      ldx	currentSquare
       9  1d35		       d0 03		      bne	.project
      10  1d37
-     11  1d37		       20 60 f2    .empty     jsr	AddMove
+     11  1d37		       20 65 f2    .empty     jsr	AddMove
      12  1d3a		       bc 1e fc    .project   ldy	ValidSquare+_UP+_LEFT,x
      13  1d3d		       30 0e		      bmi	.invalid
      14  1d3f		       b9 79 fc 	      lda	Board,y
@@ -10344,7 +10324,7 @@
      16  1d44		       85 a0		      sta	capture
      17  1d46		       45 92		      eor	currentPiece
      18  1d48		       10 03		      bpl	.invalid
-     19  1d4a		       20 60 f2 	      jsr	AddMove
+     19  1d4a		       20 65 f2 	      jsr	AddMove
      20  1d4d
      21  1d4d				   .invalid
      22  1d4d
@@ -10359,7 +10339,7 @@
       8  1d51		       a6 93		      ldx	currentSquare
       9  1d53		       d0 03		      bne	.project
      10  1d55
-     11  1d55		       20 60 f2    .empty     jsr	AddMove
+     11  1d55		       20 65 f2    .empty     jsr	AddMove
      12  1d58		       bc 14 fc    .project   ldy	ValidSquare+_LEFT,x
      13  1d5b		       30 0e		      bmi	.invalid
      14  1d5d		       b9 79 fc 	      lda	Board,y
@@ -10367,12 +10347,12 @@
      16  1d62		       85 a0		      sta	capture
      17  1d64		       45 92		      eor	currentPiece
      18  1d66		       10 03		      bpl	.invalid
-     19  1d68		       20 60 f2 	      jsr	AddMove
+     19  1d68		       20 65 f2 	      jsr	AddMove
      20  1d6b
      21  1d6b				   .invalid
      22  1d6b
      25  1d6b
-     26  1d6b		       4c dd f1 	      jmp	MoveReturn
+     26  1d6b		       4c e2 f1 	      jmp	MoveReturn
      27  1d6e
      28  1d6e							; EOF
 ------- FILE @1 PIECE HANDLER #2.asm
@@ -10480,7 +10460,7 @@
       7  1d78		       f0 04		      beq	.squareEmpty
       8  1d7a		       45 92		      eor	currentPiece
       9  1d7c		       10 03		      bpl	.invalid
-     10  1d7e		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1d7e		       20 65 f2    .squareEmpty jsr	AddMove
      11  1d81				   .invalid
      12  1d81
      80  1d81					      IF	1
@@ -10496,7 +10476,7 @@
       7  1d8d		       f0 04		      beq	.squareEmpty
       8  1d8f		       45 92		      eor	currentPiece
       9  1d91		       10 03		      bpl	.invalid
-     10  1d93		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1d93		       20 65 f2    .squareEmpty jsr	AddMove
      11  1d96				   .invalid
      12  1d96
       0  1d96					      MOVE_TO_X	_DOWN+_RIGHT
@@ -10511,7 +10491,7 @@
       7  1da2		       f0 04		      beq	.squareEmpty
       8  1da4		       45 92		      eor	currentPiece
       9  1da6		       10 03		      bpl	.invalid
-     10  1da8		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1da8		       20 65 f2    .squareEmpty jsr	AddMove
      11  1dab				   .invalid
      12  1dab
       0  1dab					      MOVE_TO_X	_RIGHT
@@ -10526,7 +10506,7 @@
       7  1db7		       f0 04		      beq	.squareEmpty
       8  1db9		       45 92		      eor	currentPiece
       9  1dbb		       10 03		      bpl	.invalid
-     10  1dbd		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1dbd		       20 65 f2    .squareEmpty jsr	AddMove
      11  1dc0				   .invalid
      12  1dc0
       0  1dc0					      MOVE_TO_X	_UP+_RIGHT
@@ -10541,7 +10521,7 @@
       7  1dcc		       f0 04		      beq	.squareEmpty
       8  1dce		       45 92		      eor	currentPiece
       9  1dd0		       10 03		      bpl	.invalid
-     10  1dd2		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1dd2		       20 65 f2    .squareEmpty jsr	AddMove
      11  1dd5				   .invalid
      12  1dd5
       0  1dd5					      MOVE_TO_X	_UP
@@ -10556,7 +10536,7 @@
       7  1de1		       f0 04		      beq	.squareEmpty
       8  1de3		       45 92		      eor	currentPiece
       9  1de5		       10 03		      bpl	.invalid
-     10  1de7		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1de7		       20 65 f2    .squareEmpty jsr	AddMove
      11  1dea				   .invalid
      12  1dea
       0  1dea					      MOVE_TO_X	_UP+_LEFT
@@ -10571,7 +10551,7 @@
       7  1df6		       f0 04		      beq	.squareEmpty
       8  1df8		       45 92		      eor	currentPiece
       9  1dfa		       10 03		      bpl	.invalid
-     10  1dfc		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1dfc		       20 65 f2    .squareEmpty jsr	AddMove
      11  1dff				   .invalid
      12  1dff
       0  1dff					      MOVE_TO_X	_LEFT
@@ -10586,7 +10566,7 @@
       7  1e0b		       f0 04		      beq	.squareEmpty
       8  1e0d		       45 92		      eor	currentPiece
       9  1e0f		       10 03		      bpl	.invalid
-     10  1e11		       20 60 f2    .squareEmpty jsr	AddMove
+     10  1e11		       20 65 f2    .squareEmpty jsr	AddMove
      11  1e14				   .invalid
      12  1e14
      88  1e14					      ENDIF
@@ -10642,7 +10622,7 @@
      43  1e34					      ENDIF
      44  1e34
      45  1e34
-     46  1e34		       20 60 f2 	      jsr	AddMove
+     46  1e34		       20 65 f2 	      jsr	AddMove
      47  1e37				   .noCastle
       0  1e37					      CASTLE	QUEENSIDE
       1  1e37
@@ -10690,13 +10670,13 @@
      43  1e56					      ENDIF
      44  1e56
      45  1e56
-     46  1e56		       20 60 f2 	      jsr	AddMove
+     46  1e56		       20 65 f2 	      jsr	AddMove
      47  1e59				   .noCastle
      97  1e59
      98  1e59					      ENDIF
      99  1e59
     100  1e59
-    101  1e59		       4c dd f1    .exit      jmp	MoveReturn
+    101  1e59		       4c e2 f1    .exit      jmp	MoveReturn
     102  1e5c
     103  1e5c							;---------------------------------------------------------------------------------------------------
     104  1e5c							; EOF
@@ -11411,7 +11391,7 @@
       9  21d9
       0  21d9					      RAMBANK	PLY	; RAM bank for holding the following ROM shadow
       1  21d9
-      2 U11dc ????				      SEG.U	RAM_PLY
+      2 U11dd ????				      SEG.U	RAM_PLY
       3 U1000					      ORG	ORIGIN_RAM
       4 U1000					      RORG	_BANK_ADDRESS_ORIGIN
       5 U1000				   _BANK_START SET	*
@@ -11662,25 +11642,37 @@
       6 U11da					      ENDIF
       4 U11da		       00 00	   virtualKingSquare ds	2
       5 U11dc
-     52 U11dc
-      0 U11dc					      END_BANK
-      1 U11dc					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U11dc					      CHECK_RAM_BANK_SIZE
-      1 U11dc		       01 dc	   .TEMP      =	* - _BANK_START
- RAM bank # 9 PLY size =  $1dc free = $23
-      2 U11dc					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U11dc				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U11dc				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U11dc				  -	      ERR
-      6 U11dc					      ENDIF
-      3 U11dc				  -	      ELSE
-      4 U11dc				  -	      CHECK_BANK_SIZE
-      5 U11dc					      ENDIF
-     54 U11dc
-     55 U11dc
-     56 U11dc					      REPEAT	PLY_BANKS-1
-      0 U11dc					      RAMBANK	.DUMMY_PLY
+      0 U11dc					      VARIABLE	inCheck, 1
       1 U11dc
+      2 U11dc				   .NAME      SETSTR	inCheck
+      0 U11dc					      OPTIONAL_PAGEBREAK	.NAME, 1
+      1 U11dc
+      2 U11dc				  -	      IF	(>( * + 1 -1 )) > ( >* )
+      3 U11dc				  -.EARLY_LOCATION SET	*
+      4 U11dc				  -	      ALIGN	256
+      5 U11dc				  -	      ECHO	"Page break for", .NAME, "wasted", [* - .EARLY_LOCATION]d, "bytes"
+      6 U11dc					      ENDIF
+      4 U11dc		       00	   inCheck    ds	1
+      5 U11dd
+     53 U11dd
+      0 U11dd					      END_BANK
+      1 U11dd					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      0 U11dd					      CHECK_RAM_BANK_SIZE
+      1 U11dd		       01 dd	   .TEMP      =	* - _BANK_START
+ RAM bank # 9 PLY size =  $1dd free = $22
+      2 U11dd					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
+      3 U11dd				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
+      4 U11dd				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
+      5 U11dd				  -	      ERR
+      6 U11dd					      ENDIF
+      3 U11dd				  -	      ELSE
+      4 U11dd				  -	      CHECK_BANK_SIZE
+      5 U11dd					      ENDIF
+     55 U11dd
+     56 U11dd
+     57 U11dd					      REPEAT	PLY_BANKS-1
+      0 U11dd					      RAMBANK	.DUMMY_PLY
+      1 U11dd
       2 U2e00 ????				      SEG.U	RAM_.DUMMY_PLY
       3 U1200					      ORG	ORIGIN_RAM
       4 U1200					      RORG	_BANK_ADDRESS_ORIGIN
@@ -11703,7 +11695,7 @@
       3 U1200				  -	      ELSE
       4 U1200				  -	      CHECK_BANK_SIZE
       5 U1200					      ENDIF
-     56 U1200					      REPEND
+     57 U1200					      REPEND
       0 U1200					      RAMBANK	.DUMMY_PLY
       1 U1200
       2 U1200					      SEG.U	RAM_.DUMMY_PLY
@@ -11728,7 +11720,7 @@
       3 U1400				  -	      ELSE
       4 U1400				  -	      CHECK_BANK_SIZE
       5 U1400					      ENDIF
-     56 U1400					      REPEND
+     57 U1400					      REPEND
       0 U1400					      RAMBANK	.DUMMY_PLY
       1 U1400
       2 U1400					      SEG.U	RAM_.DUMMY_PLY
@@ -11753,7 +11745,7 @@
       3 U1600				  -	      ELSE
       4 U1600				  -	      CHECK_BANK_SIZE
       5 U1600					      ENDIF
-     56 U1600					      REPEND
+     57 U1600					      REPEND
       0 U1600					      RAMBANK	.DUMMY_PLY
       1 U1600
       2 U1600					      SEG.U	RAM_.DUMMY_PLY
@@ -11778,7 +11770,7 @@
       3 U1800				  -	      ELSE
       4 U1800				  -	      CHECK_BANK_SIZE
       5 U1800					      ENDIF
-     56 U1800					      REPEND
+     57 U1800					      REPEND
       0 U1800					      RAMBANK	.DUMMY_PLY
       1 U1800
       2 U1800					      SEG.U	RAM_.DUMMY_PLY
@@ -11803,7 +11795,7 @@
       3 U1a00				  -	      ELSE
       4 U1a00				  -	      CHECK_BANK_SIZE
       5 U1a00					      ENDIF
-     56 U1a00					      REPEND
+     57 U1a00					      REPEND
       0 U1a00					      RAMBANK	.DUMMY_PLY
       1 U1a00
       2 U1a00					      SEG.U	RAM_.DUMMY_PLY
@@ -11828,7 +11820,7 @@
       3 U1c00				  -	      ELSE
       4 U1c00				  -	      CHECK_BANK_SIZE
       5 U1c00					      ENDIF
-     56 U1c00					      REPEND
+     57 U1c00					      REPEND
       0 U1c00					      RAMBANK	.DUMMY_PLY
       1 U1c00
       2 U1c00					      SEG.U	RAM_.DUMMY_PLY
@@ -11853,11 +11845,11 @@
       3 U1e00				  -	      ELSE
       4 U1e00				  -	      CHECK_BANK_SIZE
       5 U1e00					      ENDIF
-     59 U1e00					      REPEND
-     60 U1e00
+     60 U1e00					      REPEND
      61 U1e00
-     62 U1e00							;---------------------------------------------------------------------------------------------------
-     63 U1e00							; EOF
+     62 U1e00
+     63 U1e00							;---------------------------------------------------------------------------------------------------
+     64 U1e00							; EOF
 ------- FILE ./chess.asm
 ------- FILE @2 PLY2.asm LEVEL 2 PASS 4
       0 U1e00					      include	"@2 PLY2.asm"
@@ -18342,7 +18334,7 @@
       8  6360				   _BANK_SLOT SET	3 * 64
       9  6360
       0  6360					      ROMBANK	THREE
-      1  6572 ????				      SEG	ROM_THREE
+      1  6573 ????				      SEG	ROM_THREE
       2  6400					      ORG	_ORIGIN
       3  6400					      RORG	_BANK_ADDRESS_ORIGIN
       4  6400				   _BANK_START SET	*
@@ -18711,211 +18703,211 @@
       7  64aa				   FUNCTION_NAME SET	BubbleSort
     255  64aa					      SUBROUTINE
     256  64aa
-    257  64aa
-    258  64aa					      IF	1
-    259  64aa							;{
-    260  64aa
-    261  64aa							; This MUST be called at the start of a new ply
-    262  64aa							; It initialises the movelist to empty
-    263  64aa							; x must be preserved
-    264  64aa
-    265  64aa							; note that 'alpha' and 'beta' are set externally!!
-    266  64aa
-    267  64aa		       a9 ff		      lda	#-1
-      0  64ac					      sta@PLY	bestMove
-      1  64ac		       8d d1 fb 	      sta	[RAM]+bestMove
-    269  64af
-    270  64af		       a5 94		      lda	enPassantPawn	; flag/square from last actual move made
-      0  64b1					      sta@PLY	enPassantSquare	; used for backtracking, to reset the flag
-      1  64b1		       8d ca fb 	      sta	[RAM]+enPassantSquare
-    272  64b4
-    273  64b4		       a5 a3		      lda	vkSquare
-      0  64b6					      sta@PLY	virtualKingSquare
-      1  64b6		       8d da fb 	      sta	[RAM]+virtualKingSquare
-    275  64b9		       a5 a4		      lda	vkSquare+1
-      0  64bb					      sta@PLY	virtualKingSquare+1	; traversal squares of king for castling
-      1  64bb		       8d db fb 	      sta	[RAM]+virtualKingSquare+1
-    277  64be
-    278  64be							; The value of the material (signed, 16-bit) is restored to the saved value at the reversion
-    279  64be							; of a move. It's quicker to restore than to re-sum. So we save the current evaluation at the
-    280  64be							; start of each new ply.
-    281  64be
-    282  64be		       a5 90		      lda	Evaluation
-      0  64c0					      sta@PLY	savedEvaluation
-      1  64c0		       8d c8 fb 	      sta	[RAM]+savedEvaluation
-    284  64c3		       a5 91		      lda	Evaluation+1
-      0  64c5					      sta@PLY	savedEvaluation+1
-      1  64c5		       8d c9 fb 	      sta	[RAM]+savedEvaluation+1
-    286  64c8							;}
-    287  64c8					      ENDIF
-    288  64c8
-    289  64c8
-    290  64c8		       18		      clc
-    291  64c9		       a5 95		      lda	currentPly
-    292  64cb		       69 08		      adc	#RAMBANK_SORT-RAMBANK_PLY
-    293  64cd		       85 be		      sta	__bank2
-    294  64cf
-    295  64cf
-      0  64cf					      lda@PLY	moveIndex
-      1  64cf		       ad cf f9 	      lda	moveIndex
-    297  64d2		       10 01		      bpl	.start	; no moves - no sorting
-    298  64d4		       60		      rts
-    299  64d5
-    300  64d5				   .start
-    301  64d5
-    302  64d5		       85 bb		      sta	__n
-    303  64d7		       e6 bb		      inc	__n	; n := length(A)
-    304  64d9
-    305  64d9		       a9 00	   .bubble    lda	#0
-    306  64db		       85 bc		      sta	__newn
-    307  64dd
-    308  64dd		       a9 01		      lda	#1
-    309  64df		       85 bd		      sta	__i
-    310  64e1
-    311  64e1		       a5 bd	   .bubbleLoop lda	__i
-    312  64e3		       c5 bb		      cmp	__n
-    313  64e5		       f0 7b		      beq	.exitBubble
-    314  64e7
-    315  64e7		       aa		      tax		; A
-    316  64e8		       a8		      tay
-    317  64e9		       88		      dey		; B i-1
-    318  64ea
-    319  64ea		       a5 be		      lda	__bank2
-    320  64ec		       85 3e		      sta	SET_BANK_RAM	;@2
-    321  64ee
-    322  64ee		       38		      sec
-    323  64ef		       bd 00 f8 	      lda	MoveValueLO,x
-    324  64f2		       f9 00 f8 	      sbc	MoveValueLO,y
-    325  64f5		       bd 64 f8 	      lda	MoveValueHI,x
-    326  64f8		       f9 64 f8 	      sbc	MoveValueHI,y
-    327  64fb		       50 02		      bvc	.cmp16bit
-    328  64fd		       49 80		      eor	#$80
-    329  64ff		       30 5c	   .cmp16bit  bmi	.lessThan	; sort small to large
-    330  6501
-    331  6501							; swap!
-      0  6501					      XCHG	MoveValueLO
-      0  6501					      lda@PLY	MoveValueLO,x
-      1  6501		       bd 00 f8 	      lda	MoveValueLO,x
-      2  6504		       48		      pha
-      0  6505					      lda@PLY	MoveValueLO,y
-      1  6505		       b9 00 f8 	      lda	MoveValueLO,y
-      0  6508					      sta@PLY	MoveValueLO,x
-      1  6508		       9d 00 fa 	      sta	[RAM]+MoveValueLO,x
-      5  650b		       68		      pla
-      0  650c					      sta@PLY	MoveValueLO,y
-      1  650c		       99 00 fa 	      sta	[RAM]+MoveValueLO,y
-      0  650f					      XCHG	MoveValueHI
-      0  650f					      lda@PLY	MoveValueHI,x
-      1  650f		       bd 64 f8 	      lda	MoveValueHI,x
-      2  6512		       48		      pha
-      0  6513					      lda@PLY	MoveValueHI,y
-      1  6513		       b9 64 f8 	      lda	MoveValueHI,y
-      0  6516					      sta@PLY	MoveValueHI,x
-      1  6516		       9d 64 fa 	      sta	[RAM]+MoveValueHI,x
-      5  6519		       68		      pla
-      0  651a					      sta@PLY	MoveValueHI,y
-      1  651a		       99 64 fa 	      sta	[RAM]+MoveValueHI,y
-    334  651d
-    335  651d		       a5 95		      lda	currentPly
-    336  651f		       85 3e		      sta	SET_BANK_RAM	;@2
-    337  6521
-      0  6521					      XCHG	MoveFrom
-      0  6521					      lda@PLY	MoveFrom,x
-      1  6521		       bd 00 f8 	      lda	MoveFrom,x
-      2  6524		       48		      pha
-      0  6525					      lda@PLY	MoveFrom,y
-      1  6525		       b9 00 f8 	      lda	MoveFrom,y
-      0  6528					      sta@PLY	MoveFrom,x
-      1  6528		       9d 00 fa 	      sta	[RAM]+MoveFrom,x
-      5  652b		       68		      pla
-      0  652c					      sta@PLY	MoveFrom,y
-      1  652c		       99 00 fa 	      sta	[RAM]+MoveFrom,y
-      0  652f					      XCHG	MoveTo
-      0  652f					      lda@PLY	MoveTo,x
-      1  652f		       bd 64 f8 	      lda	MoveTo,x
-      2  6532		       48		      pha
-      0  6533					      lda@PLY	MoveTo,y
-      1  6533		       b9 64 f8 	      lda	MoveTo,y
-      0  6536					      sta@PLY	MoveTo,x
-      1  6536		       9d 64 fa 	      sta	[RAM]+MoveTo,x
-      5  6539		       68		      pla
-      0  653a					      sta@PLY	MoveTo,y
-      1  653a		       99 64 fa 	      sta	[RAM]+MoveTo,y
-      0  653d					      XCHG	MovePiece
-      0  653d					      lda@PLY	MovePiece,x
-      1  653d		       bd 00 f9 	      lda	MovePiece,x
-      2  6540		       48		      pha
-      0  6541					      lda@PLY	MovePiece,y
-      1  6541		       b9 00 f9 	      lda	MovePiece,y
-      0  6544					      sta@PLY	MovePiece,x
-      1  6544		       9d 00 fb 	      sta	[RAM]+MovePiece,x
-      5  6547		       68		      pla
-      0  6548					      sta@PLY	MovePiece,y
-      1  6548		       99 00 fb 	      sta	[RAM]+MovePiece,y
-      0  654b					      XCHG	MoveCapture
-      0  654b					      lda@PLY	MoveCapture,x
-      1  654b		       bd 64 f9 	      lda	MoveCapture,x
-      2  654e		       48		      pha
-      0  654f					      lda@PLY	MoveCapture,y
-      1  654f		       b9 64 f9 	      lda	MoveCapture,y
-      0  6552					      sta@PLY	MoveCapture,x
-      1  6552		       9d 64 fb 	      sta	[RAM]+MoveCapture,x
-      5  6555		       68		      pla
-      0  6556					      sta@PLY	MoveCapture,y
-      1  6556		       99 64 fb 	      sta	[RAM]+MoveCapture,y
-    342  6559
-    343  6559		       a5 bd		      lda	__i
-    344  655b		       85 bc		      sta	__newn
-    345  655d
-    346  655d		       e6 bd	   .lessThan  inc	__i
-    347  655f		       4c e1 fc 	      jmp	.bubbleLoop
-    348  6562
-    349  6562		       a5 bc	   .exitBubble lda	__newn
-    350  6564		       85 bb		      sta	__n
-    351  6566
-    352  6566		       c9 02		      cmp	#2
-    353  6568		       90 03		      bcc	.exitLoop
-    354  656a		       4c d9 fc 	      jmp	.bubble
-    355  656d
-    356  656d		       a5 95	   .exitLoop  lda	currentPly
-    357  656f		       85 3e		      sta	SET_BANK_RAM
-    358  6571
-    359  6571		       60		      rts
-    360  6572
-    361  6572
-    362  6572							;---------------------------------------------------------------------------------------------------
-    363  6572
-      0  6572					      END_BANK
-      1  6572				  -	      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      2  6572				  -	      CHECK_RAM_BANK_SIZE
-      3  6572					      ELSE
-      0  6572					      CHECK_BANK_SIZE
-      1  6572		       01 72	   .TEMP      =	* - _BANK_START
- ROM bank # 26 THREE size = $172 free = 653
-      2  6572					      ECHO	"ROM bank #", [_ORIGIN/_ROM_BANK_SIZE]d, _LAST_BANK, "size =", .TEMP, "free =", [_ROM_BANK_SIZE - .TEMP - 1]d
-      3  6572				  -	      IF	( .TEMP ) > _ROM_BANK_SIZE
-      4  6572				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - _ORIGIN
-      5  6572				  -	      ERR
-      6  6572					      ENDIF
-      5  6572					      ENDIF
-    365  6572
-    366  6572							;---------------------------------------------------------------------------------------------------
-    367  6572							; EOF
+    257  64aa		       60		      rts		;tmp
+    258  64ab					      IF	1
+    259  64ab							;{
+    260  64ab
+    261  64ab							; This MUST be called at the start of a new ply
+    262  64ab							; It initialises the movelist to empty
+    263  64ab							; x must be preserved
+    264  64ab
+    265  64ab							; note that 'alpha' and 'beta' are set externally!!
+    266  64ab
+    267  64ab		       a9 ff		      lda	#-1
+      0  64ad					      sta@PLY	bestMove
+      1  64ad		       8d d1 fb 	      sta	[RAM]+bestMove
+    269  64b0
+    270  64b0		       a5 94		      lda	enPassantPawn	; flag/square from last actual move made
+      0  64b2					      sta@PLY	enPassantSquare	; used for backtracking, to reset the flag
+      1  64b2		       8d ca fb 	      sta	[RAM]+enPassantSquare
+    272  64b5
+    273  64b5		       a5 a3		      lda	vkSquare
+      0  64b7					      sta@PLY	virtualKingSquare
+      1  64b7		       8d da fb 	      sta	[RAM]+virtualKingSquare
+    275  64ba		       a5 a4		      lda	vkSquare+1
+      0  64bc					      sta@PLY	virtualKingSquare+1	; traversal squares of king for castling
+      1  64bc		       8d db fb 	      sta	[RAM]+virtualKingSquare+1
+    277  64bf
+    278  64bf							; The value of the material (signed, 16-bit) is restored to the saved value at the reversion
+    279  64bf							; of a move. It's quicker to restore than to re-sum. So we save the current evaluation at the
+    280  64bf							; start of each new ply.
+    281  64bf
+    282  64bf		       a5 90		      lda	Evaluation
+      0  64c1					      sta@PLY	savedEvaluation
+      1  64c1		       8d c8 fb 	      sta	[RAM]+savedEvaluation
+    284  64c4		       a5 91		      lda	Evaluation+1
+      0  64c6					      sta@PLY	savedEvaluation+1
+      1  64c6		       8d c9 fb 	      sta	[RAM]+savedEvaluation+1
+    286  64c9							;}
+    287  64c9					      ENDIF
+    288  64c9
+    289  64c9
+    290  64c9		       18		      clc
+    291  64ca		       a5 95		      lda	currentPly
+    292  64cc		       69 08		      adc	#RAMBANK_SORT-RAMBANK_PLY
+    293  64ce		       85 be		      sta	__bank2
+    294  64d0
+    295  64d0
+      0  64d0					      lda@PLY	moveIndex
+      1  64d0		       ad cf f9 	      lda	moveIndex
+    297  64d3		       10 01		      bpl	.start	; no moves - no sorting
+    298  64d5		       60		      rts
+    299  64d6
+    300  64d6				   .start
+    301  64d6
+    302  64d6		       85 bb		      sta	__n
+    303  64d8		       e6 bb		      inc	__n	; n := length(A)
+    304  64da
+    305  64da		       a9 00	   .bubble    lda	#0
+    306  64dc		       85 bc		      sta	__newn
+    307  64de
+    308  64de		       a9 01		      lda	#1
+    309  64e0		       85 bd		      sta	__i
+    310  64e2
+    311  64e2		       a5 bd	   .bubbleLoop lda	__i
+    312  64e4		       c5 bb		      cmp	__n
+    313  64e6		       f0 7b		      beq	.exitBubble
+    314  64e8
+    315  64e8		       aa		      tax		; A
+    316  64e9		       a8		      tay
+    317  64ea		       88		      dey		; B i-1
+    318  64eb
+    319  64eb		       a5 be		      lda	__bank2
+    320  64ed		       85 3e		      sta	SET_BANK_RAM	;@2
+    321  64ef
+    322  64ef		       38		      sec
+    323  64f0		       bd 00 f8 	      lda	MoveValueLO,x
+    324  64f3		       f9 00 f8 	      sbc	MoveValueLO,y
+    325  64f6		       bd 64 f8 	      lda	MoveValueHI,x
+    326  64f9		       f9 64 f8 	      sbc	MoveValueHI,y
+    327  64fc		       50 02		      bvc	.cmp16bit
+    328  64fe		       49 80		      eor	#$80
+    329  6500		       30 5c	   .cmp16bit  bmi	.lessThan	; sort small to large
+    330  6502
+    331  6502							; swap!
+      0  6502					      XCHG	MoveValueLO
+      0  6502					      lda@PLY	MoveValueLO,x
+      1  6502		       bd 00 f8 	      lda	MoveValueLO,x
+      2  6505		       48		      pha
+      0  6506					      lda@PLY	MoveValueLO,y
+      1  6506		       b9 00 f8 	      lda	MoveValueLO,y
+      0  6509					      sta@PLY	MoveValueLO,x
+      1  6509		       9d 00 fa 	      sta	[RAM]+MoveValueLO,x
+      5  650c		       68		      pla
+      0  650d					      sta@PLY	MoveValueLO,y
+      1  650d		       99 00 fa 	      sta	[RAM]+MoveValueLO,y
+      0  6510					      XCHG	MoveValueHI
+      0  6510					      lda@PLY	MoveValueHI,x
+      1  6510		       bd 64 f8 	      lda	MoveValueHI,x
+      2  6513		       48		      pha
+      0  6514					      lda@PLY	MoveValueHI,y
+      1  6514		       b9 64 f8 	      lda	MoveValueHI,y
+      0  6517					      sta@PLY	MoveValueHI,x
+      1  6517		       9d 64 fa 	      sta	[RAM]+MoveValueHI,x
+      5  651a		       68		      pla
+      0  651b					      sta@PLY	MoveValueHI,y
+      1  651b		       99 64 fa 	      sta	[RAM]+MoveValueHI,y
+    334  651e
+    335  651e		       a5 95		      lda	currentPly
+    336  6520		       85 3e		      sta	SET_BANK_RAM	;@2
+    337  6522
+      0  6522					      XCHG	MoveFrom
+      0  6522					      lda@PLY	MoveFrom,x
+      1  6522		       bd 00 f8 	      lda	MoveFrom,x
+      2  6525		       48		      pha
+      0  6526					      lda@PLY	MoveFrom,y
+      1  6526		       b9 00 f8 	      lda	MoveFrom,y
+      0  6529					      sta@PLY	MoveFrom,x
+      1  6529		       9d 00 fa 	      sta	[RAM]+MoveFrom,x
+      5  652c		       68		      pla
+      0  652d					      sta@PLY	MoveFrom,y
+      1  652d		       99 00 fa 	      sta	[RAM]+MoveFrom,y
+      0  6530					      XCHG	MoveTo
+      0  6530					      lda@PLY	MoveTo,x
+      1  6530		       bd 64 f8 	      lda	MoveTo,x
+      2  6533		       48		      pha
+      0  6534					      lda@PLY	MoveTo,y
+      1  6534		       b9 64 f8 	      lda	MoveTo,y
+      0  6537					      sta@PLY	MoveTo,x
+      1  6537		       9d 64 fa 	      sta	[RAM]+MoveTo,x
+      5  653a		       68		      pla
+      0  653b					      sta@PLY	MoveTo,y
+      1  653b		       99 64 fa 	      sta	[RAM]+MoveTo,y
+      0  653e					      XCHG	MovePiece
+      0  653e					      lda@PLY	MovePiece,x
+      1  653e		       bd 00 f9 	      lda	MovePiece,x
+      2  6541		       48		      pha
+      0  6542					      lda@PLY	MovePiece,y
+      1  6542		       b9 00 f9 	      lda	MovePiece,y
+      0  6545					      sta@PLY	MovePiece,x
+      1  6545		       9d 00 fb 	      sta	[RAM]+MovePiece,x
+      5  6548		       68		      pla
+      0  6549					      sta@PLY	MovePiece,y
+      1  6549		       99 00 fb 	      sta	[RAM]+MovePiece,y
+      0  654c					      XCHG	MoveCapture
+      0  654c					      lda@PLY	MoveCapture,x
+      1  654c		       bd 64 f9 	      lda	MoveCapture,x
+      2  654f		       48		      pha
+      0  6550					      lda@PLY	MoveCapture,y
+      1  6550		       b9 64 f9 	      lda	MoveCapture,y
+      0  6553					      sta@PLY	MoveCapture,x
+      1  6553		       9d 64 fb 	      sta	[RAM]+MoveCapture,x
+      5  6556		       68		      pla
+      0  6557					      sta@PLY	MoveCapture,y
+      1  6557		       99 64 fb 	      sta	[RAM]+MoveCapture,y
+    342  655a
+    343  655a		       a5 bd		      lda	__i
+    344  655c		       85 bc		      sta	__newn
+    345  655e
+    346  655e		       e6 bd	   .lessThan  inc	__i
+    347  6560		       4c e2 fc 	      jmp	.bubbleLoop
+    348  6563
+    349  6563		       a5 bc	   .exitBubble lda	__newn
+    350  6565		       85 bb		      sta	__n
+    351  6567
+    352  6567		       c9 02		      cmp	#2
+    353  6569		       90 03		      bcc	.exitLoop
+    354  656b		       4c da fc 	      jmp	.bubble
+    355  656e
+    356  656e		       a5 95	   .exitLoop  lda	currentPly
+    357  6570		       85 3e		      sta	SET_BANK_RAM
+    358  6572
+    359  6572		       60		      rts
+    360  6573
+    361  6573
+    362  6573							;---------------------------------------------------------------------------------------------------
+    363  6573
+      0  6573					      END_BANK
+      1  6573				  -	      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      2  6573				  -	      CHECK_RAM_BANK_SIZE
+      3  6573					      ELSE
+      0  6573					      CHECK_BANK_SIZE
+      1  6573		       01 73	   .TEMP      =	* - _BANK_START
+ ROM bank # 26 THREE size = $173 free = 652
+      2  6573					      ECHO	"ROM bank #", [_ORIGIN/_ROM_BANK_SIZE]d, _LAST_BANK, "size =", .TEMP, "free =", [_ROM_BANK_SIZE - .TEMP - 1]d
+      3  6573				  -	      IF	( .TEMP ) > _ROM_BANK_SIZE
+      4  6573				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - _ORIGIN
+      5  6573				  -	      ERR
+      6  6573					      ENDIF
+      5  6573					      ENDIF
+    365  6573
+    366  6573							;---------------------------------------------------------------------------------------------------
+    367  6573							; EOF
 ------- FILE ./chess.asm
 ------- FILE @3 SCREEN ROM.asm LEVEL 2 PASS 4
-      0  6572					      include	"@3 SCREEN ROM.asm"
-      1  6572
-      0  6572					      SLOT	3
-      1  6572
-      2  6572				  -	      IF	(3 < 0) || (3 > 3)
-      3  6572				  -	      ECHO	"Illegal bank address/segment location", 3
-      4  6572				  -	      ERR
-      5  6572					      ENDIF
-      6  6572
-      7  6572				   _BANK_ADDRESS_ORIGIN SET	$F000 + (3 * _ROM_BANK_SIZE)
-      8  6572				   _BANK_SLOT SET	3 * 64
-      9  6572
-      0  6572					      ROMBANK	ROM_SCREEN
+      0  6573					      include	"@3 SCREEN ROM.asm"
+      1  6573
+      0  6573					      SLOT	3
+      1  6573
+      2  6573				  -	      IF	(3 < 0) || (3 > 3)
+      3  6573				  -	      ECHO	"Illegal bank address/segment location", 3
+      4  6573				  -	      ERR
+      5  6573					      ENDIF
+      6  6573
+      7  6573				   _BANK_ADDRESS_ORIGIN SET	$F000 + (3 * _ROM_BANK_SIZE)
+      8  6573				   _BANK_SLOT SET	3 * 64
+      9  6573
+      0  6573					      ROMBANK	ROM_SCREEN
       1  6ac6 ????				      SEG	ROM_ROM_SCREEN
       2  6800					      ORG	_ORIGIN
       3  6800					      RORG	_BANK_ADDRESS_ORIGIN

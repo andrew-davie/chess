@@ -49,6 +49,7 @@ MAX_MOVES = 100          ; big is good
     VARIABLE depthLeft, 1
     VARIABLE restorePiece, 1
     VARIABLE virtualKingSquare, 2                   ; traversing squares for castle/check
+    VARIABLE inCheck, 1
     
     END_BANK
 

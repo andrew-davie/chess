@@ -454,7 +454,7 @@ ONCEPERFRAME = 40
     ; note that 'alpha' and 'beta' are set externally!!
 
                     lda #-1
-                    sta@PLY moveIndex           ; no valid moves
+                    sta@PLY moveIndex               ; no valid moves
                     sta@PLY bestMove
 
                     lda enPassantPawn               ; flag/square from last actual move made
@@ -474,6 +474,9 @@ ONCEPERFRAME = 40
                     lda Evaluation+1
                     sta@PLY savedEvaluation+1
     ;}
+
+                    lda #0
+                    sta@PLY inCheck                 ; flags ANY check at a ply (for draw detection)
 
 
                     jsr MoveGenX

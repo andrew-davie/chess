@@ -254,7 +254,7 @@ done_sync
     DEF BubbleSort
     SUBROUTINE
 
-
+ rts ;tmp
     IF 1
     ;{
 

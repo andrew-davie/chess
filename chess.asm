@@ -34,7 +34,7 @@ YES                     = 1
 NO                      = 0
 HUMAN                   = 64
 
-INFINITY                = $8000-1 ;32767
+INFINITY                = $7000-1 ;32767
 
 
 ; assemble diagnostics. Remove for release.

@@ -449,7 +449,7 @@ InitPieceList
 
     ENDIF
 
-    IF TEST_POSITION & 1
+    IF TEST_POSITION & 0
     ; En passant test (white)
 
         .byte BLACK|BP|FLAG_MOVED, 53
@@ -482,7 +482,7 @@ InitPieceList
     ENDIF
 
 
-    IF TEST_POSITION & 0
+    IF TEST_POSITION & 1
     ; mate/draw
 
         .byte BLACK|K, 99

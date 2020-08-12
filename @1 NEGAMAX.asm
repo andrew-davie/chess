@@ -357,6 +357,7 @@
 .noCheat
 
 
+    IF 0
                     NEXT_RANDOM
                     and randomness
                     adc Evaluation
@@ -364,7 +365,7 @@
                     ;bcc .evOK
                     ;inc Evaluation+1
 .evOK
-
+    ENDIF
 
                     lda __alpha
                     sta@PLY alpha
@@ -380,8 +381,6 @@
                     jsr GenerateAllMoves;@0
 
     DEF negaLoop
-
-    jsr debug
 
 
                     lda flagCheck
@@ -496,6 +495,7 @@
     IF 1
                     lda flagCheck
                     beq .notCheck
+                    sta@PLY inCheck
                     
     ; at this point we've determined that the move was illegal, because the next ply detected
     ; a king capture. So, the move should be totally discounted
@@ -566,7 +566,27 @@
                     bmi .retrn
                     jmp .forChild
 
-.retrn              jmp .exit
+.retrn
+
+    IF 0
+
+    ; If there has been NO "best move" found, then there were no valid moves
+    ; if the side was in check, that's OK we'll score a checkmate for that
+    ; but if NOT in check, then it's a stalemate, and the score needs to be adjusted
+
+                    lda@PLY bestMove
+                    bpl .someMoveOK
+                    lda@PLY inCheck
+                    bne .someMoveOK                 ; it's a checkmate
+
+                    ;lda #0
+                    sta@PLY value
+                    sta@PLY value+1
+
+.someMoveOK
+    ENDIF
+
+                    jmp .exit
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -655,39 +675,12 @@
                     lda #>-INFINITY
                     sta __alpha+1                   ; player tries to maximise
 
-                    ldx #0
+                    ldx #2
                     stx@PLY depthLeft
                     
                     jsr negaLoop                    
 
                     CALL BubbleSort;@3
-
-                    lda #<INFINITY
-                    sta __beta
-                    lda #>INFINITY
-                    sta __beta+1
-
-                    lda #<-INFINITY
-                    sta __alpha
-                    lda #>-INFINITY
-                    sta __alpha+1                   ; player tries to maximise
-
-                    ldx #1
-                    stx@PLY depthLeft
-                    
-                    jsr negaLoop                    
-
-
-
-
-
-
-
-
-
-                    CALL BubbleSort;@3
-
-
 
                     pla
                     sta@PLY value
@@ -708,10 +701,10 @@
                     pla
                     sta@PLY depthLeft
 
-
+    jsr debug
 .tooDeep
-.exit
     ENDIF
+.exit
 
 
 
