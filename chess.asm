@@ -4,7 +4,7 @@
 ; andrew@taswegian.com
 
 
-TIA_BASE_ADDRESS = 0 ;$40
+TIA_BASE_ADDRESS = $40
 
     processor 6502
     include "vcs.h"
@@ -46,7 +46,7 @@ ASSERTS                 = 0
 PVSP                    = 0                         ; player versus player =1
 ENPASSANT_ENABLED       = 1
 CASTLING_ENABLED        = 1
-;RAINBOW                 = 1                        ; comment out to disable
+RAINBOW                 = 1                        ; comment out to disable
 
 SELECT_SWITCH           = 2                         ; (SWCHB & SELECT_SWITCH)  0 == PRESSED
 
@@ -55,8 +55,8 @@ SELECT_SWITCH           = 2                         ; (SWCHB & SELECT_SWITCH)  0
 ; PLY+2 for computer response (thus, 3). The bank allocation gets stomped!
 
 
-SEARCH_DEPTH            = 4
-QUIESCE_EXTRA_DEPTH     = 4
+SEARCH_DEPTH            = 5
+QUIESCE_EXTRA_DEPTH     = 8
 
 
     IF SEARCH_DEPTH < 3

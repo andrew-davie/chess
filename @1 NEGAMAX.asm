@@ -357,7 +357,7 @@
 .noCheat
 
 
-    IF 0
+    IF 1
                     NEXT_RANDOM
                     and randomness
                     adc Evaluation

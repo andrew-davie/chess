@@ -515,6 +515,9 @@ ONCEPERFRAME = 40
                     and #PIECE_MASK
                     tay
 
+huh cmp #KING+1
+ bcs huh
+
                     lda HandlerVectorHI,y
                     sta __vector+1                    
                     lda HandlerVectorLO,y

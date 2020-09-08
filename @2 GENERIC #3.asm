@@ -39,7 +39,6 @@ STELLA_AUTODETECT dc "TJ3E" ; 3E+ autodetect
                     lda #%01000010                  ; bit6 is not required
                     ;sta VBLANK                      ; end of screen - enter blanking
 
-
 ; END OF VISIBLE SCREEN
 ; HERE'S SOME TIME TO DO STUFF
 
@@ -131,6 +130,7 @@ _rts                rts
         REF COMMON_VARS
         REF AiStateMachine ;✅
         VEND aiMoveIsSelected
+
 
     ; Both computer and human have now seleted a move, and converge here
 
@@ -409,15 +409,16 @@ PieceToShape
                     rts
 
 
+
     MAC VALUETABLE
-    .byte {1}0      ; blank
-    .byte {1}100    ; white P
-    .byte {1}100    ; black P
-    .byte {1}320    ; N
-    .byte {1}375    ; B
-    .byte {1}575    ; R
-    .byte {1}900    ; Q
-    .byte {1}10000  ; K
+    .byte {1}(0)      ; blank
+    .byte {1}(100)    ; white P
+    .byte {1}(100)    ; black P !!
+    .byte {1}(320)    ; N
+    .byte {1}(375)    ; B
+    .byte {1}(575)    ; R
+    .byte {1}(900)    ; Q
+    .byte {1}(10000)  ; K
     ENDM
 
 PieceValueLO

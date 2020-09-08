@@ -1,27 +1,31 @@
 ; VCS.H
-; Version 1.05, 13/November/2003
+; Version 1.06, 06/SEP/2020
 
-VERSION_VCS         = 105
+VERSION_VCS         = 106
 
+; THIS IS A *THE* "STANDARD" VCS.H
+; THIS FILE IS EXPLICITLY SUPPORTED AS A DASM-PREFERRED COMPANION FILE
+; The latest version can be found at https://dasm-assembler.github.io/
+;
 ; This file defines hardware registers and memory mapping for the
 ; Atari 2600. It is distributed as a companion machine-specific support package
 ; for the DASM compiler. Updates to this file, DASM, and associated tools are
-; available at at http://www.atari2600.org/dasm
+; available at at https://dasm-assembler.github.io/
 ;
-; Many thanks to the original author(s) of this file, and to everyone who has
-; contributed to understanding the Atari 2600.  If you take issue with the
-; contents, or naming of registers, please write to me (atari2600@taswegian.com)
-; with your views.  Please contribute, if you think you can improve this
-; file!
+; Many thanks to the people who have contributed. If you find an issue with the
+; contents, or would like ot add something, please report as an issue at...
+; https://github.com/dasm-assembler/dasm/issues
+
 ;
 ; Latest Revisions...
+; 1.06  05/SEP/2020     Modified header/license and links to new versions
 ; 1.05  13/NOV/2003      - Correction to 1.04 - now functions as requested by MR.
 ;                        - Added VERSION_VCS equate (which will reflect 100x version #)
 ;                          This will allow conditional code to verify VCS.H being
 ;                          used for code assembly.
 ; 1.04  12/NOV/2003     Added TIA_BASE_WRITE_ADDRESS and TIA_BASE_READ_ADDRESS for
 ;                       convenient disassembly/reassembly compatibility for hardware
-;                       mirrored reading/writing differences.  This is more a
+;                       mirrored reading/writing differences.  This is more a 
 ;                       readability issue, and binary compatibility with disassembled
 ;                       and reassembled sources.  Per Manuel Rotschkar's suggestion.
 ; 1.03  12/MAY/2003     Added SEG segment at end of file to fix old-code compatibility
@@ -63,7 +67,7 @@ TIA_BASE_ADDRESS	= 0
 ; for the mirrored ROM hardware registers.
 
 ; Usage: As per above, define the TIA_BASE_READ_ADDRESS and/or TIA_BASE_WRITE_ADDRESS
-; using the -D command-line switch, as required.  If the addresses are not defined,
+; using the -D command-line switch, as required.  If the addresses are not defined, 
 ; they defaut to the TIA_BASE_ADDRESS.
 
      IFNCONST TIA_BASE_READ_ADDRESS
@@ -80,7 +84,7 @@ TIA_BASE_WRITE_ADDRESS = TIA_BASE_ADDRESS
 			ORG TIA_BASE_WRITE_ADDRESS
 
 	; DO NOT CHANGE THE RELATIVE ORDERING OF REGISTERS!
-
+    
 VSYNC       ds 1    ; $00   0000 00x0   Vertical Sync Set-Clear
 VBLANK		ds 1	; $01   xx00 00x0   Vertical Blank Set-Clear
 WSYNC		ds 1	; $02   ---- ----   Wait for Horizontal Blank
@@ -126,7 +130,7 @@ RESMP1      ds 1    ; $29   0000 00x0   Reset Missle 1 to Player 1
 HMOVE       ds 1    ; $2A   ---- ----   Apply Horizontal Motion
 HMCLR       ds 1    ; $2B   ---- ----   Clear Horizontal Move Registers
 CXCLR       ds 1    ; $2C   ---- ----   Clear Collision Latches
-
+ 
 ;-------------------------------------------------------------------------------
 
 			SEG.U TIA_REGISTERS_READ
@@ -152,7 +156,7 @@ INPT5       ds 1	; $0D		x000 0000       Read Input (Trigger) 1
 
 			SEG.U RIOT
 			ORG $280
-
+ 
 	; RIOT MEMORY MAP
 
 SWCHA       ds 1    ; $280      Port A data register for joysticks:

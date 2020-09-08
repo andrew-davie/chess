@@ -1,0 +1,778 @@
+------- FILE 4c4c.asm LEVEL 1 PASS 1
+      1  0000 ????
+      2  0000 ????				      .prOCessor	6502
+      3  1000					      ORG	$1000
+      4  1000
+      5  1000
+      6  1000				   N	      SET	0
+      7  1000					      REPEAT	256
+      8  1000		       00		      .byte.b	N
+      9  1000				   N	      SET	N + 1
+      7  1000					      REPEND
+      8  1001		       01		      .byte.b	N
+      9  1001				   N	      SET	N + 1
+      7  1001					      REPEND
+      8  1002		       02		      .byte.b	N
+      9  1002				   N	      SET	N + 1
+      7  1002					      REPEND
+      8  1003		       03		      .byte.b	N
+      9  1003				   N	      SET	N + 1
+      7  1003					      REPEND
+      8  1004		       04		      .byte.b	N
+      9  1004				   N	      SET	N + 1
+      7  1004					      REPEND
+      8  1005		       05		      .byte.b	N
+      9  1005				   N	      SET	N + 1
+      7  1005					      REPEND
+      8  1006		       06		      .byte.b	N
+      9  1006				   N	      SET	N + 1
+      7  1006					      REPEND
+      8  1007		       07		      .byte.b	N
+      9  1007				   N	      SET	N + 1
+      7  1007					      REPEND
+      8  1008		       08		      .byte.b	N
+      9  1008				   N	      SET	N + 1
+      7  1008					      REPEND
+      8  1009		       09		      .byte.b	N
+      9  1009				   N	      SET	N + 1
+      7  1009					      REPEND
+      8  100a		       0a		      .byte.b	N
+      9  100a				   N	      SET	N + 1
+      7  100a					      REPEND
+      8  100b		       0b		      .byte.b	N
+      9  100b				   N	      SET	N + 1
+      7  100b					      REPEND
+      8  100c		       0c		      .byte.b	N
+      9  100c				   N	      SET	N + 1
+      7  100c					      REPEND
+      8  100d		       0d		      .byte.b	N
+      9  100d				   N	      SET	N + 1
+      7  100d					      REPEND
+      8  100e		       0e		      .byte.b	N
+      9  100e				   N	      SET	N + 1
+      7  100e					      REPEND
+      8  100f		       0f		      .byte.b	N
+      9  100f				   N	      SET	N + 1
+      7  100f					      REPEND
+      8  1010		       10		      .byte.b	N
+      9  1010				   N	      SET	N + 1
+      7  1010					      REPEND
+      8  1011		       11		      .byte.b	N
+      9  1011				   N	      SET	N + 1
+      7  1011					      REPEND
+      8  1012		       12		      .byte.b	N
+      9  1012				   N	      SET	N + 1
+      7  1012					      REPEND
+      8  1013		       13		      .byte.b	N
+      9  1013				   N	      SET	N + 1
+      7  1013					      REPEND
+      8  1014		       14		      .byte.b	N
+      9  1014				   N	      SET	N + 1
+      7  1014					      REPEND
+      8  1015		       15		      .byte.b	N
+      9  1015				   N	      SET	N + 1
+      7  1015					      REPEND
+      8  1016		       16		      .byte.b	N
+      9  1016				   N	      SET	N + 1
+      7  1016					      REPEND
+      8  1017		       17		      .byte.b	N
+      9  1017				   N	      SET	N + 1
+      7  1017					      REPEND
+      8  1018		       18		      .byte.b	N
+      9  1018				   N	      SET	N + 1
+      7  1018					      REPEND
+      8  1019		       19		      .byte.b	N
+      9  1019				   N	      SET	N + 1
+      7  1019					      REPEND
+      8  101a		       1a		      .byte.b	N
+      9  101a				   N	      SET	N + 1
+      7  101a					      REPEND
+      8  101b		       1b		      .byte.b	N
+      9  101b				   N	      SET	N + 1
+      7  101b					      REPEND
+      8  101c		       1c		      .byte.b	N
+      9  101c				   N	      SET	N + 1
+      7  101c					      REPEND
+      8  101d		       1d		      .byte.b	N
+      9  101d				   N	      SET	N + 1
+      7  101d					      REPEND
+      8  101e		       1e		      .byte.b	N
+      9  101e				   N	      SET	N + 1
+      7  101e					      REPEND
+      8  101f		       1f		      .byte.b	N
+      9  101f				   N	      SET	N + 1
+      7  101f					      REPEND
+      8  1020		       20		      .byte.b	N
+      9  1020				   N	      SET	N + 1
+      7  1020					      REPEND
+      8  1021		       21		      .byte.b	N
+      9  1021				   N	      SET	N + 1
+      7  1021					      REPEND
+      8  1022		       22		      .byte.b	N
+      9  1022				   N	      SET	N + 1
+      7  1022					      REPEND
+      8  1023		       23		      .byte.b	N
+      9  1023				   N	      SET	N + 1
+      7  1023					      REPEND
+      8  1024		       24		      .byte.b	N
+      9  1024				   N	      SET	N + 1
+      7  1024					      REPEND
+      8  1025		       25		      .byte.b	N
+      9  1025				   N	      SET	N + 1
+      7  1025					      REPEND
+      8  1026		       26		      .byte.b	N
+      9  1026				   N	      SET	N + 1
+      7  1026					      REPEND
+      8  1027		       27		      .byte.b	N
+      9  1027				   N	      SET	N + 1
+      7  1027					      REPEND
+      8  1028		       28		      .byte.b	N
+      9  1028				   N	      SET	N + 1
+      7  1028					      REPEND
+      8  1029		       29		      .byte.b	N
+      9  1029				   N	      SET	N + 1
+      7  1029					      REPEND
+      8  102a		       2a		      .byte.b	N
+      9  102a				   N	      SET	N + 1
+      7  102a					      REPEND
+      8  102b		       2b		      .byte.b	N
+      9  102b				   N	      SET	N + 1
+      7  102b					      REPEND
+      8  102c		       2c		      .byte.b	N
+      9  102c				   N	      SET	N + 1
+      7  102c					      REPEND
+      8  102d		       2d		      .byte.b	N
+      9  102d				   N	      SET	N + 1
+      7  102d					      REPEND
+      8  102e		       2e		      .byte.b	N
+      9  102e				   N	      SET	N + 1
+      7  102e					      REPEND
+      8  102f		       2f		      .byte.b	N
+      9  102f				   N	      SET	N + 1
+      7  102f					      REPEND
+      8  1030		       30		      .byte.b	N
+      9  1030				   N	      SET	N + 1
+      7  1030					      REPEND
+      8  1031		       31		      .byte.b	N
+      9  1031				   N	      SET	N + 1
+      7  1031					      REPEND
+      8  1032		       32		      .byte.b	N
+      9  1032				   N	      SET	N + 1
+      7  1032					      REPEND
+      8  1033		       33		      .byte.b	N
+      9  1033				   N	      SET	N + 1
+      7  1033					      REPEND
+      8  1034		       34		      .byte.b	N
+      9  1034				   N	      SET	N + 1
+      7  1034					      REPEND
+      8  1035		       35		      .byte.b	N
+      9  1035				   N	      SET	N + 1
+      7  1035					      REPEND
+      8  1036		       36		      .byte.b	N
+      9  1036				   N	      SET	N + 1
+      7  1036					      REPEND
+      8  1037		       37		      .byte.b	N
+      9  1037				   N	      SET	N + 1
+      7  1037					      REPEND
+      8  1038		       38		      .byte.b	N
+      9  1038				   N	      SET	N + 1
+      7  1038					      REPEND
+      8  1039		       39		      .byte.b	N
+      9  1039				   N	      SET	N + 1
+      7  1039					      REPEND
+      8  103a		       3a		      .byte.b	N
+      9  103a				   N	      SET	N + 1
+      7  103a					      REPEND
+      8  103b		       3b		      .byte.b	N
+      9  103b				   N	      SET	N + 1
+      7  103b					      REPEND
+      8  103c		       3c		      .byte.b	N
+      9  103c				   N	      SET	N + 1
+      7  103c					      REPEND
+      8  103d		       3d		      .byte.b	N
+      9  103d				   N	      SET	N + 1
+      7  103d					      REPEND
+      8  103e		       3e		      .byte.b	N
+      9  103e				   N	      SET	N + 1
+      7  103e					      REPEND
+      8  103f		       3f		      .byte.b	N
+      9  103f				   N	      SET	N + 1
+      7  103f					      REPEND
+      8  1040		       40		      .byte.b	N
+      9  1040				   N	      SET	N + 1
+      7  1040					      REPEND
+      8  1041		       41		      .byte.b	N
+      9  1041				   N	      SET	N + 1
+      7  1041					      REPEND
+      8  1042		       42		      .byte.b	N
+      9  1042				   N	      SET	N + 1
+      7  1042					      REPEND
+      8  1043		       43		      .byte.b	N
+      9  1043				   N	      SET	N + 1
+      7  1043					      REPEND
+      8  1044		       44		      .byte.b	N
+      9  1044				   N	      SET	N + 1
+      7  1044					      REPEND
+      8  1045		       45		      .byte.b	N
+      9  1045				   N	      SET	N + 1
+      7  1045					      REPEND
+      8  1046		       46		      .byte.b	N
+      9  1046				   N	      SET	N + 1
+      7  1046					      REPEND
+      8  1047		       47		      .byte.b	N
+      9  1047				   N	      SET	N + 1
+      7  1047					      REPEND
+      8  1048		       48		      .byte.b	N
+      9  1048				   N	      SET	N + 1
+      7  1048					      REPEND
+      8  1049		       49		      .byte.b	N
+      9  1049				   N	      SET	N + 1
+      7  1049					      REPEND
+      8  104a		       4a		      .byte.b	N
+      9  104a				   N	      SET	N + 1
+      7  104a					      REPEND
+      8  104b		       4b		      .byte.b	N
+      9  104b				   N	      SET	N + 1
+      7  104b					      REPEND
+      8  104c		       4c		      .byte.b	N
+      9  104c				   N	      SET	N + 1
+      7  104c					      REPEND
+      8  104d		       4d		      .byte.b	N
+      9  104d				   N	      SET	N + 1
+      7  104d					      REPEND
+      8  104e		       4e		      .byte.b	N
+      9  104e				   N	      SET	N + 1
+      7  104e					      REPEND
+      8  104f		       4f		      .byte.b	N
+      9  104f				   N	      SET	N + 1
+      7  104f					      REPEND
+      8  1050		       50		      .byte.b	N
+      9  1050				   N	      SET	N + 1
+      7  1050					      REPEND
+      8  1051		       51		      .byte.b	N
+      9  1051				   N	      SET	N + 1
+      7  1051					      REPEND
+      8  1052		       52		      .byte.b	N
+      9  1052				   N	      SET	N + 1
+      7  1052					      REPEND
+      8  1053		       53		      .byte.b	N
+      9  1053				   N	      SET	N + 1
+      7  1053					      REPEND
+      8  1054		       54		      .byte.b	N
+      9  1054				   N	      SET	N + 1
+      7  1054					      REPEND
+      8  1055		       55		      .byte.b	N
+      9  1055				   N	      SET	N + 1
+      7  1055					      REPEND
+      8  1056		       56		      .byte.b	N
+      9  1056				   N	      SET	N + 1
+      7  1056					      REPEND
+      8  1057		       57		      .byte.b	N
+      9  1057				   N	      SET	N + 1
+      7  1057					      REPEND
+      8  1058		       58		      .byte.b	N
+      9  1058				   N	      SET	N + 1
+      7  1058					      REPEND
+      8  1059		       59		      .byte.b	N
+      9  1059				   N	      SET	N + 1
+      7  1059					      REPEND
+      8  105a		       5a		      .byte.b	N
+      9  105a				   N	      SET	N + 1
+      7  105a					      REPEND
+      8  105b		       5b		      .byte.b	N
+      9  105b				   N	      SET	N + 1
+      7  105b					      REPEND
+      8  105c		       5c		      .byte.b	N
+      9  105c				   N	      SET	N + 1
+      7  105c					      REPEND
+      8  105d		       5d		      .byte.b	N
+      9  105d				   N	      SET	N + 1
+      7  105d					      REPEND
+      8  105e		       5e		      .byte.b	N
+      9  105e				   N	      SET	N + 1
+      7  105e					      REPEND
+      8  105f		       5f		      .byte.b	N
+      9  105f				   N	      SET	N + 1
+      7  105f					      REPEND
+      8  1060		       60		      .byte.b	N
+      9  1060				   N	      SET	N + 1
+      7  1060					      REPEND
+      8  1061		       61		      .byte.b	N
+      9  1061				   N	      SET	N + 1
+      7  1061					      REPEND
+      8  1062		       62		      .byte.b	N
+      9  1062				   N	      SET	N + 1
+      7  1062					      REPEND
+      8  1063		       63		      .byte.b	N
+      9  1063				   N	      SET	N + 1
+      7  1063					      REPEND
+      8  1064		       64		      .byte.b	N
+      9  1064				   N	      SET	N + 1
+      7  1064					      REPEND
+      8  1065		       65		      .byte.b	N
+      9  1065				   N	      SET	N + 1
+      7  1065					      REPEND
+      8  1066		       66		      .byte.b	N
+      9  1066				   N	      SET	N + 1
+      7  1066					      REPEND
+      8  1067		       67		      .byte.b	N
+      9  1067				   N	      SET	N + 1
+      7  1067					      REPEND
+      8  1068		       68		      .byte.b	N
+      9  1068				   N	      SET	N + 1
+      7  1068					      REPEND
+      8  1069		       69		      .byte.b	N
+      9  1069				   N	      SET	N + 1
+      7  1069					      REPEND
+      8  106a		       6a		      .byte.b	N
+      9  106a				   N	      SET	N + 1
+      7  106a					      REPEND
+      8  106b		       6b		      .byte.b	N
+      9  106b				   N	      SET	N + 1
+      7  106b					      REPEND
+      8  106c		       6c		      .byte.b	N
+      9  106c				   N	      SET	N + 1
+      7  106c					      REPEND
+      8  106d		       6d		      .byte.b	N
+      9  106d				   N	      SET	N + 1
+      7  106d					      REPEND
+      8  106e		       6e		      .byte.b	N
+      9  106e				   N	      SET	N + 1
+      7  106e					      REPEND
+      8  106f		       6f		      .byte.b	N
+      9  106f				   N	      SET	N + 1
+      7  106f					      REPEND
+      8  1070		       70		      .byte.b	N
+      9  1070				   N	      SET	N + 1
+      7  1070					      REPEND
+      8  1071		       71		      .byte.b	N
+      9  1071				   N	      SET	N + 1
+      7  1071					      REPEND
+      8  1072		       72		      .byte.b	N
+      9  1072				   N	      SET	N + 1
+      7  1072					      REPEND
+      8  1073		       73		      .byte.b	N
+      9  1073				   N	      SET	N + 1
+      7  1073					      REPEND
+      8  1074		       74		      .byte.b	N
+      9  1074				   N	      SET	N + 1
+      7  1074					      REPEND
+      8  1075		       75		      .byte.b	N
+      9  1075				   N	      SET	N + 1
+      7  1075					      REPEND
+      8  1076		       76		      .byte.b	N
+      9  1076				   N	      SET	N + 1
+      7  1076					      REPEND
+      8  1077		       77		      .byte.b	N
+      9  1077				   N	      SET	N + 1
+      7  1077					      REPEND
+      8  1078		       78		      .byte.b	N
+      9  1078				   N	      SET	N + 1
+      7  1078					      REPEND
+      8  1079		       79		      .byte.b	N
+      9  1079				   N	      SET	N + 1
+      7  1079					      REPEND
+      8  107a		       7a		      .byte.b	N
+      9  107a				   N	      SET	N + 1
+      7  107a					      REPEND
+      8  107b		       7b		      .byte.b	N
+      9  107b				   N	      SET	N + 1
+      7  107b					      REPEND
+      8  107c		       7c		      .byte.b	N
+      9  107c				   N	      SET	N + 1
+      7  107c					      REPEND
+      8  107d		       7d		      .byte.b	N
+      9  107d				   N	      SET	N + 1
+      7  107d					      REPEND
+      8  107e		       7e		      .byte.b	N
+      9  107e				   N	      SET	N + 1
+      7  107e					      REPEND
+      8  107f		       7f		      .byte.b	N
+      9  107f				   N	      SET	N + 1
+      7  107f					      REPEND
+      8  1080		       80		      .byte.b	N
+      9  1080				   N	      SET	N + 1
+      7  1080					      REPEND
+      8  1081		       81		      .byte.b	N
+      9  1081				   N	      SET	N + 1
+      7  1081					      REPEND
+      8  1082		       82		      .byte.b	N
+      9  1082				   N	      SET	N + 1
+      7  1082					      REPEND
+      8  1083		       83		      .byte.b	N
+      9  1083				   N	      SET	N + 1
+      7  1083					      REPEND
+      8  1084		       84		      .byte.b	N
+      9  1084				   N	      SET	N + 1
+      7  1084					      REPEND
+      8  1085		       85		      .byte.b	N
+      9  1085				   N	      SET	N + 1
+      7  1085					      REPEND
+      8  1086		       86		      .byte.b	N
+      9  1086				   N	      SET	N + 1
+      7  1086					      REPEND
+      8  1087		       87		      .byte.b	N
+      9  1087				   N	      SET	N + 1
+      7  1087					      REPEND
+      8  1088		       88		      .byte.b	N
+      9  1088				   N	      SET	N + 1
+      7  1088					      REPEND
+      8  1089		       89		      .byte.b	N
+      9  1089				   N	      SET	N + 1
+      7  1089					      REPEND
+      8  108a		       8a		      .byte.b	N
+      9  108a				   N	      SET	N + 1
+      7  108a					      REPEND
+      8  108b		       8b		      .byte.b	N
+      9  108b				   N	      SET	N + 1
+      7  108b					      REPEND
+      8  108c		       8c		      .byte.b	N
+      9  108c				   N	      SET	N + 1
+      7  108c					      REPEND
+      8  108d		       8d		      .byte.b	N
+      9  108d				   N	      SET	N + 1
+      7  108d					      REPEND
+      8  108e		       8e		      .byte.b	N
+      9  108e				   N	      SET	N + 1
+      7  108e					      REPEND
+      8  108f		       8f		      .byte.b	N
+      9  108f				   N	      SET	N + 1
+      7  108f					      REPEND
+      8  1090		       90		      .byte.b	N
+      9  1090				   N	      SET	N + 1
+      7  1090					      REPEND
+      8  1091		       91		      .byte.b	N
+      9  1091				   N	      SET	N + 1
+      7  1091					      REPEND
+      8  1092		       92		      .byte.b	N
+      9  1092				   N	      SET	N + 1
+      7  1092					      REPEND
+      8  1093		       93		      .byte.b	N
+      9  1093				   N	      SET	N + 1
+      7  1093					      REPEND
+      8  1094		       94		      .byte.b	N
+      9  1094				   N	      SET	N + 1
+      7  1094					      REPEND
+      8  1095		       95		      .byte.b	N
+      9  1095				   N	      SET	N + 1
+      7  1095					      REPEND
+      8  1096		       96		      .byte.b	N
+      9  1096				   N	      SET	N + 1
+      7  1096					      REPEND
+      8  1097		       97		      .byte.b	N
+      9  1097				   N	      SET	N + 1
+      7  1097					      REPEND
+      8  1098		       98		      .byte.b	N
+      9  1098				   N	      SET	N + 1
+      7  1098					      REPEND
+      8  1099		       99		      .byte.b	N
+      9  1099				   N	      SET	N + 1
+      7  1099					      REPEND
+      8  109a		       9a		      .byte.b	N
+      9  109a				   N	      SET	N + 1
+      7  109a					      REPEND
+      8  109b		       9b		      .byte.b	N
+      9  109b				   N	      SET	N + 1
+      7  109b					      REPEND
+      8  109c		       9c		      .byte.b	N
+      9  109c				   N	      SET	N + 1
+      7  109c					      REPEND
+      8  109d		       9d		      .byte.b	N
+      9  109d				   N	      SET	N + 1
+      7  109d					      REPEND
+      8  109e		       9e		      .byte.b	N
+      9  109e				   N	      SET	N + 1
+      7  109e					      REPEND
+      8  109f		       9f		      .byte.b	N
+      9  109f				   N	      SET	N + 1
+      7  109f					      REPEND
+      8  10a0		       a0		      .byte.b	N
+      9  10a0				   N	      SET	N + 1
+      7  10a0					      REPEND
+      8  10a1		       a1		      .byte.b	N
+      9  10a1				   N	      SET	N + 1
+      7  10a1					      REPEND
+      8  10a2		       a2		      .byte.b	N
+      9  10a2				   N	      SET	N + 1
+      7  10a2					      REPEND
+      8  10a3		       a3		      .byte.b	N
+      9  10a3				   N	      SET	N + 1
+      7  10a3					      REPEND
+      8  10a4		       a4		      .byte.b	N
+      9  10a4				   N	      SET	N + 1
+      7  10a4					      REPEND
+      8  10a5		       a5		      .byte.b	N
+      9  10a5				   N	      SET	N + 1
+      7  10a5					      REPEND
+      8  10a6		       a6		      .byte.b	N
+      9  10a6				   N	      SET	N + 1
+      7  10a6					      REPEND
+      8  10a7		       a7		      .byte.b	N
+      9  10a7				   N	      SET	N + 1
+      7  10a7					      REPEND
+      8  10a8		       a8		      .byte.b	N
+      9  10a8				   N	      SET	N + 1
+      7  10a8					      REPEND
+      8  10a9		       a9		      .byte.b	N
+      9  10a9				   N	      SET	N + 1
+      7  10a9					      REPEND
+      8  10aa		       aa		      .byte.b	N
+      9  10aa				   N	      SET	N + 1
+      7  10aa					      REPEND
+      8  10ab		       ab		      .byte.b	N
+      9  10ab				   N	      SET	N + 1
+      7  10ab					      REPEND
+      8  10ac		       ac		      .byte.b	N
+      9  10ac				   N	      SET	N + 1
+      7  10ac					      REPEND
+      8  10ad		       ad		      .byte.b	N
+      9  10ad				   N	      SET	N + 1
+      7  10ad					      REPEND
+      8  10ae		       ae		      .byte.b	N
+      9  10ae				   N	      SET	N + 1
+      7  10ae					      REPEND
+      8  10af		       af		      .byte.b	N
+      9  10af				   N	      SET	N + 1
+      7  10af					      REPEND
+      8  10b0		       b0		      .byte.b	N
+      9  10b0				   N	      SET	N + 1
+      7  10b0					      REPEND
+      8  10b1		       b1		      .byte.b	N
+      9  10b1				   N	      SET	N + 1
+      7  10b1					      REPEND
+      8  10b2		       b2		      .byte.b	N
+      9  10b2				   N	      SET	N + 1
+      7  10b2					      REPEND
+      8  10b3		       b3		      .byte.b	N
+      9  10b3				   N	      SET	N + 1
+      7  10b3					      REPEND
+      8  10b4		       b4		      .byte.b	N
+      9  10b4				   N	      SET	N + 1
+      7  10b4					      REPEND
+      8  10b5		       b5		      .byte.b	N
+      9  10b5				   N	      SET	N + 1
+      7  10b5					      REPEND
+      8  10b6		       b6		      .byte.b	N
+      9  10b6				   N	      SET	N + 1
+      7  10b6					      REPEND
+      8  10b7		       b7		      .byte.b	N
+      9  10b7				   N	      SET	N + 1
+      7  10b7					      REPEND
+      8  10b8		       b8		      .byte.b	N
+      9  10b8				   N	      SET	N + 1
+      7  10b8					      REPEND
+      8  10b9		       b9		      .byte.b	N
+      9  10b9				   N	      SET	N + 1
+      7  10b9					      REPEND
+      8  10ba		       ba		      .byte.b	N
+      9  10ba				   N	      SET	N + 1
+      7  10ba					      REPEND
+      8  10bb		       bb		      .byte.b	N
+      9  10bb				   N	      SET	N + 1
+      7  10bb					      REPEND
+      8  10bc		       bc		      .byte.b	N
+      9  10bc				   N	      SET	N + 1
+      7  10bc					      REPEND
+      8  10bd		       bd		      .byte.b	N
+      9  10bd				   N	      SET	N + 1
+      7  10bd					      REPEND
+      8  10be		       be		      .byte.b	N
+      9  10be				   N	      SET	N + 1
+      7  10be					      REPEND
+      8  10bf		       bf		      .byte.b	N
+      9  10bf				   N	      SET	N + 1
+      7  10bf					      REPEND
+      8  10c0		       c0		      .byte.b	N
+      9  10c0				   N	      SET	N + 1
+      7  10c0					      REPEND
+      8  10c1		       c1		      .byte.b	N
+      9  10c1				   N	      SET	N + 1
+      7  10c1					      REPEND
+      8  10c2		       c2		      .byte.b	N
+      9  10c2				   N	      SET	N + 1
+      7  10c2					      REPEND
+      8  10c3		       c3		      .byte.b	N
+      9  10c3				   N	      SET	N + 1
+      7  10c3					      REPEND
+      8  10c4		       c4		      .byte.b	N
+      9  10c4				   N	      SET	N + 1
+      7  10c4					      REPEND
+      8  10c5		       c5		      .byte.b	N
+      9  10c5				   N	      SET	N + 1
+      7  10c5					      REPEND
+      8  10c6		       c6		      .byte.b	N
+      9  10c6				   N	      SET	N + 1
+      7  10c6					      REPEND
+      8  10c7		       c7		      .byte.b	N
+      9  10c7				   N	      SET	N + 1
+      7  10c7					      REPEND
+      8  10c8		       c8		      .byte.b	N
+      9  10c8				   N	      SET	N + 1
+      7  10c8					      REPEND
+      8  10c9		       c9		      .byte.b	N
+      9  10c9				   N	      SET	N + 1
+      7  10c9					      REPEND
+      8  10ca		       ca		      .byte.b	N
+      9  10ca				   N	      SET	N + 1
+      7  10ca					      REPEND
+      8  10cb		       cb		      .byte.b	N
+      9  10cb				   N	      SET	N + 1
+      7  10cb					      REPEND
+      8  10cc		       cc		      .byte.b	N
+      9  10cc				   N	      SET	N + 1
+      7  10cc					      REPEND
+      8  10cd		       cd		      .byte.b	N
+      9  10cd				   N	      SET	N + 1
+      7  10cd					      REPEND
+      8  10ce		       ce		      .byte.b	N
+      9  10ce				   N	      SET	N + 1
+      7  10ce					      REPEND
+      8  10cf		       cf		      .byte.b	N
+      9  10cf				   N	      SET	N + 1
+      7  10cf					      REPEND
+      8  10d0		       d0		      .byte.b	N
+      9  10d0				   N	      SET	N + 1
+      7  10d0					      REPEND
+      8  10d1		       d1		      .byte.b	N
+      9  10d1				   N	      SET	N + 1
+      7  10d1					      REPEND
+      8  10d2		       d2		      .byte.b	N
+      9  10d2				   N	      SET	N + 1
+      7  10d2					      REPEND
+      8  10d3		       d3		      .byte.b	N
+      9  10d3				   N	      SET	N + 1
+      7  10d3					      REPEND
+      8  10d4		       d4		      .byte.b	N
+      9  10d4				   N	      SET	N + 1
+      7  10d4					      REPEND
+      8  10d5		       d5		      .byte.b	N
+      9  10d5				   N	      SET	N + 1
+      7  10d5					      REPEND
+      8  10d6		       d6		      .byte.b	N
+      9  10d6				   N	      SET	N + 1
+      7  10d6					      REPEND
+      8  10d7		       d7		      .byte.b	N
+      9  10d7				   N	      SET	N + 1
+      7  10d7					      REPEND
+      8  10d8		       d8		      .byte.b	N
+      9  10d8				   N	      SET	N + 1
+      7  10d8					      REPEND
+      8  10d9		       d9		      .byte.b	N
+      9  10d9				   N	      SET	N + 1
+      7  10d9					      REPEND
+      8  10da		       da		      .byte.b	N
+      9  10da				   N	      SET	N + 1
+      7  10da					      REPEND
+      8  10db		       db		      .byte.b	N
+      9  10db				   N	      SET	N + 1
+      7  10db					      REPEND
+      8  10dc		       dc		      .byte.b	N
+      9  10dc				   N	      SET	N + 1
+      7  10dc					      REPEND
+      8  10dd		       dd		      .byte.b	N
+      9  10dd				   N	      SET	N + 1
+      7  10dd					      REPEND
+      8  10de		       de		      .byte.b	N
+      9  10de				   N	      SET	N + 1
+      7  10de					      REPEND
+      8  10df		       df		      .byte.b	N
+      9  10df				   N	      SET	N + 1
+      7  10df					      REPEND
+      8  10e0		       e0		      .byte.b	N
+      9  10e0				   N	      SET	N + 1
+      7  10e0					      REPEND
+      8  10e1		       e1		      .byte.b	N
+      9  10e1				   N	      SET	N + 1
+      7  10e1					      REPEND
+      8  10e2		       e2		      .byte.b	N
+      9  10e2				   N	      SET	N + 1
+      7  10e2					      REPEND
+      8  10e3		       e3		      .byte.b	N
+      9  10e3				   N	      SET	N + 1
+      7  10e3					      REPEND
+      8  10e4		       e4		      .byte.b	N
+      9  10e4				   N	      SET	N + 1
+      7  10e4					      REPEND
+      8  10e5		       e5		      .byte.b	N
+      9  10e5				   N	      SET	N + 1
+      7  10e5					      REPEND
+      8  10e6		       e6		      .byte.b	N
+      9  10e6				   N	      SET	N + 1
+      7  10e6					      REPEND
+      8  10e7		       e7		      .byte.b	N
+      9  10e7				   N	      SET	N + 1
+      7  10e7					      REPEND
+      8  10e8		       e8		      .byte.b	N
+      9  10e8				   N	      SET	N + 1
+      7  10e8					      REPEND
+      8  10e9		       e9		      .byte.b	N
+      9  10e9				   N	      SET	N + 1
+      7  10e9					      REPEND
+      8  10ea		       ea		      .byte.b	N
+      9  10ea				   N	      SET	N + 1
+      7  10ea					      REPEND
+      8  10eb		       eb		      .byte.b	N
+      9  10eb				   N	      SET	N + 1
+      7  10eb					      REPEND
+      8  10ec		       ec		      .byte.b	N
+      9  10ec				   N	      SET	N + 1
+      7  10ec					      REPEND
+      8  10ed		       ed		      .byte.b	N
+      9  10ed				   N	      SET	N + 1
+      7  10ed					      REPEND
+      8  10ee		       ee		      .byte.b	N
+      9  10ee				   N	      SET	N + 1
+      7  10ee					      REPEND
+      8  10ef		       ef		      .byte.b	N
+      9  10ef				   N	      SET	N + 1
+      7  10ef					      REPEND
+      8  10f0		       f0		      .byte.b	N
+      9  10f0				   N	      SET	N + 1
+      7  10f0					      REPEND
+      8  10f1		       f1		      .byte.b	N
+      9  10f1				   N	      SET	N + 1
+      7  10f1					      REPEND
+      8  10f2		       f2		      .byte.b	N
+      9  10f2				   N	      SET	N + 1
+      7  10f2					      REPEND
+      8  10f3		       f3		      .byte.b	N
+      9  10f3				   N	      SET	N + 1
+      7  10f3					      REPEND
+      8  10f4		       f4		      .byte.b	N
+      9  10f4				   N	      SET	N + 1
+      7  10f4					      REPEND
+      8  10f5		       f5		      .byte.b	N
+      9  10f5				   N	      SET	N + 1
+      7  10f5					      REPEND
+      8  10f6		       f6		      .byte.b	N
+      9  10f6				   N	      SET	N + 1
+      7  10f6					      REPEND
+      8  10f7		       f7		      .byte.b	N
+      9  10f7				   N	      SET	N + 1
+      7  10f7					      REPEND
+      8  10f8		       f8		      .byte.b	N
+      9  10f8				   N	      SET	N + 1
+      7  10f8					      REPEND
+      8  10f9		       f9		      .byte.b	N
+      9  10f9				   N	      SET	N + 1
+      7  10f9					      REPEND
+      8  10fa		       fa		      .byte.b	N
+      9  10fa				   N	      SET	N + 1
+      7  10fa					      REPEND
+      8  10fb		       fb		      .byte.b	N
+      9  10fb				   N	      SET	N + 1
+      7  10fb					      REPEND
+      8  10fc		       fc		      .byte.b	N
+      9  10fc				   N	      SET	N + 1
+      7  10fc					      REPEND
+      8  10fd		       fd		      .byte.b	N
+      9  10fd				   N	      SET	N + 1
+      7  10fd					      REPEND
+      8  10fe		       fe		      .byte.b	N
+      9  10fe				   N	      SET	N + 1
+      7  10fe					      REPEND
+      8  10ff		       ff		      .byte.b	N
+      9  10ff				   N	      SET	N + 1
+     10  1100					      REPEND
+     11  1100
+     12  1100
