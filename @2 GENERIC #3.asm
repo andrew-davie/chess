@@ -114,6 +114,39 @@ _rts                rts
 
 .bitmapCleared
 
+    lda #RAMBANK_BOARD
+    sta SET_BANK_RAM;@3
+
+    ldx #99
+.clRndArray    txa
+    sta@RAM RandomBoardSquare,x
+    dex
+    bpl .clRndArray
+
+
+    ldx #99
+.swapRnd
+
+    lda ValidSquare,x
+    bmi .nextSq
+
+    NEXT_RANDOM
+    and #127
+    cmp #100
+    bcs .nextSq
+    tay
+    lda ValidSquare,y
+    bmi .nextSq
+
+    lda RandomBoardSquare,x
+    pha
+    lda RandomBoardSquare,y
+    sta@RAM RandomBoardSquare,x
+    pla
+    sta@RAM RandomBoardSquare,y
+.nextSq    dex
+    bpl .swapRnd
+
 
                     lda #99
                     sta squareToDraw

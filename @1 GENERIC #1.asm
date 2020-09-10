@@ -683,10 +683,18 @@ InitPieceList
 
                     lda #RAMBANK_BOARD
                     sta SET_BANK_RAM
-                    ldy squareToDraw
+
+    lda squareToDraw
+    pha
+
+    tay
+    lda RandomBoardSquare,y
+    tay
+
+;                    ldy squareToDraw
                     lda ValidSquare,y
                     bmi .isablank2
-
+ sty squareToDraw
                     lda Board,y
                     beq .isablank
                     pha
@@ -703,10 +711,14 @@ InitPieceList
                     pla
                     sta@RAM Board,y
 
-.isablank           PHASE DrawPart2
+.isablank           pla
+                    sta squareToDraw
+                    PHASE DrawPart2
                     rts
 
-.isablank2          PHASE DrawPart3
+.isablank2          pla
+                    sta squareToDraw
+                    PHASE DrawPart3
 .exit               rts
 
 
@@ -719,8 +731,23 @@ InitPieceList
         REF AiStateMachine
         VEND aiDrawPart2
 
+    lda #RAMBANK_BOARD
+    sta SET_BANK_RAM
+
+    lda squareToDraw
+    pha
+    tay
+    lda RandomBoardSquare,y
+    tay
+    sta squareToDraw
+
+    
+
     ; WARNING - local variables will not survive the following call...!
                     jsr CopySinglePiece;@0
+
+    pla
+    sta squareToDraw
 
     DEF aiDrawPart3
     SUBROUTINE

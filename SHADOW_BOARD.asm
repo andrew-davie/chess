@@ -8,6 +8,8 @@
 
 ValidSquare = ShadowValidSquare + $400
 Board = ShadowBoard + $400
+RandomBoardSquare = ShadowRandomBoardSquare + $400
+
 
     END_BANK
 
@@ -57,14 +59,22 @@ Board = ShadowBoard + $400
 ;      0   1   2   3   4   5   6   7   8   9
 ;              A   B   C   D   E   F   G   H
 
+    DEF ShadowRandomBoardSquare
+        ds 64
+
 
     ; We put a short buffer before 'ValidSquare' when it is at the start of the bank, so that
     ; the move indexing (ie., "ValidSquare+{1},x" won't drop off the beginning of the bank
-    ; and sause "segfaults". 21 is the max offset (a knight move). These spare bytes can
+    ; and cause "segfaults". 21 is the max offset (a knight move). These spare bytes can
     ; be re-used for something else - we just need to guarantee there are 21 of them there
 
-    ALLOCATE Valid, 120 + 80 + 21
-    ds 21                      ; so indexing of "ValidSquare-21,x" won't fail
+    ALLOCATE Valid, 120 + 80  ;+ 21
+    ;ds 21                      ; so indexing of "ValidSquare-21,x" won't fail
+
+    ; 20200910 21 not required as long as there's something defined earlier that's big enough
+    ; in this case, RandomBoardSquare
+
+
     ; Note, we will never index INTO the above bytes - x will always be >= 21
     ; We just need to make sure that the actual indexing will not have an address before
     ; the index of outside the page.
@@ -100,6 +110,8 @@ Board = ShadowBoard + $400
     REPEAT 8
         .byte -1, -1, 0, 0, 0, 0, 0, 0, 0, 0
     REPEND
+
+SIZEOF_ShadowBoard = * - ShadowBoard
 
     ; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 99
 

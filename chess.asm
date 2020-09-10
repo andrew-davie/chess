@@ -46,7 +46,7 @@ ASSERTS                 = 0
 PVSP                    = 0                         ; player versus player =1
 ENPASSANT_ENABLED       = 1
 CASTLING_ENABLED        = 1
-RAINBOW                 = 1                        ; comment out to disable
+;RAINBOW                 = 1                        ; comment out to disable
 
 SELECT_SWITCH           = 2                         ; (SWCHB & SELECT_SWITCH)  0 == PRESSED
 
@@ -55,7 +55,7 @@ SELECT_SWITCH           = 2                         ; (SWCHB & SELECT_SWITCH)  0
 ; PLY+2 for computer response (thus, 3). The bank allocation gets stomped!
 
 
-SEARCH_DEPTH            = 5
+SEARCH_DEPTH            = 4
 QUIESCE_EXTRA_DEPTH     = 8
 
 
@@ -69,9 +69,10 @@ QUIESCE_EXTRA_DEPTH     = 8
 PLY_BANKS = SEARCH_DEPTH + QUIESCE_EXTRA_DEPTH
 MAX_PLY_DEPTH_BANK = PLY_BANKS   ;TODO -- RAMBANK_PLY + PLY_BANKS
 
-    ;IF RAMBANK_PLY + MAX_PLY_DEPTH_BANK > 31
-    ;    ERR "Not enough RAM for PLY banks"
-    ;ENDIF
+    IF ((RAMBANK_PLY & $3F) + MAX_PLY_DEPTH_BANK) > 31
+        ECHO "Not enough RAM for PLY banks"
+        ERR
+    ENDIF
 
 
 
