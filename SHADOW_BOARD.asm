@@ -6,10 +6,13 @@
     SLOT 3
     RAMBANK BOARD               ; RAM bank for holding the following ROM shadow
 
-ValidSquare = ShadowValidSquare + $400
-Board = ShadowBoard + $400
-RandomBoardSquare = ShadowRandomBoardSquare + $400
+    ; The "+$400" is because the shadow lives in SLOT 2, and this code is in SLOT 3
+    ; so we're adjusting the actual address for the proper slot
 
+ValidSquare =       ShadowValidSquare + $400
+Board =             ShadowBoard + $400
+RandomBoardSquare = ShadowRandomBoardSquare + $400
+TileColour =        ShadowTileColour + $400
 
     END_BANK
 
@@ -114,6 +117,22 @@ RandomBoardSquare = ShadowRandomBoardSquare + $400
 SIZEOF_ShadowBoard = * - ShadowBoard
 
     ; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 99
+
+
+    DEF ShadowTileColour
+
+    .byte  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+    .byte  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+    .byte  0,  0,  1,  0,  1,  0,  1,  0,  1,  0
+    .byte  0,  0,  0,  1,  0,  1,  0,  1,  0,  1
+    .byte  0,  0,  1,  0,  1,  0,  1,  0,  1,  0
+    .byte  0,  0,  0,  1,  0,  1,  0,  1,  0,  1
+    .byte  0,  0,  1,  0,  1,  0,  1,  0,  1,  0
+    .byte  0,  0,  0,  1,  0,  1,  0,  1,  0,  1
+    .byte  0,  0,  1,  0,  1,  0,  1,  0,  1,  0
+    .byte  0,  0,  0,  1,  0,  1,  0,  1,  0,  1
+
+
 
 
 ;---------------------------------------------------------------------------------------------------

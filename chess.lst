@@ -903,7 +903,7 @@
      56  0000 ????
      57  0000 ????
      58  0000 ????	       00 04	   SEARCH_DEPTH =	4
-     59  0000 ????	       00 08	   QUIESCE_EXTRA_DEPTH =	8
+     59  0000 ????	       00 07	   QUIESCE_EXTRA_DEPTH =	7
      60  0000 ????
      61  0000 ????
      62  0000 ????			  -	      IF	SEARCH_DEPTH < 3
@@ -913,8 +913,8 @@
      66  0000 ????
      67  0000 ????
      68  0000 ????
-     69  0000 ????	       00 0c	   PLY_BANKS  =	SEARCH_DEPTH + QUIESCE_EXTRA_DEPTH
-     70  0000 ????	       00 0c	   MAX_PLY_DEPTH_BANK =	PLY_BANKS	;TODO -- RAMBANK_PLY + PLY_BANKS
+     69  0000 ????	       00 0b	   PLY_BANKS  =	SEARCH_DEPTH + QUIESCE_EXTRA_DEPTH
+     70  0000 ????	       00 0b	   MAX_PLY_DEPTH_BANK =	PLY_BANKS	;TODO -- RAMBANK_PLY + PLY_BANKS
      71  0000 ????
      72  0000 ????			  -	      IF	((RAMBANK_PLY & $3F) + MAX_PLY_DEPTH_BANK) > 31
      73  0000 ????			  -	      ECHO	"Not enough RAM for PLY banks"
@@ -1194,7 +1194,7 @@
      17 U00b2
  Overlay boundary:  $ee
      18 U00b2					      ECHO	"Overlay boundary: ", Overlay + MAXIMUM_REQUIRED_OVERLAY_SIZE
- Stack boundary:  $e7
+ Stack boundary:  $e9
      19 U00b2					      ECHO	"Stack boundary: ", $FF- PLY_BANKS*2
      20 U00b2
      21 U00b2
@@ -2443,7 +2443,7 @@
       0  0504					      LO	SelectDestinationSquare
       1  0504		       5f		      .byte.b	<aiSelectDestinationSquare
       0  0505					      LO	Quiescent
-      1  0505		       f3		      .byte.b	<aiQuiescent
+      1  0505		       04		      .byte.b	<aiQuiescent
       0  0506					      LO	ReselectDebounce
       1  0506		       14		      .byte.b	<aiReselectDebounce
       0  0507					      LO	StartMoveGen
@@ -2457,9 +2457,9 @@
       0  050b					      LO	DrawEntireBoard
       1  050b		       5f		      .byte.b	<aiDrawEntireBoard
       0  050c					      LO	DrawPart2
-      1  050c		       a1		      .byte.b	<aiDrawPart2
+      1  050c		       b2		      .byte.b	<aiDrawPart2
       0  050d					      LO	DrawPart3
-      1  050d		       b5		      .byte.b	<aiDrawPart3
+      1  050d		       c6		      .byte.b	<aiDrawPart3
       0  050e					      LO	GenerateMoves
       1  050e		       9a		      .byte.b	<aiGenerateMoves
       0  050f					      LO	ComputerMove
@@ -2473,7 +2473,7 @@
       0  0513					      LO	MarchA2
       1  0513		       90		      .byte.b	<aiMarchA2
       0  0514					      LO	MarchB
-      1  0514		       cf		      .byte.b	<aiMarchB
+      1  0514		       e0		      .byte.b	<aiMarchB
       0  0515					      LO	MarchToTargetB
       1  0515		       54		      .byte.b	<aiMarchToTargetB
       0  0516					      LO	MarchB2
@@ -2495,9 +2495,9 @@
       0  051e					      LO	ChooseDebounce
       1  051e		       00		      .byte.b	<aiChooseDebounce
       0  051f					      LO	CheckMate
-      1  051f		       e9		      .byte.b	<aiCheckMate
+      1  051f		       fa		      .byte.b	<aiCheckMate
       0  0520					      LO	Draw
-      1  0520		       df		      .byte.b	<aiDraw
+      1  0520		       f0		      .byte.b	<aiDraw
       0  0521					      LO	DelayAfterMove
       1  0521		       1d		      .byte.b	<aiDelayAfterMove
       0  0522					      LO	DelayAfterMove2
@@ -2555,7 +2555,7 @@
       0  0536					      HI	SelectDestinationSquare
       1  0536		       f6		      .byte.b	>aiSelectDestinationSquare
       0  0537					      HI	Quiescent
-      1  0537		       f6		      .byte.b	>aiQuiescent
+      1  0537		       f7		      .byte.b	>aiQuiescent
       0  0538					      HI	ReselectDebounce
       1  0538		       f4		      .byte.b	>aiReselectDebounce
       0  0539					      HI	StartMoveGen
@@ -2922,7 +2922,7 @@
       7  05da				   FUNCTION_NAME SET	MoveGenX
     488  05da					      SUBROUTINE
     489  05da
-    490  05da		       a9 e1		      lda	#RAMBANK_BOARD
+    490  05da		       a9 df		      lda	#RAMBANK_BOARD
     491  05dc		       85 3e		      sta	SET_BANK_RAM	;@3		 ; should be hardwired forever, right?
     492  05de
     493  05de		       a2 64		      ldx	#100
@@ -3278,7 +3278,7 @@
     682  0691
     683  0691		       a5 95		      lda	currentPly
     684  0693		       85 3e		      sta	SET_BANK_RAM	;@2
-    685  0695		       a2 e1		      ldx	#RAMBANK_BOARD
+    685  0695		       a2 df		      ldx	#RAMBANK_BOARD
     686  0697		       86 3e		      stx	SET_BANK_RAM	;@3
     687  0699
       0  0699					      lda@PLY	savedEvaluation
@@ -3432,7 +3432,7 @@
     762  0700		       85 a8		      sta	__toSquareX12
     763  0702		       a8		      tay
     764  0703
-    765  0703		       a9 e1		      lda	#RAMBANK_BOARD
+    765  0703		       a9 df		      lda	#RAMBANK_BOARD
     766  0705		       85 3e		      sta	SET_BANK_RAM	;@3
     767  0707		       b9 64 fd 	      lda	Board,y
     768  070a		       29 07		      and	#PIECE_MASK
@@ -3443,7 +3443,7 @@
     773  070e
     774  070e		       a4 86		      ldy	fromX12
     775  0710
-    776  0710		       a9 e1		      lda	#RAMBANK_BOARD
+    776  0710		       a9 df		      lda	#RAMBANK_BOARD
     777  0712		       85 3e		      sta	SET_BANK_RAM	;@3
     778  0714		       b9 64 fd 	      lda	Board,y
     779  0717		       85 a9		      sta	__fromPiece
@@ -3593,7 +3593,7 @@
     883  079a		       f0 27		      beq	.exit
     884  079c
     885  079c
-    886  079c		       a9 e1		      lda	#RAMBANK_BOARD
+    886  079c		       a9 df		      lda	#RAMBANK_BOARD
     887  079e		       85 3e		      sta	SET_BANK_RAM	;@3
     888  07a0
     889  07a0							; Account for the opponent pawn being removed
@@ -3613,7 +3613,7 @@
     903  07b3		       86 3f		      stx	SET_BANK	;@2
     904  07b5		       20 70 f9 	      jsr	AddPieceMaterialValue	; remove material for original type
     905  07b8
-    906  07b8		       a9 e1		      lda	#RAMBANK_BOARD
+    906  07b8		       a9 df		      lda	#RAMBANK_BOARD
     907  07ba		       85 3e		      sta	SET_BANK_RAM	;@3
     908  07bc
     909  07bc		       a6 94		      ldx	enPassantPawn
@@ -3667,7 +3667,7 @@
       8  07c4				   _BANK_SLOT SET	1 * 64
       9  07c4
       0  07c4					      ROMBANK	ONE
-      1  0b1b ????				      SEG	ROM_ONE
+      1  0b2c ????				      SEG	ROM_ONE
       2  0800					      ORG	_ORIGIN
       3  0800					      RORG	_BANK_ADDRESS_ORIGIN
       4  0800				   _BANK_START SET	*
@@ -4025,7 +4025,7 @@
     137  0935							; copy the BOARD/MOVES bank
     138  0935
     139  0935		       a2 9d		      ldx	#ROMBANK_SHADOW_BOARD
-    140  0937		       a0 e1		      ldy	#RAMBANK_BOARD
+    140  0937		       a0 df		      ldy	#RAMBANK_BOARD
     141  0939		       20 43 f5 	      jsr	CopyShadowROMtoRAM	; this auto-initialises Board too
     142  093c
     143  093c
@@ -4266,7 +4266,7 @@
     295  096e		       bc ba f5 	      ldy	InitPieceList+1,x	; square
     296  0971		       84 b7		      sty	__initSquare
     297  0973
-    298  0973		       a9 e1		      lda	#RAMBANK_BOARD
+    298  0973		       a9 df		      lda	#RAMBANK_BOARD
     299  0975		       85 3e		      sta	SET_BANK_RAM
     300  0977		       a5 b9		      lda	__op
       0  0979					      sta@RAM	Board,y
@@ -4673,7 +4673,7 @@
     631  0a3b							; guarantee flags for piece, post-move, are correct
     632  0a3b
     633  0a3b
-    634  0a3b		       a9 e1		      lda	#RAMBANK_BOARD
+    634  0a3b		       a9 df		      lda	#RAMBANK_BOARD
     635  0a3d		       85 3e		      sta	SET_BANK_RAM	;@2
     636  0a3f
     637  0a3f		       a5 97		      lda	fromPiece
@@ -4754,320 +4754,330 @@
     677  0a5f
     678  0a5f		       ad 84 02 	      lda	INTIM
     679  0a62		       c9 2d		      cmp	#SPEEDOF_CopySinglePiece+4
-    680  0a64		       90 3a		      bcc	.exit
+    680  0a64		       90 4b		      bcc	.exit
     681  0a66
     682  0a66							; We use [SLOT3] for accessing board
     683  0a66
-    684  0a66		       a9 e1		      lda	#RAMBANK_BOARD
+    684  0a66		       a9 df		      lda	#RAMBANK_BOARD
     685  0a68		       85 3e		      sta	SET_BANK_RAM
     686  0a6a
-    687  0a6a		       a5 81		      lda	squareToDraw
-    688  0a6c		       48		      pha
-    689  0a6d
-    690  0a6d		       a8		      tay
-    691  0a6e		       b9 00 fc 	      lda	RandomBoardSquare,y
-    692  0a71		       a8		      tay
-    693  0a72
-    694  0a72							;		      ldy squareToDraw
-    695  0a72		       b9 00 fd 	      lda	ValidSquare,y
-    696  0a75		       30 22		      bmi	.isablank2
-    697  0a77		       84 81		      sty	squareToDraw
-    698  0a79		       b9 64 fd 	      lda	Board,y
-    699  0a7c		       f0 13		      beq	.isablank
-    700  0a7e		       48		      pha
-    701  0a7f		       a9 00		      lda	#BLANK
-      0  0a81					      sta@RAM	Board,y
-      1  0a81		       99 64 ff 	      sta	[RAM]+Board,y
-    703  0a84
-    704  0a84							; WARNING - local variables will not survive the following call...!
-    705  0a84		       20 c1 f0 	      jsr	CopySinglePiece	;@0
-    706  0a87
-    707  0a87		       a9 e1		      lda	#RAMBANK_BOARD
-    708  0a89		       85 3e		      sta	SET_BANK_RAM
-    709  0a8b
-    710  0a8b		       a4 81		      ldy	squareToDraw
-    711  0a8d		       68		      pla
-      0  0a8e					      sta@RAM	Board,y
-      1  0a8e		       99 64 ff 	      sta	[RAM]+Board,y
-    713  0a91
-    714  0a91		       68	   .isablank  pla
-    715  0a92		       85 81		      sta	squareToDraw
-      0  0a94					      PHASE	DrawPart2
-      1  0a94		       a9 10		      lda	#AI_DrawPart2
-      2  0a96		       85 8c		      sta	aiState
-    717  0a98		       60		      rts
-    718  0a99
-    719  0a99		       68	   .isablank2 pla
-    720  0a9a		       85 81		      sta	squareToDraw
-      0  0a9c					      PHASE	DrawPart3
-      1  0a9c		       a9 11		      lda	#AI_DrawPart3
-      2  0a9e		       85 8c		      sta	aiState
-    722  0aa0		       60	   .exit      rts
-    723  0aa1
-    724  0aa1
-    725  0aa1							;---------------------------------------------------------------------------------------------------
-    726  0aa1
-      0  0aa1					      DEF	aiDrawPart2
-      1  0aa1				   SLOT_aiDrawPart2 SET	_BANK_SLOT
-      2  0aa1				   BANK_aiDrawPart2 SET	SLOT_aiDrawPart2 + _CURRENT_BANK
-      3  0aa1				   aiDrawPart2
-      4  0aa1				   TEMPORARY_VAR SET	Overlay
-      5  0aa1				   TEMPORARY_OFFSET SET	0
-      6  0aa1				   VAR_BOUNDARY_aiDrawPart2 SET	TEMPORARY_OFFSET
-      7  0aa1				   FUNCTION_NAME SET	aiDrawPart2
-    728  0aa1					      SUBROUTINE
-    729  0aa1
-      0  0aa1					      REF	Variable_PieceShapeBuffer
-      1  0aa1					      IF	VAREND_Variable_PieceShapeBuffer > TEMPORARY_VAR
-      2  0aa1				   TEMPORARY_VAR SET	VAREND_Variable_PieceShapeBuffer
-      3  0aa1					      ENDIF
-      0  0aa1					      REF	AiStateMachine
-      1  0aa1				  -	      IF	VAREND_AiStateMachine > TEMPORARY_VAR
-      2  0aa1				  -TEMPORARY_VAR SET	VAREND_AiStateMachine
-      3  0aa1					      ENDIF
-      0  0aa1					      VEND	aiDrawPart2
-      1  0aa1
-      2  0aa1
-      3  0aa1		       00 ee	   VAREND_aiDrawPart2 =	TEMPORARY_VAR
-      4  0aa1
-    733  0aa1
-    734  0aa1		       a9 e1		      lda	#RAMBANK_BOARD
-    735  0aa3		       85 3e		      sta	SET_BANK_RAM
-    736  0aa5
-    737  0aa5		       a5 81		      lda	squareToDraw
-    738  0aa7		       48		      pha
-    739  0aa8		       a8		      tay
-    740  0aa9		       b9 00 fc 	      lda	RandomBoardSquare,y
-    741  0aac		       a8		      tay
-    742  0aad		       85 81		      sta	squareToDraw
-    743  0aaf
-    744  0aaf
-    745  0aaf
-    746  0aaf							; WARNING - local variables will not survive the following call...!
-    747  0aaf		       20 c1 f0 	      jsr	CopySinglePiece	;@0
-    748  0ab2
-    749  0ab2		       68		      pla
-    750  0ab3		       85 81		      sta	squareToDraw
-    751  0ab5
-      0  0ab5					      DEF	aiDrawPart3
-      1  0ab5				   SLOT_aiDrawPart3 SET	_BANK_SLOT
-      2  0ab5				   BANK_aiDrawPart3 SET	SLOT_aiDrawPart3 + _CURRENT_BANK
-      3  0ab5				   aiDrawPart3
-      4  0ab5				   TEMPORARY_VAR SET	Overlay
-      5  0ab5				   TEMPORARY_OFFSET SET	0
-      6  0ab5				   VAR_BOUNDARY_aiDrawPart3 SET	TEMPORARY_OFFSET
-      7  0ab5				   FUNCTION_NAME SET	aiDrawPart3
-    753  0ab5					      SUBROUTINE
-    754  0ab5
-    755  0ab5		       c6 81		      dec	squareToDraw
-    756  0ab7		       a5 81		      lda	squareToDraw
-    757  0ab9		       c9 16		      cmp	#22
-    758  0abb		       90 05		      bcc	.comp
-    759  0abd
-      0  0abd					      PHASE	DrawEntireBoard
-      1  0abd		       a9 0f		      lda	#AI_DrawEntireBoard
-      2  0abf		       85 8c		      sta	aiState
-    761  0ac1		       60		      rts
-    762  0ac2
-    763  0ac2				   .comp
-    764  0ac2
-    765  0ac2							;SPEAK SAY_how_about
-    766  0ac2
-    767  0ac2		       a9 ff		      lda	#-1
-    768  0ac4		       85 87		      sta	toX12	; becomes startup flash square
-    769  0ac6		       a9 24		      lda	#36	; becomes cursor position
-    770  0ac8		       85 88		      sta	originX12
-    771  0aca
-    772  0aca
-      0  0aca					      PHASE	GenerateMoves
-      1  0aca		       a9 12		      lda	#AI_GenerateMoves
-      2  0acc		       85 8c		      sta	aiState
-    774  0ace		       60		      rts
-    775  0acf
-    776  0acf
-    777  0acf							;---------------------------------------------------------------------------------------------------
-    778  0acf
-      0  0acf					      DEF	aiMarchB
-      1  0acf				   SLOT_aiMarchB SET	_BANK_SLOT
-      2  0acf				   BANK_aiMarchB SET	SLOT_aiMarchB + _CURRENT_BANK
-      3  0acf				   aiMarchB
-      4  0acf				   TEMPORARY_VAR SET	Overlay
-      5  0acf				   TEMPORARY_OFFSET SET	0
-      6  0acf				   VAR_BOUNDARY_aiMarchB SET	TEMPORARY_OFFSET
-      7  0acf				   FUNCTION_NAME SET	aiMarchB
-    780  0acf					      SUBROUTINE
-    781  0acf
-      0  0acf					      REF	Variable_PieceShapeBuffer
-      1  0acf					      IF	VAREND_Variable_PieceShapeBuffer > TEMPORARY_VAR
-      2  0acf				   TEMPORARY_VAR SET	VAREND_Variable_PieceShapeBuffer
-      3  0acf					      ENDIF
-      0  0acf					      REF	AiStateMachine
-      1  0acf				  -	      IF	VAREND_AiStateMachine > TEMPORARY_VAR
-      2  0acf				  -TEMPORARY_VAR SET	VAREND_AiStateMachine
-      3  0acf					      ENDIF
-      0  0acf					      VEND	aiMarchB
-      1  0acf
-      2  0acf
-      3  0acf		       00 ee	   VAREND_aiMarchB =	TEMPORARY_VAR
-      4  0acf
-    785  0acf
-    786  0acf							; Draw the piece in the new square
-    787  0acf
-    788  0acf		       a5 86		      lda	fromX12
-    789  0ad1		       85 81		      sta	squareToDraw
-    790  0ad3
-    791  0ad3							; WARNING - local variables will not survive the following call...!
-    792  0ad3		       20 c1 f0 	      jsr	CopySinglePiece	;@0	      ; draw the moving piece into the new square
-    793  0ad6
-    794  0ad6		       a9 02		      lda	#2	; snail trail delay
-    795  0ad8		       85 83		      sta	drawDelay
-    796  0ada
-      0  0ada					      PHASE	MarchToTargetB
-      1  0ada		       a9 19		      lda	#AI_MarchToTargetB
-      2  0adc		       85 8c		      sta	aiState
-    798  0ade		       60		      rts
-    799  0adf
-    800  0adf
-    801  0adf							;---------------------------------------------------------------------------------------------------
-    802  0adf
-      0  0adf					      DEF	aiDraw
-      1  0adf				   SLOT_aiDraw SET	_BANK_SLOT
-      2  0adf				   BANK_aiDraw SET	SLOT_aiDraw + _CURRENT_BANK
-      3  0adf				   aiDraw
-      4  0adf				   TEMPORARY_VAR SET	Overlay
-      5  0adf				   TEMPORARY_OFFSET SET	0
-      6  0adf				   VAR_BOUNDARY_aiDraw SET	TEMPORARY_OFFSET
-      7  0adf				   FUNCTION_NAME SET	aiDraw
-    804  0adf					      SUBROUTINE
-    805  0adf
-    806  0adf		       a6 a5		      ldx	platform
-    807  0ae1		       bd e7 f6 	      lda	colGreen,x
-    808  0ae4		       85 49		      sta	COLUBK
-    809  0ae6		       60		      rts
-    810  0ae7
-    811  0ae7				   colGreen
-    812  0ae7		       c2 34		      .byte.b	$C2, $34
-    813  0ae9
-    814  0ae9							;---------------------------------------------------------------------------------------------------
-    815  0ae9
-      0  0ae9					      DEF	aiCheckMate
-      1  0ae9				   SLOT_aiCheckMate SET	_BANK_SLOT
-      2  0ae9				   BANK_aiCheckMate SET	SLOT_aiCheckMate + _CURRENT_BANK
-      3  0ae9				   aiCheckMate
-      4  0ae9				   TEMPORARY_VAR SET	Overlay
-      5  0ae9				   TEMPORARY_OFFSET SET	0
-      6  0ae9				   VAR_BOUNDARY_aiCheckMate SET	TEMPORARY_OFFSET
-      7  0ae9				   FUNCTION_NAME SET	aiCheckMate
-    817  0ae9					      SUBROUTINE
-    818  0ae9		       a6 a5		      ldx	platform
-    819  0aeb		       bd f1 f6 	      lda	colRed,x
-    820  0aee		       85 49		      sta	COLUBK
-    821  0af0		       60		      rts
-    822  0af1
-    823  0af1				   colRed
-    824  0af1		       42 64		      .byte.b	$42, $64
-    825  0af3
-    826  0af3							;---------------------------------------------------------------------------------------------------
-    827  0af3
-      0  0af3					      DEF	aiQuiescent
-      1  0af3				   SLOT_aiQuiescent SET	_BANK_SLOT
-      2  0af3				   BANK_aiQuiescent SET	SLOT_aiQuiescent + _CURRENT_BANK
-      3  0af3				   aiQuiescent
-      4  0af3				   TEMPORARY_VAR SET	Overlay
-      5  0af3				   TEMPORARY_OFFSET SET	0
-      6  0af3				   VAR_BOUNDARY_aiQuiescent SET	TEMPORARY_OFFSET
-      7  0af3				   FUNCTION_NAME SET	aiQuiescent
-    829  0af3					      SUBROUTINE
-    830  0af3
-      0  0af3					      REF	AiStateMachine
-      1  0af3					      IF	VAREND_AiStateMachine > TEMPORARY_VAR
-      2  0af3				   TEMPORARY_VAR SET	VAREND_AiStateMachine
-      3  0af3					      ENDIF
-      0  0af3					      VEND	aiQuiescent
-      1  0af3
-      2  0af3
-      3  0af3		       00 a8	   VAREND_aiQuiescent =	TEMPORARY_VAR
-      4  0af3
-    833  0af3
-    834  0af3							; Move has been selected
-    835  0af3
-    836  0af3		       a9 ff		      lda	#-1
-    837  0af5		       85 89		      sta	cursorX12
-    838  0af7
-    839  0af7		       a5 86		      lda	fromX12
-    840  0af9		       85 88		      sta	originX12
-      0  0afb					      CALL	GetPiece	;@3		    ; from the movelist
-      1  0afb				  -	      IF	SLOT_GetPiece == _BANK_SLOT
-      2  0afb				  -FNAME      SETSTR	GetPiece
-      3  0afb				  -	      ECHO	""
-      4  0afb				  -	      ECHO	"ERROR: Incompatible slot for call to function", FNAME
-      5  0afb				  -	      ECHO	"Cannot switch bank in use for ", FNAME
-      6  0afb				  -	      ERR
-      7  0afb					      ENDIF
-      8  0afb		       a9 d9		      lda	#BANK_GetPiece
-      9  0afd		       85 3f		      sta	SET_BANK
-     10  0aff		       20 01 fc 	      jsr	GetPiece
-    842  0b02
-    843  0b02		       a4 86		      ldy	fromX12
-    844  0b04		       a9 e1		      lda	#RAMBANK_BOARD
-    845  0b06		       85 3e		      sta	SET_BANK_RAM	;@3
-    846  0b08		       b9 64 fd 	      lda	Board,y
-    847  0b0b		       45 97		      eor	fromPiece
-    848  0b0d		       29 07		      and	#PIECE_MASK	; if not the same piece board/movelist...
-    849  0b0f		       d0 05		      bne	.promote	; promote a pawn
-    850  0b11
-      0  0b11					      PHASE	MoveIsSelected
-      1  0b11		       a9 14		      lda	#AI_MoveIsSelected
-      2  0b13		       85 8c		      sta	aiState
-    852  0b15		       60		      rts
-    853  0b16
-      0  0b16				   .promote   PHASE	PromotePawnStart
-      1  0b16		       a9 1f		      lda	#AI_PromotePawnStart
-      2  0b18		       85 8c		      sta	aiState
-    855  0b1a		       60		      rts
-    856  0b1b
-    857  0b1b
-    858  0b1b							;---------------------------------------------------------------------------------------------------
-    859  0b1b
-      0  0b1b					      END_BANK
-      1  0b1b				  -	      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      2  0b1b				  -	      CHECK_RAM_BANK_SIZE
-      3  0b1b					      ELSE
-      0  0b1b					      CHECK_BANK_SIZE
-      1  0b1b		       03 1b	   .TEMP      =	* - _BANK_START
- ROM bank # 3 ONE size = $31b free = 228
-      2  0b1b					      ECHO	"ROM bank #", [_ORIGIN/_ROM_BANK_SIZE]d, _LAST_BANK, "size =", .TEMP, "free =", [_ROM_BANK_SIZE - .TEMP - 1]d
-      3  0b1b				  -	      IF	( .TEMP ) > _ROM_BANK_SIZE
-      4  0b1b				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - _ORIGIN
-      5  0b1b				  -	      ERR
-      6  0b1b					      ENDIF
-      5  0b1b					      ENDIF
-    861  0b1b
-    862  0b1b							;---------------------------------------------------------------------------------------------------
-    863  0b1b							; EOF
+    687  0a6a
+    688  0a6a		       a4 81		      ldy	squareToDraw
+    689  0a6c		       b9 00 fc 	      lda	RandomBoardSquare,y
+    690  0a6f		       a8		      tay
+    691  0a70
+    692  0a70		       b9 00 fd 	      lda	ValidSquare,y
+    693  0a73		       30 51		      bmi	aiDrawPart3
+    694  0a75
+    695  0a75		       a9 9d		      lda	#ROMBANK_SHADOW_BOARD
+    696  0a77		       85 3f		      sta	SET_BANK
+    697  0a79
+    698  0a79		       b9 c8 f9 	      lda	ShadowTileColour,y
+    699  0a7c		       f0 07		      beq	.forceDraw
+    700  0a7e		       b9 64 fd 	      lda	Board,y
+    701  0a81		       29 07		      and	#PIECE_MASK
+    702  0a83		       f0 41		      beq	aiDrawPart3
+    703  0a85
+    704  0a85		       a5 81	   .forceDraw lda	squareToDraw
+    705  0a87		       48		      pha
+    706  0a88		       84 81		      sty	squareToDraw
+    707  0a8a
+    708  0a8a
+    709  0a8a		       b9 64 fd 	      lda	Board,y
+    710  0a8d		       f0 13		      beq	.isablank
+    711  0a8f		       48		      pha
+    712  0a90		       a9 00		      lda	#BLANK
+      0  0a92					      sta@RAM	Board,y
+      1  0a92		       99 64 ff 	      sta	[RAM]+Board,y
+    714  0a95
+    715  0a95							; WARNING - local variables will not survive the following call...!
+    716  0a95		       20 c1 f0 	      jsr	CopySinglePiece	;@0
+    717  0a98
+    718  0a98		       a9 df		      lda	#RAMBANK_BOARD
+    719  0a9a		       85 3e		      sta	SET_BANK_RAM
+    720  0a9c
+    721  0a9c		       a4 81		      ldy	squareToDraw
+    722  0a9e		       68		      pla
+      0  0a9f					      sta@RAM	Board,y
+      1  0a9f		       99 64 ff 	      sta	[RAM]+Board,y
+    724  0aa2
+    725  0aa2		       68	   .isablank  pla
+    726  0aa3		       85 81		      sta	squareToDraw
+      0  0aa5					      PHASE	DrawPart2
+      1  0aa5		       a9 10		      lda	#AI_DrawPart2
+      2  0aa7		       85 8c		      sta	aiState
+    728  0aa9		       60		      rts
+    729  0aaa
+    730  0aaa		       68	   .isablank2 pla
+    731  0aab		       85 81		      sta	squareToDraw
+      0  0aad					      PHASE	DrawPart3
+      1  0aad		       a9 11		      lda	#AI_DrawPart3
+      2  0aaf		       85 8c		      sta	aiState
+    733  0ab1		       60	   .exit      rts
+    734  0ab2
+    735  0ab2
+    736  0ab2							;---------------------------------------------------------------------------------------------------
+    737  0ab2
+      0  0ab2					      DEF	aiDrawPart2
+      1  0ab2				   SLOT_aiDrawPart2 SET	_BANK_SLOT
+      2  0ab2				   BANK_aiDrawPart2 SET	SLOT_aiDrawPart2 + _CURRENT_BANK
+      3  0ab2				   aiDrawPart2
+      4  0ab2				   TEMPORARY_VAR SET	Overlay
+      5  0ab2				   TEMPORARY_OFFSET SET	0
+      6  0ab2				   VAR_BOUNDARY_aiDrawPart2 SET	TEMPORARY_OFFSET
+      7  0ab2				   FUNCTION_NAME SET	aiDrawPart2
+    739  0ab2					      SUBROUTINE
+    740  0ab2
+      0  0ab2					      REF	Variable_PieceShapeBuffer
+      1  0ab2					      IF	VAREND_Variable_PieceShapeBuffer > TEMPORARY_VAR
+      2  0ab2				   TEMPORARY_VAR SET	VAREND_Variable_PieceShapeBuffer
+      3  0ab2					      ENDIF
+      0  0ab2					      REF	AiStateMachine
+      1  0ab2				  -	      IF	VAREND_AiStateMachine > TEMPORARY_VAR
+      2  0ab2				  -TEMPORARY_VAR SET	VAREND_AiStateMachine
+      3  0ab2					      ENDIF
+      0  0ab2					      VEND	aiDrawPart2
+      1  0ab2
+      2  0ab2
+      3  0ab2		       00 ee	   VAREND_aiDrawPart2 =	TEMPORARY_VAR
+      4  0ab2
+    744  0ab2
+    745  0ab2		       a9 df		      lda	#RAMBANK_BOARD
+    746  0ab4		       85 3e		      sta	SET_BANK_RAM
+    747  0ab6
+    748  0ab6		       a5 81		      lda	squareToDraw
+    749  0ab8		       48		      pha
+    750  0ab9		       a8		      tay
+    751  0aba
+    752  0aba		       b9 00 fc 	      lda	RandomBoardSquare,y
+    753  0abd		       a8		      tay
+    754  0abe		       85 81		      sta	squareToDraw
+    755  0ac0
+    756  0ac0							; WARNING - local variables will not survive the following call...!
+    757  0ac0		       20 c1 f0 	      jsr	CopySinglePiece	;@0
+    758  0ac3
+    759  0ac3		       68		      pla
+    760  0ac4		       85 81		      sta	squareToDraw
+    761  0ac6
+      0  0ac6					      DEF	aiDrawPart3
+      1  0ac6				   SLOT_aiDrawPart3 SET	_BANK_SLOT
+      2  0ac6				   BANK_aiDrawPart3 SET	SLOT_aiDrawPart3 + _CURRENT_BANK
+      3  0ac6				   aiDrawPart3
+      4  0ac6				   TEMPORARY_VAR SET	Overlay
+      5  0ac6				   TEMPORARY_OFFSET SET	0
+      6  0ac6				   VAR_BOUNDARY_aiDrawPart3 SET	TEMPORARY_OFFSET
+      7  0ac6				   FUNCTION_NAME SET	aiDrawPart3
+    763  0ac6					      SUBROUTINE
+    764  0ac6
+    765  0ac6		       c6 81		      dec	squareToDraw
+    766  0ac8		       a5 81		      lda	squareToDraw
+    767  0aca		       c9 16		      cmp	#22
+    768  0acc		       90 05		      bcc	.comp
+    769  0ace
+      0  0ace					      PHASE	DrawEntireBoard
+      1  0ace		       a9 0f		      lda	#AI_DrawEntireBoard
+      2  0ad0		       85 8c		      sta	aiState
+    771  0ad2		       60		      rts
+    772  0ad3
+    773  0ad3				   .comp
+    774  0ad3
+    775  0ad3							;SPEAK SAY_how_about
+    776  0ad3
+    777  0ad3		       a9 ff		      lda	#-1
+    778  0ad5		       85 87		      sta	toX12	; becomes startup flash square
+    779  0ad7		       a9 24		      lda	#36	; becomes cursor position
+    780  0ad9		       85 88		      sta	originX12
+    781  0adb
+    782  0adb
+      0  0adb					      PHASE	GenerateMoves
+      1  0adb		       a9 12		      lda	#AI_GenerateMoves
+      2  0add		       85 8c		      sta	aiState
+    784  0adf		       60		      rts
+    785  0ae0
+    786  0ae0
+    787  0ae0							;---------------------------------------------------------------------------------------------------
+    788  0ae0
+      0  0ae0					      DEF	aiMarchB
+      1  0ae0				   SLOT_aiMarchB SET	_BANK_SLOT
+      2  0ae0				   BANK_aiMarchB SET	SLOT_aiMarchB + _CURRENT_BANK
+      3  0ae0				   aiMarchB
+      4  0ae0				   TEMPORARY_VAR SET	Overlay
+      5  0ae0				   TEMPORARY_OFFSET SET	0
+      6  0ae0				   VAR_BOUNDARY_aiMarchB SET	TEMPORARY_OFFSET
+      7  0ae0				   FUNCTION_NAME SET	aiMarchB
+    790  0ae0					      SUBROUTINE
+    791  0ae0
+      0  0ae0					      REF	Variable_PieceShapeBuffer
+      1  0ae0					      IF	VAREND_Variable_PieceShapeBuffer > TEMPORARY_VAR
+      2  0ae0				   TEMPORARY_VAR SET	VAREND_Variable_PieceShapeBuffer
+      3  0ae0					      ENDIF
+      0  0ae0					      REF	AiStateMachine
+      1  0ae0				  -	      IF	VAREND_AiStateMachine > TEMPORARY_VAR
+      2  0ae0				  -TEMPORARY_VAR SET	VAREND_AiStateMachine
+      3  0ae0					      ENDIF
+      0  0ae0					      VEND	aiMarchB
+      1  0ae0
+      2  0ae0
+      3  0ae0		       00 ee	   VAREND_aiMarchB =	TEMPORARY_VAR
+      4  0ae0
+    795  0ae0
+    796  0ae0							; Draw the piece in the new square
+    797  0ae0
+    798  0ae0		       a5 86		      lda	fromX12
+    799  0ae2		       85 81		      sta	squareToDraw
+    800  0ae4
+    801  0ae4							; WARNING - local variables will not survive the following call...!
+    802  0ae4		       20 c1 f0 	      jsr	CopySinglePiece	;@0	      ; draw the moving piece into the new square
+    803  0ae7
+    804  0ae7		       a9 02		      lda	#2	; snail trail delay
+    805  0ae9		       85 83		      sta	drawDelay
+    806  0aeb
+      0  0aeb					      PHASE	MarchToTargetB
+      1  0aeb		       a9 19		      lda	#AI_MarchToTargetB
+      2  0aed		       85 8c		      sta	aiState
+    808  0aef		       60		      rts
+    809  0af0
+    810  0af0
+    811  0af0							;---------------------------------------------------------------------------------------------------
+    812  0af0
+      0  0af0					      DEF	aiDraw
+      1  0af0				   SLOT_aiDraw SET	_BANK_SLOT
+      2  0af0				   BANK_aiDraw SET	SLOT_aiDraw + _CURRENT_BANK
+      3  0af0				   aiDraw
+      4  0af0				   TEMPORARY_VAR SET	Overlay
+      5  0af0				   TEMPORARY_OFFSET SET	0
+      6  0af0				   VAR_BOUNDARY_aiDraw SET	TEMPORARY_OFFSET
+      7  0af0				   FUNCTION_NAME SET	aiDraw
+    814  0af0					      SUBROUTINE
+    815  0af0
+    816  0af0		       a6 a5		      ldx	platform
+    817  0af2		       bd f8 f6 	      lda	colGreen,x
+    818  0af5		       85 49		      sta	COLUBK
+    819  0af7		       60		      rts
+    820  0af8
+    821  0af8				   colGreen
+    822  0af8		       c2 34		      .byte.b	$C2, $34
+    823  0afa
+    824  0afa							;---------------------------------------------------------------------------------------------------
+    825  0afa
+      0  0afa					      DEF	aiCheckMate
+      1  0afa				   SLOT_aiCheckMate SET	_BANK_SLOT
+      2  0afa				   BANK_aiCheckMate SET	SLOT_aiCheckMate + _CURRENT_BANK
+      3  0afa				   aiCheckMate
+      4  0afa				   TEMPORARY_VAR SET	Overlay
+      5  0afa				   TEMPORARY_OFFSET SET	0
+      6  0afa				   VAR_BOUNDARY_aiCheckMate SET	TEMPORARY_OFFSET
+      7  0afa				   FUNCTION_NAME SET	aiCheckMate
+    827  0afa					      SUBROUTINE
+    828  0afa		       a6 a5		      ldx	platform
+    829  0afc		       bd 02 f7 	      lda	colRed,x
+    830  0aff		       85 49		      sta	COLUBK
+    831  0b01		       60		      rts
+    832  0b02
+    833  0b02				   colRed
+    834  0b02		       42 64		      .byte.b	$42, $64
+    835  0b04
+    836  0b04							;---------------------------------------------------------------------------------------------------
+    837  0b04
+      0  0b04					      DEF	aiQuiescent
+      1  0b04				   SLOT_aiQuiescent SET	_BANK_SLOT
+      2  0b04				   BANK_aiQuiescent SET	SLOT_aiQuiescent + _CURRENT_BANK
+      3  0b04				   aiQuiescent
+      4  0b04				   TEMPORARY_VAR SET	Overlay
+      5  0b04				   TEMPORARY_OFFSET SET	0
+      6  0b04				   VAR_BOUNDARY_aiQuiescent SET	TEMPORARY_OFFSET
+      7  0b04				   FUNCTION_NAME SET	aiQuiescent
+    839  0b04					      SUBROUTINE
+    840  0b04
+      0  0b04					      REF	AiStateMachine
+      1  0b04					      IF	VAREND_AiStateMachine > TEMPORARY_VAR
+      2  0b04				   TEMPORARY_VAR SET	VAREND_AiStateMachine
+      3  0b04					      ENDIF
+      0  0b04					      VEND	aiQuiescent
+      1  0b04
+      2  0b04
+      3  0b04		       00 a8	   VAREND_aiQuiescent =	TEMPORARY_VAR
+      4  0b04
+    843  0b04
+    844  0b04							; Move has been selected
+    845  0b04
+    846  0b04		       a9 ff		      lda	#-1
+    847  0b06		       85 89		      sta	cursorX12
+    848  0b08
+    849  0b08		       a5 86		      lda	fromX12
+    850  0b0a		       85 88		      sta	originX12
+      0  0b0c					      CALL	GetPiece	;@3		    ; from the movelist
+      1  0b0c				  -	      IF	SLOT_GetPiece == _BANK_SLOT
+      2  0b0c				  -FNAME      SETSTR	GetPiece
+      3  0b0c				  -	      ECHO	""
+      4  0b0c				  -	      ECHO	"ERROR: Incompatible slot for call to function", FNAME
+      5  0b0c				  -	      ECHO	"Cannot switch bank in use for ", FNAME
+      6  0b0c				  -	      ERR
+      7  0b0c					      ENDIF
+      8  0b0c		       a9 d9		      lda	#BANK_GetPiece
+      9  0b0e		       85 3f		      sta	SET_BANK
+     10  0b10		       20 01 fc 	      jsr	GetPiece
+    852  0b13
+    853  0b13		       a4 86		      ldy	fromX12
+    854  0b15		       a9 df		      lda	#RAMBANK_BOARD
+    855  0b17		       85 3e		      sta	SET_BANK_RAM	;@3
+    856  0b19		       b9 64 fd 	      lda	Board,y
+    857  0b1c		       45 97		      eor	fromPiece
+    858  0b1e		       29 07		      and	#PIECE_MASK	; if not the same piece board/movelist...
+    859  0b20		       d0 05		      bne	.promote	; promote a pawn
+    860  0b22
+      0  0b22					      PHASE	MoveIsSelected
+      1  0b22		       a9 14		      lda	#AI_MoveIsSelected
+      2  0b24		       85 8c		      sta	aiState
+    862  0b26		       60		      rts
+    863  0b27
+      0  0b27				   .promote   PHASE	PromotePawnStart
+      1  0b27		       a9 1f		      lda	#AI_PromotePawnStart
+      2  0b29		       85 8c		      sta	aiState
+    865  0b2b		       60		      rts
+    866  0b2c
+    867  0b2c
+    868  0b2c							;---------------------------------------------------------------------------------------------------
+    869  0b2c
+      0  0b2c					      END_BANK
+      1  0b2c				  -	      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      2  0b2c				  -	      CHECK_RAM_BANK_SIZE
+      3  0b2c					      ELSE
+      0  0b2c					      CHECK_BANK_SIZE
+      1  0b2c		       03 2c	   .TEMP      =	* - _BANK_START
+ ROM bank # 3 ONE size = $32c free = 211
+      2  0b2c					      ECHO	"ROM bank #", [_ORIGIN/_ROM_BANK_SIZE]d, _LAST_BANK, "size =", .TEMP, "free =", [_ROM_BANK_SIZE - .TEMP - 1]d
+      3  0b2c				  -	      IF	( .TEMP ) > _ROM_BANK_SIZE
+      4  0b2c				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - _ORIGIN
+      5  0b2c				  -	      ERR
+      6  0b2c					      ENDIF
+      5  0b2c					      ENDIF
+    871  0b2c
+    872  0b2c							;---------------------------------------------------------------------------------------------------
+    873  0b2c							; EOF
 ------- FILE ./chess.asm
 ------- FILE @1 NEGAMAX.asm LEVEL 2 PASS 4
-      0  0b1b					      include	"@1 NEGAMAX.asm"
-      1  0b1b							;---------------------------------------------------------------------------------------------------
-      2  0b1b							; @1 NEGAMAX.asm
-      3  0b1b
-      4  0b1b							; Atari 2600 Chess
-      5  0b1b							; Copyright (c) 2019-2020 Andrew Davie
-      6  0b1b							; andrew@taswegian.com
-      7  0b1b
-      8  0b1b							;---------------------------------------------------------------------------------------------------
-      9  0b1b
-      0  0b1b					      SLOT	1
-      1  0b1b
-      2  0b1b				  -	      IF	(1 < 0) || (1 > 3)
-      3  0b1b				  -	      ECHO	"Illegal bank address/segment location", 1
-      4  0b1b				  -	      ERR
-      5  0b1b					      ENDIF
-      6  0b1b
-      7  0b1b				   _BANK_ADDRESS_ORIGIN SET	$F000 + (1 * _ROM_BANK_SIZE)
-      8  0b1b				   _BANK_SLOT SET	1 * 64
-      9  0b1b
-      0  0b1b					      ROMBANK	NEGAMAX
+      0  0b2c					      include	"@1 NEGAMAX.asm"
+      1  0b2c							;---------------------------------------------------------------------------------------------------
+      2  0b2c							; @1 NEGAMAX.asm
+      3  0b2c
+      4  0b2c							; Atari 2600 Chess
+      5  0b2c							; Copyright (c) 2019-2020 Andrew Davie
+      6  0b2c							; andrew@taswegian.com
+      7  0b2c
+      8  0b2c							;---------------------------------------------------------------------------------------------------
+      9  0b2c
+      0  0b2c					      SLOT	1
+      1  0b2c
+      2  0b2c				  -	      IF	(1 < 0) || (1 > 3)
+      3  0b2c				  -	      ECHO	"Illegal bank address/segment location", 1
+      4  0b2c				  -	      ERR
+      5  0b2c					      ENDIF
+      6  0b2c
+      7  0b2c				   _BANK_ADDRESS_ORIGIN SET	$F000 + (1 * _ROM_BANK_SIZE)
+      8  0b2c				   _BANK_SLOT SET	1 * 64
+      9  0b2c
+      0  0b2c					      ROMBANK	NEGAMAX
       1  0fd7 ????				      SEG	ROM_NEGAMAX
       2  0c00					      ORG	_ORIGIN
       3  0c00					      RORG	_BANK_ADDRESS_ORIGIN
@@ -5318,7 +5328,7 @@
     174  0c7f							; b) en-Passant, capturing pawn on "odd" square
     175  0c7f							; These both set "secondary" movers which are used for restoring during unmakeMove
     176  0c7f
-    177  0c7f		       a0 e1		      ldy	#RAMBANK_BOARD
+    177  0c7f		       a0 df		      ldy	#RAMBANK_BOARD
     178  0c81		       84 3e		      sty	SET_BANK_RAM	;@3
     179  0c83
       0  0c83					      ldx@PLY	movePtr
@@ -5734,7 +5744,7 @@
       1  0dcc		       ae d0 f9 	      ldx	movePtr
     471  0dcf
     472  0dcf		       18		      clc
-    473  0dd0		       69 0c		      adc	#RAMBANK_SORT-RAMBANK_PLY
+    473  0dd0		       69 0b		      adc	#RAMBANK_SORT-RAMBANK_PLY
     474  0dd2		       85 3e		      sta	SET_BANK_RAM
     475  0dd4
     476  0dd4		       a5 ad		      lda	__negaMax
@@ -6187,7 +6197,7 @@
       4  0ef0
     779  0ef0
     780  0ef0		       a5 95		      lda	currentPly
-    781  0ef2		       c9 93		      cmp	#RAMBANK_PLY + PLY_BANKS -1
+    781  0ef2		       c9 92		      cmp	#RAMBANK_PLY + PLY_BANKS -1
     782  0ef4		       b0 28		      bcs	.retBeta
     783  0ef6							;sta SET_BANK_RAM ;tmp
     784  0ef6
@@ -7149,7 +7159,7 @@
     443  1198
     444  1198		       a4 81		      ldy	squareToDraw
     445  119a
-    446  119a		       a9 e1		      lda	#RAMBANK_BOARD
+    446  119a		       a9 df		      lda	#RAMBANK_BOARD
     447  119c		       85 3e		      sta	SET_BANK_RAM	;@3
     448  119e		       b9 64 fd 	      lda	Board,y
     449  11a1		       29 07		      and	#PIECE_MASK
@@ -7859,7 +7869,7 @@
     915  1371		       85 97		      sta	fromPiece
     916  1373
     917  1373		       a4 87		      ldy	toX12
-    918  1375		       a9 e1		      lda	#RAMBANK_BOARD
+    918  1375		       a9 df		      lda	#RAMBANK_BOARD
     919  1377		       85 3e		      sta	SET_BANK_RAM	;@3
     920  1379		       b9 64 fd 	      lda	Board,y
     921  137c		       29 07		      and	#PIECE_MASK
@@ -7949,7 +7959,7 @@
     950  1390		       a4 86		      ldy	fromX12
     951  1392		       84 81		      sty	squareToDraw
     952  1394
-    953  1394		       a9 e1		      lda	#RAMBANK_BOARD
+    953  1394		       a9 df		      lda	#RAMBANK_BOARD
     954  1396		       85 3e		      sta	SET_BANK_RAM	;@3
     955  1398		       b9 64 fd 	      lda	Board,y
     956  139b		       f0 03		      beq	.skipbl
@@ -7961,7 +7971,7 @@
     962  13a0		       a4 86		      ldy	fromX12
     963  13a2		       84 a9		      sty	__boardIndex
     964  13a4
-    965  13a4		       a9 e1		      lda	#RAMBANK_BOARD
+    965  13a4		       a9 df		      lda	#RAMBANK_BOARD
     966  13a6		       85 3e		      sta	SET_BANK_RAM	;@3
     967  13a8		       b9 64 fd 	      lda	Board,y
     968  13ab		       85 98		      sta	lastPiece	; what we are overwriting
@@ -8008,7 +8018,7 @@
     989  13bd		       a4 84		      ldy	lastSquareX12
     990  13bf		       84 81		      sty	squareToDraw
     991  13c1
-    992  13c1		       a9 e1		      lda	#RAMBANK_BOARD
+    992  13c1		       a9 df		      lda	#RAMBANK_BOARD
     993  13c3		       85 3e		      sta	SET_BANK_RAM	;@3
     994  13c5		       b9 64 fd 	      lda	Board,y
     995  13c8		       f0 03		      beq	.skipbl2
@@ -8348,7 +8358,7 @@
     154  1462		       a4 84		      ldy	lastSquareX12
     155  1464		       a5 99		      lda	previousPiece
     156  1466
-    157  1466		       a2 e1		      ldx	#RAMBANK_BOARD
+    157  1466		       a2 df		      ldx	#RAMBANK_BOARD
     158  1468		       86 3e		      stx	SET_BANK_RAM	;@3
       0  146a					      sta@RAM	Board,y	; and what's actually moving there
       1  146a		       99 64 ff 	      sta	[RAM]+Board,y
@@ -8400,7 +8410,7 @@
     186  1483		       a4 87		      ldy	toX12
     187  1485		       84 81		      sty	squareToDraw
     188  1487
-    189  1487		       a9 e1		      lda	#RAMBANK_BOARD
+    189  1487		       a9 df		      lda	#RAMBANK_BOARD
     190  1489		       85 3e		      sta	SET_BANK_RAM	;@3
     191  148b		       b9 64 fd 	      lda	Board,y
     192  148e		       29 07		      and	#PIECE_MASK
@@ -11723,7 +11733,7 @@
      57 U11dd					      REPEAT	PLY_BANKS-1
       0 U11dd					      RAMBANK	.DUMMY_PLY
       1 U11dd
-      2 U3e00 ????				      SEG.U	RAM_.DUMMY_PLY
+      2 U3a00 ????				      SEG.U	RAM_.DUMMY_PLY
       3 U1200					      ORG	ORIGIN_RAM
       4 U1200					      RORG	_BANK_ADDRESS_ORIGIN
       5 U1200				   _BANK_START SET	*
@@ -11970,110 +11980,110 @@
       3 U2400				  -	      ELSE
       4 U2400				  -	      CHECK_BANK_SIZE
       5 U2400					      ENDIF
-     57 U2400					      REPEND
-      0 U2400					      RAMBANK	.DUMMY_PLY
+     60 U2400					      REPEND
+     61 U2400
+     62 U2400
+     63 U2400							;---------------------------------------------------------------------------------------------------
+     64 U2400							; EOF
+------- FILE ./chess.asm
+------- FILE @2 PLY2.asm LEVEL 2 PASS 4
+      0 U2400					      include	"@2 PLY2.asm"
+      0 U2400					      SLOT	2
       1 U2400
-      2 U2400					      SEG.U	RAM_.DUMMY_PLY
+      2 U2400				  -	      IF	(2 < 0) || (2 > 3)
+      3 U2400				  -	      ECHO	"Illegal bank address/segment location", 2
+      4 U2400				  -	      ERR
+      5 U2400					      ENDIF
+      6 U2400
+      7 U2400				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
+      8 U2400				   _BANK_SLOT SET	2 * 64
+      9 U2400
+      0 U2400					      RAMBANK	SORT
+      1 U2400
+      2 U26c8 ????				      SEG.U	RAM_SORT
       3 U2600					      ORG	ORIGIN_RAM
       4 U2600					      RORG	_BANK_ADDRESS_ORIGIN
       5 U2600				   _BANK_START SET	*
       6 U2600				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U2600				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
+      7 U2600				   RAMBANK_SORT SET	_BANK_SLOT + _CURRENT_RAMBANK
       8 U2600				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U2600				   _LAST_BANK SETSTR	.DUMMY_PLY
+      9 U2600				   _LAST_BANK SETSTR	SORT
      10 U2600				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U2600					      END_BANK
-      1 U2600					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U2600					      CHECK_RAM_BANK_SIZE
-      1 U2600		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 20 .DUMMY_PLY size =  $0 free = $1ff
-      2 U2600					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U2600				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U2600				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U2600				  -	      ERR
+      3 U2600
+      4 U2600							;---------------------------------------------------------------------------------------------------
+      5 U2600
+      0 U2600					      VARIABLE	MoveValueLO, MAX_MOVES
+      1 U2600
+      2 U2600				   .NAME      SETSTR	MoveValueLO
+      0 U2600					      OPTIONAL_PAGEBREAK	.NAME, MAX_MOVES
+      1 U2600
+      2 U2600				  -	      IF	(>( * + MAX_MOVES -1 )) > ( >* )
+      3 U2600				  -.EARLY_LOCATION SET	*
+      4 U2600				  -	      ALIGN	256
+      5 U2600				  -	      ECHO	"Page break for", .NAME, "wasted", [* - .EARLY_LOCATION]d, "bytes"
       6 U2600					      ENDIF
-      3 U2600				  -	      ELSE
-      4 U2600				  -	      CHECK_BANK_SIZE
-      5 U2600					      ENDIF
-     60 U2600					      REPEND
-     61 U2600
-     62 U2600
-     63 U2600							;---------------------------------------------------------------------------------------------------
-     64 U2600							; EOF
-------- FILE ./chess.asm
-------- FILE @2 PLY2.asm LEVEL 2 PASS 4
-      0 U2600					      include	"@2 PLY2.asm"
-      0 U2600					      SLOT	2
-      1 U2600
-      2 U2600				  -	      IF	(2 < 0) || (2 > 3)
-      3 U2600				  -	      ECHO	"Illegal bank address/segment location", 2
-      4 U2600				  -	      ERR
-      5 U2600					      ENDIF
-      6 U2600
-      7 U2600				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
-      8 U2600				   _BANK_SLOT SET	2 * 64
-      9 U2600
-      0 U2600					      RAMBANK	SORT
-      1 U2600
-      2 U28c8 ????				      SEG.U	RAM_SORT
+      4 U2600		       00 00 00 00*MoveValueLO ds	MAX_MOVES
+      5 U2664
+      0 U2664					      VARIABLE	MoveValueHI, MAX_MOVES
+      1 U2664
+      2 U2664				   .NAME      SETSTR	MoveValueHI
+      0 U2664					      OPTIONAL_PAGEBREAK	.NAME, MAX_MOVES
+      1 U2664
+      2 U2664				  -	      IF	(>( * + MAX_MOVES -1 )) > ( >* )
+      3 U2664				  -.EARLY_LOCATION SET	*
+      4 U2664				  -	      ALIGN	256
+      5 U2664				  -	      ECHO	"Page break for", .NAME, "wasted", [* - .EARLY_LOCATION]d, "bytes"
+      6 U2664					      ENDIF
+      4 U2664		       00 00 00 00*MoveValueHI ds	MAX_MOVES
+      5 U26c8
+      8 U26c8
+      9 U26c8							;---------------------------------------------------------------------------------------------------
+     10 U26c8
+      0 U26c8					      END_BANK
+      1 U26c8					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      0 U26c8					      CHECK_RAM_BANK_SIZE
+      1 U26c8		       00 c8	   .TEMP      =	* - _BANK_START
+ RAM bank # 20 SORT size =  $c8 free = $137
+      2 U26c8					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
+      3 U26c8				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
+      4 U26c8				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
+      5 U26c8				  -	      ERR
+      6 U26c8					      ENDIF
+      3 U26c8				  -	      ELSE
+      4 U26c8				  -	      CHECK_BANK_SIZE
+      5 U26c8					      ENDIF
+     12 U26c8
+     13 U26c8							;---------------------------------------------------------------------------------------------------
+     14 U26c8
+     15 U26c8					      REPEAT	PLY_BANKS-1
+      0 U26c8					      RAMBANK	.DUMMY_PLY
+      1 U26c8
+      2 U2400					      SEG.U	RAM_.DUMMY_PLY
       3 U2800					      ORG	ORIGIN_RAM
       4 U2800					      RORG	_BANK_ADDRESS_ORIGIN
       5 U2800				   _BANK_START SET	*
       6 U2800				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U2800				   RAMBANK_SORT SET	_BANK_SLOT + _CURRENT_RAMBANK
+      7 U2800				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
       8 U2800				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U2800				   _LAST_BANK SETSTR	SORT
+      9 U2800				   _LAST_BANK SETSTR	.DUMMY_PLY
      10 U2800				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      3 U2800
-      4 U2800							;---------------------------------------------------------------------------------------------------
-      5 U2800
-      0 U2800					      VARIABLE	MoveValueLO, MAX_MOVES
-      1 U2800
-      2 U2800				   .NAME      SETSTR	MoveValueLO
-      0 U2800					      OPTIONAL_PAGEBREAK	.NAME, MAX_MOVES
-      1 U2800
-      2 U2800				  -	      IF	(>( * + MAX_MOVES -1 )) > ( >* )
-      3 U2800				  -.EARLY_LOCATION SET	*
-      4 U2800				  -	      ALIGN	256
-      5 U2800				  -	      ECHO	"Page break for", .NAME, "wasted", [* - .EARLY_LOCATION]d, "bytes"
+      0 U2800					      END_BANK
+      1 U2800					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      0 U2800					      CHECK_RAM_BANK_SIZE
+      1 U2800		       00 00	   .TEMP      =	* - _BANK_START
+ RAM bank # 21 .DUMMY_PLY size =  $0 free = $1ff
+      2 U2800					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
+      3 U2800				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
+      4 U2800				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
+      5 U2800				  -	      ERR
       6 U2800					      ENDIF
-      4 U2800		       00 00 00 00*MoveValueLO ds	MAX_MOVES
-      5 U2864
-      0 U2864					      VARIABLE	MoveValueHI, MAX_MOVES
-      1 U2864
-      2 U2864				   .NAME      SETSTR	MoveValueHI
-      0 U2864					      OPTIONAL_PAGEBREAK	.NAME, MAX_MOVES
-      1 U2864
-      2 U2864				  -	      IF	(>( * + MAX_MOVES -1 )) > ( >* )
-      3 U2864				  -.EARLY_LOCATION SET	*
-      4 U2864				  -	      ALIGN	256
-      5 U2864				  -	      ECHO	"Page break for", .NAME, "wasted", [* - .EARLY_LOCATION]d, "bytes"
-      6 U2864					      ENDIF
-      4 U2864		       00 00 00 00*MoveValueHI ds	MAX_MOVES
-      5 U28c8
-      8 U28c8
-      9 U28c8							;---------------------------------------------------------------------------------------------------
-     10 U28c8
-      0 U28c8					      END_BANK
-      1 U28c8					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U28c8					      CHECK_RAM_BANK_SIZE
-      1 U28c8		       00 c8	   .TEMP      =	* - _BANK_START
- RAM bank # 21 SORT size =  $c8 free = $137
-      2 U28c8					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U28c8				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U28c8				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U28c8				  -	      ERR
-      6 U28c8					      ENDIF
-      3 U28c8				  -	      ELSE
-      4 U28c8				  -	      CHECK_BANK_SIZE
-      5 U28c8					      ENDIF
-     12 U28c8
-     13 U28c8							;---------------------------------------------------------------------------------------------------
-     14 U28c8
-     15 U28c8					      REPEAT	PLY_BANKS-1
-      0 U28c8					      RAMBANK	.DUMMY_PLY
-      1 U28c8
-      2 U2600					      SEG.U	RAM_.DUMMY_PLY
+      3 U2800				  -	      ELSE
+      4 U2800				  -	      CHECK_BANK_SIZE
+      5 U2800					      ENDIF
+     15 U2800					      REPEND
+      0 U2800					      RAMBANK	.DUMMY_PLY
+      1 U2800
+      2 U2800					      SEG.U	RAM_.DUMMY_PLY
       3 U2a00					      ORG	ORIGIN_RAM
       4 U2a00					      RORG	_BANK_ADDRESS_ORIGIN
       5 U2a00				   _BANK_START SET	*
@@ -12295,86 +12305,36 @@
       3 U3a00				  -	      ELSE
       4 U3a00				  -	      CHECK_BANK_SIZE
       5 U3a00					      ENDIF
-     15 U3a00					      REPEND
-      0 U3a00					      RAMBANK	.DUMMY_PLY
-      1 U3a00
-      2 U3a00					      SEG.U	RAM_.DUMMY_PLY
-      3 U3c00					      ORG	ORIGIN_RAM
-      4 U3c00					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U3c00				   _BANK_START SET	*
-      6 U3c00				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U3c00				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U3c00				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U3c00				   _LAST_BANK SETSTR	.DUMMY_PLY
-     10 U3c00				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U3c00					      END_BANK
-      1 U3c00					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U3c00					      CHECK_RAM_BANK_SIZE
-      1 U3c00		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 31 .DUMMY_PLY size =  $0 free = $1ff
-      2 U3c00					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U3c00				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U3c00				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U3c00				  -	      ERR
-      6 U3c00					      ENDIF
-      3 U3c00				  -	      ELSE
-      4 U3c00				  -	      CHECK_BANK_SIZE
-      5 U3c00					      ENDIF
-     15 U3c00					      REPEND
-      0 U3c00					      RAMBANK	.DUMMY_PLY
-      1 U3c00
-      2 U3c00					      SEG.U	RAM_.DUMMY_PLY
-      3 U3e00					      ORG	ORIGIN_RAM
-      4 U3e00					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U3e00				   _BANK_START SET	*
-      6 U3e00				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U3e00				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U3e00				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U3e00				   _LAST_BANK SETSTR	.DUMMY_PLY
-     10 U3e00				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U3e00					      END_BANK
-      1 U3e00					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U3e00					      CHECK_RAM_BANK_SIZE
-      1 U3e00		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 32 .DUMMY_PLY size =  $0 free = $1ff
-      2 U3e00					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U3e00				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U3e00				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U3e00				  -	      ERR
-      6 U3e00					      ENDIF
-      3 U3e00				  -	      ELSE
-      4 U3e00				  -	      CHECK_BANK_SIZE
-      5 U3e00					      ENDIF
-     18 U3e00					      REPEND
-     19 U3e00
-     20 U3e00
-     21 U3e00							;---------------------------------------------------------------------------------------------------
-     22 U3e00							; EOF
-     23 U3e00
+     18 U3a00					      REPEND
+     19 U3a00
+     20 U3a00
+     21 U3a00							;---------------------------------------------------------------------------------------------------
+     22 U3a00							; EOF
+     23 U3a00
 ------- FILE ./chess.asm
 ------- FILE @2 GENERIC #3.asm LEVEL 2 PASS 4
-      0 U3e00					      include	"@2 GENERIC #3.asm"
-      1 U3e00							;---------------------------------------------------------------------------------------------------
-      2 U3e00							; @2 GENERIC #3.asm
-      3 U3e00
-      4 U3e00							; Atari 2600 Chess
-      5 U3e00							; Copyright (c) 2019-2020 Andrew Davie
-      6 U3e00							; andrew@taswegian.com
-      7 U3e00
-      8 U3e00
-      9 U3e00							;---------------------------------------------------------------------------------------------------
-     10 U3e00
-      0 U3e00					      SLOT	2
-      1 U3e00
-      2 U3e00				  -	      IF	(2 < 0) || (2 > 3)
-      3 U3e00				  -	      ECHO	"Illegal bank address/segment location", 2
-      4 U3e00				  -	      ERR
-      5 U3e00					      ENDIF
-      6 U3e00
-      7 U3e00				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
-      8 U3e00				   _BANK_SLOT SET	2 * 64
-      9 U3e00
-      0 U3e00					      ROMBANK	GENERIC_BANK@2#1
+      0 U3a00					      include	"@2 GENERIC #3.asm"
+      1 U3a00							;---------------------------------------------------------------------------------------------------
+      2 U3a00							; @2 GENERIC #3.asm
+      3 U3a00
+      4 U3a00							; Atari 2600 Chess
+      5 U3a00							; Copyright (c) 2019-2020 Andrew Davie
+      6 U3a00							; andrew@taswegian.com
+      7 U3a00
+      8 U3a00
+      9 U3a00							;---------------------------------------------------------------------------------------------------
+     10 U3a00
+      0 U3a00					      SLOT	2
+      1 U3a00
+      2 U3a00				  -	      IF	(2 < 0) || (2 > 3)
+      3 U3a00				  -	      ECHO	"Illegal bank address/segment location", 2
+      4 U3a00				  -	      ERR
+      5 U3a00					      ENDIF
+      6 U3a00
+      7 U3a00				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
+      8 U3a00				   _BANK_SLOT SET	2 * 64
+      9 U3a00
+      0 U3a00					      ROMBANK	GENERIC_BANK@2#1
       1  27d3 ????				      SEG	ROM_GENERIC_BANK@2#1
       2  2400					      ORG	_ORIGIN
       3  2400					      RORG	_BANK_ADDRESS_ORIGIN
@@ -12578,7 +12538,7 @@
     114  2450
     115  2450				   .bitmapCleared
     116  2450
-    117  2450		       a9 e1		      lda	#RAMBANK_BOARD
+    117  2450		       a9 df		      lda	#RAMBANK_BOARD
     118  2452		       85 3e		      sta	SET_BANK_RAM	;@3
     119  2454
     120  2454		       a2 63		      ldx	#99
@@ -12670,7 +12630,7 @@
     177  2496
     178  2496							; get the piece types from the board
     179  2496
-    180  2496		       a9 e1		      lda	#RAMBANK_BOARD
+    180  2496		       a9 df		      lda	#RAMBANK_BOARD
     181  2498		       85 3e		      sta	SET_BANK_RAM	;@3
     182  249a		       a4 88		      ldy	originX12
     183  249c		       b9 64 fd 	      lda	Board,y
@@ -12850,7 +12810,7 @@
     295  24f5
     296  24f5							; PieceColour = 0 for white square, 36 for black square
     297  24f5
-    298  24f5		       a9 e1		      lda	#RAMBANK_BOARD
+    298  24f5		       a9 df		      lda	#RAMBANK_BOARD
     299  24f7		       85 3e		      sta	SET_BANK_RAM	;@3
     300  24f9
     301  24f9		       a4 81		      ldy	squareToDraw
@@ -14142,7 +14102,7 @@
      47  2818		       85 ee		      sta	__newCursor
      48  281a		       a8		      tay
      49  281b
-     50  281b		       a9 e1		      lda	#RAMBANK_BOARD
+     50  281b		       a9 df		      lda	#RAMBANK_BOARD
      51  281d		       85 3e		      sta	SET_BANK_RAM	;@3
      52  281f		       b9 00 fd 	      lda	ValidSquare,y
      53  2822		       c9 ff		      cmp	#-1
@@ -14187,7 +14147,7 @@
      78  2836		       a4 89		      ldy	cursorX12
      79  2838		       30 0b		      bmi	.under
      80  283a
-     81  283a		       a9 e1		      lda	#RAMBANK_BOARD
+     81  283a		       a9 df		      lda	#RAMBANK_BOARD
      82  283c		       85 3e		      sta	SET_BANK_RAM	;@3
      83  283e		       b9 64 fd 	      lda	Board,y
      84  2841		       d0 02		      bne	.under
@@ -19038,7 +18998,7 @@
     289  64c9
     290  64c9		       18		      clc
     291  64ca		       a5 95		      lda	currentPly
-    292  64cc		       69 0c		      adc	#RAMBANK_SORT-RAMBANK_PLY
+    292  64cc		       69 0b		      adc	#RAMBANK_SORT-RAMBANK_PLY
     293  64ce		       85 be		      sta	__bank2
     294  64d0
     295  64d0
@@ -19889,33 +19849,33 @@
       9  6ac6
       0  6ac6					      RAMBANK	EVALUATE
       1  6ac6
-      2 U4000 ????				      SEG.U	RAM_EVALUATE
-      3 U4000					      ORG	ORIGIN_RAM
-      4 U4000					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U4000				   _BANK_START SET	*
-      6 U4000				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U4000				   RAMBANK_EVALUATE SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U4000				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U4000				   _LAST_BANK SETSTR	EVALUATE
-     10 U4000				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U4000					      END_BANK
-      1 U4000					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U4000					      CHECK_RAM_BANK_SIZE
-      1 U4000		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 33 EVALUATE size =  $0 free = $1ff
-      2 U4000					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U4000				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U4000				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U4000				  -	      ERR
-      6 U4000					      ENDIF
-      3 U4000				  -	      ELSE
-      4 U4000				  -	      CHECK_BANK_SIZE
-      5 U4000					      ENDIF
-     14 U4000
-     15 U4000
-     16 U4000							;---------------------------------------------------------------------------------------------------
-     17 U4000
-      0 U4000					      ROMBANK	EVALUATE
+      2 U3c00 ????				      SEG.U	RAM_EVALUATE
+      3 U3c00					      ORG	ORIGIN_RAM
+      4 U3c00					      RORG	_BANK_ADDRESS_ORIGIN
+      5 U3c00				   _BANK_START SET	*
+      6 U3c00				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
+      7 U3c00				   RAMBANK_EVALUATE SET	_BANK_SLOT + _CURRENT_RAMBANK
+      8 U3c00				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
+      9 U3c00				   _LAST_BANK SETSTR	EVALUATE
+     10 U3c00				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
+      0 U3c00					      END_BANK
+      1 U3c00					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      0 U3c00					      CHECK_RAM_BANK_SIZE
+      1 U3c00		       00 00	   .TEMP      =	* - _BANK_START
+ RAM bank # 31 EVALUATE size =  $0 free = $1ff
+      2 U3c00					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
+      3 U3c00				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
+      4 U3c00				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
+      5 U3c00				  -	      ERR
+      6 U3c00					      ENDIF
+      3 U3c00				  -	      ELSE
+      4 U3c00				  -	      CHECK_BANK_SIZE
+      5 U3c00					      ENDIF
+     14 U3c00
+     15 U3c00
+     16 U3c00							;---------------------------------------------------------------------------------------------------
+     17 U3c00
+      0 U3c00					      ROMBANK	EVALUATE
       1  6e40 ????				      SEG	ROM_EVALUATE
       2  6c00					      ORG	_ORIGIN
       3  6c00					      RORG	_BANK_ADDRESS_ORIGIN
@@ -23663,50 +23623,53 @@
       9  726e
       0  726e					      RAMBANK	BOARD	; RAM bank for holding the following ROM shadow
       1  726e
-      2 U4200 ????				      SEG.U	RAM_BOARD
-      3 U4200					      ORG	ORIGIN_RAM
-      4 U4200					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U4200				   _BANK_START SET	*
-      6 U4200				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U4200				   RAMBANK_BOARD SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U4200				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U4200				   _LAST_BANK SETSTR	BOARD
-     10 U4200				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      8 U4200
-      9 U4200		       fd 00	   ValidSquare =	ShadowValidSquare + $400
-     10 U4200		       fd 64	   Board      =	ShadowBoard + $400
-     11 U4200		       fc 00	   RandomBoardSquare =	ShadowRandomBoardSquare + $400
-     12 U4200
-     13 U4200
-      0 U4200					      END_BANK
-      1 U4200					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U4200					      CHECK_RAM_BANK_SIZE
-      1 U4200		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 34 BOARD size =  $0 free = $1ff
-      2 U4200					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U4200				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U4200				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U4200				  -	      ERR
-      6 U4200					      ENDIF
-      3 U4200				  -	      ELSE
-      4 U4200				  -	      CHECK_BANK_SIZE
-      5 U4200					      ENDIF
-     15 U4200
-     16 U4200
-     17 U4200							;---------------------------------------------------------------------------------------------------
-     18 U4200
-      0 U4200					      SLOT	2
-      1 U4200
-      2 U4200				  -	      IF	(2 < 0) || (2 > 3)
-      3 U4200				  -	      ECHO	"Illegal bank address/segment location", 2
-      4 U4200				  -	      ERR
-      5 U4200					      ENDIF
-      6 U4200
-      7 U4200				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
-      8 U4200				   _BANK_SLOT SET	2 * 64
-      9 U4200
-      0 U4200					      ROMBANK	SHADOW_BOARD	; copy the following bank to RAMBANK_BOARD
-      1  75c8 ????				      SEG	ROM_SHADOW_BOARD
+      2 U3e00 ????				      SEG.U	RAM_BOARD
+      3 U3e00					      ORG	ORIGIN_RAM
+      4 U3e00					      RORG	_BANK_ADDRESS_ORIGIN
+      5 U3e00				   _BANK_START SET	*
+      6 U3e00				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
+      7 U3e00				   RAMBANK_BOARD SET	_BANK_SLOT + _CURRENT_RAMBANK
+      8 U3e00				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
+      9 U3e00				   _LAST_BANK SETSTR	BOARD
+     10 U3e00				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
+      8 U3e00
+      9 U3e00							; The "+$400" is because the shadow lives in SLOT 2, and this code is in SLOT 3
+     10 U3e00							; so we're adjusting the actual address for the proper slot
+     11 U3e00
+     12 U3e00		       fd 00	   ValidSquare =	ShadowValidSquare + $400
+     13 U3e00		       fd 64	   Board      =	ShadowBoard + $400
+     14 U3e00		       fc 00	   RandomBoardSquare =	ShadowRandomBoardSquare + $400
+     15 U3e00		       fd c8	   TileColour =	ShadowTileColour + $400
+     16 U3e00
+      0 U3e00					      END_BANK
+      1 U3e00					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      0 U3e00					      CHECK_RAM_BANK_SIZE
+      1 U3e00		       00 00	   .TEMP      =	* - _BANK_START
+ RAM bank # 32 BOARD size =  $0 free = $1ff
+      2 U3e00					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
+      3 U3e00				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
+      4 U3e00				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
+      5 U3e00				  -	      ERR
+      6 U3e00					      ENDIF
+      3 U3e00				  -	      ELSE
+      4 U3e00				  -	      CHECK_BANK_SIZE
+      5 U3e00					      ENDIF
+     18 U3e00
+     19 U3e00
+     20 U3e00							;---------------------------------------------------------------------------------------------------
+     21 U3e00
+      0 U3e00					      SLOT	2
+      1 U3e00
+      2 U3e00				  -	      IF	(2 < 0) || (2 > 3)
+      3 U3e00				  -	      ECHO	"Illegal bank address/segment location", 2
+      4 U3e00				  -	      ERR
+      5 U3e00					      ENDIF
+      6 U3e00
+      7 U3e00				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
+      8 U3e00				   _BANK_SLOT SET	2 * 64
+      9 U3e00
+      0 U3e00					      ROMBANK	SHADOW_BOARD	; copy the following bank to RAMBANK_BOARD
+      1  762c ????				      SEG	ROM_SHADOW_BOARD
       2  7400					      ORG	_ORIGIN
       3  7400					      RORG	_BANK_ADDRESS_ORIGIN
       4  7400				   _BANK_START SET	*
@@ -23716,47 +23679,47 @@
       8  7400				   _ORIGIN    SET	_ORIGIN + _ROM_BANK_SIZE
       9  7400				   _LAST_BANK SETSTR	SHADOW_BOARD
      10  7400				   _CURRENT_BANK_TYPE SET	_TYPE_ROM
-     21  7400
-     22  7400							; Board is a 10 x 12 object which simplifies the generation of moves
-     23  7400							; The squares marked '░░░' are illegal. The ("X12") index of each square is the left
-     24  7400							; number + the bottom number. Bottom left legal square (AS VISIBLE ON SCREEN) is #22
-     25  7400
-     26  7400							;     X12 numbering
-     27  7400							;    ┏━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┓
-     28  7400							;110 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     29  7400							;100 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     30  7400							; 90 ┃░░░┊░░░┊ 92┊ 93┊ 94┊ 95┊ 96┊ 97┊ 98┊ 99┃ 8 BLACK
-     31  7400							; 80 ┃░░░┊░░░┊ 82┊ 83┊ 84┊ 85┊ 86┊ 87┊ 88┊ 89┃ 7 BLACK
-     32  7400							; 70 ┃░░░┊░░░┊ 72┊ 73┊ 74┊ 75┊ 76┊ 77┊ 78┊ 79┃ 6
-     33  7400							; 60 ┃░░░┊░░░┊ 62┊ 63┊ 64┊ 65┊ 66┊ 67┊ 68┊ 69┃ 5
-     34  7400							; 50 ┃░░░┊░░░┊ 52┊ 53┊ 54┊ 55┊ 56┊ 57┊ 58┊ 59┃ 4
-     35  7400							; 40 ┃░░░┊░░░┊ 42┊ 43┊ 44┊ 45┊ 46┊ 47┊ 48┊ 49┃ 3
-     36  7400							; 30 ┃░░░┊░░░┊ 32┊ 33┊ 34┊ 35┊ 36┊ 37┊ 38┊ 39┃ 2 WHITE
-     37  7400							; 20 ┃░░░┊░░░┊ 22┊ 23┊ 24┊ 25┊ 26┊ 27┊ 28┊ 29┃ 1 WHITE
-     38  7400							; 10 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     39  7400							;  0 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     40  7400							;    ┗━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┛
-     41  7400							;	0   1	2   3	4   5	6   7	8   9
-     42  7400							;		A   B	C   D	E   F	G   H
-     43  7400
-     44  7400							;     HEX X12
-     45  7400							;    ┏━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┓
-     46  7400							;110 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     47  7400							;100 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     48  7400							; 90 ┃░░░┊░░░┊$5C┊$5D┊$5E┊$5F┊$60┊$61┊$62┊$63┃ 8
-     49  7400							; 80 ┃░░░┊░░░┊$52┊$53┊$54┊$55┊$56┊$57┊$58┊$59┃ 7
-     50  7400							; 70 ┃░░░┊░░░┊$48┊$49┊$4A┊$4B┊$4C┊$4D┊$4E┊$4F┃ 6
-     51  7400							; 60 ┃░░░┊░░░┊$3E┊$3F┊$40┊$41┊$42┊$43┊$44┊$45┃ 5
-     52  7400							; 50 ┃░░░┊░░░┊$34┊$35┊$36┊$37┊$38┊$39┊$3A┊$3B┃ 4
-     53  7400							; 40 ┃░░░┊░░░┊$2A┊$2B┊$2C┊$2D┊$2E┊$2F┊$30┊$31┃ 3
-     54  7400							; 30 ┃░░░┊░░░┊$20┊$21┊$22┊$23┊$24┊$25┊$26|$27┃ 2
-     55  7400							; 20 ┃░░░┊░░░┊$16┊$17┊$18┊$19┊$1A┊$1B┊$1C┊$1D┃ 1
-     56  7400							; 10 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     57  7400							;  0 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
-     58  7400							;    ┗━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┛
-     59  7400							;	0   1	2   3	4   5	6   7	8   9
-     60  7400							;		A   B	C   D	E   F	G   H
-     61  7400
+     24  7400
+     25  7400							; Board is a 10 x 12 object which simplifies the generation of moves
+     26  7400							; The squares marked '░░░' are illegal. The ("X12") index of each square is the left
+     27  7400							; number + the bottom number. Bottom left legal square (AS VISIBLE ON SCREEN) is #22
+     28  7400
+     29  7400							;     X12 numbering
+     30  7400							;    ┏━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┓
+     31  7400							;110 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     32  7400							;100 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     33  7400							; 90 ┃░░░┊░░░┊ 92┊ 93┊ 94┊ 95┊ 96┊ 97┊ 98┊ 99┃ 8 BLACK
+     34  7400							; 80 ┃░░░┊░░░┊ 82┊ 83┊ 84┊ 85┊ 86┊ 87┊ 88┊ 89┃ 7 BLACK
+     35  7400							; 70 ┃░░░┊░░░┊ 72┊ 73┊ 74┊ 75┊ 76┊ 77┊ 78┊ 79┃ 6
+     36  7400							; 60 ┃░░░┊░░░┊ 62┊ 63┊ 64┊ 65┊ 66┊ 67┊ 68┊ 69┃ 5
+     37  7400							; 50 ┃░░░┊░░░┊ 52┊ 53┊ 54┊ 55┊ 56┊ 57┊ 58┊ 59┃ 4
+     38  7400							; 40 ┃░░░┊░░░┊ 42┊ 43┊ 44┊ 45┊ 46┊ 47┊ 48┊ 49┃ 3
+     39  7400							; 30 ┃░░░┊░░░┊ 32┊ 33┊ 34┊ 35┊ 36┊ 37┊ 38┊ 39┃ 2 WHITE
+     40  7400							; 20 ┃░░░┊░░░┊ 22┊ 23┊ 24┊ 25┊ 26┊ 27┊ 28┊ 29┃ 1 WHITE
+     41  7400							; 10 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     42  7400							;  0 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     43  7400							;    ┗━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┛
+     44  7400							;	0   1	2   3	4   5	6   7	8   9
+     45  7400							;		A   B	C   D	E   F	G   H
+     46  7400
+     47  7400							;     HEX X12
+     48  7400							;    ┏━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┯━━━┓
+     49  7400							;110 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     50  7400							;100 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     51  7400							; 90 ┃░░░┊░░░┊$5C┊$5D┊$5E┊$5F┊$60┊$61┊$62┊$63┃ 8
+     52  7400							; 80 ┃░░░┊░░░┊$52┊$53┊$54┊$55┊$56┊$57┊$58┊$59┃ 7
+     53  7400							; 70 ┃░░░┊░░░┊$48┊$49┊$4A┊$4B┊$4C┊$4D┊$4E┊$4F┃ 6
+     54  7400							; 60 ┃░░░┊░░░┊$3E┊$3F┊$40┊$41┊$42┊$43┊$44┊$45┃ 5
+     55  7400							; 50 ┃░░░┊░░░┊$34┊$35┊$36┊$37┊$38┊$39┊$3A┊$3B┃ 4
+     56  7400							; 40 ┃░░░┊░░░┊$2A┊$2B┊$2C┊$2D┊$2E┊$2F┊$30┊$31┃ 3
+     57  7400							; 30 ┃░░░┊░░░┊$20┊$21┊$22┊$23┊$24┊$25┊$26|$27┃ 2
+     58  7400							; 20 ┃░░░┊░░░┊$16┊$17┊$18┊$19┊$1A┊$1B┊$1C┊$1D┃ 1
+     59  7400							; 10 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     60  7400							;  0 ┃░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┊░░░┃
+     61  7400							;    ┗━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┷━━━┛
+     62  7400							;	0   1	2   3	4   5	6   7	8   9
+     63  7400							;		A   B	C   D	E   F	G   H
+     64  7400
       0  7400					      DEF	ShadowRandomBoardSquare
       1  7400				   SLOT_ShadowRandomBoardSquare SET	_BANK_SLOT
       2  7400				   BANK_ShadowRandomBoardSquare SET	SLOT_ShadowRandomBoardSquare + _CURRENT_BANK
@@ -23765,14 +23728,14 @@
       5  7400				   TEMPORARY_OFFSET SET	0
       6  7400				   VAR_BOUNDARY_ShadowRandomBoardSquare SET	TEMPORARY_OFFSET
       7  7400				   FUNCTION_NAME SET	ShadowRandomBoardSquare
-     63  7400		       00 00 00 00*	      ds	64
-     64  7440
-     65  7440
-     66  7440							; We put a short buffer before 'ValidSquare' when it is at the start of the bank, so that
-     67  7440							; the move indexing (ie., "ValidSquare+{1},x" won't drop off the beginning of the bank
-     68  7440							; and cause "segfaults". 21 is the max offset (a knight move). These spare bytes can
-     69  7440							; be re-used for something else - we just need to guarantee there are 21 of them there
-     70  7440
+     66  7400		       00 00 00 00*	      ds	64
+     67  7440
+     68  7440
+     69  7440							; We put a short buffer before 'ValidSquare' when it is at the start of the bank, so that
+     70  7440							; the move indexing (ie., "ValidSquare+{1},x" won't drop off the beginning of the bank
+     71  7440							; and cause "segfaults". 21 is the max offset (a knight move). These spare bytes can
+     72  7440							; be re-used for something else - we just need to guarantee there are 21 of them there
+     73  7440
       0  7440					      ALLOCATE	Valid, 120 + 80	;+ 21
       1  7440
       2  7440				   .NAME      SETSTR	Valid
@@ -23793,16 +23756,16 @@
       6  7500				   VAR_BOUNDARY_Valid SET	TEMPORARY_OFFSET
       7  7500				   FUNCTION_NAME SET	Valid
       5  7500
-     72  7500							;ds 21 		     ; so indexing of "ValidSquare-21,x" won't fail
-     73  7500
-     74  7500							; 20200910 21 not required as long as there's something defined earlier that's big enough
-     75  7500							; in this case, RandomBoardSquare
+     75  7500							;ds 21 		     ; so indexing of "ValidSquare-21,x" won't fail
      76  7500
-     77  7500
-     78  7500							; Note, we will never index INTO the above bytes - x will always be >= 21
-     79  7500							; We just need to make sure that the actual indexing will not have an address before
-     80  7500							; the index of outside the page.
-     81  7500
+     77  7500							; 20200910 21 not required as long as there's something defined earlier that's big enough
+     78  7500							; in this case, RandomBoardSquare
+     79  7500
+     80  7500
+     81  7500							; Note, we will never index INTO the above bytes - x will always be >= 21
+     82  7500							; We just need to make sure that the actual indexing will not have an address before
+     83  7500							; the index of outside the page.
+     84  7500
       0  7500					      DEF	ShadowValidSquare
       1  7500				   SLOT_ShadowValidSquare SET	_BANK_SLOT
       2  7500				   BANK_ShadowValidSquare SET	SLOT_ShadowValidSquare + _CURRENT_BANK
@@ -23811,24 +23774,24 @@
       5  7500				   TEMPORARY_OFFSET SET	0
       6  7500				   VAR_BOUNDARY_ShadowValidSquare SET	TEMPORARY_OFFSET
       7  7500				   FUNCTION_NAME SET	ShadowValidSquare
-     83  7500
-     84  7500
-     85  7500							; Use this table to
-     86  7500							;   a) Determine if a square is valid (-1 = NO)
-     87  7500							;   b) Move pieces without addition.  e.g., "lda ValidSquareTable+10,x" will let you know
-     88  7500							;	if a white pawn on square "x" can move "up" the board.
-     89  7500
-     90  7500		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-     91  750a		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-     92  7514		       ff ff 16 17*	      .byte.b	-1, -1, 22, 23, 24, 25, 26, 27, 28, 29
-     93  751e		       ff ff 20 21*	      .byte.b	-1, -1, 32, 33, 34, 35, 36, 37, 38, 39
-     94  7528		       ff ff 2a 2b*	      .byte.b	-1, -1, 42, 43, 44, 45, 46, 47, 48, 49
-     95  7532		       ff ff 34 35*	      .byte.b	-1, -1, 52, 53, 54, 55, 56, 57, 58, 59
-     96  753c		       ff ff 3e 3f*	      .byte.b	-1, -1, 62, 63, 64, 65, 66, 67, 68, 69
-     97  7546		       ff ff 48 49*	      .byte.b	-1, -1, 72, 73, 74, 75, 76, 77, 78, 79
-     98  7550		       ff ff 52 53*	      .byte.b	-1, -1, 82, 83, 84, 85, 86, 87, 88, 89
-     99  755a		       ff ff 5c 5d*	      .byte.b	-1, -1, 92, 93, 94, 95, 96, 97, 98, 99	; CONTINUES...
-    100  7564
+     86  7500
+     87  7500
+     88  7500							; Use this table to
+     89  7500							;   a) Determine if a square is valid (-1 = NO)
+     90  7500							;   b) Move pieces without addition.  e.g., "lda ValidSquareTable+10,x" will let you know
+     91  7500							;	if a white pawn on square "x" can move "up" the board.
+     92  7500
+     93  7500		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+     94  750a		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+     95  7514		       ff ff 16 17*	      .byte.b	-1, -1, 22, 23, 24, 25, 26, 27, 28, 29
+     96  751e		       ff ff 20 21*	      .byte.b	-1, -1, 32, 33, 34, 35, 36, 37, 38, 39
+     97  7528		       ff ff 2a 2b*	      .byte.b	-1, -1, 42, 43, 44, 45, 46, 47, 48, 49
+     98  7532		       ff ff 34 35*	      .byte.b	-1, -1, 52, 53, 54, 55, 56, 57, 58, 59
+     99  753c		       ff ff 3e 3f*	      .byte.b	-1, -1, 62, 63, 64, 65, 66, 67, 68, 69
+    100  7546		       ff ff 48 49*	      .byte.b	-1, -1, 72, 73, 74, 75, 76, 77, 78, 79
+    101  7550		       ff ff 52 53*	      .byte.b	-1, -1, 82, 83, 84, 85, 86, 87, 88, 89
+    102  755a		       ff ff 5c 5d*	      .byte.b	-1, -1, 92, 93, 94, 95, 96, 97, 98, 99	; CONTINUES...
+    103  7564
       0  7564					      DEF	ShadowBoard
       1  7564				   SLOT_ShadowBoard SET	_BANK_SLOT
       2  7564				   BANK_ShadowBoard SET	SLOT_ShadowBoard + _CURRENT_BANK
@@ -23837,56 +23800,79 @@
       5  7564				   TEMPORARY_OFFSET SET	0
       6  7564				   VAR_BOUNDARY_ShadowBoard SET	TEMPORARY_OFFSET
       7  7564				   FUNCTION_NAME SET	ShadowBoard
-    102  7564
-    103  7564							; A 10X10... we should never write using invalid square
-    104  7564							; ON COPY TO RAM BANK, 'BOARD' SELF-INITIALISES TO THE FOLLOWING VALUES
-    105  7564							; FROM THEN ON IT'S WRITEABLE (REMEMBER TO +RAM_WRITE) FOR MODIFICATIONS
-    106  7564
-    107  7564		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1	; shared with above table
-    108  756e		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1	; shared with above table
-    109  7578
-    110  7578					      REPEAT	8
-    111  7578		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-    110  7578					      REPEND
-    111  7582		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-    110  7582					      REPEND
-    111  758c		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-    110  758c					      REPEND
-    111  7596		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-    110  7596					      REPEND
-    111  75a0		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-    110  75a0					      REPEND
-    111  75aa		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-    110  75aa					      REPEND
-    111  75b4		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-    110  75b4					      REPEND
-    111  75be		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
-    112  75c8					      REPEND
-    113  75c8
-    114  75c8		       00 64	   SIZEOF_ShadowBoard =	* - ShadowBoard
-    115  75c8
-    116  75c8							; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 99
-    117  75c8
+    105  7564
+    106  7564							; A 10X10... we should never write using invalid square
+    107  7564							; ON COPY TO RAM BANK, 'BOARD' SELF-INITIALISES TO THE FOLLOWING VALUES
+    108  7564							; FROM THEN ON IT'S WRITEABLE (REMEMBER TO +RAM_WRITE) FOR MODIFICATIONS
+    109  7564
+    110  7564		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1	; shared with above table
+    111  756e		       ff ff ff ff*	      .byte.b	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1	; shared with above table
+    112  7578
+    113  7578					      REPEAT	8
+    114  7578		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+    113  7578					      REPEND
+    114  7582		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+    113  7582					      REPEND
+    114  758c		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+    113  758c					      REPEND
+    114  7596		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+    113  7596					      REPEND
+    114  75a0		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+    113  75a0					      REPEND
+    114  75aa		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+    113  75aa					      REPEND
+    114  75b4		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+    113  75b4					      REPEND
+    114  75be		       ff ff 00 00*	      .byte.b	-1, -1, 0, 0, 0, 0, 0, 0, 0, 0
+    115  75c8					      REPEND
+    116  75c8
+    117  75c8		       00 64	   SIZEOF_ShadowBoard =	* - ShadowBoard
     118  75c8
-    119  75c8							;---------------------------------------------------------------------------------------------------
-    120  75c8							; EOF
+    119  75c8							; DON'T OVERSTEP BOUNDS WHEN WRITING BOARD - MAXIMUM INDEX = 99
+    120  75c8
+    121  75c8
+      0  75c8					      DEF	ShadowTileColour
+      1  75c8				   SLOT_ShadowTileColour SET	_BANK_SLOT
+      2  75c8				   BANK_ShadowTileColour SET	SLOT_ShadowTileColour + _CURRENT_BANK
+      3  75c8				   ShadowTileColour
+      4  75c8				   TEMPORARY_VAR SET	Overlay
+      5  75c8				   TEMPORARY_OFFSET SET	0
+      6  75c8				   VAR_BOUNDARY_ShadowTileColour SET	TEMPORARY_OFFSET
+      7  75c8				   FUNCTION_NAME SET	ShadowTileColour
+    123  75c8
+    124  75c8		       00 00 00 00*	      .byte.b	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    125  75d2		       00 00 00 00*	      .byte.b	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    126  75dc		       00 00 01 00*	      .byte.b	0, 0, 1, 0, 1, 0, 1, 0, 1, 0
+    127  75e6		       00 00 00 01*	      .byte.b	0, 0, 0, 1, 0, 1, 0, 1, 0, 1
+    128  75f0		       00 00 01 00*	      .byte.b	0, 0, 1, 0, 1, 0, 1, 0, 1, 0
+    129  75fa		       00 00 00 01*	      .byte.b	0, 0, 0, 1, 0, 1, 0, 1, 0, 1
+    130  7604		       00 00 01 00*	      .byte.b	0, 0, 1, 0, 1, 0, 1, 0, 1, 0
+    131  760e		       00 00 00 01*	      .byte.b	0, 0, 0, 1, 0, 1, 0, 1, 0, 1
+    132  7618		       00 00 01 00*	      .byte.b	0, 0, 1, 0, 1, 0, 1, 0, 1, 0
+    133  7622		       00 00 00 01*	      .byte.b	0, 0, 0, 1, 0, 1, 0, 1, 0, 1
+    134  762c
+    135  762c
+    136  762c
+    137  762c
+    138  762c							;---------------------------------------------------------------------------------------------------
+    139  762c							; EOF
 ------- FILE ./chess.asm
-    215  75c8
-    216  75c8
-    217  75c8
+    215  762c
+    216  762c
+    217  762c
 ------- FILE TitleScreen.asm LEVEL 2 PASS 4
-      0  75c8					      include	"TitleScreen.asm"
-      0  75c8					      SLOT	1
-      1  75c8
-      2  75c8				  -	      IF	(1 < 0) || (1 > 3)
-      3  75c8				  -	      ECHO	"Illegal bank address/segment location", 1
-      4  75c8				  -	      ERR
-      5  75c8					      ENDIF
-      6  75c8
-      7  75c8				   _BANK_ADDRESS_ORIGIN SET	$F000 + (1 * _ROM_BANK_SIZE)
-      8  75c8				   _BANK_SLOT SET	1 * 64
-      9  75c8
-      0  75c8					      ROMBANK	TITLESCREEN
+      0  762c					      include	"TitleScreen.asm"
+      0  762c					      SLOT	1
+      1  762c
+      2  762c				  -	      IF	(1 < 0) || (1 > 3)
+      3  762c				  -	      ECHO	"Illegal bank address/segment location", 1
+      4  762c				  -	      ERR
+      5  762c					      ENDIF
+      6  762c
+      7  762c				   _BANK_ADDRESS_ORIGIN SET	$F000 + (1 * _ROM_BANK_SIZE)
+      8  762c				   _BANK_SLOT SET	1 * 64
+      9  762c
+      0  762c					      ROMBANK	TITLESCREEN
       1  7ab0 ????				      SEG	ROM_TITLESCREEN
       2  7800					      ORG	_ORIGIN
       3  7800					      RORG	_BANK_ADDRESS_ORIGIN
@@ -27128,7 +27114,7 @@
     224  8000
  32 ROM BANKS
     225  8000					      ECHO	[_ORIGIN/_ROM_BANK_SIZE]d, "ROM BANKS"
- 34 RAM BANKS
+ 32 RAM BANKS
     226  8000					      ECHO	[ORIGIN_RAM / _RAM_BANK_SIZE]d, "RAM BANKS"
     227  8000
     228  8000							;---------------------------------------------------------------------------------------------------

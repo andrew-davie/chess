@@ -19,7 +19,7 @@ MODE_LETTERS = 6;
 
 
 // Which part to render. SEE MODE_* DEFINITIONS, ABOVE
-MODE = 0; // [0:FRONT SHELL, 1:BACK SHELL, 2:ASSEMBLED, 3:STRAP, 4:LOGO, 5:LABEL, 6:LETTERS]
+MODE = 1; // [0:FRONT SHELL, 1:BACK SHELL, 2:ASSEMBLED, 3:STRAP, 4:LOGO, 5:LABEL, 6:LETTERS]
 
 // Inbuilt supports for the cartrige shell overhangs.
 SUPPORT_TABS = true;            // true or false
@@ -227,6 +227,7 @@ module top(){
 
     }
     
+
     difference(){
 
     xylatch(2,0, true);
@@ -740,10 +741,12 @@ module strap2(tol=0){
                 translate([-(BOXZ+2+tol*2)/2-1,0,-1])
                     cube([BOXZ+4+tol*2,STRAP_INDENT+tol*2+1,STRAP_WIDTH+tol*2+2]);
             }
-            color("green")
-
-            translate([-5,-10+STRAP_THICK+0.6,0])
-                cube([10,10,0.2]);
+            
+            
+            if (tol==0)
+                color("green")
+                    translate([-5,-10+STRAP_THICK+0.6,0])
+                        cube([10,10,0.2]);
         }
 
     translate([0,-(STRAP_THICK+tol*2)/2,0])
