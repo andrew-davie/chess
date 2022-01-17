@@ -56,7 +56,7 @@ SELECT_SWITCH           = 2                         ; (SWCHB & SELECT_SWITCH)  0
 
 
 SEARCH_DEPTH            = 4
-QUIESCE_EXTRA_DEPTH     = 7
+QUIESCE_EXTRA_DEPTH     = 4
 
 
     IF SEARCH_DEPTH < 3

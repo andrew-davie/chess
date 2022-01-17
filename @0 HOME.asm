@@ -144,7 +144,8 @@ time64a
 
 
 
-
+        lda #1
+        sta VSYNC
 
     ; Check timer!
 

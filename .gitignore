@@ -1,0 +1,7 @@
+chess*.lst
+chess*.sym
+chess*.bin
+.DS_Store
+*.data
+*.b#?
+
