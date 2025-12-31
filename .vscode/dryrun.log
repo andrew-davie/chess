@@ -1,0 +1,10 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/boo/Documents/software/Atari 2600/Chess3E+'
+osascript -e 'quit app "Stella"'
+(cd ./gfx && python ConvertChessPieces.py)
+python tools/grid.py
+../dasmx/dasm/bin/dasm ./chess.asm -E0 -S -p20 -l./chess.lst -f3 -v1 -DTIA_BASE_ADDRESS=0 -s./chess.sym -T1 -o./chess.bin || (echo "mycommand failed $?"; exit 1)
+cp ./chess.bin ~/Nextcloud/My\ ROMs
+open -a /Applications/Stella.app ./chess.bin --args -ld B -rd B -rc atarivox -avoxport /dev/cu.usbserial-A50285BI
+make: Leaving directory `/Users/boo/Documents/software/Atari 2600/Chess3E+'
+ 

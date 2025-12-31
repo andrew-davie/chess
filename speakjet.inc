@@ -71,6 +71,13 @@ SERIAL_RDYMASK  equ     $02
 
 .speech_done
 
+    IF >.byteout_loop != >.
+        ECHO "loop X"
+        ERR
+    ENDIF
+
+
+
         endm
 
 

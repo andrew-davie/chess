@@ -1,4 +1,4 @@
-all: chess3E+.3E+
+all: chess.bin
 
 .PHONY: characters
 .PHONY: gfx
@@ -6,24 +6,27 @@ all: chess3E+.3E+
 characters:
 #	cd charset && python icc.py
 
-chess3E+.3E+: *.asm Makefile FORCE
+chess.bin: *.asm Makefile FORCE
 	osascript -e 'quit app "Stella"'
-	(cd ./gfx && python ConvertChessPieces.py)
-#		python tools/grid.py
-	../dasm/bin/dasm ./chess.asm -l./chess.lst -f3 -s./chess.sym -o./chess3E+.3E+ || (echo "mycommand failed $$?"; exit 1)
-	open -a /Applications/Stella.app ./chess3E+.3E+
+	(cd ./gfx && python3 ConvertChessPieces.py)
+	python3 tools/grid.py
+	../dasm/bin/dasm ./chess.asm -E0 -S -p20 -l./chess.lst -f3 -v1 -DTIA_BASE_ADDRESS=$40 -s./chess.sym -T1 -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
+#	cp ./chess.bin ~/Nextcloud/My\ ROMs
+#	open -a /Applications/Stella.app ./chess.bin --args -ld B -rd B -rc atarivox -avoxport /dev/cu.usbserial-A50285BI
+	../Gopher2600/gopher2600_darwin_arm64 -tv NTSC ./chess.bin
+
 
 force:
 #	echo "force"
 
 ../sprites/spriteData.asm: ../sprites/*.png
 	echo 'Building SPRITE data'
-	python ../tools/sprite.py
+	python3 ../tools/sprite.py
 
 
 #test.bin: test.asm FORCE Makefile
 #	tools/dasm ./test.asm -l./test.txt -f3 -s./test.sym -o./test.bin
-#	open -a Stella ./test.bin
+#	open -a Stella ./test.bi
 #	exit 0
 
 

@@ -31,7 +31,7 @@ Q                   = QUEEN
 KING                = 7
 K                   = KING
 
-PIECE_MASK          = 15                 ; trim off the flags leaving just piece ID
+PIECE_MASK          = 7                 ; trim off the flags leaving just piece ID
 
 ;---------------------------------------------------------------------------------------------------
 

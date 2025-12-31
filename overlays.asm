@@ -17,32 +17,8 @@
 ; ensure this by using the VALIDATE_OVERLAY macro
 ;---------------------------------------------------------------------------------------------------
 
-    MAC OVERLAY ; {name}
-OVERLAY_NAME SET {1}
-    SEG.U OVERLAY_{1}
-        org Overlay
-    ENDM
 
-;---------------------------------------------------------------------------------------------------
-
-    MAC VALIDATE_OVERLAY
-        LIST OFF
-OVERLAY_DELTA SET * - Overlay
-        IF OVERLAY_DELTA > MAXIMUM_REQUIRED_OVERLAY_SIZE
-MAXIMUM_REQUIRED_OVERLAY_SIZE SET OVERLAY_DELTA
-        ENDIF
-        IF OVERLAY_DELTA > OVERLAY_SIZE
-            ECHO "Overlay", OVERLAY_NAME, "is too big!"
-            ECHO "REQUIRED SIZE =", OVERLAY_DELTA
-            ERR
-        ENDIF
-        LIST ON
-        ECHO OVERLAY_NAME, "-", OVERLAY_SIZE - ( * - Overlay ), "bytes available"
-    ENDM
-
-;---------------------------------------------------------------------------------------------------
-
-OVERLAY_SIZE    SET $4C           ; maximum size
+;OVERLAY_SIZE    SET $4C           ; maximum size
 MAXIMUM_REQUIRED_OVERLAY_SIZE       SET 0
 
 
@@ -55,22 +31,19 @@ MAXIMUM_REQUIRED_OVERLAY_SIZE       SET 0
 ; ADD AN OVERLAY FOR EACH ROUTINE'S USE, SO CLASHES CAN BE EASILY CHECKED
 
     DEF Overlay
-    ds OVERLAY_SIZE       ;--> overlay (share) variables
+    ds MAXIMUM_REQUIRED_OVERLAY_SIZE       ;--> overlay (share) variables
 END_OF_OVERLAY
 
 ;---------------------------------------------------------------------------------------------------
 ; And now... the overlays....
 
-    ECHO "---- OVERLAYS (", OVERLAY_SIZE, "bytes ) ----"
+    ;ECHO "---- OVERLAYS (", OVERLAY_SIZE, "bytes ) ----"
 
 ;---------------------------------------------------------------------------------------------------
 
-    ; Some overlays are used across multiple routines/calls, and they will need to be defined
-    ; "globally" in this file.
-
+    DEF Variable_PieceShapeBuffer
     VAR __pieceShapeBuffer, PIECE_SHAPE_SIZE
-    VAR __ptr, 2
-    VAR __ptr2, 2
+    VEND Variable_PieceShapeBuffer
 
 ;---------------------------------------------------------------------------------------------------
 

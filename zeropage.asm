@@ -6,6 +6,8 @@
                 SEG.U variables
                 ORG $80
 
+framenum                        ds 1
+
 squareToDraw                    ds 1
 rnd                             ds 1                ; random
 drawDelay                       ds 1
@@ -20,7 +22,6 @@ cursorX12                       ds 1
 
 mdelay                          ds 1
 ccur                            ds 1
-savedBank                       ds 1                ; switched-in bank for FIXED returns
 aiState                         ds 1                ; state
 aiFlashDelay                    ds 1
 
@@ -40,9 +41,17 @@ fromPiece                       ds 1
 lastPiece                       ds 1
 previousPiece                   ds 1
 
-Platform                        ds 1                ; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
+;Platform                        ds 1                ; TV system (%0x=NTSC, %10=PAL-50, %11=PAL-60)
 speech_addr                     ds 2
-bg                              ds 1
+;bg                              ds 1
+
+voxframe           ds      1
+temp            ds      1
+switch_states   ds      1
+switch_edges    ds      1
+
+
+
 
 capture                         ds 1
 
@@ -52,5 +61,17 @@ positionCount                   ds 3
 
 ;maxPly                          ds 1
 flagCheck                       ds 1                ; -1 = no, #KING = yes
-protecting                      ds 1
+;protecting                      ds 1
 randomness                      ds 1
+;__psb                           ds 2
+
+vkSquare                        ds 2                ; current move's king traversal squares during castling
+;human                           ds 1                ; colour of human
+
+platform                        ds 1                ; 0=NTSC, 1=PAL
+
+    IFCONST RAINBOW
+base                            ds 1
+    ENDIF
+
+    
