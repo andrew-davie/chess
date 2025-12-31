@@ -902,8 +902,8 @@
      55  0000 ????						; PLY+2 for computer response (thus, 3). The bank allocation gets stomped!
      56  0000 ????
      57  0000 ????
-     58  0000 ????	       00 04	   SEARCH_DEPTH =	4
-     59  0000 ????	       00 04	   QUIESCE_EXTRA_DEPTH =	4
+     58  0000 ????	       00 03	   SEARCH_DEPTH =	3
+     59  0000 ????	       00 02	   QUIESCE_EXTRA_DEPTH =	2
      60  0000 ????
      61  0000 ????
      62  0000 ????			  -	      IF	SEARCH_DEPTH < 3
@@ -913,8 +913,8 @@
      66  0000 ????
      67  0000 ????
      68  0000 ????
-     69  0000 ????	       00 08	   PLY_BANKS  =	SEARCH_DEPTH + QUIESCE_EXTRA_DEPTH
-     70  0000 ????	       00 08	   MAX_PLY_DEPTH_BANK =	PLY_BANKS	;TODO -- RAMBANK_PLY + PLY_BANKS
+     69  0000 ????	       00 05	   PLY_BANKS  =	SEARCH_DEPTH + QUIESCE_EXTRA_DEPTH
+     70  0000 ????	       00 05	   MAX_PLY_DEPTH_BANK =	PLY_BANKS	;TODO -- RAMBANK_PLY + PLY_BANKS
      71  0000 ????
      72  0000 ????			  -	      IF	((RAMBANK_PLY & $3F) + MAX_PLY_DEPTH_BANK) > 31
      73  0000 ????			  -	      ECHO	"Not enough RAM for PLY banks"
@@ -1194,7 +1194,7 @@
      17 U00b2
  Overlay boundary:  $ee
      18 U00b2					      ECHO	"Overlay boundary: ", Overlay + MAXIMUM_REQUIRED_OVERLAY_SIZE
- Stack boundary:  $ef
+ Stack boundary:  $f5
      19 U00b2					      ECHO	"Stack boundary: ", $FF- PLY_BANKS*2
      20 U00b2
      21 U00b2
@@ -2923,7 +2923,7 @@
       7  05de				   FUNCTION_NAME SET	MoveGenX
     489  05de					      SUBROUTINE
     490  05de
-    491  05de		       a9 d9		      lda	#RAMBANK_BOARD
+    491  05de		       a9 d3		      lda	#RAMBANK_BOARD
     492  05e0		       85 3e		      sta	SET_BANK_RAM	;@3		 ; should be hardwired forever, right?
     493  05e2
     494  05e2		       a2 64		      ldx	#100
@@ -3279,7 +3279,7 @@
     683  0695
     684  0695		       a5 95		      lda	currentPly
     685  0697		       85 3e		      sta	SET_BANK_RAM	;@2
-    686  0699		       a2 d9		      ldx	#RAMBANK_BOARD
+    686  0699		       a2 d3		      ldx	#RAMBANK_BOARD
     687  069b		       86 3e		      stx	SET_BANK_RAM	;@3
     688  069d
       0  069d					      lda@PLY	savedEvaluation
@@ -3433,7 +3433,7 @@
     763  0704		       85 a8		      sta	__toSquareX12
     764  0706		       a8		      tay
     765  0707
-    766  0707		       a9 d9		      lda	#RAMBANK_BOARD
+    766  0707		       a9 d3		      lda	#RAMBANK_BOARD
     767  0709		       85 3e		      sta	SET_BANK_RAM	;@3
     768  070b		       b9 64 fd 	      lda	Board,y
     769  070e		       29 07		      and	#PIECE_MASK
@@ -3444,7 +3444,7 @@
     774  0712
     775  0712		       a4 86		      ldy	fromX12
     776  0714
-    777  0714		       a9 d9		      lda	#RAMBANK_BOARD
+    777  0714		       a9 d3		      lda	#RAMBANK_BOARD
     778  0716		       85 3e		      sta	SET_BANK_RAM	;@3
     779  0718		       b9 64 fd 	      lda	Board,y
     780  071b		       85 a9		      sta	__fromPiece
@@ -3594,7 +3594,7 @@
     884  079e		       f0 27		      beq	.exit
     885  07a0
     886  07a0
-    887  07a0		       a9 d9		      lda	#RAMBANK_BOARD
+    887  07a0		       a9 d3		      lda	#RAMBANK_BOARD
     888  07a2		       85 3e		      sta	SET_BANK_RAM	;@3
     889  07a4
     890  07a4							; Account for the opponent pawn being removed
@@ -3614,7 +3614,7 @@
     904  07b7		       86 3f		      stx	SET_BANK	;@2
     905  07b9		       20 70 f9 	      jsr	AddPieceMaterialValue	; remove material for original type
     906  07bc
-    907  07bc		       a9 d9		      lda	#RAMBANK_BOARD
+    907  07bc		       a9 d3		      lda	#RAMBANK_BOARD
     908  07be		       85 3e		      sta	SET_BANK_RAM	;@3
     909  07c0
     910  07c0		       a6 94		      ldx	enPassantPawn
@@ -4026,7 +4026,7 @@
     137  0935							; copy the BOARD/MOVES bank
     138  0935
     139  0935		       a2 9d		      ldx	#ROMBANK_SHADOW_BOARD
-    140  0937		       a0 d9		      ldy	#RAMBANK_BOARD
+    140  0937		       a0 d3		      ldy	#RAMBANK_BOARD
     141  0939		       20 43 f5 	      jsr	CopyShadowROMtoRAM	; this auto-initialises Board too
     142  093c
     143  093c
@@ -4267,7 +4267,7 @@
     295  096e		       bc ba f5 	      ldy	InitPieceList+1,x	; square
     296  0971		       84 b7		      sty	__initSquare
     297  0973
-    298  0973		       a9 d9		      lda	#RAMBANK_BOARD
+    298  0973		       a9 d3		      lda	#RAMBANK_BOARD
     299  0975		       85 3e		      sta	SET_BANK_RAM
     300  0977		       a5 b9		      lda	__op
       0  0979					      sta@RAM	Board,y
@@ -4674,7 +4674,7 @@
     631  0a3b							; guarantee flags for piece, post-move, are correct
     632  0a3b
     633  0a3b
-    634  0a3b		       a9 d9		      lda	#RAMBANK_BOARD
+    634  0a3b		       a9 d3		      lda	#RAMBANK_BOARD
     635  0a3d		       85 3e		      sta	SET_BANK_RAM	;@2
     636  0a3f
     637  0a3f		       a5 97		      lda	fromPiece
@@ -4759,7 +4759,7 @@
     681  0a66
     682  0a66							; We use [SLOT3] for accessing board
     683  0a66
-    684  0a66		       a9 d9		      lda	#RAMBANK_BOARD
+    684  0a66		       a9 d3		      lda	#RAMBANK_BOARD
     685  0a68		       85 3e		      sta	SET_BANK_RAM
     686  0a6a
     687  0a6a
@@ -4794,7 +4794,7 @@
     715  0a95							; WARNING - local variables will not survive the following call...!
     716  0a95		       20 c5 f0 	      jsr	CopySinglePiece	;@0
     717  0a98
-    718  0a98		       a9 d9		      lda	#RAMBANK_BOARD
+    718  0a98		       a9 d3		      lda	#RAMBANK_BOARD
     719  0a9a		       85 3e		      sta	SET_BANK_RAM
     720  0a9c
     721  0a9c		       a4 81		      ldy	squareToDraw
@@ -4843,7 +4843,7 @@
       3  0ab2		       00 ee	   VAREND_aiDrawPart2 =	TEMPORARY_VAR
       4  0ab2
     744  0ab2
-    745  0ab2		       a9 d9		      lda	#RAMBANK_BOARD
+    745  0ab2		       a9 d3		      lda	#RAMBANK_BOARD
     746  0ab4		       85 3e		      sta	SET_BANK_RAM
     747  0ab6
     748  0ab6		       a5 81		      lda	squareToDraw
@@ -5020,7 +5020,7 @@
      10  0b10		       20 01 fc 	      jsr	GetPiece
     852  0b13
     853  0b13		       a4 86		      ldy	fromX12
-    854  0b15		       a9 d9		      lda	#RAMBANK_BOARD
+    854  0b15		       a9 d3		      lda	#RAMBANK_BOARD
     855  0b17		       85 3e		      sta	SET_BANK_RAM	;@3
     856  0b19		       b9 64 fd 	      lda	Board,y
     857  0b1c		       45 97		      eor	fromPiece
@@ -5221,7 +5221,7 @@
      98  0c46		       a9 90		      lda	#>-INFINITY
      99  0c48		       85 aa		      sta	__alpha+1	; player tries to maximise
     100  0c4a
-    101  0c4a		       a2 04		      ldx	#SEARCH_DEPTH
+    101  0c4a		       a2 03		      ldx	#SEARCH_DEPTH
     102  0c4c		       a9 00		      lda	#0	; no captured piece
     103  0c4e		       85 b1		      sta	__quiesceCapOnly	; ALL moves to be generated
     104  0c50
@@ -5329,7 +5329,7 @@
     174  0c7f							; b) en-Passant, capturing pawn on "odd" square
     175  0c7f							; These both set "secondary" movers which are used for restoring during unmakeMove
     176  0c7f
-    177  0c7f		       a0 d9		      ldy	#RAMBANK_BOARD
+    177  0c7f		       a0 d3		      ldy	#RAMBANK_BOARD
     178  0c81		       84 3e		      sty	SET_BANK_RAM	;@3
     179  0c83
       0  0c83					      ldx@PLY	movePtr
@@ -5745,7 +5745,7 @@
       1  0dcc		       ae d0 f9 	      ldx	movePtr
     471  0dcf
     472  0dcf		       18		      clc
-    473  0dd0		       69 08		      adc	#RAMBANK_SORT-RAMBANK_PLY
+    473  0dd0		       69 05		      adc	#RAMBANK_SORT-RAMBANK_PLY
     474  0dd2		       85 3e		      sta	SET_BANK_RAM
     475  0dd4
     476  0dd4		       a5 ad		      lda	__negaMax
@@ -6198,7 +6198,7 @@
       4  0ef0
     779  0ef0
     780  0ef0		       a5 95		      lda	currentPly
-    781  0ef2		       c9 8f		      cmp	#RAMBANK_PLY + PLY_BANKS -1
+    781  0ef2		       c9 8c		      cmp	#RAMBANK_PLY + PLY_BANKS -1
     782  0ef4		       b0 28		      bcs	.retBeta
     783  0ef6							;sta SET_BANK_RAM ;tmp
     784  0ef6
@@ -7160,7 +7160,7 @@
     443  1198
     444  1198		       a4 81		      ldy	squareToDraw
     445  119a
-    446  119a		       a9 d9		      lda	#RAMBANK_BOARD
+    446  119a		       a9 d3		      lda	#RAMBANK_BOARD
     447  119c		       85 3e		      sta	SET_BANK_RAM	;@3
     448  119e		       b9 64 fd 	      lda	Board,y
     449  11a1		       29 07		      and	#PIECE_MASK
@@ -7870,7 +7870,7 @@
     915  1371		       85 97		      sta	fromPiece
     916  1373
     917  1373		       a4 87		      ldy	toX12
-    918  1375		       a9 d9		      lda	#RAMBANK_BOARD
+    918  1375		       a9 d3		      lda	#RAMBANK_BOARD
     919  1377		       85 3e		      sta	SET_BANK_RAM	;@3
     920  1379		       b9 64 fd 	      lda	Board,y
     921  137c		       29 07		      and	#PIECE_MASK
@@ -7960,7 +7960,7 @@
     950  1390		       a4 86		      ldy	fromX12
     951  1392		       84 81		      sty	squareToDraw
     952  1394
-    953  1394		       a9 d9		      lda	#RAMBANK_BOARD
+    953  1394		       a9 d3		      lda	#RAMBANK_BOARD
     954  1396		       85 3e		      sta	SET_BANK_RAM	;@3
     955  1398		       b9 64 fd 	      lda	Board,y
     956  139b		       f0 03		      beq	.skipbl
@@ -7972,7 +7972,7 @@
     962  13a0		       a4 86		      ldy	fromX12
     963  13a2		       84 a9		      sty	__boardIndex
     964  13a4
-    965  13a4		       a9 d9		      lda	#RAMBANK_BOARD
+    965  13a4		       a9 d3		      lda	#RAMBANK_BOARD
     966  13a6		       85 3e		      sta	SET_BANK_RAM	;@3
     967  13a8		       b9 64 fd 	      lda	Board,y
     968  13ab		       85 98		      sta	lastPiece	; what we are overwriting
@@ -8019,7 +8019,7 @@
     989  13bd		       a4 84		      ldy	lastSquareX12
     990  13bf		       84 81		      sty	squareToDraw
     991  13c1
-    992  13c1		       a9 d9		      lda	#RAMBANK_BOARD
+    992  13c1		       a9 d3		      lda	#RAMBANK_BOARD
     993  13c3		       85 3e		      sta	SET_BANK_RAM	;@3
     994  13c5		       b9 64 fd 	      lda	Board,y
     995  13c8		       f0 03		      beq	.skipbl2
@@ -8359,7 +8359,7 @@
     154  1462		       a4 84		      ldy	lastSquareX12
     155  1464		       a5 99		      lda	previousPiece
     156  1466
-    157  1466		       a2 d9		      ldx	#RAMBANK_BOARD
+    157  1466		       a2 d3		      ldx	#RAMBANK_BOARD
     158  1468		       86 3e		      stx	SET_BANK_RAM	;@3
       0  146a					      sta@RAM	Board,y	; and what's actually moving there
       1  146a		       99 64 ff 	      sta	[RAM]+Board,y
@@ -8411,7 +8411,7 @@
     186  1483		       a4 87		      ldy	toX12
     187  1485		       84 81		      sty	squareToDraw
     188  1487
-    189  1487		       a9 d9		      lda	#RAMBANK_BOARD
+    189  1487		       a9 d3		      lda	#RAMBANK_BOARD
     190  1489		       85 3e		      sta	SET_BANK_RAM	;@3
     191  148b		       b9 64 fd 	      lda	Board,y
     192  148e		       29 07		      and	#PIECE_MASK
@@ -11734,7 +11734,7 @@
      57 U11dd					      REPEAT	PLY_BANKS-1
       0 U11dd					      RAMBANK	.DUMMY_PLY
       1 U11dd
-      2 U2e00 ????				      SEG.U	RAM_.DUMMY_PLY
+      2 U2200 ????				      SEG.U	RAM_.DUMMY_PLY
       3 U1200					      ORG	ORIGIN_RAM
       4 U1200					      RORG	_BANK_ADDRESS_ORIGIN
       5 U1200				   _BANK_START SET	*
@@ -11831,35 +11831,85 @@
       3 U1800				  -	      ELSE
       4 U1800				  -	      CHECK_BANK_SIZE
       5 U1800					      ENDIF
-     57 U1800					      REPEND
-      0 U1800					      RAMBANK	.DUMMY_PLY
+     60 U1800					      REPEND
+     61 U1800
+     62 U1800
+     63 U1800							;---------------------------------------------------------------------------------------------------
+     64 U1800							; EOF
+------- FILE ./chess.asm
+------- FILE @2 PLY2.asm LEVEL 2 PASS 4
+      0 U1800					      include	"@2 PLY2.asm"
+      0 U1800					      SLOT	2
       1 U1800
-      2 U1800					      SEG.U	RAM_.DUMMY_PLY
+      2 U1800				  -	      IF	(2 < 0) || (2 > 3)
+      3 U1800				  -	      ECHO	"Illegal bank address/segment location", 2
+      4 U1800				  -	      ERR
+      5 U1800					      ENDIF
+      6 U1800
+      7 U1800				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
+      8 U1800				   _BANK_SLOT SET	2 * 64
+      9 U1800
+      0 U1800					      RAMBANK	SORT
+      1 U1800
+      2 U1ac8 ????				      SEG.U	RAM_SORT
       3 U1a00					      ORG	ORIGIN_RAM
       4 U1a00					      RORG	_BANK_ADDRESS_ORIGIN
       5 U1a00				   _BANK_START SET	*
       6 U1a00				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U1a00				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
+      7 U1a00				   RAMBANK_SORT SET	_BANK_SLOT + _CURRENT_RAMBANK
       8 U1a00				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U1a00				   _LAST_BANK SETSTR	.DUMMY_PLY
+      9 U1a00				   _LAST_BANK SETSTR	SORT
      10 U1a00				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U1a00					      END_BANK
-      1 U1a00					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U1a00					      CHECK_RAM_BANK_SIZE
-      1 U1a00		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 14 .DUMMY_PLY size =  $0 free = $1ff
-      2 U1a00					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U1a00				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U1a00				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U1a00				  -	      ERR
-      6 U1a00					      ENDIF
-      3 U1a00				  -	      ELSE
-      4 U1a00				  -	      CHECK_BANK_SIZE
-      5 U1a00					      ENDIF
-     57 U1a00					      REPEND
-      0 U1a00					      RAMBANK	.DUMMY_PLY
+      3 U1a00
+      4 U1a00							;---------------------------------------------------------------------------------------------------
+      5 U1a00
+      0 U1a00					      VARIABLE	MoveValueLO, MAX_MOVES
       1 U1a00
-      2 U1a00					      SEG.U	RAM_.DUMMY_PLY
+      2 U1a00				   .NAME      SETSTR	MoveValueLO
+      0 U1a00					      OPTIONAL_PAGEBREAK	.NAME, MAX_MOVES
+      1 U1a00
+      2 U1a00				  -	      IF	(>( * + MAX_MOVES -1 )) > ( >* )
+      3 U1a00				  -.EARLY_LOCATION SET	*
+      4 U1a00				  -	      ALIGN	256
+      5 U1a00				  -	      ECHO	"Page break for", .NAME, "wasted", [* - .EARLY_LOCATION]d, "bytes"
+      6 U1a00					      ENDIF
+      4 U1a00		       00 00 00 00*MoveValueLO ds	MAX_MOVES
+      5 U1a64
+      0 U1a64					      VARIABLE	MoveValueHI, MAX_MOVES
+      1 U1a64
+      2 U1a64				   .NAME      SETSTR	MoveValueHI
+      0 U1a64					      OPTIONAL_PAGEBREAK	.NAME, MAX_MOVES
+      1 U1a64
+      2 U1a64				  -	      IF	(>( * + MAX_MOVES -1 )) > ( >* )
+      3 U1a64				  -.EARLY_LOCATION SET	*
+      4 U1a64				  -	      ALIGN	256
+      5 U1a64				  -	      ECHO	"Page break for", .NAME, "wasted", [* - .EARLY_LOCATION]d, "bytes"
+      6 U1a64					      ENDIF
+      4 U1a64		       00 00 00 00*MoveValueHI ds	MAX_MOVES
+      5 U1ac8
+      8 U1ac8
+      9 U1ac8							;---------------------------------------------------------------------------------------------------
+     10 U1ac8
+      0 U1ac8					      END_BANK
+      1 U1ac8					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      0 U1ac8					      CHECK_RAM_BANK_SIZE
+      1 U1ac8		       00 c8	   .TEMP      =	* - _BANK_START
+ RAM bank # 14 SORT size =  $c8 free = $137
+      2 U1ac8					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
+      3 U1ac8				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
+      4 U1ac8				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
+      5 U1ac8				  -	      ERR
+      6 U1ac8					      ENDIF
+      3 U1ac8				  -	      ELSE
+      4 U1ac8				  -	      CHECK_BANK_SIZE
+      5 U1ac8					      ENDIF
+     12 U1ac8
+     13 U1ac8							;---------------------------------------------------------------------------------------------------
+     14 U1ac8
+     15 U1ac8					      REPEAT	PLY_BANKS-1
+      0 U1ac8					      RAMBANK	.DUMMY_PLY
+      1 U1ac8
+      2 U1800					      SEG.U	RAM_.DUMMY_PLY
       3 U1c00					      ORG	ORIGIN_RAM
       4 U1c00					      RORG	_BANK_ADDRESS_ORIGIN
       5 U1c00				   _BANK_START SET	*
@@ -11881,7 +11931,7 @@
       3 U1c00				  -	      ELSE
       4 U1c00				  -	      CHECK_BANK_SIZE
       5 U1c00					      ENDIF
-     57 U1c00					      REPEND
+     15 U1c00					      REPEND
       0 U1c00					      RAMBANK	.DUMMY_PLY
       1 U1c00
       2 U1c00					      SEG.U	RAM_.DUMMY_PLY
@@ -11906,85 +11956,35 @@
       3 U1e00				  -	      ELSE
       4 U1e00				  -	      CHECK_BANK_SIZE
       5 U1e00					      ENDIF
-     60 U1e00					      REPEND
-     61 U1e00
-     62 U1e00
-     63 U1e00							;---------------------------------------------------------------------------------------------------
-     64 U1e00							; EOF
-------- FILE ./chess.asm
-------- FILE @2 PLY2.asm LEVEL 2 PASS 4
-      0 U1e00					      include	"@2 PLY2.asm"
-      0 U1e00					      SLOT	2
+     15 U1e00					      REPEND
+      0 U1e00					      RAMBANK	.DUMMY_PLY
       1 U1e00
-      2 U1e00				  -	      IF	(2 < 0) || (2 > 3)
-      3 U1e00				  -	      ECHO	"Illegal bank address/segment location", 2
-      4 U1e00				  -	      ERR
-      5 U1e00					      ENDIF
-      6 U1e00
-      7 U1e00				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
-      8 U1e00				   _BANK_SLOT SET	2 * 64
-      9 U1e00
-      0 U1e00					      RAMBANK	SORT
-      1 U1e00
-      2 U20c8 ????				      SEG.U	RAM_SORT
+      2 U1e00					      SEG.U	RAM_.DUMMY_PLY
       3 U2000					      ORG	ORIGIN_RAM
       4 U2000					      RORG	_BANK_ADDRESS_ORIGIN
       5 U2000				   _BANK_START SET	*
       6 U2000				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U2000				   RAMBANK_SORT SET	_BANK_SLOT + _CURRENT_RAMBANK
+      7 U2000				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
       8 U2000				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U2000				   _LAST_BANK SETSTR	SORT
+      9 U2000				   _LAST_BANK SETSTR	.DUMMY_PLY
      10 U2000				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      3 U2000
-      4 U2000							;---------------------------------------------------------------------------------------------------
-      5 U2000
-      0 U2000					      VARIABLE	MoveValueLO, MAX_MOVES
-      1 U2000
-      2 U2000				   .NAME      SETSTR	MoveValueLO
-      0 U2000					      OPTIONAL_PAGEBREAK	.NAME, MAX_MOVES
-      1 U2000
-      2 U2000				  -	      IF	(>( * + MAX_MOVES -1 )) > ( >* )
-      3 U2000				  -.EARLY_LOCATION SET	*
-      4 U2000				  -	      ALIGN	256
-      5 U2000				  -	      ECHO	"Page break for", .NAME, "wasted", [* - .EARLY_LOCATION]d, "bytes"
+      0 U2000					      END_BANK
+      1 U2000					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      0 U2000					      CHECK_RAM_BANK_SIZE
+      1 U2000		       00 00	   .TEMP      =	* - _BANK_START
+ RAM bank # 17 .DUMMY_PLY size =  $0 free = $1ff
+      2 U2000					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
+      3 U2000				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
+      4 U2000				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
+      5 U2000				  -	      ERR
       6 U2000					      ENDIF
-      4 U2000		       00 00 00 00*MoveValueLO ds	MAX_MOVES
-      5 U2064
-      0 U2064					      VARIABLE	MoveValueHI, MAX_MOVES
-      1 U2064
-      2 U2064				   .NAME      SETSTR	MoveValueHI
-      0 U2064					      OPTIONAL_PAGEBREAK	.NAME, MAX_MOVES
-      1 U2064
-      2 U2064				  -	      IF	(>( * + MAX_MOVES -1 )) > ( >* )
-      3 U2064				  -.EARLY_LOCATION SET	*
-      4 U2064				  -	      ALIGN	256
-      5 U2064				  -	      ECHO	"Page break for", .NAME, "wasted", [* - .EARLY_LOCATION]d, "bytes"
-      6 U2064					      ENDIF
-      4 U2064		       00 00 00 00*MoveValueHI ds	MAX_MOVES
-      5 U20c8
-      8 U20c8
-      9 U20c8							;---------------------------------------------------------------------------------------------------
-     10 U20c8
-      0 U20c8					      END_BANK
-      1 U20c8					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U20c8					      CHECK_RAM_BANK_SIZE
-      1 U20c8		       00 c8	   .TEMP      =	* - _BANK_START
- RAM bank # 17 SORT size =  $c8 free = $137
-      2 U20c8					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U20c8				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U20c8				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U20c8				  -	      ERR
-      6 U20c8					      ENDIF
-      3 U20c8				  -	      ELSE
-      4 U20c8				  -	      CHECK_BANK_SIZE
-      5 U20c8					      ENDIF
-     12 U20c8
-     13 U20c8							;---------------------------------------------------------------------------------------------------
-     14 U20c8
-     15 U20c8					      REPEAT	PLY_BANKS-1
-      0 U20c8					      RAMBANK	.DUMMY_PLY
-      1 U20c8
-      2 U1e00					      SEG.U	RAM_.DUMMY_PLY
+      3 U2000				  -	      ELSE
+      4 U2000				  -	      CHECK_BANK_SIZE
+      5 U2000					      ENDIF
+     15 U2000					      REPEND
+      0 U2000					      RAMBANK	.DUMMY_PLY
+      1 U2000
+      2 U2000					      SEG.U	RAM_.DUMMY_PLY
       3 U2200					      ORG	ORIGIN_RAM
       4 U2200					      RORG	_BANK_ADDRESS_ORIGIN
       5 U2200				   _BANK_START SET	*
@@ -12006,186 +12006,36 @@
       3 U2200				  -	      ELSE
       4 U2200				  -	      CHECK_BANK_SIZE
       5 U2200					      ENDIF
-     15 U2200					      REPEND
-      0 U2200					      RAMBANK	.DUMMY_PLY
-      1 U2200
-      2 U2200					      SEG.U	RAM_.DUMMY_PLY
-      3 U2400					      ORG	ORIGIN_RAM
-      4 U2400					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U2400				   _BANK_START SET	*
-      6 U2400				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U2400				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U2400				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U2400				   _LAST_BANK SETSTR	.DUMMY_PLY
-     10 U2400				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U2400					      END_BANK
-      1 U2400					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U2400					      CHECK_RAM_BANK_SIZE
-      1 U2400		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 19 .DUMMY_PLY size =  $0 free = $1ff
-      2 U2400					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U2400				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U2400				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U2400				  -	      ERR
-      6 U2400					      ENDIF
-      3 U2400				  -	      ELSE
-      4 U2400				  -	      CHECK_BANK_SIZE
-      5 U2400					      ENDIF
-     15 U2400					      REPEND
-      0 U2400					      RAMBANK	.DUMMY_PLY
-      1 U2400
-      2 U2400					      SEG.U	RAM_.DUMMY_PLY
-      3 U2600					      ORG	ORIGIN_RAM
-      4 U2600					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U2600				   _BANK_START SET	*
-      6 U2600				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U2600				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U2600				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U2600				   _LAST_BANK SETSTR	.DUMMY_PLY
-     10 U2600				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U2600					      END_BANK
-      1 U2600					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U2600					      CHECK_RAM_BANK_SIZE
-      1 U2600		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 20 .DUMMY_PLY size =  $0 free = $1ff
-      2 U2600					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U2600				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U2600				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U2600				  -	      ERR
-      6 U2600					      ENDIF
-      3 U2600				  -	      ELSE
-      4 U2600				  -	      CHECK_BANK_SIZE
-      5 U2600					      ENDIF
-     15 U2600					      REPEND
-      0 U2600					      RAMBANK	.DUMMY_PLY
-      1 U2600
-      2 U2600					      SEG.U	RAM_.DUMMY_PLY
-      3 U2800					      ORG	ORIGIN_RAM
-      4 U2800					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U2800				   _BANK_START SET	*
-      6 U2800				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U2800				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U2800				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U2800				   _LAST_BANK SETSTR	.DUMMY_PLY
-     10 U2800				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U2800					      END_BANK
-      1 U2800					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U2800					      CHECK_RAM_BANK_SIZE
-      1 U2800		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 21 .DUMMY_PLY size =  $0 free = $1ff
-      2 U2800					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U2800				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U2800				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U2800				  -	      ERR
-      6 U2800					      ENDIF
-      3 U2800				  -	      ELSE
-      4 U2800				  -	      CHECK_BANK_SIZE
-      5 U2800					      ENDIF
-     15 U2800					      REPEND
-      0 U2800					      RAMBANK	.DUMMY_PLY
-      1 U2800
-      2 U2800					      SEG.U	RAM_.DUMMY_PLY
-      3 U2a00					      ORG	ORIGIN_RAM
-      4 U2a00					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U2a00				   _BANK_START SET	*
-      6 U2a00				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U2a00				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U2a00				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U2a00				   _LAST_BANK SETSTR	.DUMMY_PLY
-     10 U2a00				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U2a00					      END_BANK
-      1 U2a00					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U2a00					      CHECK_RAM_BANK_SIZE
-      1 U2a00		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 22 .DUMMY_PLY size =  $0 free = $1ff
-      2 U2a00					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U2a00				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U2a00				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U2a00				  -	      ERR
-      6 U2a00					      ENDIF
-      3 U2a00				  -	      ELSE
-      4 U2a00				  -	      CHECK_BANK_SIZE
-      5 U2a00					      ENDIF
-     15 U2a00					      REPEND
-      0 U2a00					      RAMBANK	.DUMMY_PLY
-      1 U2a00
-      2 U2a00					      SEG.U	RAM_.DUMMY_PLY
-      3 U2c00					      ORG	ORIGIN_RAM
-      4 U2c00					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U2c00				   _BANK_START SET	*
-      6 U2c00				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U2c00				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U2c00				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U2c00				   _LAST_BANK SETSTR	.DUMMY_PLY
-     10 U2c00				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U2c00					      END_BANK
-      1 U2c00					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U2c00					      CHECK_RAM_BANK_SIZE
-      1 U2c00		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 23 .DUMMY_PLY size =  $0 free = $1ff
-      2 U2c00					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U2c00				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U2c00				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U2c00				  -	      ERR
-      6 U2c00					      ENDIF
-      3 U2c00				  -	      ELSE
-      4 U2c00				  -	      CHECK_BANK_SIZE
-      5 U2c00					      ENDIF
-     15 U2c00					      REPEND
-      0 U2c00					      RAMBANK	.DUMMY_PLY
-      1 U2c00
-      2 U2c00					      SEG.U	RAM_.DUMMY_PLY
-      3 U2e00					      ORG	ORIGIN_RAM
-      4 U2e00					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U2e00				   _BANK_START SET	*
-      6 U2e00				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U2e00				   RAMBANK_.DUMMY_PLY SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U2e00				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U2e00				   _LAST_BANK SETSTR	.DUMMY_PLY
-     10 U2e00				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U2e00					      END_BANK
-      1 U2e00					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U2e00					      CHECK_RAM_BANK_SIZE
-      1 U2e00		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 24 .DUMMY_PLY size =  $0 free = $1ff
-      2 U2e00					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U2e00				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U2e00				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U2e00				  -	      ERR
-      6 U2e00					      ENDIF
-      3 U2e00				  -	      ELSE
-      4 U2e00				  -	      CHECK_BANK_SIZE
-      5 U2e00					      ENDIF
-     18 U2e00					      REPEND
-     19 U2e00
-     20 U2e00
-     21 U2e00							;---------------------------------------------------------------------------------------------------
-     22 U2e00							; EOF
-     23 U2e00
+     18 U2200					      REPEND
+     19 U2200
+     20 U2200
+     21 U2200							;---------------------------------------------------------------------------------------------------
+     22 U2200							; EOF
+     23 U2200
 ------- FILE ./chess.asm
 ------- FILE @2 GENERIC #3.asm LEVEL 2 PASS 4
-      0 U2e00					      include	"@2 GENERIC #3.asm"
-      1 U2e00							;---------------------------------------------------------------------------------------------------
-      2 U2e00							; @2 GENERIC #3.asm
-      3 U2e00
-      4 U2e00							; Atari 2600 Chess
-      5 U2e00							; Copyright (c) 2019-2020 Andrew Davie
-      6 U2e00							; andrew@taswegian.com
-      7 U2e00
-      8 U2e00
-      9 U2e00							;---------------------------------------------------------------------------------------------------
-     10 U2e00
-      0 U2e00					      SLOT	2
-      1 U2e00
-      2 U2e00				  -	      IF	(2 < 0) || (2 > 3)
-      3 U2e00				  -	      ECHO	"Illegal bank address/segment location", 2
-      4 U2e00				  -	      ERR
-      5 U2e00					      ENDIF
-      6 U2e00
-      7 U2e00				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
-      8 U2e00				   _BANK_SLOT SET	2 * 64
-      9 U2e00
-      0 U2e00					      ROMBANK	GENERIC_BANK@2#1
+      0 U2200					      include	"@2 GENERIC #3.asm"
+      1 U2200							;---------------------------------------------------------------------------------------------------
+      2 U2200							; @2 GENERIC #3.asm
+      3 U2200
+      4 U2200							; Atari 2600 Chess
+      5 U2200							; Copyright (c) 2019-2020 Andrew Davie
+      6 U2200							; andrew@taswegian.com
+      7 U2200
+      8 U2200
+      9 U2200							;---------------------------------------------------------------------------------------------------
+     10 U2200
+      0 U2200					      SLOT	2
+      1 U2200
+      2 U2200				  -	      IF	(2 < 0) || (2 > 3)
+      3 U2200				  -	      ECHO	"Illegal bank address/segment location", 2
+      4 U2200				  -	      ERR
+      5 U2200					      ENDIF
+      6 U2200
+      7 U2200				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
+      8 U2200				   _BANK_SLOT SET	2 * 64
+      9 U2200
+      0 U2200					      ROMBANK	GENERIC_BANK@2#1
       1  27d3 ????				      SEG	ROM_GENERIC_BANK@2#1
       2  2400					      ORG	_ORIGIN
       3  2400					      RORG	_BANK_ADDRESS_ORIGIN
@@ -12389,7 +12239,7 @@
     114  2450
     115  2450				   .bitmapCleared
     116  2450
-    117  2450		       a9 d9		      lda	#RAMBANK_BOARD
+    117  2450		       a9 d3		      lda	#RAMBANK_BOARD
     118  2452		       85 3e		      sta	SET_BANK_RAM	;@3
     119  2454
     120  2454		       a2 63		      ldx	#99
@@ -12481,7 +12331,7 @@
     177  2496
     178  2496							; get the piece types from the board
     179  2496
-    180  2496		       a9 d9		      lda	#RAMBANK_BOARD
+    180  2496		       a9 d3		      lda	#RAMBANK_BOARD
     181  2498		       85 3e		      sta	SET_BANK_RAM	;@3
     182  249a		       a4 88		      ldy	originX12
     183  249c		       b9 64 fd 	      lda	Board,y
@@ -12661,7 +12511,7 @@
     295  24f5
     296  24f5							; PieceColour = 0 for white square, 36 for black square
     297  24f5
-    298  24f5		       a9 d9		      lda	#RAMBANK_BOARD
+    298  24f5		       a9 d3		      lda	#RAMBANK_BOARD
     299  24f7		       85 3e		      sta	SET_BANK_RAM	;@3
     300  24f9
     301  24f9		       a4 81		      ldy	squareToDraw
@@ -13953,7 +13803,7 @@
      47  2818		       85 ee		      sta	__newCursor
      48  281a		       a8		      tay
      49  281b
-     50  281b		       a9 d9		      lda	#RAMBANK_BOARD
+     50  281b		       a9 d3		      lda	#RAMBANK_BOARD
      51  281d		       85 3e		      sta	SET_BANK_RAM	;@3
      52  281f		       b9 00 fd 	      lda	ValidSquare,y
      53  2822		       c9 ff		      cmp	#-1
@@ -13998,7 +13848,7 @@
      78  2836		       a4 89		      ldy	cursorX12
      79  2838		       30 0b		      bmi	.under
      80  283a
-     81  283a		       a9 d9		      lda	#RAMBANK_BOARD
+     81  283a		       a9 d3		      lda	#RAMBANK_BOARD
      82  283c		       85 3e		      sta	SET_BANK_RAM	;@3
      83  283e		       b9 64 fd 	      lda	Board,y
      84  2841		       d0 02		      bne	.under
@@ -18849,7 +18699,7 @@
     289  64c9
     290  64c9		       18		      clc
     291  64ca		       a5 95		      lda	currentPly
-    292  64cc		       69 08		      adc	#RAMBANK_SORT-RAMBANK_PLY
+    292  64cc		       69 05		      adc	#RAMBANK_SORT-RAMBANK_PLY
     293  64ce		       85 be		      sta	__bank2
     294  64d0
     295  64d0
@@ -19700,33 +19550,33 @@
       9  6ac6
       0  6ac6					      RAMBANK	EVALUATE
       1  6ac6
-      2 U3000 ????				      SEG.U	RAM_EVALUATE
-      3 U3000					      ORG	ORIGIN_RAM
-      4 U3000					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U3000				   _BANK_START SET	*
-      6 U3000				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U3000				   RAMBANK_EVALUATE SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U3000				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U3000				   _LAST_BANK SETSTR	EVALUATE
-     10 U3000				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      0 U3000					      END_BANK
-      1 U3000					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U3000					      CHECK_RAM_BANK_SIZE
-      1 U3000		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 25 EVALUATE size =  $0 free = $1ff
-      2 U3000					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U3000				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U3000				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U3000				  -	      ERR
-      6 U3000					      ENDIF
-      3 U3000				  -	      ELSE
-      4 U3000				  -	      CHECK_BANK_SIZE
-      5 U3000					      ENDIF
-     14 U3000
-     15 U3000
-     16 U3000							;---------------------------------------------------------------------------------------------------
-     17 U3000
-      0 U3000					      ROMBANK	EVALUATE
+      2 U2400 ????				      SEG.U	RAM_EVALUATE
+      3 U2400					      ORG	ORIGIN_RAM
+      4 U2400					      RORG	_BANK_ADDRESS_ORIGIN
+      5 U2400				   _BANK_START SET	*
+      6 U2400				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
+      7 U2400				   RAMBANK_EVALUATE SET	_BANK_SLOT + _CURRENT_RAMBANK
+      8 U2400				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
+      9 U2400				   _LAST_BANK SETSTR	EVALUATE
+     10 U2400				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
+      0 U2400					      END_BANK
+      1 U2400					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      0 U2400					      CHECK_RAM_BANK_SIZE
+      1 U2400		       00 00	   .TEMP      =	* - _BANK_START
+ RAM bank # 19 EVALUATE size =  $0 free = $1ff
+      2 U2400					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
+      3 U2400				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
+      4 U2400				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
+      5 U2400				  -	      ERR
+      6 U2400					      ENDIF
+      3 U2400				  -	      ELSE
+      4 U2400				  -	      CHECK_BANK_SIZE
+      5 U2400					      ENDIF
+     14 U2400
+     15 U2400
+     16 U2400							;---------------------------------------------------------------------------------------------------
+     17 U2400
+      0 U2400					      ROMBANK	EVALUATE
       1  6e40 ????				      SEG	ROM_EVALUATE
       2  6c00					      ORG	_ORIGIN
       3  6c00					      RORG	_BANK_ADDRESS_ORIGIN
@@ -23474,52 +23324,52 @@
       9  726e
       0  726e					      RAMBANK	BOARD	; RAM bank for holding the following ROM shadow
       1  726e
-      2 U3200 ????				      SEG.U	RAM_BOARD
-      3 U3200					      ORG	ORIGIN_RAM
-      4 U3200					      RORG	_BANK_ADDRESS_ORIGIN
-      5 U3200				   _BANK_START SET	*
-      6 U3200				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
-      7 U3200				   RAMBANK_BOARD SET	_BANK_SLOT + _CURRENT_RAMBANK
-      8 U3200				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
-      9 U3200				   _LAST_BANK SETSTR	BOARD
-     10 U3200				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
-      8 U3200
-      9 U3200							; The "+$400" is because the shadow lives in SLOT 2, and this code is in SLOT 3
-     10 U3200							; so we're adjusting the actual address for the proper slot
-     11 U3200
-     12 U3200		       fd 00	   ValidSquare =	ShadowValidSquare + $400
-     13 U3200		       fd 64	   Board      =	ShadowBoard + $400
-     14 U3200		       fc 00	   RandomBoardSquare =	ShadowRandomBoardSquare + $400
-     15 U3200		       fd c8	   TileColour =	ShadowTileColour + $400
-     16 U3200
-      0 U3200					      END_BANK
-      1 U3200					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
-      0 U3200					      CHECK_RAM_BANK_SIZE
-      1 U3200		       00 00	   .TEMP      =	* - _BANK_START
- RAM bank # 26 BOARD size =  $0 free = $1ff
-      2 U3200					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
-      3 U3200				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
-      4 U3200				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
-      5 U3200				  -	      ERR
-      6 U3200					      ENDIF
-      3 U3200				  -	      ELSE
-      4 U3200				  -	      CHECK_BANK_SIZE
-      5 U3200					      ENDIF
-     18 U3200
-     19 U3200
-     20 U3200							;---------------------------------------------------------------------------------------------------
-     21 U3200
-      0 U3200					      SLOT	2
-      1 U3200
-      2 U3200				  -	      IF	(2 < 0) || (2 > 3)
-      3 U3200				  -	      ECHO	"Illegal bank address/segment location", 2
-      4 U3200				  -	      ERR
-      5 U3200					      ENDIF
-      6 U3200
-      7 U3200				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
-      8 U3200				   _BANK_SLOT SET	2 * 64
-      9 U3200
-      0 U3200					      ROMBANK	SHADOW_BOARD	; copy the following bank to RAMBANK_BOARD
+      2 U2600 ????				      SEG.U	RAM_BOARD
+      3 U2600					      ORG	ORIGIN_RAM
+      4 U2600					      RORG	_BANK_ADDRESS_ORIGIN
+      5 U2600				   _BANK_START SET	*
+      6 U2600				   _CURRENT_RAMBANK SET	(ORIGIN_RAM / _RAM_BANK_SIZE)
+      7 U2600				   RAMBANK_BOARD SET	_BANK_SLOT + _CURRENT_RAMBANK
+      8 U2600				   ORIGIN_RAM SET	ORIGIN_RAM + _RAM_BANK_SIZE
+      9 U2600				   _LAST_BANK SETSTR	BOARD
+     10 U2600				   _CURRENT_BANK_TYPE SET	_TYPE_RAM
+      8 U2600
+      9 U2600							; The "+$400" is because the shadow lives in SLOT 2, and this code is in SLOT 3
+     10 U2600							; so we're adjusting the actual address for the proper slot
+     11 U2600
+     12 U2600		       fd 00	   ValidSquare =	ShadowValidSquare + $400
+     13 U2600		       fd 64	   Board      =	ShadowBoard + $400
+     14 U2600		       fc 00	   RandomBoardSquare =	ShadowRandomBoardSquare + $400
+     15 U2600		       fd c8	   TileColour =	ShadowTileColour + $400
+     16 U2600
+      0 U2600					      END_BANK
+      1 U2600					      IF	_CURRENT_BANK_TYPE = _TYPE_RAM
+      0 U2600					      CHECK_RAM_BANK_SIZE
+      1 U2600		       00 00	   .TEMP      =	* - _BANK_START
+ RAM bank # 20 BOARD size =  $0 free = $1ff
+      2 U2600					      ECHO	"RAM bank #", [ORIGIN_RAM/_RAM_BANK_SIZE]d, _LAST_BANK, "size = ", .TEMP, "free =", _RAM_BANK_SIZE - .TEMP - 1
+      3 U2600				  -	      IF	( .TEMP ) > _RAM_BANK_SIZE
+      4 U2600				  -	      ECHO	"BANK OVERFLOW @", _LAST_BANK, " size=", * - ORIGIN_RAM
+      5 U2600				  -	      ERR
+      6 U2600					      ENDIF
+      3 U2600				  -	      ELSE
+      4 U2600				  -	      CHECK_BANK_SIZE
+      5 U2600					      ENDIF
+     18 U2600
+     19 U2600
+     20 U2600							;---------------------------------------------------------------------------------------------------
+     21 U2600
+      0 U2600					      SLOT	2
+      1 U2600
+      2 U2600				  -	      IF	(2 < 0) || (2 > 3)
+      3 U2600				  -	      ECHO	"Illegal bank address/segment location", 2
+      4 U2600				  -	      ERR
+      5 U2600					      ENDIF
+      6 U2600
+      7 U2600				   _BANK_ADDRESS_ORIGIN SET	$F000 + (2 * _ROM_BANK_SIZE)
+      8 U2600				   _BANK_SLOT SET	2 * 64
+      9 U2600
+      0 U2600					      ROMBANK	SHADOW_BOARD	; copy the following bank to RAMBANK_BOARD
       1  762c ????				      SEG	ROM_SHADOW_BOARD
       2  7400					      ORG	_ORIGIN
       3  7400					      RORG	_BANK_ADDRESS_ORIGIN
@@ -26965,7 +26815,7 @@
     224  8000
  32 ROM BANKS
     225  8000					      ECHO	[_ORIGIN/_ROM_BANK_SIZE]d, "ROM BANKS"
- 26 RAM BANKS
+ 20 RAM BANKS
     226  8000					      ECHO	[ORIGIN_RAM / _RAM_BANK_SIZE]d, "RAM BANKS"
     227  8000
     228  8000							;---------------------------------------------------------------------------------------------------

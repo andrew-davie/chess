@@ -8,18 +8,20 @@ characters:
 
 chess.bin: *.asm Makefile FORCE
 	osascript -e 'quit app "Stella"'
-	(cd ./gfx && python ConvertChessPieces.py)
-	python tools/grid.py
-	../dasmx/dasm/bin/dasm ./chess.asm -E0 -S -p20 -l./chess.lst -f3 -v1 -DTIA_BASE_ADDRESS=$40 -s./chess.sym -T1 -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
-	cp ./chess.bin ~/Nextcloud/My\ ROMs
-	open -a /Applications/Stella.app ./chess.bin --args -ld B -rd B -rc atarivox -avoxport /dev/cu.usbserial-A50285BI
+	(cd ./gfx && python3 ConvertChessPieces.py)
+	python3 tools/grid.py
+	../dasm/bin/dasm ./chess.asm -E0 -S -p20 -l./chess.lst -f3 -v1 -DTIA_BASE_ADDRESS=$40 -s./chess.sym -T1 -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
+#	cp ./chess.bin ~/Nextcloud/My\ ROMs
+#	open -a /Applications/Stella.app ./chess.bin --args -ld B -rd B -rc atarivox -avoxport /dev/cu.usbserial-A50285BI
+	../Gopher2600/gopher2600_darwin_arm64 -tv NTSC ./chess.bin
+
 
 force:
 #	echo "force"
 
 ../sprites/spriteData.asm: ../sprites/*.png
 	echo 'Building SPRITE data'
-	python ../tools/sprite.py
+	python3 ../tools/sprite.py
 
 
 #test.bin: test.asm FORCE Makefile

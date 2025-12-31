@@ -1,3 +1,8 @@
+// License: https://creativecommons.org/licenses/by-nc/3.0/
+// (c)2020 Andrew Davie
+
+// YOU MUST CHANGE "MODE" TO RENDER THE PART YOU WANT!!!
+
 $fn=32;
 
 
@@ -12,21 +17,27 @@ MODE_STRAP = 3;
 MODE_LOGO = 4;
 MODE_LABEL = 5;
 MODE_LETTERS = 6;
-
+MODE_PADS = 7;
+MODE_PINS = 8;
+MODE_STAPLES = 9;
+MODE_FRONTANDLOGO = 10;
+MODE_AALOGO = 11;
 
 ///////////////////////////////////////////////////////////////////////////
 // Customizable values...
 
 
 // Which part to render. SEE MODE_* DEFINITIONS, ABOVE
-MODE = 1; // [0:FRONT SHELL, 1:BACK SHELL, 2:ASSEMBLED, 3:STRAP, 4:LOGO, 5:LABEL, 6:LETTERS]
+MODE = 5;
 
 // Inbuilt supports for the cartrige shell overhangs.
-SUPPORT_TABS = true;            // true or false
+SUPPORT_TABS = false;            // true or false
 
 
 // Word on the label. Should be 8 letters maximum
 LABEL_TEXT = "PLUSCART"; //8
+VERSION_TEXT = "20201012";
+
 
 // Side-wall thickness.
 WALL = 2.4;
@@ -43,7 +54,7 @@ STRAP_TOL = 0.3;
 
 
 BOXX = 81.5;
-BOXY = 98.2;
+BOXY = 98.4;
 BOXZ = 18.275;
 
 
@@ -79,15 +90,15 @@ BOARD_THICKNESS = 1.6;
 
 SLOTINDENTZ = BOARD_THICKNESS;
 
-SLOTX = 36.5;
+SLOTX = 36.75;
 
 SUPPORTBOXX = SLOTX-3;
 SUPPORTBOXY = 19;
 SUPPORTBOXRADIUS = 2;
 SUPPORTBOXRADIUS2 = 1;
-SUPPORTBOXWALL = 1.2;
+SUPPORTBOXWALL = 2.2;
 
-SLOTSTMX = 64;
+SLOTSTMX = 77;
 
 STRAP_WIDTH = SQ;
 STRAP_THICK = 1.2;
@@ -95,7 +106,11 @@ STRAP_INDENT = SQ+1;
 STRAP_HOOK = WALLZ/2+0.75;
 
 
-
+PIN_EDGE_TO_EDGE = 55.85;
+PIN_WIDTH = 7.5-0.8;
+PIN_THICK = 2.3; //1.6; //3.6-0.8;
+PIN_LENGTH = 10;
+PRONG_THICK = 2.3;
 
 // More information: https://danielupshaw.com/openscad-rounded-corners/
 
@@ -155,20 +170,21 @@ module roundedcube(size = [1, 1, 1], center = false, radius = 0.5, apply_to = "a
 
 module top(){
     
-    //import("top.stl");
-    
+        
     difference(){
         union(){
     
             translate([0,0,BOXZ/2]) {
                 difference(){
                     roundedcube(size=[BOXX,BOXY,BOXZ],center=true,radius=ROUNDBOXRADIUS);
-                    translate([0,-0.4,0])
+                    translate([0,-0.4-0.4-0.3,0])
                         roundedcube(size=[BOXX-2*WALL,BOXY-2*WALL,BOXZ-2*WALLZ],center=true);
 
+                    // slice off top half
                     translate([-BOXX/2-1,-BOXY/2-1,2])
                         cube([BOXX+2,BOXY+2,BOXZ]);
                     
+                    // cut off bottom opening
                     translate([-BOXX/2+WALL,-BOXY/2-5,-BOXZ/2+WALLZ])
                         cube([BOXX-2*WALL,10,BOXZ]);
 
@@ -189,7 +205,23 @@ module top(){
 
     }
 
-    labelSlot();
+     //       import("aa.svg");
+
+
+
+/*    //import("top.stl");
+    translate([-19,32,WALLZ-0.2])
+        scale([0.2,0.2,1])
+        linear_extrude(0.4){
+            import("ccx.svg");
+//            translate([-5,-15,0])
+//            text("andrew@taswegian.com",size=14);
+        }
+  */      
+    translate([0,-0.1,0.2])
+        labelSlot();
+    translate([0,0,0.2])
+        labelSlot();
 
     if (BACK_LOGO)
         logo();
@@ -203,7 +235,6 @@ module top(){
     //        xylatch(0.4, true);
     //}
 
-    //versionx();
 
     translate([-BOXX/2+WALL/2,-BOXY/2,WALLZ])
         rotate([0,0,-15])
@@ -225,6 +256,8 @@ module top(){
     }}
 */
 
+        
+
     }
     
 
@@ -240,6 +273,47 @@ module top(){
 
     //allstraps(0);
     strapsupportx();
+
+//    for (x=[-1,1]) {
+//        translate([x*PIN_OFFSET_X,-25,WALLZ]) {
+//            rotate([0,0,90*x+90])
+//            difference(){
+//                pinholder(8.2/*BOXZ/2-WALLZ+2-0.2*/, true);
+//                //translate([0,0,BOXZ/2-WALLZ])
+//                //    scale([1.05,1.05,1.05])
+//                //        pin();
+//            }
+//        }
+//        
+//    }
+
+//    for (x=[-1,1])
+//        translate([x*(BOXX/2-WALL-PINHOLDER_WALL), 42.2, WALLZ]) {
+//            rotate([0,0,90])
+//            pinholder(BOXZ/2+2-WALLZ-PIN_THICK-0.2);            
+//    }
+
+    for (x=[-1,1]) {
+        translate([x*PIN_OFFSET_X,-25+0.6,WALLZ]) {
+            rotate([0,0,90*x+90])
+                pinholder(8.2/*BOXZ/2-WALLZ-PIN_THICK*/, true);
+        }
+    }
+    
+    for (x=[-1,1])
+        translate([x*(BOXX/2-WALL-PINHOLDER_WALL-0.22+0.4), 42.2, WALLZ]) {
+            rotate([0,0,90])
+            pinholder(BOXZ/2+2-WALLZ-PIN_THICK-0.2);            
+    }
+        
+    for (x=[-1,1])
+        translate([x*(BOXX/2-WALL-PINHOLDER_WALL-0.22+0.4), 3.225, WALLZ]) {
+            rotate([0,0,90])
+            pinholder(BOXZ/2+2-WALLZ-PIN_THICK-0.2);            
+    }
+
+    //versionx();
+
 }
 
 
@@ -310,10 +384,11 @@ module letters(){
 }
 
 
+
 module labelSlot(){
 
-    translate([-(BOXX-WALL*2)/2,BOXY/2-1.6,WALLZ/2])
-        cube([BOXX-WALL*2,0.8,BOXZ]);
+    translate([-(BOXX-WALL*2)/2,BOXY/2-1.6+0.2,WALLZ/2])
+        cube([BOXX-WALL*2,0.6,BOXZ]);
 
     translate([-(BOXX-WALL*2)/2+WALL/2,BOXY/2-1.4,WALLZ])
         cube([BOXX-WALL*2-WALL,1.4,BOXZ]);
@@ -412,7 +487,7 @@ module rightAngle(z,pin,top=false) {
                 }
 
                 // STM board insert
-                translate([-SLOTSTMX/2,1.2,-1])
+                translate([-SLOTSTMX/2,1.2+1,-1])
                     cube([SLOTSTMX,SLOTBARY-1.2+1,SLOTBARZ+4]);
    
             }
@@ -432,11 +507,12 @@ module frontShell(){
     
         union(){
             
+
             translate([0,0,BOXZ/2]) {
                 difference(){
             
                     roundedcube(size=[BOXX,BOXY,BOXZ],center=true,radius=ROUNDBOXRADIUS);
-                    translate([0,-0.4,0])
+                    translate([0,-0.4-0.4-0.3,0])
                         roundedcube(size=[BOXX-2*WALL,BOXY-2*WALL,BOXZ-2*WALLZ],center=true);
 
                     // slice off top of box, leaving a tray
@@ -460,7 +536,7 @@ module frontShell(){
             
             // The Y-axis constrainers around the middle bar
 
-            translate([0,-4.2+SLOTBARY/2,0])
+/*            translate([0,-4.2+SLOTBARY/2,0])
                 for (x=[-1,1])
                     for (y=[-1,1])
                         translate([x*(BOXX/2-WALL-SPACERX/2-CONSTRAINER_TOL),
@@ -472,8 +548,10 @@ module frontShell(){
                                 translate([0,0,SPACERLIP+SPACERX+1.6])
                             rotate([90,0,0])
                                 cylinder(r=SPACERX/2,h=SPACERY,center=true);
+
                                 
                                 }
+                                */
             translate([-BOXX/2+WALL,-BOXY/2,WALLZ])
                 cube([1.2,14,BOXZ/2-WALLZ]);
             translate([BOXX/2-WALL-1.2,-BOXY/2,WALLZ])
@@ -495,7 +573,11 @@ module frontShell(){
 
             //versionx();
 
-    labelSlot();
+
+    translate([0,-0.2,0.2])
+        labelSlot();
+    translate([0,0,0.2])
+        labelSlot();
 //    label();
  
     if (FRONT_LOGO)
@@ -516,18 +598,57 @@ module frontShell(){
         allstraps(STRAP_TOL);
 
     }
+
+
     xylatch(0,0, false);
     strapsupportx();
     //allstraps(0);
 
     //translate([0,0,WALLZ/2])
     //    label();
+
+//    for (x=[-1,1])
+ //   translate([x*PIN_OFFSET_X,-BOXY/2+20,0])
+  //      cylinder(r=0.1,h=20);
     
+    for (x=[-1,1]) {
+        translate([x*PIN_OFFSET_X,-25+0.6,WALLZ]) {
+            rotate([0,0,90*x+90])
+                pinholder(4.3/*BOXZ/2-WALLZ-PIN_THICK*/, true);
+        }
+    }
+    
+    for (x=[-1,1])
+        translate([x*(BOXX/2-WALL-PINHOLDER_WALL-0.22+0.4), 42.2, WALLZ]) {
+            rotate([0,0,90])
+            pinholder(BOXZ/2-WALLZ);            
+    }
+        
+    for (x=[-1,1])
+        translate([x*(BOXX/2-WALL-PINHOLDER_WALL-0.22+0.4), 3.225, WALLZ]) {
+            rotate([0,0,90])
+            pinholder(BOXZ/2-WALLZ);            
+    }
+
+    
+        
+//    for (x=[-1,1])
+//        translate([x*PIN_OFFSET_X,-25,BOXZ/2]) {
+//            pin();
+//        }
+
+    //versionx();
+
 }
 
 
 if (MODE == MODE_FRONT){
     frontShell();
+}
+
+if (MODE == MODE_FRONTANDLOGO){
+    frontShell();
+    logo(1.6);
 }
 
 
@@ -594,13 +715,23 @@ if (MODE==MODE_ALL){
             frontShell();
             logo(0.8);
         }
-    allstraps(0);
+        
+        
+//    allstraps(0);
     
     //color("red")
         translate([WALL/2+WALL/2+0.2,0.2,WALLZ/2])
             label();
         translate([WALL/2+WALL/2+0.2,0.2,WALLZ/2])
             letters();
+
+    for (x=[-1,1])
+        translate([x*PIN_OFFSET_X,-25,WALLZ]) {
+                translate([0,0,BOXZ/2-WALLZ+2+PIN_THICK/2])
+                        pin(6, 6, 16);
+        }
+
+
 }
 
 
@@ -612,8 +743,13 @@ if (MODE==MODE_STRAP){
     translate([-STRAP_WIDTH/2,0,0])
         strap(0,0.75,0.2,true);
 */
+
+    for (x=[-1,1])
+        for (y=[-1,1])
+            translate([x*(BOXZ/2+2),y*(STRAP_INDENT/2+2),0])
+
     rotate([0,-90,0])
-        strap2(0.02);
+        strap2(0.02, true);
     
     //rotate([0,90,0])
     //translate([-STRAP_WIDTH/2,0,0])
@@ -624,20 +760,156 @@ if (MODE == MODE_LABEL){
     translate([0,0,-BOXY/2])
     rotate([90,0,0])
         label();
-}
-if (MODE == MODE_LETTERS){
-    translate([0,0,-BOXY/2])
+//}
+
+//if (MODE == MODE_LETTERS){
+    translate([0,0,-BOXY/2+0.4])
     rotate([90,0,0])
         letters();
 }
 
 
 if (MODE == MODE_LOGO){
-    logo(0.8);
+    logo(1);
+}
+
+if (MODE == MODE_AALOGO){
+    
+    rotate([0,180,0])
+        scale([0.5,0.5,1])
+            linear_extrude(0.4)
+                import("aawhite.svg");
+    
+    
 }
 
 
+if (MODE == MODE_PADS) {
+
+    for (x=[-1,1])
+        for (y=[-1,1])
+
+        difference(){
+                        translate([x*(BOXX/2+4),y*(BOXY/2+4),0])
+                                cylinder(r=10,h=0.2);
+            
+                translate([x*0.2,y*0.2,0])
+                    frontShell();
+    }
+    
+//    frontShell();
+    
+}
+
+
+
+PIN_OFFSET_X = (PIN_EDGE_TO_EDGE+PIN_WIDTH)/2;
+PINY = 0;
+PINZ = 0;
+
+module pin(flange=5, flange2=5, length=PIN_LENGTH) {
+
+    rotate([0,90,0])
+    translate([0,-length,-PIN_WIDTH/2])
+        rotate([0,0,180]) {
+    
+    difference() {
+        linear_extrude(PIN_WIDTH) {
+
+            // the main extending prong...
+            translate([0,-length/2,0])
+                scale([1,length/PRONG_THICK])
+                    square(PRONG_THICK,center=true);
+            
+            // The tip of the prong
+            hull() {
+                square(PRONG_THICK,center=true);
+                translate([0,PRONG_THICK,0])
+                    circle(r=PRONG_THICK/4);
+                }
+
+            // The insert tabs
+            hull(){
+                    translate([-flange,-length,0])
+                        circle(r=PIN_THICK/2);
+                    translate([flange2,-length,0])
+                        circle(r=PIN_THICK/2);
+            }
+        }
+    
+/*        translate([-PIN_THICK+0.6,-10,5])
+            rotate([0,90,0])
+                linear_extrude(0.4)
+                    text("0",font="Impact",size=6);
+*/
+        }
+    }    
+}
+
+PINHOLDER_WALL = 1.6;
+PINHOLDER_WIDTH = PIN_WIDTH + 2 * PINHOLDER_WALL + 0.55;
+PINHOLDER_LENGTH = PIN_THICK + 2 * PINHOLDER_WALL + 0.55;
+PINHOLDER_RADIUS = 2;
+PINHOLDER_RADIUS2 = 1;
+
+
+module pinholder(height = SLOTBARZ-SLOTINDENTZ,mount=false) {
+    
+    translate([0,0,0])
+        roundedPillar(
+            PINHOLDER_WIDTH,
+            PINHOLDER_LENGTH,
+            height,
+            PINHOLDER_RADIUS,
+            PINHOLDER_RADIUS2,
+            PINHOLDER_WALL
+        );
+
+    
+            if (mount)
+                translate([-8,-3/2,0])
+/*        roundedPillar(
+            PINHOLDER_WIDTH+4,
+            PINHOLDER_LENGTH+0,
+            height,
+            PINHOLDER_RADIUS,
+            PINHOLDER_RADIUS2,
+            PINHOLDER_WALL
+        );
+*/
+            cube([4,3,height]);
+
+}
+
+
+
+
+
+
+if (MODE == MODE_PINS) {
+    
+    for (x=[0,1])
+            translate([-x*10,x*5,0])
+        rotate([0,90,0])
+                pin(6,6, 16);
+    
+//}
+
+//if (MODE == MODE_STAPLES) {
+ 
+        for (x=[-1,0,1,2])
+                translate([20+x*8,0,0])
+                    rotate([0,90,90])
+                        pin(BOXZ/2-WALLZ,BOXZ/2-WALLZ, 1);
+    
+}
+
+
+
+
 module logo(tolx=0){
+    
+    
     
     L = [[0,1,0,0,0,1,0],
          [1,0,0,1,0,0,1],
@@ -724,7 +996,7 @@ module strap(tol,longer=0,thinner=0,tab=false){
 }
 
 
-module strap2(tol=0){
+module strap2(tol=0,pad=false){
 
     translate([-STRAP_WIDTH/2-tol,STRAP_INDENT+tol,0/*+STRAP_WIDTH*/])
     rotate([0,90,0]) {
@@ -743,7 +1015,7 @@ module strap2(tol=0){
             }
             
             
-            if (tol==0)
+            if (pad)
                 color("green")
                     translate([-5,-10+STRAP_THICK+0.6,0])
                         cube([10,10,0.2]);
@@ -799,11 +1071,11 @@ module strapsupport(tol=0){
 
 module versionx(){
     
-        translate([35.9,BOXY/2-0.4,5]) {
-            rotate([-90,180,0])
-        scale([0.75,1,1])
-        linear_extrude(0.4){
-            text(LABEL_TEXT,font="SF Atarian System",size=10);
+        translate([-35,10, WALLZ]) {
+//            rotate([-90,180,0])
+        scale([2.25,2.25,1])
+        linear_extrude(0.2){
+            text(VERSION_TEXT,font="Impact",size=6);
         }
     }
 }

@@ -1,0 +1,683 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 3.81
+# Copyright (C) 2006  Free Software Foundation, Inc.
+# This is free software; see the source for copying conditions.
+# There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+# This program built for i386-apple-darwin11.3.0
+
+# Make data base, printed on Thu Mar  3 14:12:55 2022
+
+# Variables
+
+# environment
+JENV_SHELL = zsh
+# automatic
+?F = $(notdir $?)
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# environment
+VSCODE_LOG_NATIVE = false
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# automatic
+@F = $(notdir $@)
+# makefile
+CURDIR := /Users/boo/Documents/software/Atari 2600/Chess3E+
+# makefile
+SHELL = /bin/sh
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en-gb","availableLanguages":{},"_languagePackSupport":true}
+# environment
+_ = /usr/bin/make
+# makefile (from `Makefile', line 1)
+MAKEFILE_LIST :=  Makefile
+# environment
+VSCODE_VERBOSE_LOGGING = true
+# environment
+VSCODE_IPC_HOOK_EXTHOST = /var/folders/zy/xcxj9l0j1w5g6sw5tlxqwyn80000gn/T/vscode-ipc-3b1326a9-8d15-4f8d-bca0-ac40492b0685.sock
+# environment
+VSCODE_CWD = /
+# environment
+PATH = /Users/boo/.jenv/shims:/Users/boo/.pyenv/shims:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/go/bin:/opt/X11/bin:/Library/Apple/usr/bin:/Users/boo/Documents/software/gcc-arm-none-eabi-9-2019-q4-major/bin
+# environment
+VSCODE_LOG_STACK = false
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# default
+.FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
+# environment
+SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.az8y9M7sDD/Listeners
+# automatic
+%F = $(notdir $%)
+# environment
+DISPLAY = /private/tmp/com.apple.launchd.eRI1gNxnbr/org.macosforge.xquartz:0
+# environment
+VSCODE_PIPE_LOGGING = true
+# environment
+PWD = /Users/boo/Documents/software/Atari 2600/Chess3E+
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = undefined
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/services/extensions/node/extensionHostProcess
+# environment
+PYENV_SHELL = zsh
+# environment
+HOME = /Users/boo
+# default
+MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /Developer)/Makefiles
+# environment
+VSCODE_CODE_CACHE_PATH = /Users/boo/Library/Application Support/Code/CachedData/f80445acd5a3dadef24aa209168452a3d97cc326
+# environment
+LOGNAME = boo
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+XPC_FLAGS = 0x0
+# default
+MAKE = $(MAKE_COMMAND)
+# default
+MAKECMDGOALS := all
+# environment
+SHLVL = 1
+# default
+MAKE_VERSION := 3.81
+# environment
+USER = boo
+# makefile
+.DEFAULT_GOAL := all
+# environment
+JENV_LOADED = 1
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# default
+MAKE_COMMAND := /Library/Developer/CommandLineTools/usr/bin/make
+# default
+.VARIABLES := 
+# environment
+TMPDIR = /var/folders/zy/xcxj9l0j1w5g6sw5tlxqwyn80000gn/T/
+# automatic
+*F = $(notdir $*)
+# environment
+VSCODE_IPC_HOOK = /Users/boo/Library/Application Support/Code/1.64.2-main.sock
+# makefile
+MAKEFLAGS = Rrqp
+# environment
+MFLAGS = -Rrqp
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# environment
+XPC_SERVICE_NAME = com.microsoft.VSCode.42032
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# automatic
++F = $(notdir $+)
+# environment
+__CF_USER_TEXT_ENCODING = 0x1F5:0:0
+# default
+MAKEFILES := 
+# automatic
+<F = $(notdir $<)
+# environment
+LC_ALL = C
+# automatic
+^F = $(notdir $^)
+# default
+SUFFIXES := 
+# default
+.INCLUDE_DIRS = /usr/local/include
+# environment
+MAKELEVEL := 0
+# environment
+LANG = C
+# environment
+VSCODE_PID = 660
+# variable set hash-table stats:
+# Load=64/1024=6%, Rehash=0, Collisions=3/91=3%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# . (device 16777224, inode 6037400): 70 files, no impossibilities.
+# ../sprites: could not be stat'd.
+
+# 70 files, no impossibilities in 2 directories.
+
+# Implicit Rules
+
+# No implicit rules.
+
+# Files
+
+# Not a target:
+@2 VOX.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-27 20:24:26
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@1 GENERIC #1.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-09-11 22:42:48
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+BANK_PLIST.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-06-14 10:13:05
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+gfx:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+
+# Not a target:
+BANK_TEXT_OVERLAYS.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-06-14 10:13:05
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+all: chess.bin
+#  Command-line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/3=0%
+
+FORCE:
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+PIECE_KING.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-16 23:44:12
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+.PHONY: characters gfx
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+test.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-09-13 12:14:03
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@3 EVALUATE.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-09-02 13:38:57
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+segtime.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-04-30 15:12:51
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+_ MACROS.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-08-29 23:34:54
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@3 STARTBANK.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-27 13:45:36
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+PIECE_ROOK.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-16 23:44:23
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+PIECE_PAWN.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-16 23:43:00
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+.SUFFIXES:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+Makefile:
+#  Implicit rule search has been done.
+#  Last modified 2020-09-10 21:09:53
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@2 PLY.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-08-12 13:14:36
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+ 
+# Not a target:
+@2 GENERIC #3.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-09-11 22:18:41
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@2 WORDS.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-07 21:29:15
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+PIECE_QUEEN.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-16 23:44:27
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+piece_vectors.asm:
+#  Implicit rule search has been done.
+#  Last modified 2022-01-18 19:57:09
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+titleData.asm:
+#  Implicit rule search has been done.
+#  Last modified 2022-01-18 19:57:10
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@3 GENERIC #2.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-09-02 13:35:27
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+word_vectors.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-02 23:12:56
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@0 HOME.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-11-10 21:45:48
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@2 SCREEN RAM.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-09-06 00:42:03
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+titleScreen.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-06-14 10:13:05
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+force:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+BANK_SPEAK.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-06-14 10:51:59
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@1 PIECE HANDLER #1.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-06-14 17:50:47
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+../sprites/spriteData.asm: ../sprites/*.png
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `Makefile', line 21):
+	echo 'Building SPRITE data'
+	python ../tools/sprite.py
+	
+
+# Not a target:
+@3 SCREEN ROM.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-07 21:29:37
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+piece_includes.asm:
+#  Implicit rule search has been done.
+#  Last modified 2022-01-18 19:57:09
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+_ PIECE MACROS.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-16 23:44:18
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@1 PIECE HANDLER #2.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-06-14 17:50:47
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@2 GENERIC #4.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-14 12:55:29
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+overlays.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-23 23:26:51
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@2 PLY2.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-12 23:30:22
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+PIECE_BISHOP.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-16 23:44:33
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+chess.asm:
+#  Implicit rule search has been done.
+#  Last modified 2022-01-18 19:57:08
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+word_includes.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-02 23:12:56
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@1 NEGAMAX.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-09-01 01:23:37
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+stack.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-22 20:08:52
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@2 GRAPHICS DATA.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-06-14 17:50:47
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@1 STATE MACHINE #1.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-21 20:10:49
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+SHADOW_BOARD.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-09-11 22:07:54
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+zeropage.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-22 16:00:21
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+@1 STATE MACHINE #2.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-27 20:07:23
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+../sprites/*.png:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+PIECE_KNIGHT.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-07-16 23:44:04
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+titleScreen@2.asm:
+#  Implicit rule search has been done.
+#  Last modified 2020-06-13 15:30:15
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+characters:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+ 
+#  File has not been updated.
+
+chess.bin: @0 HOME.asm @1 GENERIC #1.asm @1 NEGAMAX.asm @1 PIECE HANDLER #1.asm @1 PIECE HANDLER #2.asm @1 STATE MACHINE #1.asm @1 STATE MACHINE #2.asm @2 GENERIC #3.asm @2 GENERIC #4.asm @2 GRAPHICS DATA.asm @2 PLY.asm @2 PLY2.asm @2 SCREEN RAM.asm @2 VOX.asm @2 WORDS.asm @3 EVALUATE.asm @3 GENERIC #2.asm @3 SCREEN ROM.asm @3 STARTBANK.asm BANK_PLIST.asm BANK_SPEAK.asm BANK_TEXT_OVERLAYS.asm PIECE_BISHOP.asm PIECE_KING.asm PIECE_KNIGHT.asm PIECE_PAWN.asm PIECE_QUEEN.asm PIECE_ROOK.asm SHADOW_BOARD.asm _ MACROS.asm _ PIECE MACROS.asm chess.asm overlays.asm piece_includes.asm piece_vectors.asm segtime.asm stack.asm test.asm titleData.asm titleScreen.asm titleScreen@2.asm word_includes.asm word_vectors.asm zeropage.asm Makefile FORCE
+#  Implicit rule search has not been done.
+#  Implicit/static pattern stem: `'
+#  Last modified 2022-01-18 19:57:11
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# automatic
+# @ := chess.bin
+# automatic
+# % := 
+# automatic
+# * := 
+# automatic
+# + := @0 HOME.asm @1 GENERIC #1.asm @1 NEGAMAX.asm @1 PIECE HANDLER #1.asm @1 PIECE HANDLER #2.asm @1 STATE MACHINE #1.asm @1 STATE MACHINE #2.asm @2 GENERIC #3.asm @2 GENERIC #4.asm @2 GRAPHICS DATA.asm @2 PLY.asm @2 PLY2.asm @2 SCREEN RAM.asm @2 VOX.asm @2 WORDS.asm @3 EVALUATE.asm @3 GENERIC #2.asm @3 SCREEN ROM.asm @3 STARTBANK.asm BANK_PLIST.asm BANK_SPEAK.asm BANK_TEXT_OVERLAYS.asm PIECE_BISHOP.asm PIECE_KING.asm PIECE_KNIGHT.asm PIECE_PAWN.asm PIECE_QUEEN.asm PIECE_ROOK.asm SHADOW_BOARD.asm _ MACROS.asm _ PIECE MACROS.asm chess.asm overlays.asm piece_includes.asm piece_vectors.asm segtime.asm stack.asm test.asm titleData.asm titleScreen.asm titleScreen@2.asm word_includes.asm word_vectors.asm zeropage.asm Makefile FORCE
+# automatic
+# | := 
+# automatic
+# < := @0 HOME.asm
+# automatic
+# ^ := @0 HOME.asm @1 GENERIC #1.asm @1 NEGAMAX.asm @1 PIECE HANDLER #1.asm @1 PIECE HANDLER #2.asm @1 STATE MACHINE #1.asm @1 STATE MACHINE #2.asm @2 GENERIC #3.asm @2 GENERIC #4.asm @2 GRAPHICS DATA.asm @2 PLY.asm @2 PLY2.asm @2 SCREEN RAM.asm @2 VOX.asm @2 WORDS.asm @3 EVALUATE.asm @3 GENERIC #2.asm @3 SCREEN ROM.asm @3 STARTBANK.asm BANK_PLIST.asm BANK_SPEAK.asm BANK_TEXT_OVERLAYS.asm PIECE_BISHOP.asm PIECE_KING.asm PIECE_KNIGHT.asm PIECE_PAWN.asm PIECE_QUEEN.asm PIECE_ROOK.asm SHADOW_BOARD.asm _ MACROS.asm _ PIECE MACROS.asm chess.asm overlays.asm piece_includes.asm piece_vectors.asm segtime.asm stack.asm test.asm titleData.asm titleScreen.asm titleScreen@2.asm word_includes.asm word_vectors.asm zeropage.asm Makefile FORCE
+# automatic
+# ? := 
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=1/11=9%
+#  commands to execute (from `Makefile', line 10):
+	osascript -e 'quit app "Stella"'
+	(cd ./gfx && python ConvertChessPieces.py)
+	python tools/grid.py
+	../dasmx/dasm/bin/dasm ./chess.asm -E0 -S -p20 -l./chess.lst -f3 -v1 -DTIA_BASE_ADDRESS=$40 -s./chess.sym -T1 -o./chess.bin || (echo "mycommand failed $$?"; exit 1)
+	cp ./chess.bin ~/Nextcloud/My\ ROMs
+	open -a /Applications/Stella.app ./chess.bin --args -ld B -rd B -rc atarivox -avoxport /dev/cu.usbserial-A50285BI
+	
+
+# files hash-table stats:
+# Load=56/1024=5%, Rehash=0, Collisions=2/121=2%
+# VPATH Search Paths
+
+# No `vpath' search paths.
+
+# No general (`VPATH' variable) search path.
+
+# # of strings in strcache: 1
+# # of strcache buffers: 1
+# strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
+# strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
+
+# Finished Make data base on Thu Mar  3 14:12:56 2022
+
+ 
